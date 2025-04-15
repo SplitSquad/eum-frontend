@@ -124,20 +124,6 @@
 이 문서는 팀 내 업무 역할 및 책임을 명확하게 하여 협업과 개발 효율을 높이기 위한 기반 자료입니다.  
 적절한 코드 리뷰와 문서 업데이트를 통해 지속적인 개선과 발전을 도모해 주세요.
 
-## 디펜던시 정리
-
-- formatting
-
-* npm install -D eslint prettier eslint-config-prettier eslint-plugin-react @typescript-eslint/eslint-plugin @typescript-eslint/parser
-* npx eslint --init
-* lint 추가 목록: javascript, json /- space로 선택 가능
-* lint 범위: syntax check with problem solve
-* lint 모듈: esm
-* project: react
-* typescript: yes
-* code run: browser
-* package manager: npm
-
 ## 협업 & 코드 스타일 규칙
 
 ```
@@ -159,3 +145,23 @@ indi_dev: 개인 브랜치 → 알아서 관리,dev에 pr시 꼭 자기 이름�
 
 - **i18n/**, **error/**: 다국어 지원, 글로벌 에러 처리 및 에러 유형 정의
 ```
+
+## 🌐 App Routing Structure
+
+React Router v6 기반으로 구성된 주요 라우트입니다:
+
+| Path             | Component         | Description              |
+| ---------------- | ----------------- | ------------------------ |
+| `/`              | `Loading`         | 앱 시작 시 로딩 화면     |
+| `/home`          | `Home`            | 메인 홈 대시보드         |
+| `/login`         | `Login`           | 로그인 페이지            |
+| `/community`     | `Community`       | 커뮤니티 게시판 목록     |
+| `/community/:id` | `CommunityDetail` | 커뮤니티 게시글 상세     |
+| `/debate`        | `Debate`          | 토론 목록 페이지         |
+| `/debate/:id`    | `DebateDetail`    | 토론 상세 페이지         |
+| `/info`          | `Info`            | 정보 콘텐츠 목록         |
+| `/info/:id`      | `InfoDetail`      | 정보 콘텐츠 상세         |
+| `/onboarding`    | `Onboarding`      | 온보딩 초기 설정 화면    |
+| `/ai-assistant`  | `AiAssistant`     | AI 어시스턴트 챗봇       |
+| `/mypage`        | `MyPage`          | 마이페이지 (사용자 정보) |
+| `*`              | `NotFound`        | 404 Not Found 처리       |
