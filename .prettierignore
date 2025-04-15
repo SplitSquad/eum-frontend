@@ -1,0 +1,9 @@
+#prettier formating excluding files 
+node_modules
+build
+dist
+coverage
+.env
+.next
+out
+public
