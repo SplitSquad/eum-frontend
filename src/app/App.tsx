@@ -1,13 +1,9 @@
-import React from 'react';
-import UserProfile from '../components/user/UserProfile';
+import { useState } from 'react';
+import '../App.css';
+import AppRoutes from '@/routes';
 
-const App: React.FC = () => {
-  return (
-    <div>
-      <h1>이음이 User 상태 관리 구현중...</h1>
-      <UserProfile />
-    </div>
-  );
-};
+function App() {
+  return <AppRoutes />;
+}
 
 export default App;
