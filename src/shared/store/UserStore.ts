@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 
-interface UserProfile {
+// 사용자 프로필 인터페이스 정의
+export interface UserProfile {
   userId: number;
   email: string;
   name: string;
@@ -16,6 +17,7 @@ interface UserProfile {
   isOnBoardDone: boolean;
 }
 
+// 상태 관리 타입 정의
 interface UserStore {
   isAuthenticated: boolean;
   userProfile: UserProfile | null;
@@ -23,6 +25,7 @@ interface UserStore {
   setUserProfile: (profile: UserProfile) => void;
 }
 
+// Zustand를 통해 사용자 상태(store) 생성
 export const useUserStore = create<UserStore>(set => ({
   isAuthenticated: false,
   userProfile: null,
