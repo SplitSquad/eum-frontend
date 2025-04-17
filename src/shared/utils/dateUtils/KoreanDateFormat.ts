@@ -9,7 +9,7 @@
  * 월과 일이 한 자릿수일 경우 앞에 0을 붙여 두 자리로 만듬
  * 최종적으로 "YYYY년 MM월 DDdlf" 형식으로 포맷하여 반환
  */
-export const koreanDateFormat = (date: Date | string): string => {
+export const KoreanDateFormat = (date: Date | string): string => {
   const d = typeof date === 'string' ? new Date(date) : date;
   const year = d.getFullYear();
   const month = d.getMonth() + 1; // 월은 0부터 시작

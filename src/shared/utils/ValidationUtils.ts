@@ -8,7 +8,7 @@
 /**
  * isEmailValid 함수는 이메일 문자열이 일반적인 이메일 형식을 따르는지 정규식을 통해 검사
  */
-export const isEmailValid = (email: string): boolean => {
+export const IsEmailValid = (email: string): boolean => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 };
@@ -23,7 +23,7 @@ export const isEmailValid = (email: string): boolean => {
 /**
  * isNotEmpty 함수는 문자열에서 공백을 제거한 뒤 길이가 0보다 큰지를 검사
  */
-export const isNotEmpty = (str: string): boolean => {
+export const IsNotEmpty = (str: string): boolean => {
   return str.trim().length > 0;
 };
 
@@ -37,7 +37,7 @@ export const isNotEmpty = (str: string): boolean => {
 /**
  * isPasswordStrong 함수는 최소 8자리이며, 대/소문자, 숫자, 특수문자가 포함되어 있는지를 검사
  */
-export const isPasswordStrong = (password: string): boolean => {
+export const IsPasswordStrong = (password: string): boolean => {
   const strongRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
   return strongRegex.test(password);
 };

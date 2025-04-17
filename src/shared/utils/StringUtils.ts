@@ -8,7 +8,7 @@
 /**
  * toCamelCase 함수는 하이픈(-)이나 언더스코어(_)로 구분된 문자열을 camelCase로 변환
  */
-export const toCamelCase = (str: string): string => {
+export const ToCamelCase = (str: string): string => {
   return str.replace(/([-_][a-z])/gi, match =>
     match.toUpperCase().replace('-', '').replace('_', '')
   );
@@ -24,6 +24,6 @@ export const toCamelCase = (str: string): string => {
 /**
  * reverseString 함수는 주어진 문자열을 뒤집어 반환
  */
-export const reverseString = (str: string): string => {
+export const ReverseString = (str: string): string => {
   return str.split('').reverse().join('');
 };

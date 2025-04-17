@@ -13,7 +13,7 @@
  * toLocaleDateString을 사용하여, 옵션에 맞게 날짜를 포맷
  * 기본 Locale은 'en-US'로 설정되어 있으며, 원하는 옵션을 전달할 수 있음
  */
-export const formatDate = (
+export const FormatDate = (
   date: Date | string,
   locale: string = 'en-US',
   options: Intl.DateTimeFormatOptions = { year: 'numeric', month: '2-digit', day: '2-digit' }
