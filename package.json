@@ -11,6 +11,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^7.0.2",
+    "@mui/material": "^7.0.2",
+    "@mui/system": "^7.0.2",
+    "@tailwindcss/vite": "^4.1.4",
+    "lottie-react": "^2.4.1",
+    "tailwindcss": "^4.1.4",
     "axios": "^1.8.4",
     "i18next": "^25.0.0",
     "react": "^19.0.0",
