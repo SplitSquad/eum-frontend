@@ -1,0 +1,24 @@
+export type NotificationItem = {
+  id: number;
+  content: string;
+  language: string;
+};
+
+export const mockNotifications: NotificationItem[] = [
+  { id: 1, content: '📌 새로운 댓글이 달렸습니다.', language: 'KR' },
+  { id: 2, content: '📢 시스템 점검 예정 안내', language: 'KR' },
+  { id: 3, content: '🎉 회원 가입을 환영합니다!', language: 'KR' },
+  { id: 4, content: '✅ 프로필이 업데이트 되었습니다.', language: 'KR' },
+  { id: 5, content: '📌 새로운 댓글이 달렸습니다.', language: 'KR' },
+  { id: 6, content: '📌 새로운 댓글이 달렸습니다.', language: 'KR' },
+  { id: 7, content: '📌 새로운 댓글이 달렸습니다.', language: 'KR' },
+  { id: 8, content: '📌 새로운 댓글이 달렸습니다.', language: 'KR' },
+  { id: 9, content: '📌 새로운 댓글이 달렸습니다.', language: 'KR' },
+  { id: 10, content: '📌 새로운 댓글이 달렸습니다.', language: 'KR' },
+  { id: 11, content: '📌 새로운 댓글이 달렸습니다.', language: 'KR' },
+  { id: 12, content: '📌 새로운 댓글이 달렸습니다.', language: 'KR' },
+  { id: 13, content: '📌 새로운 댓글이 달렸습니다.', language: 'KR' },
+  { id: 14, content: '📌 새로운 댓글이 달렸습니다.', language: 'KR' },
+  { id: 15, content: '📌 새로운 댓글이 달렸습니다.', language: 'KR' },
+  { id: 16, content: '📌 새로운 댓글이 달렸습니다.', language: 'KR' },
+];

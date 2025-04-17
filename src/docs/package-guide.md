@@ -33,3 +33,17 @@
   설치 라이브러리
 
   - npm install react-router-dom
+
+- 디자인 설정  
+  디자인 구현을 위해 사용
+
+  설치 라이브러리
+
+  - npm install tailwindcss @tailwindcss/vite
+  - npm install @mui/material
+  - npm install @mui/system
+  - npm install @emotion/react
+  - npm install @emotion/styled
+  - npm install @mui/icons-material
+
+  - npm install lottie-react
