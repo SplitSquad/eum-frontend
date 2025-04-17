@@ -47,3 +47,15 @@
   - npm install @mui/icons-material
 
   - npm install lottie-react
+
+  설치 라이브러리
+
+  - npm install zustand
+
+  상태 관리를 위해 사용
+
+  설치 라이브러리
+
+  - npm install axios
+
+  추후에 api 관련 호출을 위해 사용
