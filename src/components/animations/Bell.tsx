@@ -18,7 +18,7 @@ const Bell = ({ isPlaying = true }: Props) => {
   }, [isPlaying]);
 
   return (
-    <div className="w-24 h-24 hover:scale-110 transition-transform duration-200">
+    <div className="w-14 h-14 hover:scale-110 transition-transform duration-200">
       <Lottie
         lottieRef={lottieRef}
         animationData={LottieBell}
