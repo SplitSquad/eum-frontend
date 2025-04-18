@@ -5,6 +5,7 @@ import Community from '@/tests/unit/componentPageTest/testPages/Community';
 import Debate from '@/tests/unit/componentPageTest/testPages/Debate';
 import Info from '@/tests/unit/componentPageTest/testPages/Info';
 import MyPage from '@/tests/unit/componentPageTest/testPages/MyPage';
+import NotFound from '../testPages/NotFound';
 
 //import Search from '@/tests/unit/componentPageTest/testPages/Search';
 //import TranslationLoading from '@/tests/unit/componentPageTest/testPages/TranslationLoading';
@@ -19,6 +20,7 @@ const TestAppRoutes = () => {
         <Route path="/info" element={<Info />} />
         <Route path="/ai-assistant" element={<AiAssistant />} />
         <Route path="/mypage" element={<MyPage />} />
+        <Route path="/*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );

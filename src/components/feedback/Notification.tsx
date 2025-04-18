@@ -58,7 +58,7 @@ const Notification = ({ items }: NotificationProps) => {
         <Bell isPlaying={isPlaying} />
       </div>
       {items.length > 0 && (
-        <div className="absolute -top-1.5 -right-1.5 w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center shadow">
+        <div className="absolute -top-0 -right-0 w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center shadow">
           {items.length > 99 ? '99+' : items.length}
         </div>
       )}

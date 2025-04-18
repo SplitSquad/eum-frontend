@@ -1,5 +1,13 @@
+import PageWrapper from '@/components/layout/PageWrapper';
+import Button from '@/components/base/Button';
+import React from 'react';
+
 function NotFound() {
-  return <div>not found 홈페이지</div>;
+  return (
+    <>
+      <PageWrapper enableClick={true}>asd</PageWrapper>
+    </>
+  );
 }
 
 export default NotFound;
