@@ -1,4 +1,3 @@
-// src/services/tracking/useWebLog.ts
 import { useEffect } from 'react';
 import { SendLog } from '../../services/tracking/SendLog';
 

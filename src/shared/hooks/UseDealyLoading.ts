@@ -1,4 +1,3 @@
-// src/hooks/useDelayedLoading.ts
 import { useState, useEffect } from 'react';
 
 export function UseDelayedLoading(isLoading: boolean, delay = 300) {
