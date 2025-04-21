@@ -1,0 +1,1208 @@
+import React, { useEffect, useState, useCallback } from 'react';
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Avatar,
+  Paper,
+  List,
+  ListItem,
+  Menu,
+  MenuItem,
+  IconButton,
+  CircularProgress,
+  styled,
+  Divider,
+} from '@mui/material';
+import {
+  ThumbUp as ThumbUpIcon,
+  ThumbDown as ThumbDownIcon,
+  MoreVert as MoreVertIcon,
+  ExpandMore as ExpandMoreIcon,
+  ExpandLess as ExpandLessIcon,
+  Reply as ReplyIcon,
+} from '@mui/icons-material';
+import { format } from 'date-fns';
+import { ko } from 'date-fns/locale';
+import { useComments } from '../../hooks/useComments';
+import useAuthStore from '../../../auth/store/authStore';
+import { useCommentForm, useCommentControls } from '../../hooks';
+import CommentForm from './CommentForm';
+import { CommentType, ReplyType, ReactionType } from '../../types';
+import { CommentApi } from '../../api/CommentApi';
+import { useSnackbar } from 'notistack';
+
+// 인터페이스 정의 - 백엔드 응답 형태에 맞게 수정
+type Comment = CommentType;
+type Reply = ReplyType;
+
+const CommentCardWrapper = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(2),
+  backgroundColor: theme.palette.background.paper,
+  borderRadius: theme.shape.borderRadius,
+  marginBottom: theme.spacing(2),
+  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+}));
+
+const CommentHeader = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  marginBottom: theme.spacing(1),
+}));
+
+const CommentContent = styled(Typography)(({ theme }) => ({
+  marginBottom: theme.spacing(1),
+  whiteSpace: 'pre-wrap',
+}));
+
+const CommentFooter = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+}));
+
+const ReactionButton = styled(Button)(({ theme }) => ({
+  color: theme.palette.text.secondary,
+  fontSize: '0.8rem',
+  padding: '4px 8px',
+  minWidth: 'auto',
+}));
+
+function formatDateToAbsolute(dateString: string) {
+  try {
+    return format(new Date(dateString), 'yyyy년 MM월 dd일 HH:mm', { locale: ko });
+  } catch (e) {
+    console.error('날짜 형식 변환 오류:', e);
+    return '날짜 정보 없음';
+  }
+}
+
+interface CommentSectionProps {
+  postId: number;
+  comments?: Comment[];
+  totalComments?: number;
+  onReplyComment?: (commentId: number, content: string) => Promise<void>;
+  onReactionComment?: (commentId: number, reaction: ReactionType) => Promise<void>;
+  onEditComment?: (commentId: number, content: string) => Promise<void>;
+  onDeleteComment?: (commentId: number) => Promise<void>;
+}
+
+const CommentSection: React.FC<CommentSectionProps> = ({
+  postId,
+  comments: propComments,
+  totalComments: propTotal,
+  onReplyComment: propReply,
+  onReactionComment: propReact,
+  onEditComment: propEdit,
+  onDeleteComment: propDelete,
+}) => {
+  // Local state
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [total, setTotal] = useState<number>(0);
+  const [submittingComment, setSubmittingComment] = useState(false);
+  const [newCommentText, setNewCommentText] = useState('');
+
+  // Snackbar notifications
+  const { enqueueSnackbar } = useSnackbar();
+
+  // Auth
+  const { user } = useAuthStore();
+  const currentUserId = user?.id ? Number(user.id) : undefined;
+
+  // Comment form controls
+  const controls = useCommentControls(comments);
+
+  // Initialize controls whenever comments list changes
+  useEffect(() => {
+    controls.initializeState();
+  }, [comments.length]);
+
+  // 댓글 목록 불러오기 - useCallback으로 최적화
+  const fetchComments = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      console.log('[DEBUG] 댓글 가져오기 시작 - postId:', postId);
+      const response = await CommentApi.getComments(postId);
+      console.log('[DEBUG] 댓글 응답 구조:', JSON.stringify(response, null, 2));
+
+      if (response && response.commentList) {
+        // commentApi 내부에서 각 댓글의 isState를 myReaction으로 이미 변환함
+        setComments(response.commentList);
+        setTotal(response.total || 0);
+        console.log('[DEBUG] 받은 댓글 수:', response.commentList.length);
+      } else {
+        console.warn('[WARN] 댓글 응답 구조가 예상과 다름:', response);
+        setComments([]);
+        setTotal(0);
+      }
+    } catch (error) {
+      console.error('[ERROR] 댓글 가져오기 실패:', error);
+      setComments([]);
+      setTotal(0);
+      enqueueSnackbar('댓글을 불러오는 중 오류가 발생했습니다.', { variant: 'error' });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [postId, enqueueSnackbar]);
+
+  // 대댓글 로드 함수 - useCallback으로 최적화
+  const [loadingReplies, setLoadingReplies] = useState<Record<number, boolean>>({});
+  const [replies, setReplies] = useState<Record<number, Reply[]>>({});
+
+  const loadReplies = useCallback(async (commentId: number) => {
+    // 이미 로딩 중이거나 이미 로드된 경우 중복 요청 방지
+    if (loadingReplies[commentId]) {
+      console.log(`[DEBUG] 대댓글 로드 건너뜀 - commentId: ${commentId} (이미 로딩 중)`);
+      return;
+    }
+
+    setLoadingReplies(prev => ({ ...prev, [commentId]: true }));
+
+    try {
+      console.log('[DEBUG] 대댓글 로드 시작 - commentId:', commentId);
+      const response = await CommentApi.getReplies(commentId);
+      console.log('[DEBUG] 대댓글 응답:', response);
+
+      // replyList 배열이 있으면 그대로 사용
+      if (Array.isArray(response)) {
+        // 백엔드가 배열을 직접 반환하는 경우
+        console.log('[DEBUG] 응답이 배열 형태:', response.length);
+        
+        // myReaction 필드를 liked/disliked 불리언으로 변환
+        const processedReplies = response.map(reply => ({
+          ...reply,
+          liked: reply.isState === '좋아요',
+          disliked: reply.isState === '싫어요',
+          myReaction: 
+            reply.isState === '좋아요' 
+              ? ReactionType.LIKE 
+              : reply.isState === '싫어요' 
+                ? ReactionType.DISLIKE 
+                : undefined
+        }));
+        
+        setReplies(prev => ({
+          ...prev,
+          [commentId]: processedReplies,
+        }));
+        
+        console.log(`[DEBUG] 댓글 ${commentId}의 대댓글 ${processedReplies.length}개 로드 완료`);
+        
+        // 댓글 객체의 replyCount 업데이트 - 전체 댓글을 다시 불러오지 않고 해당 댓글만 업데이트
+        setComments(prevComments => 
+          prevComments.map(comment => 
+            comment.commentId === commentId
+              ? { ...comment, replyCount: processedReplies.length }
+              : comment
+          )
+        );
+        
+        return;
+      }
+      
+      // 응답 구조 분석 및 대댓글 배열 추출
+      const replyArray: Reply[] = [];
+
+      // 숫자 키로 된 객체에서 대댓글 추출 (0, 1, 2, ...)
+      if (response && typeof response === 'object') {
+        for (const key in response) {
+          if (
+            !isNaN(Number(key)) &&
+            response[key as keyof typeof response] &&
+            typeof response[key as keyof typeof response] === 'object'
+          ) {
+            const replyData = response[key as keyof typeof response] as any;
+            // 백엔드 응답 -> 프론트엔드 타입 변환
+            if (replyData.replyId || replyData.commentId) {
+              const reply: Reply = {
+                replyId: replyData.replyId || replyData.commentId,
+                commentId: commentId,
+                content: replyData.content || '',
+                createdAt: replyData.createdAt || new Date().toISOString(),
+                likeCount: replyData.like || 0,
+                dislikeCount: replyData.dislike || 0,
+                myReaction:
+                  replyData.isState === '좋아요'
+                    ? ReactionType.LIKE
+                    : replyData.isState === '싫어요'
+                      ? ReactionType.DISLIKE
+                      : undefined,
+                liked: replyData.isState === '좋아요',
+                disliked: replyData.isState === '싫어요',
+                writer: replyData.writer || {
+                  userId: replyData.userId,
+                  nickname: replyData.userName || '익명',
+                  profileImage: replyData.userPicture || '',
+                },
+              };
+              replyArray.push(reply);
+            }
+          }
+        }
+      }
+
+      console.log('[DEBUG] 추출된 대댓글 배열:', replyArray);
+
+      setReplies(prev => ({
+        ...prev,
+        [commentId]: replyArray,
+      }));
+      
+      // 댓글 객체의 replyCount 업데이트
+      setComments(prevComments => 
+        prevComments.map(comment => 
+          comment.commentId === commentId
+            ? { ...comment, replyCount: replyArray.length }
+            : comment
+        )
+      );
+
+      console.log(`[DEBUG] 댓글 ${commentId}의 대댓글 ${replyArray.length}개 로드 완료`);
+    } catch (error) {
+      console.error('[ERROR] 대댓글 로드 실패:', error);
+      enqueueSnackbar('답글을 불러오는 중 오류가 발생했습니다.', { variant: 'error' });
+    } finally {
+      setLoadingReplies(prev => ({ ...prev, [commentId]: false }));
+    }
+  }, [loadingReplies, enqueueSnackbar]);
+
+  // 답글 토글 핸들러 확장
+  const handleReplyToggle = useCallback(async (commentId: number) => {
+    // 기존 토글 함수 호출
+    controls.handleReplyToggle(commentId);
+
+    // 토글 상태가 true로 변경될 때(펼쳐질 때) 대댓글 로드
+    // 이미 로드된 경우에는 다시 로드하지 않음
+    if (!controls.replyToggles[commentId] && (!replies[commentId] || replies[commentId].length === 0)) {
+      await loadReplies(commentId);
+    }
+  }, [controls, loadReplies, replies]);
+
+  // 초기 마운트 시 댓글 가져오기
+  useEffect(() => {
+    if (postId) {
+      fetchComments();
+    }
+  }, [postId, fetchComments]);
+
+  // 댓글 중 대댓글이 있는 댓글만 자동으로 대댓글 로드 - 최적화 버전
+  useEffect(() => {
+    const loadRepliesForCommentsWithReplies = async () => {
+      // reply 개수가 있는 댓글만 필터링
+      const commentsWithReplies = comments.filter(comment => 
+        (comment.reply && comment.reply > 0) || (comment.replyCount && comment.replyCount > 0));
+      
+      if (commentsWithReplies.length === 0) return;
+      
+      // 이미 로드된 댓글 및 로딩 중인 댓글 필터링
+      const commentsToLoad = commentsWithReplies.filter(comment => 
+        !replies[comment.commentId] && 
+        !loadingReplies[comment.commentId]
+      );
+      
+      console.log('[DEBUG] 대댓글 자동 로드 - 대댓글 있는 댓글:', commentsWithReplies.length);
+      console.log('[DEBUG] 대댓글 자동 로드 - 로드할 댓글:', commentsToLoad.length);
+      
+      // 한 번에 하나씩만 로드해서 서버 부하 방지
+      if (commentsToLoad.length > 0) {
+        const commentToLoad = commentsToLoad[0];
+        await loadReplies(commentToLoad.commentId);
+      }
+    };
+    
+    // 댓글이 있고 자동 로드가 필요한 경우에만 실행
+    if (comments.length > 0) {
+      loadRepliesForCommentsWithReplies();
+    }
+  }, [comments, loadReplies, loadingReplies, replies]);
+
+  // 새 댓글 작성 처리
+  const handleSubmitComment = async () => {
+    if (!newCommentText.trim()) {
+      enqueueSnackbar('댓글 내용을 입력해주세요.', { variant: 'warning' });
+      return;
+    }
+
+    if (!user) {
+      enqueueSnackbar('로그인이 필요합니다.', { variant: 'warning' });
+      return;
+    }
+
+    setSubmittingComment(true);
+    try {
+      await CommentApi.createComment(postId, 'post', newCommentText);
+      setNewCommentText('');
+      fetchComments(); // 새 댓글 생성 후에는 목록 갱신 필요
+      enqueueSnackbar('댓글이 등록되었습니다.', { variant: 'success' });
+    } catch (error) {
+      console.error('[ERROR] 댓글 작성 실패:', error);
+      enqueueSnackbar('댓글 작성에 실패했습니다.', { variant: 'error' });
+    } finally {
+      setSubmittingComment(false);
+    }
+  };
+
+  // 댓글 수정
+  const handleEditComment = async (commentId: number, content: string) => {
+    try {
+      const response = await CommentApi.updateComment(commentId, content);
+      
+      // 전체 댓글 목록을 다시 불러오지 않고 해당 댓글만 업데이트
+      setComments(prevComments => 
+        prevComments.map(comment => 
+          comment.commentId === commentId
+            ? { ...comment, content }
+            : comment
+        )
+      );
+      
+      enqueueSnackbar('댓글이 수정되었습니다.', { variant: 'success' });
+    } catch (error) {
+      console.error('[ERROR] 댓글 수정 실패:', error);
+      enqueueSnackbar('댓글 수정에 실패했습니다.', { variant: 'error' });
+    }
+  };
+
+  // 댓글 삭제
+  const handleDeleteComment = async (commentId: number) => {
+    try {
+      await CommentApi.deleteComment(commentId);
+      
+      // 삭제된 댓글을 목록에서 제거하고 총 개수 감소
+      setComments(prevComments => 
+        prevComments.filter(comment => comment.commentId !== commentId)
+      );
+      setTotal(prev => Math.max(0, prev - 1));
+      
+      enqueueSnackbar('댓글이 삭제되었습니다.', { variant: 'success' });
+    } catch (error) {
+      console.error('[ERROR] 댓글 삭제 실패:', error);
+      enqueueSnackbar('댓글 삭제에 실패했습니다.', { variant: 'error' });
+      // 실패 시 댓글 목록 다시 로드
+      fetchComments();
+    }
+  };
+
+  // 특정 댓글을 ID로 찾는 헬퍼 함수
+  const findCommentById = useCallback((comments: Comment[], id: number): Comment | undefined => {
+    return comments.find(comment => comment.commentId === id);
+  }, []);
+
+  // 댓글 목록에서 특정 댓글 업데이트 헬퍼 함수 (수정)
+  const updateCommentInList = useCallback((
+    commentsList: Comment[], 
+    commentId: number, 
+    updateFn: Comment | ((comment: Comment) => Comment)
+  ): Comment[] => {
+    return commentsList.map(comment => {
+      if (comment.commentId === commentId) {
+        return typeof updateFn === 'function' ? updateFn(comment) : { ...comment, ...updateFn };
+      }
+      return comment;
+    });
+  }, []);
+
+  // 댓글 반응 함수 - 서버 응답이 불완전해도 UI 상태가 유지되도록 개선
+  const handleReactionComment = async (commentId: number, type: 'like' | 'dislike') => {
+    if (!user) {
+      enqueueSnackbar('로그인이 필요합니다.', { variant: 'warning' });
+      return;
+    }
+    
+    try {
+      const comment = comments.find(c => c.commentId === commentId);
+      if (!comment) return;
+      
+      // 현재 반응 상태 확인
+      const currentReaction = comment.myReaction;
+      console.log(`[DEBUG] 댓글 반응 처리 시작 - 댓글ID: ${commentId}, 타입: ${type}, 현재상태: ${currentReaction}`);
+      
+      // 새 반응 타입 결정
+      const newReactionType = type === 'like' ? ReactionType.LIKE : ReactionType.DISLIKE;
+      
+      // 취소 여부 결정 (같은 버튼 다시 클릭)
+      const isCancelling = (type === 'like' && currentReaction === ReactionType.LIKE) || 
+                           (type === 'dislike' && currentReaction === ReactionType.DISLIKE);
+      
+      // 최종 설정될 반응 타입
+      const finalReaction = isCancelling ? undefined : newReactionType;
+      
+      console.log(`[DEBUG] 낙관적 UI 업데이트 - isCancelling: ${isCancelling}, finalReaction: ${finalReaction}`);
+      
+      // UI 즉시 업데이트 (낙관적 UI 업데이트)
+      setComments(prevComments => {
+        const updatedComments = prevComments.map(c => {
+          if (c.commentId !== commentId) return c;
+          
+          let updatedLikeCount = c.likeCount || 0;
+          let updatedDislikeCount = c.dislikeCount || 0;
+          
+          // 기존 반응 취소
+          if (currentReaction === ReactionType.LIKE) {
+            updatedLikeCount = Math.max(0, updatedLikeCount - 1);
+          } else if (currentReaction === ReactionType.DISLIKE) {
+            updatedDislikeCount = Math.max(0, updatedDislikeCount - 1);
+          }
+          
+          // 새 반응 추가 (취소가 아닌 경우에만)
+          if (!isCancelling) {
+            if (type === 'like') {
+              updatedLikeCount += 1;
+            } else {
+              updatedDislikeCount += 1;
+            }
+          }
+          
+          const updatedComment = {
+            ...c,
+            likeCount: updatedLikeCount,
+            dislikeCount: updatedDislikeCount,
+            myReaction: finalReaction,
+            liked: finalReaction === ReactionType.LIKE,
+            disliked: finalReaction === ReactionType.DISLIKE
+          };
+          
+          console.log(`[DEBUG] 업데이트된 댓글 상태 - commentId: ${commentId}, myReaction: ${updatedComment.myReaction}`);
+          return updatedComment;
+        });
+        
+        return updatedComments;
+      });
+      
+      // 현재 UI 상태 저장 (서버 응답이 불완전할 경우 사용)
+      const requestedState = {
+        type,
+        isCancelling,
+        finalReaction
+      };
+      
+      console.log(`[DEBUG] API 호출 전 - commentId: ${commentId}, newReactionType: ${newReactionType}`);
+      
+      // API 호출 - 낙관적 UI 이후
+      const response = await CommentApi.reactToComment(commentId, newReactionType);
+      console.log(`[DEBUG] 댓글 반응 API 응답:`, response);
+      
+      // 서버 응답이 null, undefined 또는 에러인 경우
+      if (!response || response === 'error') {
+        console.log('[WARN] 서버 응답이 유효하지 않아 클라이언트 상태 유지');
+        return; // 현재 UI 상태 유지
+      }
+      
+      // 서버 응답으로 UI 상태 확인 및 조정
+      let serverReaction: ReactionType | undefined;
+      
+      // 서버 응답에서 isState가 있는 경우
+      if (response.isState) {
+        if (response.isState === '좋아요') {
+          serverReaction = ReactionType.LIKE;
+        } else if (response.isState === '싫어요') {
+          serverReaction = ReactionType.DISLIKE;
+        } else {
+          serverReaction = undefined;
+        }
+      } 
+      // 서버 응답에서 isState가 없는 경우 (API 응답 불완전)
+      else {
+        // like, dislike 값을 확인하여 상태 추론
+        if (response.like > 0 && type === 'like') {
+          serverReaction = ReactionType.LIKE;
+        } else if (response.dislike > 0 && type === 'dislike') {
+          serverReaction = ReactionType.DISLIKE;
+        } else if (isCancelling) {
+          // 취소하는 경우 그대로 undefined 사용
+          serverReaction = undefined;
+        } else {
+          // 서버 응답이 부정확하면 요청했던 상태 사용 (낙관적 UI 유지)
+          serverReaction = finalReaction;
+        }
+      }
+      
+      console.log(`[DEBUG] 서버 응답 반영 - commentId: ${commentId}, serverReaction: ${serverReaction}`);
+      
+      // 최종 UI 업데이트 - 서버 응답 기반이지만 필요시 클라이언트 상태 유지
+      setComments(prevComments => {
+        const updatedComments = prevComments.map(c => {
+          if (c.commentId !== commentId) return c;
+          
+          // 현재 UI에 표시된 상태 확인
+          const currentUiReaction = c.myReaction;
+          
+          // 서버 응답이 있으면 서버 응답 사용, 없으면 현재 UI 상태 유지
+          const finalServerReaction = serverReaction !== undefined ? serverReaction : currentUiReaction;
+          
+          const updatedComment = {
+            ...c,
+            likeCount: response.like !== undefined ? response.like : c.likeCount,
+            dislikeCount: response.dislike !== undefined ? response.dislike : c.dislikeCount,
+            myReaction: finalServerReaction,
+            liked: finalServerReaction === ReactionType.LIKE,
+            disliked: finalServerReaction === ReactionType.DISLIKE
+          };
+          
+          console.log(`[DEBUG] 서버 응답 후 최종 댓글 상태 - commentId: ${commentId}, myReaction: ${updatedComment.myReaction}`);
+          return updatedComment;
+        });
+        return updatedComments;
+      });
+    } catch (error) {
+      console.error('[ERROR] 댓글 반응 처리 실패:', error);
+      enqueueSnackbar('댓글 반응 처리에 실패했습니다.', { variant: 'error' });
+      // 에러 시 전체 다시 로드
+      fetchComments();
+    }
+  };
+
+  // 대댓글 반응 함수 - 서버 응답이 불완전해도 UI 상태가 유지되도록 개선
+  const handleReactionReply = async (
+    replyId: number,
+    type: 'like' | 'dislike',
+    commentId: number
+  ) => {
+    if (!user) {
+      enqueueSnackbar('로그인이 필요합니다.', { variant: 'warning' });
+      return;
+    }
+    
+    try {
+      const replyList = replies[commentId] || [];
+      const reply = replyList.find(r => r.replyId === replyId);
+      if (!reply) return;
+      
+      // 현재 반응 상태 확인
+      const currentReaction = reply.myReaction;
+      console.log(`[DEBUG] 답글 반응 처리 시작 - 답글ID: ${replyId}, 타입: ${type}, 현재상태: ${currentReaction}`);
+      
+      // 새 반응 타입 결정
+      const newReactionType = type === 'like' ? ReactionType.LIKE : ReactionType.DISLIKE;
+      
+      // 취소 여부 결정 (같은 버튼 다시 클릭)
+      const isCancelling = (type === 'like' && currentReaction === ReactionType.LIKE) || 
+                           (type === 'dislike' && currentReaction === ReactionType.DISLIKE);
+      
+      // 최종 설정될 반응 타입
+      const finalReaction = isCancelling ? undefined : newReactionType;
+      
+      console.log(`[DEBUG] 낙관적 UI 업데이트 - isCancelling: ${isCancelling}, finalReaction: ${finalReaction}`);
+      
+      // UI 즉시 업데이트 (낙관적 UI 업데이트)
+      setReplies(prev => {
+        const updatedReplies = { ...prev };
+        
+        // 이 부분에서 원본 배열을 새로운 배열로 대체
+        updatedReplies[commentId] = replyList.map(r => {
+          if (r.replyId !== replyId) return r;
+          
+          let updatedLikeCount = r.likeCount || 0;
+          let updatedDislikeCount = r.dislikeCount || 0;
+          
+          // 기존 반응 취소
+          if (currentReaction === ReactionType.LIKE) {
+            updatedLikeCount = Math.max(0, updatedLikeCount - 1);
+          } else if (currentReaction === ReactionType.DISLIKE) {
+            updatedDislikeCount = Math.max(0, updatedDislikeCount - 1);
+          }
+          
+          // 새 반응 추가 (취소가 아닌 경우에만)
+          if (!isCancelling) {
+            if (type === 'like') {
+              updatedLikeCount += 1;
+            } else {
+              updatedDislikeCount += 1;
+            }
+          }
+          
+          const updatedReply = {
+            ...r,
+            likeCount: updatedLikeCount,
+            dislikeCount: updatedDislikeCount,
+            myReaction: finalReaction,
+            liked: finalReaction === ReactionType.LIKE,
+            disliked: finalReaction === ReactionType.DISLIKE
+          };
+          
+          console.log(`[DEBUG] 업데이트된 답글 상태 - replyId: ${replyId}, myReaction: ${updatedReply.myReaction}`);
+          return updatedReply;
+        });
+        
+        return updatedReplies;
+      });
+      
+      // 현재 UI 상태 저장 (서버 응답이 불완전할 경우 사용)
+      const requestedState = {
+        type,
+        isCancelling,
+        finalReaction
+      };
+      
+      console.log(`[DEBUG] API 호출 전 - replyId: ${replyId}, newReactionType: ${newReactionType}`);
+      
+      // API 호출 - 낙관적 UI 이후
+      const response = await CommentApi.reactToReply(replyId, newReactionType);
+      console.log(`[DEBUG] 답글 반응 API 응답:`, response);
+      
+      // 서버 응답이 null, undefined 또는 에러인 경우
+      if (!response || response === 'error') {
+        console.log('[WARN] 서버 응답이 유효하지 않아 클라이언트 상태 유지');
+        return; // 현재 UI 상태 유지
+      }
+      
+      // 서버 응답으로 UI 상태 확인 및 조정
+      let serverReaction: ReactionType | undefined;
+      
+      // 서버 응답에서 isState가 있는 경우
+      if (response.isState) {
+        if (response.isState === '좋아요') {
+          serverReaction = ReactionType.LIKE;
+        } else if (response.isState === '싫어요') {
+          serverReaction = ReactionType.DISLIKE;
+        } else {
+          serverReaction = undefined;
+        }
+      } 
+      // 서버 응답에서 isState가 없는 경우 (API 응답 불완전)
+      else {
+        // like, dislike 값을 확인하여 상태 추론
+        if (response.like > 0 && type === 'like') {
+          serverReaction = ReactionType.LIKE;
+        } else if (response.dislike > 0 && type === 'dislike') {
+          serverReaction = ReactionType.DISLIKE;
+        } else if (isCancelling) {
+          // 취소하는 경우 그대로 undefined 사용
+          serverReaction = undefined;
+        } else {
+          // 서버 응답이 부정확하면 요청했던 상태 사용 (낙관적 UI 유지)
+          serverReaction = finalReaction;
+        }
+      }
+      
+      console.log(`[DEBUG] 서버 응답 반영 - replyId: ${replyId}, serverReaction: ${serverReaction}`);
+      
+      // 최종 UI 업데이트 - 서버 응답 기반이지만 필요시 클라이언트 상태 유지
+      setReplies(prev => {
+        const updatedReplies = { ...prev };
+        
+        // commentId에 해당하는 배열이 있는지 확인
+        if (updatedReplies[commentId]) {
+          updatedReplies[commentId] = updatedReplies[commentId].map(r => {
+            if (r.replyId !== replyId) return r;
+            
+            // 현재 UI에 표시된 상태 확인
+            const currentUiReaction = r.myReaction;
+            
+            // 서버 응답이 있으면 서버 응답 사용, 없으면 현재 UI 상태 유지
+            const finalServerReaction = serverReaction !== undefined ? serverReaction : currentUiReaction;
+            
+            const updatedReply = {
+              ...r,
+              likeCount: response.like !== undefined ? response.like : r.likeCount,
+              dislikeCount: response.dislike !== undefined ? response.dislike : r.dislikeCount,
+              myReaction: finalServerReaction,
+              liked: finalServerReaction === ReactionType.LIKE,
+              disliked: finalServerReaction === ReactionType.DISLIKE
+            };
+            
+            console.log(`[DEBUG] 서버 응답 후 최종 답글 상태 - replyId: ${replyId}, myReaction: ${updatedReply.myReaction}`);
+            return updatedReply;
+          });
+        }
+        
+        return updatedReplies;
+      });
+    } catch (error) {
+      console.error('[ERROR] 답글 반응 처리 실패:', error);
+      enqueueSnackbar('답글 반응 처리에 실패했습니다.', { variant: 'error' });
+      // 에러 시 해당 댓글의 답글만 다시 로드
+      loadReplies(commentId);
+    }
+  };
+
+  // 대댓글 작성 함수 최적화
+  const handleReplyComment = async (commentId: number, content: string) => {
+    if (!content.trim()) {
+      enqueueSnackbar('답글 내용을 입력해주세요.', { variant: 'warning' });
+      return;
+    }
+
+    if (!user) {
+      enqueueSnackbar('로그인이 필요합니다.', { variant: 'warning' });
+      return;
+    }
+
+    try {
+      console.log(`[DEBUG] 댓글 ${commentId}에 대댓글 작성 시작:`, content);
+      const response = await CommentApi.createReply(commentId, content);
+      console.log('[DEBUG] 대댓글 작성 응답:', response);
+
+      // 답글 폼 초기화 및 토글 유지
+      controls.handleReplyChange(commentId, '');
+
+      // 대댓글 목록만 다시 로드 (전체 새로고침 없이)
+      await loadReplies(commentId);
+      
+      // 댓글의 대댓글 카운트 증가 (전체 새로고침 없이)
+      setComments(prevComments => 
+        prevComments.map(comment => 
+          comment.commentId === commentId
+            ? { 
+                ...comment, 
+                replyCount: (comment.replyCount || 0) + 1,
+                reply: (comment.reply || 0) + 1 
+              }
+            : comment
+        )
+      );
+
+      enqueueSnackbar('답글이 등록되었습니다.', { variant: 'success' });
+    } catch (error) {
+      console.error('[ERROR] 답글 작성 실패:', error);
+      enqueueSnackbar('답글 작성에 실패했습니다.', { variant: 'error' });
+    }
+  };
+
+  // 대댓글 수정 함수 최적화
+  const handleEditReply = async (replyId: number, content: string) => {
+    // 상위 댓글 ID 찾기 - try 블록 외부로 이동
+    let parentCommentId: number | null = null;
+    
+    try {
+      console.log(`[DEBUG] 대댓글 ${replyId} 수정 시작:`, content);
+      await CommentApi.updateReply(replyId, content);
+
+      // 상위 댓글 ID 검색
+      Object.entries(replies).forEach(([commentId, replyList]) => {
+        if (replyList.some(r => r.replyId === replyId)) {
+          parentCommentId = Number(commentId);
+        }
+      });
+
+      if (parentCommentId !== null) {
+        // 수정된 대댓글만 업데이트 (전체 새로고침 없이)
+        setReplies(prev => {
+          const updatedReplies = { ...prev };
+          if (updatedReplies[parentCommentId as number]) {
+            updatedReplies[parentCommentId as number] = updatedReplies[parentCommentId as number].map((reply: Reply) => 
+              reply.replyId === replyId
+                ? { ...reply, content }
+                : reply
+            );
+          }
+          return updatedReplies;
+        });
+        
+        enqueueSnackbar('답글이 수정되었습니다.', { variant: 'success' });
+      }
+    } catch (error) {
+      console.error('[ERROR] 대댓글 수정 실패:', error);
+      enqueueSnackbar('답글 수정에 실패했습니다.', { variant: 'error' });
+      
+      // 에러 발생 시 해당 댓글의 대댓글만 다시 로드
+      if (parentCommentId !== null) {
+        loadReplies(parentCommentId);
+      }
+    }
+  };
+
+  // 대댓글 삭제 함수 최적화
+  const handleDeleteReply = async (replyId: number) => {
+    // 상위 댓글 ID 찾기 - try 블록 외부로 이동
+    let parentCommentId: number | null = null;
+    
+    try {
+      console.log(`[DEBUG] 대댓글 ${replyId} 삭제 시작`);
+      
+      // 상위 댓글 ID 검색
+      Object.entries(replies).forEach(([commentId, replyList]) => {
+        if (replyList.some(r => r.replyId === replyId)) {
+          parentCommentId = Number(commentId);
+        }
+      });
+      
+      if (parentCommentId === null) return;
+      
+      await CommentApi.deleteReply(replyId);
+
+      // 삭제된 대댓글을 목록에서 제거 (전체 새로고침 없이)
+      setReplies(prev => {
+        const updatedReplies = { ...prev };
+        if (updatedReplies[parentCommentId as number]) {
+          updatedReplies[parentCommentId as number] = updatedReplies[parentCommentId as number].filter(
+            (reply: Reply) => reply.replyId !== replyId
+          );
+        }
+        return updatedReplies;
+      });
+      
+      // 댓글의 대댓글 카운트 감소 (전체 새로고침 없이)
+      setComments(prevComments => 
+        prevComments.map(comment => 
+          comment.commentId === parentCommentId
+            ? { 
+                ...comment, 
+                replyCount: Math.max(0, (comment.replyCount || 0) - 1),
+                reply: Math.max(0, (comment.reply || 0) - 1) 
+              }
+            : comment
+        )
+      );
+      
+      enqueueSnackbar('답글이 삭제되었습니다.', { variant: 'success' });
+    } catch (error) {
+      console.error('[ERROR] 대댓글 삭제 실패:', error);
+      enqueueSnackbar('답글 삭제에 실패했습니다.', { variant: 'error' });
+      
+      // 에러 발생 시 대댓글만 다시 로드
+      if (parentCommentId !== null) {
+        loadReplies(parentCommentId);
+      }
+    }
+  };
+
+  // CommentForm 제출 처리 함수
+  const handleCommentForm = async (id: number, content: string, isReply: boolean = false) => {
+    if (isReply) {
+      await handleEditReply(id, content);
+    } else {
+      await handleEditComment(id, content);
+    }
+    controls.handleEditCancel(id);
+    return true;
+  };
+
+  // 개별 댓글 카드 렌더링
+  const renderCommentCard = (comment: Comment) => (
+    <CommentCardWrapper key={comment.commentId}>
+      <CommentHeader>
+        <Box display="flex" alignItems="center" gap={1}>
+          <Avatar src={comment.writer?.profileImage} alt={comment.writer?.nickname || ''} />
+          <Typography variant="body2" fontWeight="bold">
+            {comment.writer?.nickname || '익명'}
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            {formatDateToAbsolute(comment.createdAt)}
+          </Typography>
+        </Box>
+        {currentUserId === comment.writer?.userId && (
+          <IconButton
+            onClick={e => controls.handleCommentMenuOpen(e, comment.commentId)}
+            size="small"
+          >
+            <MoreVertIcon fontSize="small" />
+          </IconButton>
+        )}
+      </CommentHeader>
+
+      {controls.editMode[comment.commentId] ? (
+        <CommentForm
+          initialValue={comment.content}
+          onSubmit={async content => {
+            return await handleCommentForm(comment.commentId, content);
+          }}
+          onCancel={() => controls.handleEditCancel(comment.commentId)}
+          buttonText="수정"
+        />
+      ) : (
+        <CommentContent>{comment.content}</CommentContent>
+      )}
+
+      <CommentFooter>
+        <ReactionButton
+          variant={comment.myReaction === ReactionType.LIKE ? 'contained' : 'text'}
+          startIcon={<ThumbUpIcon fontSize="small" />}
+          size="small"
+          onClick={() => handleReactionComment(comment.commentId, 'like')}
+          color={comment.myReaction === ReactionType.LIKE ? 'primary' : 'inherit'}
+          disabled={comment.myReaction === ReactionType.DISLIKE}
+        >
+          {comment.likeCount || 0}
+        </ReactionButton>
+        <ReactionButton
+          variant={comment.myReaction === ReactionType.DISLIKE ? 'contained' : 'text'}
+          startIcon={<ThumbDownIcon fontSize="small" />}
+          size="small"
+          onClick={() => handleReactionComment(comment.commentId, 'dislike')}
+          color={comment.myReaction === ReactionType.DISLIKE ? 'error' : 'inherit'}
+          disabled={comment.myReaction === ReactionType.LIKE}
+        >
+          {comment.dislikeCount || 0}
+        </ReactionButton>
+        <Button
+          startIcon={<ReplyIcon fontSize="small" />}
+          size="small"
+          onClick={() => handleReplyToggle(comment.commentId)}
+        >
+          답글 {replies[comment.commentId]?.length || 0}
+        </Button>
+      </CommentFooter>
+
+      {/* 대댓글 부분 */}
+      <Box ml={0} mt={1}>
+        {controls.replyToggles[comment.commentId] && (
+          <>
+            {loadingReplies[comment.commentId] ? (
+              <Box display="flex" justifyContent="center" my={2}>
+                <CircularProgress size={24} />
+              </Box>
+            ) : (
+              <>
+                {/* 대댓글 입력 폼 */}
+                <Box ml={4} mt={2} mb={2}>
+                  <Paper sx={{ p: 2 }}>
+                    <TextField
+                      fullWidth
+                      multiline
+                      rows={2}
+                      placeholder="답글을 작성해주세요"
+                      value={controls.replyContents[comment.commentId] || ''}
+                      onChange={e => controls.handleReplyChange(comment.commentId, e.target.value)}
+                    />
+                    <Box display="flex" justifyContent="flex-end" mt={1} gap={1}>
+                      <Button onClick={() => controls.handleReplyToggle(comment.commentId)}>
+                        취소
+                      </Button>
+                      <Button
+                        variant="contained"
+                        onClick={() =>
+                          handleReplyComment(
+                            comment.commentId,
+                            controls.replyContents[comment.commentId] || ''
+                          )
+                        }
+                      >
+                        답글 작성
+                      </Button>
+                    </Box>
+                  </Paper>
+                </Box>
+
+                {/* 대댓글 목록 */}
+                <Box ml={4}>
+                  {replies[comment.commentId] && replies[comment.commentId].length > 0 ? (
+                    replies[comment.commentId].map(reply => (
+                      <Paper
+                        key={reply.replyId}
+                        sx={{ p: 2, mb: 1, bgcolor: 'rgba(248, 248, 248, 0.9)' }}
+                      >
+                        {controls.editMode[reply.replyId] ? (
+                          <CommentForm
+                            initialValue={reply.content}
+                            onSubmit={async content => {
+                              return await handleCommentForm(reply.replyId, content, true);
+                            }}
+                            onCancel={() => controls.handleEditCancel(reply.replyId)}
+                            buttonText="수정"
+                          />
+                        ) : (
+                          <>
+                            <Box
+                              display="flex"
+                              alignItems="center"
+                              justifyContent="space-between"
+                              mb={1}
+                            >
+                              <Box display="flex" alignItems="center" gap={1}>
+                                <Avatar
+                                  src={reply.writer?.profileImage}
+                                  alt={reply.writer?.nickname || ''}
+                                  sx={{ width: 24, height: 24 }}
+                                />
+                                <Typography variant="body2" fontWeight="bold">
+                                  {reply.writer?.nickname || '익명'}
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                  {formatDateToAbsolute(reply.createdAt)}
+                                </Typography>
+                              </Box>
+
+                              {/* 대댓글 수정/삭제 메뉴 */}
+                              {currentUserId === reply.writer?.userId && (
+                                <IconButton
+                                  onClick={e => {
+                                    controls.handleCommentMenuOpen(e, reply.replyId);
+                                    // 대댓글 정보 설정
+                                    controls.setActiveReplyInfo({
+                                      replyId: reply.replyId,
+                                      commentId: comment.commentId,
+                                    });
+                                  }}
+                                  size="small"
+                                >
+                                  <MoreVertIcon fontSize="small" />
+                                </IconButton>
+                              )}
+                            </Box>
+
+                            <Typography variant="body2" sx={{ mb: 1 }}>
+                              {reply.content}
+                            </Typography>
+
+                            {/* 대댓글 좋아요/싫어요 */}
+                            <Box display="flex" gap={1}>
+                              <ReactionButton
+                                variant={reply.myReaction === ReactionType.LIKE ? 'contained' : 'text'}
+                                startIcon={<ThumbUpIcon fontSize="small" />}
+                                size="small"
+                                onClick={() =>
+                                  handleReactionReply(reply.replyId, 'like', comment.commentId)
+                                }
+                                color={reply.myReaction === ReactionType.LIKE ? 'primary' : 'inherit'}
+                                sx={{ minWidth: '60px', py: 0.5 }}
+                                disabled={reply.myReaction === ReactionType.DISLIKE}
+                              >
+                                {reply.likeCount || 0}
+                              </ReactionButton>
+                              <ReactionButton
+                                variant={reply.myReaction === ReactionType.DISLIKE ? 'contained' : 'text'}
+                                startIcon={<ThumbDownIcon fontSize="small" />}
+                                size="small"
+                                onClick={() =>
+                                  handleReactionReply(reply.replyId, 'dislike', comment.commentId)
+                                }
+                                color={reply.myReaction === ReactionType.DISLIKE ? 'error' : 'inherit'}
+                                sx={{ minWidth: '60px', py: 0.5 }}
+                                disabled={reply.myReaction === ReactionType.LIKE}
+                              >
+                                {reply.dislikeCount || 0}
+                              </ReactionButton>
+                            </Box>
+                          </>
+                        )}
+                      </Paper>
+                    ))
+                  ) : (
+                    <Typography variant="body2" color="text.secondary" sx={{ ml: 2, mb: 2 }}>
+                      답글이 없습니다. 첫 번째 답글을 작성해보세요.
+                    </Typography>
+                  )}
+                </Box>
+              </>
+            )}
+          </>
+        )}
+      </Box>
+    </CommentCardWrapper>
+  );
+
+  // 댓글 메뉴
+  const renderCommentMenu = () => (
+    <Menu
+      id="comment-menu"
+      anchorEl={controls.menuAnchorEl}
+      keepMounted
+      open={Boolean(controls.menuAnchorEl)}
+      onClose={controls.handleMenuClose}
+    >
+      <MenuItem
+        onClick={() => {
+          if (controls.activeReplyInfo) {
+            // 대댓글 수정
+            controls.handleEditStart(controls.activeReplyInfo.replyId);
+            controls.handleMenuClose();
+          } else if (controls.activeCommentId) {
+            // 댓글 수정
+            controls.handleEditStart(controls.activeCommentId);
+            controls.handleMenuClose();
+          }
+        }}
+      >
+        수정
+      </MenuItem>
+      <MenuItem
+        onClick={() => {
+          if (controls.activeReplyInfo) {
+            // 대댓글 삭제
+            handleDeleteReply(controls.activeReplyInfo.replyId);
+            controls.handleMenuClose();
+          } else if (controls.activeCommentId) {
+            // 댓글 삭제
+            handleDeleteComment(controls.activeCommentId);
+            controls.handleMenuClose();
+          }
+        }}
+      >
+        삭제
+      </MenuItem>
+    </Menu>
+  );
+
+  return (
+    <Box>
+      <Typography
+        variant="h6"
+        fontWeight="bold"
+        gutterBottom
+        sx={{
+          position: 'relative',
+          display: 'inline-block',
+          paddingBottom: 1,
+          marginBottom: 3,
+          '&:after': {
+            content: '""',
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            width: '100%',
+            height: 2,
+            bgcolor: 'primary.light',
+            borderRadius: 1,
+          },
+        }}
+      >
+        댓글 {total}개
+      </Typography>
+
+      {/* 새 댓글 작성 폼 */}
+      <Box mb={4}>
+        <TextField
+          fullWidth
+          multiline
+          rows={3}
+          placeholder="댓글을 작성해주세요"
+          value={newCommentText}
+          onChange={e => setNewCommentText(e.target.value)}
+          disabled={!user}
+          sx={{
+            mb: 1,
+            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+            borderRadius: '8px',
+          }}
+        />
+        <Box display="flex" justifyContent="flex-end">
+          <Button
+            variant="contained"
+            onClick={handleSubmitComment}
+            disabled={!newCommentText.trim() || !user || submittingComment}
+          >
+            {submittingComment ? '등록 중...' : '댓글 작성'}
+          </Button>
+        </Box>
+      </Box>
+
+      {/* 로딩 상태 */}
+      {isLoading && (
+        <Box display="flex" justifyContent="center" my={4}>
+          <CircularProgress size={32} />
+        </Box>
+      )}
+
+      {/* 댓글 없음 상태 */}
+      {!isLoading && comments.length === 0 && (
+        <Box py={4} textAlign="center" bgcolor="rgba(255, 255, 255, 0.7)" borderRadius={2}>
+          <Typography color="text.secondary">첫 번째 댓글을 작성해보세요!</Typography>
+        </Box>
+      )}
+
+      {/* 댓글 목록 */}
+      {!isLoading && comments.length > 0 && (
+        <List disablePadding>{comments.map(comment => renderCommentCard(comment))}</List>
+      )}
+
+      {/* 댓글 수정/삭제 메뉴 */}
+      {renderCommentMenu()}
+    </Box>
+  );
+};
+
+export default CommentSection;
