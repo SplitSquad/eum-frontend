@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Notification from '@/components/feedback/Notification';
 import logo from '@/assets/images/characters/이음로고.png';
 import Eum from '@/assets/images/characters/이음이.png';
@@ -27,16 +27,36 @@ function countryEmoji(countryCode: string) {
     .replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397));
 }
 
+function logMenuClick(menuName: string, currentPath: string, clickPath: string) {
+  const rawData = {
+    event: 'click',
+    currentPath,
+    menuName,
+    clickPath,
+    timestamp: new Date().toISOString(),
+  };
+  console.log('Web Log:', rawData);
+}
+
 function Header({ userName = '기본값', userCountry = '한국', userType = '유학' }: HeaderProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const flagEmoji = countryEmoji(userCountry);
+
+  const handleMenuClick = (path: string, menuName: string) => {
+    logMenuClick(menuName, location.pathname, path);
+    navigate(path);
+  };
 
   return (
     <>
       <header className="w-full bg-white shadow-sm border-b border-gray-100 z-50">
         <div className="h-16 px-4 flex items-center justify-between">
           {/* 로고 */}
-          <div className="flex items-center cursor-pointer" onClick={() => navigate('/home')}>
+          <div
+            className="flex items-center cursor-pointer"
+            onClick={() => handleMenuClick('/home', '로고')}
+          >
             <img src={logo} alt="EUM 로고" className="h-auto max-h-10 w-auto object-contain" />
           </div>
 
@@ -45,31 +65,31 @@ function Header({ userName = '기본값', userCountry = '한국', userType = '�
             {/* 메뉴 버튼들 */}
             <nav className="flex gap-3 text-sm">
               <button
-                onClick={() => navigate('/info')}
+                onClick={() => handleMenuClick('한국생활 가이드', '/info')}
                 className="text-gray-800 font-medium hover:text-primary"
               >
                 한국생활 가이드
               </button>
               <button
-                onClick={() => navigate('/community')}
+                onClick={() => handleMenuClick('/community', '모임과 이야기')}
                 className="text-gray-800 font-medium hover:text-primary"
               >
                 모임과 이야기
               </button>
               <button
-                onClick={() => navigate('/debate')}
+                onClick={() => handleMenuClick('/debate', '핫 이슈 토론')}
                 className="text-gray-800 font-medium hover:text-primary"
               >
                 핫 이슈 토론
               </button>
               <button
-                onClick={() => navigate('/ai-assistant')}
+                onClick={() => handleMenuClick('/ai-assistant', 'AI 전문가')}
                 className="text-gray-800 font-medium hover:text-primary"
               >
                 AI 전문가
               </button>
               <button
-                onClick={() => navigate('/mypage')}
+                onClick={() => handleMenuClick('/mypage', '마이페이지')}
                 className="text-gray-800 font-medium hover:text-primary"
               >
                 마이페이지
@@ -77,7 +97,7 @@ function Header({ userName = '기본값', userCountry = '한국', userType = '�
             </nav>
 
             {/* 유저 정보 + 알림 */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center">
               {/* 프로필 */}
               <div className="flex items-center gap-2">
                 <img src={Eum} alt="profile" className="w-9 h-9 rounded-full" />
