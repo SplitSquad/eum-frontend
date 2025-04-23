@@ -16,10 +16,8 @@ import {
   Alert,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
-import FilterListIcon from '@mui/icons-material/FilterList';
 
 import SpringBackground from '../components/shared/SpringBackground';
 import CategoryTabs from '../components/shared/CategoryTabs';
@@ -30,6 +28,11 @@ import useCommunityStore from '../store/communityStore';
 import { CategoryType } from '../types';
 import { tempLogin } from '../../../features/auth/api/tempAuthApi';
 import useAuthStore from '../../../features/auth/store/authStore';
+import { useToggle } from '@/shared/hooks/UseToggle';
+
+import SearchBar from '@/search/components/SearchBar';
+import FilterToggleButton from '@/search/components/FilterToggleButton';
+import { useScrollToTop } from '@/shared/hooks/UseScrollToTop';
 
 /**
  * 게시글 목록 페이지 컴포넌트
@@ -41,7 +44,7 @@ const PostListPage: React.FC = () => {
   const navigate = useNavigate();
 
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [showFilters, setShowFilters] = useState<boolean>(false);
+  const [showFilters, toggleFilters] = useToggle(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   const {
@@ -144,15 +147,8 @@ const PostListPage: React.FC = () => {
     }
   };
 
-  // 필터 토글
-  const toggleFilters = () => {
-    setShowFilters(!showFilters);
-  };
-
   // 맨 위로 스크롤
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  const scrollToTop = useScrollToTop();
 
   return (
     <SpringBackground>
@@ -217,54 +213,16 @@ const PostListPage: React.FC = () => {
             }}
           >
             {/* 검색창 */}
-            <TextField
-              placeholder="게시글 검색..."
-              variant="outlined"
-              size="small"
+            <SearchBar
               value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              onKeyPress={handleKeyPress}
-              sx={{
-                width: isMobile ? '100%' : 240,
-                '& .MuiOutlinedInput-root': {
-                  bgcolor: 'rgba(255, 255, 255, 0.9)',
-                  borderRadius: '20px',
-                  '& fieldset': {
-                    borderColor: '#FFD7D7',
-                  },
-                  '&:hover fieldset': {
-                    borderColor: '#FFAAA5',
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: '#FF9999',
-                  },
-                },
-              }}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton size="small" onClick={handleSearch}>
-                      <SearchIcon fontSize="small" sx={{ color: '#FF9999' }} />
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
+              placeholder="게시글 검색..."
+              onChange={setSearchTerm}
+              onSearch={handleSearch}
+              width={isMobile ? '100%' : 240}
             />
 
             {/* 필터 버튼 */}
-            <IconButton
-              onClick={toggleFilters}
-              sx={{
-                bgcolor: showFilters ? '#FFAAA5' : 'rgba(255, 255, 255, 0.9)',
-                color: showFilters ? 'white' : '#666',
-                '&:hover': {
-                  bgcolor: showFilters ? '#FF9999' : '#FFF5F5',
-                },
-              }}
-            >
-              <FilterListIcon />
-            </IconButton>
-
+            <FilterToggleButton active={showFilters} onClick={toggleFilters} />
             {/* 게시글 작성 버튼 */}
             <Button
               variant="contained"
@@ -345,22 +303,7 @@ const PostListPage: React.FC = () => {
       </Container>
 
       {/* 맨 위로 이동 버튼 */}
-      <IconButton
-        size="large"
-        onClick={scrollToTop}
-        sx={{
-          position: 'fixed',
-          bottom: 32,
-          right: 32,
-          backgroundColor: 'rgba(255, 170, 165, 0.9)',
-          color: 'white',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-          '&:hover': {
-            backgroundColor: '#FF9999',
-          },
-          zIndex: 10,
-        }}
-      >
+      <IconButton size="large" onClick={scrollToTop} sx={{}}>
         <ArrowUpwardIcon />
       </IconButton>
     </SpringBackground>

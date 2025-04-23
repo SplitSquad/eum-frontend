@@ -77,7 +77,10 @@ export const useCommentStore = create<CommentState & CommentActions>()(
         try {
           // 문자열과 숫자 타입 불일치 방지를 위해 명시적으로 숫자 변환
           const numericPostId = Number(postId);
-          console.log('[DEBUG] 댓글 가져오기 시작:', { postId: numericPostId, storeState: get().comments.length });
+          console.log('[DEBUG] 댓글 가져오기 시작:', {
+            postId: numericPostId,
+            storeState: get().comments.length,
+          });
 
           // 댓글 불러오기 중임을 표시
           set({ commentLoading: true, commentError: null });
@@ -90,8 +93,8 @@ export const useCommentStore = create<CommentState & CommentActions>()(
           // API 응답 확인
           if (response.commentList && response.commentList.length > 0) {
             console.log('[DEBUG] 댓글 스토어 - 댓글이 존재합니다:', response.commentList.length);
-            
-            // 댓글 목록 보정 
+
+            // 댓글 목록 보정
             // 1. postId가 null인 경우 현재 postId로 채우기
             // 2. isState 값을 myReaction으로 변환 (좋아요 -> LIKE, 싫어요 -> DISLIKE)
             const fixedComments = response.commentList.map(comment => {
@@ -102,16 +105,16 @@ export const useCommentStore = create<CommentState & CommentActions>()(
               } else if (comment.isState === '싫어요') {
                 myReaction = 'DISLIKE';
               }
-              
+
               return {
                 ...comment,
                 postId: comment.postId || numericPostId,
                 myReaction: myReaction, // isState 값을 myReaction으로 변환
-                likeCount: comment.like,      // like를 likeCount로 복사
-                dislikeCount: comment.dislike // dislike를 dislikeCount로 복사 
+                likeCount: comment.like, // like를 likeCount로 복사
+                dislikeCount: comment.dislike, // dislike를 dislikeCount로 복사
               };
             });
-            
+
             // 상태 업데이트
             set({
               comments: fixedComments,
@@ -123,7 +126,7 @@ export const useCommentStore = create<CommentState & CommentActions>()(
                 totalPages: Math.ceil((response.total || 0) / size),
               },
             });
-            
+
             console.log('[DEBUG] 댓글 스토어 - 상태 업데이트 완료:', fixedComments.length);
           } else {
             console.log('[DEBUG] 댓글 스토어 - 댓글이 없습니다');
@@ -242,20 +245,20 @@ export const useCommentStore = create<CommentState & CommentActions>()(
         try {
           // 백엔드 API 호출 먼저 실행
           const response = await CommentApi.reactToComment(commentId, option);
-          
+
           // 로컬 상태 업데이트 (UI 반응성 향상을 위해)
           set((state: CommentState) => {
             const updatedComments = state.comments.map(comment => {
               if (comment.commentId === commentId) {
                 const updatedComment = { ...comment };
-                
+
                 // API 응답 결과를 사용하여 좋아요/싫어요 카운트 업데이트
                 updatedComment.likeCount = response.like;
                 updatedComment.dislikeCount = response.dislike;
-                
+
                 // 현재 반응 상태 업데이트
                 // 이전 반응과 같으면 취소, 다르면 새로 설정
-                updatedComment.myReaction = 
+                updatedComment.myReaction =
                   updatedComment.myReaction === option ? undefined : option;
 
                 return updatedComment;
@@ -339,22 +342,21 @@ export const useCommentStore = create<CommentState & CommentActions>()(
         try {
           // 백엔드 API 호출 먼저 실행
           const response = await CommentApi.reactToReply(replyId, option);
-          
+
           // 로컬 상태 업데이트 (UI 반응성 향상을 위해)
           set((state: CommentState) => {
             const commentReplies = state.replies[commentId] || [];
             const updatedReplies = commentReplies.map(reply => {
               if (reply.replyId === replyId) {
                 const updatedReply = { ...reply };
-                
+
                 // API 응답 결과를 사용하여 좋아요/싫어요 카운트 업데이트
                 updatedReply.likeCount = response.like;
                 updatedReply.dislikeCount = response.dislike;
-                
+
                 // 현재 반응 상태 업데이트
                 // 이전 반응과 같으면 취소, 다르면 새로 설정
-                updatedReply.myReaction = 
-                  updatedReply.myReaction === option ? undefined : option;
+                updatedReply.myReaction = updatedReply.myReaction === option ? undefined : option;
 
                 return updatedReply;
               }
@@ -401,7 +403,7 @@ export const useCommentStore = create<CommentState & CommentActions>()(
 
           // 실제 API 호출
           const response = await CommentApi.reactToComment(commentId, 'LIKE');
-          
+
           // 댓글 좋아요 후 현재 댓글 업데이트
           const comments = [...get().comments];
           const index = comments.findIndex(c => c.commentId === commentId);
@@ -426,7 +428,7 @@ export const useCommentStore = create<CommentState & CommentActions>()(
 
           // 실제 API 호출
           const response = await CommentApi.reactToComment(commentId, 'DISLIKE');
-          
+
           // 댓글 싫어요 후 현재 댓글 업데이트
           const comments = [...get().comments];
           const index = comments.findIndex(c => c.commentId === commentId);

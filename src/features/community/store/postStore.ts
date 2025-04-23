@@ -90,7 +90,7 @@ interface PostActions {
 const areFiltersEqual = (a: PostFilter | null, b: PostFilter | null): boolean => {
   if (!a && !b) return true;
   if (!a || !b) return false;
-  
+
   // 핵심 필드만 비교
   return (
     a.category === b.category &&
@@ -144,48 +144,56 @@ export const usePostStore = create<PostState & PostActions>()(
       fetchPosts: async filter => {
         try {
           console.log('fetchPosts 시작 - 필터:', filter);
-          
+
           // 현재 상태에서 필터 정보 가져오기
           const currentState = get();
-          
+
           // 병합된 필터 생성 (새 필터 우선)
           const mergedFilter = {
             ...currentState.postFilter,
             ...filter,
             // 페이지가 변경되지 않았고 다른 필터가 바뀌었으면 첫 페이지부터 다시 시작
-            page: filter && Object.keys(filter).some(key => key !== 'page' && key !== 'size') ? 0 : 
-                filter?.page !== undefined ? filter.page : currentState.postFilter.page || 0,
+            page:
+              filter && Object.keys(filter).some(key => key !== 'page' && key !== 'size')
+                ? 0
+                : filter?.page !== undefined
+                  ? filter.page
+                  : currentState.postFilter.page || 0,
             // 페이지당 6개 게시물
             size: filter?.size || 6,
             // 현재 선택된 카테고리 유지
             category: filter?.category || currentState.selectedCategory,
           };
-          
+
           // 1. 이미 로딩 중이고 동일한 요청일 경우, 진행 중인 요청을 반환
-          if (currentState.postLoading && activeRequest && areFiltersEqual(lastFetchedFilter, mergedFilter)) {
+          if (
+            currentState.postLoading &&
+            activeRequest &&
+            areFiltersEqual(lastFetchedFilter, mergedFilter)
+          ) {
             console.log('이미 동일한 요청이 진행 중입니다. 중복 요청 방지.');
             return await activeRequest;
           }
-          
+
           // 2. 데이터가 이미 있고, 필터가 동일하며, 마지막 요청 이후 5초가 지나지 않았으면 캐시 사용
           const now = Date.now();
           const CACHE_TTL = 5000; // 5초 캐시
-          
+
           if (
-            currentState.posts.length > 0 && 
+            currentState.posts.length > 0 &&
             areFiltersEqual(lastFetchedFilter, mergedFilter) &&
             now - lastFetchTimestamp < CACHE_TTL
           ) {
             console.log('캐시된 데이터 사용 (5초 이내), API 요청 스킵');
             return;
           }
-          
+
           // 로딩 상태 설정
           set({ postLoading: true, postError: null });
-          
+
           // 현재 필터 저장 (중복 요청 방지용)
           lastFetchedFilter = { ...mergedFilter };
-          
+
           // 최종 필터로 상태 업데이트
           set({ postFilter: mergedFilter });
 
@@ -201,7 +209,7 @@ export const usePostStore = create<PostState & PostActions>()(
                 location: mergedFilter.location,
                 tag: mergedFilter.tag,
               };
-              
+
               console.log('API 요청 파라미터:', apiParams);
               const response = await postApi.default.getPosts(apiParams);
 
@@ -236,14 +244,14 @@ export const usePostStore = create<PostState & PostActions>()(
 
               // 타임스탬프 업데이트 (캐싱 용도)
               lastFetchTimestamp = Date.now();
-              
+
               // 상태 업데이트 후 현재 상태 확인
               console.log('상태 업데이트 후 현재 posts:', get().posts);
               console.log('페이지 정보:', get().postPageInfo);
             } catch (error) {
               console.error('게시글 목록 조회 실패:', error);
               set({ postLoading: false, postError: '게시글을 불러오는 중 오류가 발생했습니다.' });
-              
+
               // 에러 발생 시 캐시 타임스탬프 초기화
               lastFetchTimestamp = 0;
               lastFetchedFilter = null;
@@ -252,15 +260,14 @@ export const usePostStore = create<PostState & PostActions>()(
               activeRequest = null;
             }
           };
-          
+
           // 요청 실행 및 추적
           activeRequest = fetchData();
           await activeRequest;
-          
         } catch (error) {
           console.error('fetchPosts 전체 실패:', error);
           set({ postLoading: false, postError: '게시글을 불러오는 중 오류가 발생했습니다.' });
-          
+
           // 진행 중인 요청 추적 제거
           activeRequest = null;
         }
@@ -287,38 +294,38 @@ export const usePostStore = create<PostState & PostActions>()(
       fetchPostById: async postId => {
         try {
           console.log('fetchPostById 시작 - 게시글 ID:', postId);
-          
+
           // 이미 로딩 중이거나 같은 게시글이라면 중복 요청 방지
           const currentState = get();
           if (currentState.postLoading) {
             console.log('이미 게시글 로딩 중, 요청 무시');
             return currentState.currentPost;
           }
-          
+
           // 같은 게시글이 이미 로드되어 있으면 그대로 반환
           if (currentState.currentPost?.postId === postId) {
             console.log('이미 같은 게시글이 로드되어 있음:', postId);
             return currentState.currentPost;
           }
-          
+
           set({ postLoading: true, postError: null });
-          
+
           // 새 게시글 요청 시 먼저 상태 초기화
           // 이전 게시글 데이터가 잠시라도 표시되는 것을 방지
           if (currentState.currentPost?.postId !== postId) {
             console.log('새 게시글 요청 - 기존 데이터 초기화');
             set({ currentPost: null });
           }
-      
+
           const post = await postApi.default.getPostById(postId);
           console.log('API 응답 받음:', post);
-      
+
           if (!post || typeof post !== 'object') {
             console.error('유효하지 않은 게시글 데이터:', post);
             set({ postLoading: false, postError: '게시글 데이터를 불러올 수 없습니다.' });
           } else {
             set({ currentPost: post, postLoading: false });
-            
+
             // 조회수 증가 API 호출 (오류가 발생해도 무시)
             try {
               await postApi.default.increaseViewCount(postId);
@@ -326,7 +333,7 @@ export const usePostStore = create<PostState & PostActions>()(
               console.error('조회수 증가 실패 (무시됨):', error);
             }
           }
-          
+
           return get().currentPost;
         } catch (error) {
           console.error('게시글 상세 조회 실패:', error);
@@ -352,7 +359,12 @@ export const usePostStore = create<PostState & PostActions>()(
       updatePost: async (postId, postDto, files, removeFileIds) => {
         set({ isLoading: true, error: null });
         try {
-          const updatedPost = await postApi.default.updatePost(postId, postDto, files, removeFileIds);
+          const updatedPost = await postApi.default.updatePost(
+            postId,
+            postDto,
+            files,
+            removeFileIds
+          );
           set(state => ({
             posts: state.posts.map(post => (post.postId === postId ? updatedPost : post)),
             currentPost: state.currentPost?.postId === postId ? updatedPost : state.currentPost,
@@ -368,36 +380,36 @@ export const usePostStore = create<PostState & PostActions>()(
         set({ isLoading: true, error: null });
         try {
           console.log('[DEBUG] 게시글 삭제 액션 시작:', postId);
-          
+
           // API 호출 전 상태 저장
           const prevState = get();
-          
+
           // API 호출
           await postApi.default.deletePost(postId);
-          
+
           // 해당 게시글을 posts 배열에서 제거하고 currentPost도 업데이트
           set(state => {
             // 삭제 성공 후 상태 업데이트
             console.log('[DEBUG] 게시글 삭제 성공 후 상태 업데이트');
-            
+
             return {
               // posts 배열에서 해당 게시글 제거
               posts: state.posts.filter(post => post.postId !== postId),
-              
+
               // currentPost가 삭제하려는 게시글과 같으면 null로 설정
               currentPost: state.currentPost?.postId === postId ? null : state.currentPost,
-              
+
               // topPosts와 recentPosts에서도 제거
               topPosts: state.topPosts.filter(post => post.postId !== postId),
               recentPosts: state.recentPosts.filter(post => post.postId !== postId),
-              
+
               isLoading: false,
             };
           });
-          
-          console.log('[DEBUG] 게시글 삭제 액션 완료 - 상태:', { 
-            currentPost: get().currentPost, 
-            postsCount: get().posts.length 
+
+          console.log('[DEBUG] 게시글 삭제 액션 완료 - 상태:', {
+            currentPost: get().currentPost,
+            postsCount: get().posts.length,
           });
         } catch (error) {
           console.error('[ERROR] 게시글 삭제 액션 실패:', error);
@@ -409,8 +421,11 @@ export const usePostStore = create<PostState & PostActions>()(
         try {
           const currentPost = get().currentPost;
           if (currentPost && currentPost.postId === postId) {
-            const response = await postApi.default.reactToPost(postId, option as 'LIKE' | 'DISLIKE');
-            
+            const response = await postApi.default.reactToPost(
+              postId,
+              option as 'LIKE' | 'DISLIKE'
+            );
+
             // 게시글 반응 상태 업데이트
             set({
               currentPost: {
@@ -436,17 +451,17 @@ export const usePostStore = create<PostState & PostActions>()(
 
       setSelectedCategory: category => {
         set({ selectedCategory: category });
-        
+
         // 카테고리 변경 시 페이지 초기화하고 새로운 목록 로드
         get().fetchPosts({ category, page: 0 });
       },
 
       setPostFilter: filter => {
         // 기존 필터와 새로운 필터 병합
-        set(state => ({ 
-          postFilter: { ...state.postFilter, ...filter } 
+        set(state => ({
+          postFilter: { ...state.postFilter, ...filter },
         }));
-        
+
         // 필터 변경 시 새로운 데이터 로드
         get().fetchPosts(filter);
       },
@@ -472,7 +487,7 @@ export const usePostStore = create<PostState & PostActions>()(
             totalPages: 0,
           },
         });
-        
+
         // 캐시 초기화
         lastFetchTimestamp = 0;
         lastFetchedFilter = null;
@@ -497,7 +512,7 @@ export const usePostStore = create<PostState & PostActions>()(
           },
           selectedCategory: '자유',
         });
-        
+
         // 캐시 초기화
         lastFetchTimestamp = 0;
         lastFetchedFilter = null;

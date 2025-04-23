@@ -28,7 +28,6 @@ import {
 import { Theme, useTheme } from '@mui/material/styles';
 import { styled } from '@mui/system';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
@@ -287,12 +286,12 @@ const PostCreateEditPage: React.FC = () => {
       setSelectedFiles(prev => [...prev, ...fileList]);
     }
   };
-  
+
   // 파일 삭제 핸들러
   const handleFileRemove = (fileIndex: number) => {
     setSelectedFiles(prev => prev.filter((_, index) => index !== fileIndex));
   };
-  
+
   // 파일 드롭 영역 클릭 핸들러
   const handleUploadBoxClick = () => {
     fileInputRef.current?.click();
@@ -301,10 +300,10 @@ const PostCreateEditPage: React.FC = () => {
   // 기존 파일 삭제 핸들러
   const handleExistingFileRemove = (fileId: number) => {
     if (!fileId) return;
-    
+
     // 삭제할 파일 ID 목록에 추가
     setRemovedFileIds(prev => [...prev, fileId]);
-    
+
     // UI에서 파일 숨기기 (선택 사항)
     // 여기서는 communityStore의 currentPost를 직접 변경하지 않고
     // UI 상에서만 숨기는 방식을 선택할 수 있습니다
@@ -360,7 +359,7 @@ const PostCreateEditPage: React.FC = () => {
 
         await updatePost(parseInt(postId), updatePostDto, selectedFiles, removedFileIds);
         enqueueSnackbar('게시글이 성공적으로 수정되었습니다.', { variant: 'success' });
-        
+
         // 수정 후 해당 게시글 상세 페이지로 이동
         navigate(`/community/post/${postId}`);
       } else {
@@ -376,7 +375,7 @@ const PostCreateEditPage: React.FC = () => {
 
         await createPost(createPostDto, selectedFiles);
         enqueueSnackbar('게시글이 성공적으로 작성되었습니다.', { variant: 'success' });
-        
+
         // 일단 목록으로 이동 (API가 생성된 게시글 ID를 반환하지 않음)
         navigate('/community');
       }
@@ -635,9 +634,11 @@ const PostCreateEditPage: React.FC = () => {
                 <Typography variant="subtitle1" gutterBottom>
                   파일 첨부
                 </Typography>
-                
+
                 <FileUploadBox onClick={handleUploadBoxClick}>
-                  <CloudUploadIcon sx={{ fontSize: 40, color: 'rgba(255, 107, 107, 0.7)', mb: 1 }} />
+                  <CloudUploadIcon
+                    sx={{ fontSize: 40, color: 'rgba(255, 107, 107, 0.7)', mb: 1 }}
+                  />
                   <Typography variant="body1" gutterBottom>
                     파일을 여기에 끌어다 놓거나 클릭하여 업로드하세요
                   </Typography>
@@ -651,7 +652,7 @@ const PostCreateEditPage: React.FC = () => {
                     multiple
                   />
                 </FileUploadBox>
-                
+
                 {/* 선택된 파일 목록 */}
                 {selectedFiles.length > 0 && (
                   <Box sx={{ mt: 2 }}>
@@ -663,8 +664,8 @@ const PostCreateEditPage: React.FC = () => {
                         <ListItem
                           key={index}
                           secondaryAction={
-                            <IconButton 
-                              edge="end" 
+                            <IconButton
+                              edge="end"
                               onClick={() => handleFileRemove(index)}
                               sx={{ color: 'rgba(255, 107, 107, 0.7)' }}
                             >
@@ -680,9 +681,9 @@ const PostCreateEditPage: React.FC = () => {
                           <ListItemIcon>
                             <InsertDriveFileIcon sx={{ color: 'rgba(255, 107, 107, 0.7)' }} />
                           </ListItemIcon>
-                          <ListItemText 
-                            primary={file.name} 
-                            secondary={`${(file.size / 1024).toFixed(2)} KB`} 
+                          <ListItemText
+                            primary={file.name}
+                            secondary={`${(file.size / 1024).toFixed(2)} KB`}
                           />
                         </ListItem>
                       ))}
@@ -691,52 +692,62 @@ const PostCreateEditPage: React.FC = () => {
                 )}
 
                 {/* 편집 모드에서 기존 파일 표시 */}
-                {isEditMode && communityStore.currentPost?.files && communityStore.currentPost.files.length > 0 && (
-                  <Box sx={{ mt: 2 }}>
-                    <Typography variant="subtitle2" gutterBottom>
-                      기존 첨부 파일
-                    </Typography>
-                    <List disablePadding>
-                      {communityStore.currentPost.files.map((file: any, index: number) => {
-                        const fileUrl = typeof file === 'string' ? file : file.url;
-                        const fileName = typeof file === 'string' 
-                          ? `첨부파일 ${index + 1}` 
-                          : file.originalName || `첨부파일 ${index + 1}`;
-                        
-                        return (
-                          <ListItem
-                            key={index}
-                            secondaryAction={
-                              <IconButton 
-                                edge="end" 
-                                onClick={() => handleExistingFileRemove(file.fileId || file.postFileId)}
-                                sx={{ color: 'rgba(255, 107, 107, 0.7)' }}
-                              >
-                                <DeleteIcon />
-                              </IconButton>
-                            }
-                            sx={{
-                              bgcolor: 'rgba(255, 240, 240, 0.5)',
-                              borderRadius: '8px',
-                              mb: 1,
-                            }}
-                          >
-                            <ListItemIcon>
-                              <InsertDriveFileIcon sx={{ color: 'rgba(255, 107, 107, 0.7)' }} />
-                            </ListItemIcon>
-                            <ListItemText 
-                              primary={
-                                <Box component="a" href={fileUrl} target="_blank" sx={{ textDecoration: 'none', color: 'inherit' }}>
-                                  {fileName}
-                                </Box>
+                {isEditMode &&
+                  communityStore.currentPost?.files &&
+                  communityStore.currentPost.files.length > 0 && (
+                    <Box sx={{ mt: 2 }}>
+                      <Typography variant="subtitle2" gutterBottom>
+                        기존 첨부 파일
+                      </Typography>
+                      <List disablePadding>
+                        {communityStore.currentPost.files.map((file: any, index: number) => {
+                          const fileUrl = typeof file === 'string' ? file : file.url;
+                          const fileName =
+                            typeof file === 'string'
+                              ? `첨부파일 ${index + 1}`
+                              : file.originalName || `첨부파일 ${index + 1}`;
+
+                          return (
+                            <ListItem
+                              key={index}
+                              secondaryAction={
+                                <IconButton
+                                  edge="end"
+                                  onClick={() =>
+                                    handleExistingFileRemove(file.fileId || file.postFileId)
+                                  }
+                                  sx={{ color: 'rgba(255, 107, 107, 0.7)' }}
+                                >
+                                  <DeleteIcon />
+                                </IconButton>
                               }
-                            />
-                          </ListItem>
-                        );
-                      })}
-                    </List>
-                  </Box>
-                )}
+                              sx={{
+                                bgcolor: 'rgba(255, 240, 240, 0.5)',
+                                borderRadius: '8px',
+                                mb: 1,
+                              }}
+                            >
+                              <ListItemIcon>
+                                <InsertDriveFileIcon sx={{ color: 'rgba(255, 107, 107, 0.7)' }} />
+                              </ListItemIcon>
+                              <ListItemText
+                                primary={
+                                  <Box
+                                    component="a"
+                                    href={fileUrl}
+                                    target="_blank"
+                                    sx={{ textDecoration: 'none', color: 'inherit' }}
+                                  >
+                                    {fileName}
+                                  </Box>
+                                }
+                              />
+                            </ListItem>
+                          );
+                        })}
+                      </List>
+                    </Box>
+                  )}
               </Box>
 
               {/* 익명 체크박스 */}

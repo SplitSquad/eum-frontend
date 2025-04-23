@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableRow, TableHead, TablePagination } from '@mui/material';
 import { Box } from '@mui/system';
 import { usePostStore } from '../../store/postStore';
@@ -74,11 +73,8 @@ const PostList: React.FC<PostListProps> = ({ filter }) => {
 
   return (
     <Box sx={{ width: '100%', mt: 2 }}>
-      <PostListHeader
-        selectedCategory={selectedCategory}
-        onCategoryChange={handleCategoryChange}
-      />
-      
+      <PostListHeader selectedCategory={selectedCategory} onCategoryChange={handleCategoryChange} />
+
       <Table sx={{ minWidth: 650 }} aria-label="post list">
         <TableHead>
           <TableRow>
@@ -107,15 +103,13 @@ const PostList: React.FC<PostListProps> = ({ filter }) => {
         </TableHead>
         <TableBody>
           {posts.length > 0 ? (
-            posts.map((post: PostSummary) => (
-              <PostListItem key={post.postId} post={post} />
-            ))
+            posts.map((post: PostSummary) => <PostListItem key={post.postId} post={post} />)
           ) : (
             <PostListEmptyRow />
           )}
         </TableBody>
       </Table>
-      
+
       <TablePagination
         component="div"
         count={postPageInfo.totalElements}
@@ -129,4 +123,4 @@ const PostList: React.FC<PostListProps> = ({ filter }) => {
   );
 };
 
-export default PostList; 
+export default PostList;

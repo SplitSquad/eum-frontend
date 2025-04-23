@@ -1,15 +1,7 @@
 import { create } from 'zustand';
 import { usePostStore } from './postStore';
 import useCommentStore from './commentStore';
-import useSearchStore from './searchStore';
-import {
-  Post,
-  Comment,
-  Reply,
-  CategoryType,
-  ReactionType,
-  PostSummary,
-} from '../types';
+import { Post, Comment, Reply, CategoryType, ReactionType, PostSummary } from '../types';
 
 /**
  * 통합 커뮤니티 스토어의 인터페이스 정의
@@ -18,7 +10,7 @@ import {
  */
 interface CommunityStore {
   // 게시글 관련 상태 (postStore에서 구독)
-  posts: PostSummary[]; 
+  posts: PostSummary[];
   currentPost: Post | null;
   topPosts: Post[];
   recentPosts: Post[];
@@ -107,11 +99,7 @@ interface CommunityStore {
 
   // 댓글 기능 (commentStore 액션 호출)
   createReply: (postId: number, commentId: number, content: string) => Promise<void>;
-  reactToComment: (
-    postId: number, 
-    commentId: number, 
-    type: 'LIKE' | 'DISLIKE'
-  ) => Promise<void>;
+  reactToComment: (postId: number, commentId: number, type: 'LIKE' | 'DISLIKE') => Promise<void>;
 }
 
 /**
@@ -185,30 +173,32 @@ export const useCommunityStore = create<CommunityStore>((set, get) => {
 
     // 게시글 관련 액션 - postStore 액션 호출
     fetchPosts: async (filter?: any) => {
-      console.log('[DEBUG] communityStore.fetchPosts는 이제 단순히 postStore의 fetchPosts를 호출합니다.');
+      console.log(
+        '[DEBUG] communityStore.fetchPosts는 이제 단순히 postStore의 fetchPosts를 호출합니다.'
+      );
       await usePostStore.getState().fetchPosts(filter);
     },
-    
+
     fetchTopPosts: async (count?: number) => {
       await usePostStore.getState().fetchTopPosts(count);
     },
-    
+
     fetchRecentPosts: async (count?: number) => {
       await usePostStore.getState().fetchRecentPosts(count);
     },
-    
+
     fetchPostById: async (postId: number) => {
       return await usePostStore.getState().fetchPostById(postId);
     },
-    
+
     createPost: async (postDto: any, files?: File[]) => {
       await usePostStore.getState().createPost(postDto, files);
     },
-    
+
     updatePost: async (postId: number, postDto: any, files?: File[], removeFileIds?: number[]) => {
       await usePostStore.getState().updatePost(postId, postDto, files, removeFileIds);
     },
-    
+
     deletePost: async (postId: number) => {
       try {
         await usePostStore.getState().deletePost(postId);
@@ -219,11 +209,11 @@ export const useCommunityStore = create<CommunityStore>((set, get) => {
         throw error;
       }
     },
-    
+
     reactToPost: async (postId: number, option: string) => {
       await usePostStore.getState().reactToPost(postId, option);
     },
-    
+
     updateCurrentPostReaction: (reactionUpdate: {
       myReaction?: ReactionType | undefined;
       likeCount: number;
@@ -231,25 +221,25 @@ export const useCommunityStore = create<CommunityStore>((set, get) => {
     }) => {
       const { currentPost } = usePostStore.getState();
       if (!currentPost) return;
-      
+
       usePostStore.setState({
         currentPost: {
           ...currentPost,
           myReaction: reactionUpdate.myReaction,
           likeCount: reactionUpdate.likeCount,
           dislikeCount: reactionUpdate.dislikeCount,
-        }
+        },
       });
     },
-    
+
     setSelectedCategory: (category: CategoryType) => {
       usePostStore.getState().setSelectedCategory(category);
     },
-    
+
     setPostFilter: (filter: any) => {
       usePostStore.getState().setPostFilter(filter);
     },
-    
+
     resetPostsState: () => {
       usePostStore.getState().resetPostsState();
     },
@@ -258,46 +248,42 @@ export const useCommunityStore = create<CommunityStore>((set, get) => {
     fetchComments: async (postId: number, page?: number, size?: number) => {
       await useCommentStore.getState().fetchComments(postId, page, size);
     },
-    
+
     createComment: async (postId: number, content: string, parentId?: number) => {
       await useCommentStore.getState().createComment(postId, content, parentId);
     },
-    
+
     updateComment: async (
       commentId: number,
       commentData: { content: string; language: string }
     ) => {
       await useCommentStore.getState().updateComment(commentId, commentData);
     },
-    
+
     deleteComment: async (commentId: number) => {
       await useCommentStore.getState().deleteComment(commentId);
     },
-    
-    addCommentReaction: async (
-      postId: number,
-      commentId: number,
-      option: 'LIKE' | 'DISLIKE'
-    ) => {
+
+    addCommentReaction: async (postId: number, commentId: number, option: 'LIKE' | 'DISLIKE') => {
       await useCommentStore.getState().addCommentReaction(postId, commentId, option);
     },
-    
+
     addReply: async (postId: number, commentId: number, content: string) => {
       await useCommentStore.getState().addReply(postId, commentId, content);
     },
-    
+
     getCommentReplies: async (commentId: number) => {
       return await useCommentStore.getState().getCommentReplies(commentId);
     },
-    
+
     updateReply: async (commentId: number, replyId: number, content: string) => {
       await useCommentStore.getState().updateReply(commentId, replyId, content);
     },
-    
+
     deleteReply: async (commentId: number, replyId: number) => {
       await useCommentStore.getState().deleteReply(commentId, replyId);
     },
-    
+
     reactToReply: async (
       postId: number,
       commentId: number,
@@ -306,7 +292,7 @@ export const useCommunityStore = create<CommunityStore>((set, get) => {
     ) => {
       await useCommentStore.getState().reactToReply(postId, commentId, replyId, option);
     },
-    
+
     resetCommentsState: () => {
       useCommentStore.getState().resetCommentsState();
     },
@@ -315,7 +301,7 @@ export const useCommunityStore = create<CommunityStore>((set, get) => {
     searchPosts: async (keyword: string, searchType?: string) => {
       // 검색 로딩 상태 표시
       set({ searchLoading: true });
-      
+
       try {
         // postStore의 검색 기능 사용
         const searchParams = { keyword, searchType };
@@ -323,36 +309,36 @@ export const useCommunityStore = create<CommunityStore>((set, get) => {
           page: 0,
           size: 10,
           searchBy: searchType || 'all',
-          keyword: keyword
+          keyword: keyword,
         });
-        
+
         // 결과 저장
-        set({ 
+        set({
           searchKeyword: keyword,
           searchType: searchType || 'all',
           searchResults: usePostStore.getState().posts,
-          searchLoading: false
+          searchLoading: false,
         });
       } catch (error) {
         console.error('검색 실패:', error);
         set({ searchLoading: false });
       }
     },
-    
+
     setSearchKeyword: (keyword: string) => {
       set({ searchKeyword: keyword });
     },
-    
+
     setSearchType: (type: string) => {
       set({ searchType: type });
     },
-    
+
     resetSearchState: () => {
       set({
         searchKeyword: '',
         searchType: 'all',
         searchResults: [],
-        searchLoading: false
+        searchLoading: false,
       });
     },
 
@@ -360,10 +346,10 @@ export const useCommunityStore = create<CommunityStore>((set, get) => {
     createReply: async (postId: number, commentId: number, content: string) => {
       await useCommentStore.getState().addReply(postId, commentId, content);
     },
-    
+
     reactToComment: async (postId: number, commentId: number, type: 'LIKE' | 'DISLIKE') => {
       await useCommentStore.getState().addCommentReaction(postId, commentId, type);
-    }
+    },
   };
 });
 
