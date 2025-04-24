@@ -1,6 +1,5 @@
 import React from 'react';
 import { Box, Button, styled } from '@mui/material';
-import { CategoryType } from '../../types';
 
 // 봄 테마 스타일의 탭 버튼
 const SpringTab = styled(Button, {
@@ -77,31 +76,30 @@ const TabContainer = styled(Box)(({ theme }) => ({
 }));
 
 interface CategoryTabsProps {
-  selectedCategory: CategoryType;
-  onCategoryChange: (category: CategoryType) => void;
+  selectedCategory: string;
+  onCategoryChange: (category: string) => void;
 }
 
 /**
  * 카테고리 선택 탭 컴포넌트
- * 모임/자유 카테고리를 선택할 수 있는 봄 테마 스타일의 탭 UI
+ * 여행, 취업, 유학, 거주 등의 카테고리를 선택할 수 있는 봄 테마 스타일의 탭 UI
  */
 const CategoryTabs: React.FC<CategoryTabsProps> = ({ selectedCategory, onCategoryChange }) => {
+  // 카테고리 목록 정의
+  const categories = ['전체', '여행', '주거', '유학', '취업'];
+  
   return (
     <TabContainer>
-      <SpringTab
-        active={selectedCategory === '모임'}
-        onClick={() => onCategoryChange('모임')}
-        disableElevation
-      >
-        모임
-      </SpringTab>
-      <SpringTab
-        active={selectedCategory === '자유'}
-        onClick={() => onCategoryChange('자유')}
-        disableElevation
-      >
-        자유
-      </SpringTab>
+      {categories.map((category) => (
+        <SpringTab
+          key={category}
+          active={selectedCategory === category}
+          onClick={() => onCategoryChange(category)}
+          disableElevation
+        >
+          {category}
+        </SpringTab>
+      ))}
     </TabContainer>
   );
 };

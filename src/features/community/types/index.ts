@@ -165,6 +165,8 @@ export interface PostFilter {
   size?: number;
   searchBy?: string;
   keyword?: string;
+  postType?: PostType;
+  resetSearch?: boolean;
 }
 
 /**
@@ -176,20 +178,18 @@ export interface SearchOptions {
 }
 
 /**
- * 카테고리 타입
+ * 게시글 타입 구분
  */
-export type CategoryType = '모임' | '자유';
+export type PostType = '모임' | '자유' | '전체';
 
 /**
  * 새로운 API 타입 정의
  */
-export type PostCategory = '모임' | '자유';
-
 export type Tag = {
   tagId: number;
   name: string;
   description?: string;
-  category: PostCategory;
+  category: string;
 };
 
 export type PostStatus = 'ACTIVE' | 'INACTIVE' | 'DELETED';
@@ -210,7 +210,7 @@ export type User = {
   role?: string;
 };
 
-export type Comment = {
+export interface CommentType {
   commentId: number;
   postId: number;
   content: string;
@@ -220,19 +220,20 @@ export type Comment = {
   likeCount: number;
   dislikeCount: number;
   parentId?: number;
-  status: string;
-  children?: Comment[];
+  reply?: number;  // 대댓글 개수
+  replyCount?: number;  // 대댓글 개수 (백엔드 응답 필드 변경에 대응)
   myReaction?: ReactionType;
-  replyCount?: number;
+  replies?: CommentType[];
   liked?: boolean;
   disliked?: boolean;
-};
+  translating?: boolean; // 번역 중 상태를 표시
+}
 
 export type PostSummary = {
   postId: number;
   title: string;
   content?: string;
-  category: PostCategory;
+  category: string;
   tags: Tag[];
   thumbnailUrl?: string;
   createdAt: string;
@@ -242,12 +243,15 @@ export type PostSummary = {
   commentCount: number;
   writer?: User;
   status: PostStatus;
-  
+
   views?: number;
   like?: number;
   dislike?: number;
   userName?: string;
   files?: string[];
+  postType?: PostType;
+  address?: string;
+  commentCnt?: number;
 };
 
 export type Post = PostSummary & {
@@ -255,19 +259,23 @@ export type Post = PostSummary & {
   updatedAt?: string;
   myReaction?: ReactionType;
   dislikeCount?: number;
-  comments?: Comment[];
-  
+  comments?: CommentType[];
+
   views?: number;
   like?: number;
   dislike?: number;
   userName?: string;
   files?: string[];
+  postType?: PostType;
+  address?: string;
+  isState?: string;
+  commentCnt?: number;
 };
 
 export type CreatePostRequest = {
   title: string;
   content: string;
-  category: PostCategory;
+  category: string;
   tagIds: number[];
   files?: File[];
 };
@@ -275,7 +283,7 @@ export type CreatePostRequest = {
 export type UpdatePostRequest = {
   title?: string;
   content?: string;
-  category?: PostCategory;
+  category?: string;
   tagIds?: number[];
   files?: File[];
   removeFileIds?: number[];
@@ -284,13 +292,16 @@ export type UpdatePostRequest = {
 export type PostListResponse = {
   postList: PostSummary[];
   total: number;
+  totalPages: number;
+  content?: PostSummary[];
+  totalElements?: number;
 };
 
 export type PostListParams = {
   page?: number;
   size?: number;
   sort?: string;
-  category?: PostCategory;
+  category?: string;
   tagIds?: number[];
   searchTerm?: string;
 };
@@ -300,7 +311,7 @@ export type PostResponse = {
 };
 
 export type CommentListResponse = {
-  content: Comment[];
+  content: CommentType[];
   totalElements: number;
   totalPages: number;
   size: number;
@@ -310,7 +321,7 @@ export type CommentListResponse = {
 };
 
 export type CommentResponse = {
-  comment: Comment;
+  comment: CommentType;
 };
 
 export type FileInfo = {
@@ -350,6 +361,8 @@ export type ApiCreatePostRequest = {
   tags: string[];
   language?: string;
   emotion?: string;
+  postType?: PostType;
+  address?: string;
 };
 
 export type ApiUpdatePostRequest = {
@@ -360,11 +373,13 @@ export type ApiUpdatePostRequest = {
   language?: string;
   emotion?: string;
   removeFileIds?: number[];
+  postType?: PostType;
+  address?: string;
 };
 
 export type PostList = PaginatedResponse<Post>;
 
-export type CommentList = PaginatedResponse<Comment>;
+export type CommentList = PaginatedResponse<CommentType>;
 
 export type ReplyList = PaginatedResponse<Reply>;
 
@@ -381,3 +396,18 @@ export type SearchParams = {
   size?: number;
   sort?: string;
 };
+
+export interface ReplyType {
+  replyId: number;
+  commentId: number;
+  content: string;
+  writer?: User;
+  createdAt: string;
+  updatedAt?: string;
+  likeCount: number;
+  dislikeCount: number;
+  myReaction?: ReactionType;
+  liked?: boolean;
+  disliked?: boolean;
+  translating?: boolean; // 번역 중 상태를 표시
+}

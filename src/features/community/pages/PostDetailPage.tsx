@@ -170,11 +170,17 @@ const PostDetailPage: React.FC = () => {
         // 백엔드 응답 필드에 맞게 매핑
         const mappedPost = {
           ...fetchedPost,
-          viewCount: fetchedPost.views,
-          likeCount: fetchedPost.like,
-          dislikeCount: fetchedPost.dislike,
+          viewCount: fetchedPost.views || 0,
+          likeCount: fetchedPost.like || 0,
+          dislikeCount: fetchedPost.dislike || 0,
+          // 원본 내용 사용 - 번역본 대기 없이 바로 표시
           content: fetchedPost.content || '',
+          title: fetchedPost.title || '[제목 없음]',
           myReaction: convertIsStateToMyReaction(fetchedPost.isState),
+          category: fetchedPost.category || '전체',
+          postType: fetchedPost.postType || '자유',
+          status: fetchedPost.status || 'ACTIVE',
+          createdAt: fetchedPost.createdAt || new Date().toISOString(),
         };
         
         console.log('[DEBUG] 게시글 API 로드 성공:', {
@@ -317,7 +323,7 @@ const PostDetailPage: React.FC = () => {
   };
 
   // 현재 사용자가 게시글 작성자인지 확인
-  const isPostAuthor = currentUser && post?.writer?.userId?.toString() === currentUser.id;
+  const isPostAuthor = currentUser && post?.userId?.toString() === currentUser.id;
 
   // 게시글 로딩 중 표시
   if (loading) {

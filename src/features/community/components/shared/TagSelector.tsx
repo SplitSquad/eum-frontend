@@ -67,10 +67,10 @@ const mainCategories = [
 
 // 대분류별 하위 태그
 const subTags: Record<string, string[]> = {
-  travel: ['관광/체험', '식도락/맛집', '교통/이동', '숙소/지역정보', '대사관/응급', 'travel'],
-  living: ['부동산/계약', '생활환경/편의', '문화/생활', '주거지 관리/유지', 'travel'],
-  study: ['학사/캠퍼스', '학업지원/시설', '행정/비자/서류', '기숙사/주거', 'travel'],
-  job: ['이력/채용준비', '비자/법률/노동', '잡페어/네트워킹', '알바/파트타임', 'travel'],
+  travel: ['관광/체험', '식도락/맛집', '교통/이동', '숙소/지역정보', '대사관/응급'],
+  living: ['부동산/계약', '생활환경/편의', '문화/생활', '주거지 관리/유지'],
+  study: ['학사/캠퍼스', '학업지원/시설', '행정/비자/서류', '기숙사/주거'],
+  job: ['이력/채용준비', '비자/법률/노동', '잡페어/네트워킹', '알바/파트타임'],
 };
 
 interface TagSelectorProps {
@@ -82,7 +82,7 @@ interface TagSelectorProps {
 const TagSelector: React.FC<TagSelectorProps> = ({
   selectedTags = [],
   onChange,
-  maxSelection = 3,
+  maxSelection = 1, // 태그 수 1개로 제한
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));

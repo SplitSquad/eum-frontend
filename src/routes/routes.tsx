@@ -7,7 +7,14 @@ import { LoginPage, OAuthCallbackPage, AccessDeniedPage } from '../features/auth
 import Profile from '../pages/Profile';
 
 // 커뮤니티 기능 임포트
-import { PostListPage, PostDetailPage, PostCreatePage } from '../features/community/pages';
+// import { PostListPage, PostDetailPage, PostCreatePage } from '../features/community/pages';
+import { CommunityRoutes } from '../features/community';
+
+// 토론 기능 임포트
+import { DebateRoutes } from '../features/debate';
+
+// 마이페이지 기능 임포트
+import { MypageRoutes } from '../features/mypage';
 
 // 레이아웃
 const AppLayout = lazy(() => import('../app/App'));
@@ -23,7 +30,7 @@ const DebateDetail = lazy(() => import('../pages/DebateDetail'));
 const Info = lazy(() => import('../pages/Info'));
 const InfoDetail = lazy(() => import('../pages/InfoDetail'));
 const AiAssistant = lazy(() => import('../pages/AiAssistant'));
-const MyPage = lazy(() => import('../pages/MyPage'));
+// const MyPage = lazy(() => import('../pages/MyPage')); // 새로운 마이페이지 모듈로 대체
 const Search = lazy(() => import('../pages/Search'));
 const Onboarding = lazy(() => import('../pages/Onboarding'));
 */
@@ -102,89 +109,29 @@ const router = createBrowserRouter([
 
       // 커뮤니티 (로그인 필요)
       {
-        path: 'community',
-        children: [
-          {
-            path: '',
-            element: (
-              <Suspense fallback={<LoadingFallback />}>
-                <AuthGuard>
-                  <PostListPage />
-                </AuthGuard>
-              </Suspense>
-            ),
-          },
-          {
-            path: 'create',
-            element: (
-              <Suspense fallback={<LoadingFallback />}>
-                <AuthGuard>
-                  <PostCreatePage />
-                </AuthGuard>
-              </Suspense>
-            ),
-          },
-          {
-            path: 'edit/:postId',
-            element: (
-              <Suspense fallback={<LoadingFallback />}>
-                <AuthGuard>
-                  <PostCreatePage />
-                </AuthGuard>
-              </Suspense>
-            ),
-          },
-          {
-            path: ':postId',
-            element: (
-              <Suspense fallback={<LoadingFallback />}>
-                <AuthGuard>
-                  <PostDetailPage />
-                </AuthGuard>
-              </Suspense>
-            ),
-          },
-          {
-            path: 'post/:id',
-            element: (
-              <Suspense fallback={<LoadingFallback />}>
-                <AuthGuard>
-                  <PostDetailPage />
-                </AuthGuard>
-              </Suspense>
-            ),
-          },
-        ],
+        path: 'community/*',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <AuthGuard>
+              <CommunityRoutes />
+            </AuthGuard>
+          </Suspense>
+        ),
+      },
+
+      // 토론 (로그인 필요)
+      {
+        path: 'debate/*',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <AuthGuard>
+              <DebateRoutes />
+            </AuthGuard>
+          </Suspense>
+        ),
       },
 
       /* 아직 구현되지 않은 페이지 주석 처리
-      // 토론 (로그인 필요)
-      {
-        path: 'debate',
-        children: [
-          {
-            path: '',
-            element: (
-              <Suspense fallback={<LoadingFallback />}>
-                <AuthGuard>
-                  <Debate />
-                </AuthGuard>
-              </Suspense>
-            ),
-          },
-          {
-            path: ':id',
-            element: (
-              <Suspense fallback={<LoadingFallback />}>
-                <AuthGuard>
-                  <DebateDetail />
-                </AuthGuard>
-              </Suspense>
-            ),
-          },
-        ],
-      },
-
       // 정보 (누구나 접근 가능)
       {
         path: 'info',
@@ -219,31 +166,21 @@ const router = createBrowserRouter([
           </Suspense>
         ),
       },
+      */
 
       // 마이페이지 (로그인 필요)
       {
-        path: 'mypage',
+        path: 'mypage/*',
         element: (
           <Suspense fallback={<LoadingFallback />}>
             <AuthGuard>
-              <MyPage />
+              <MypageRoutes />
             </AuthGuard>
           </Suspense>
         ),
       },
-      */
 
-      // 프로필 페이지 (로그인 필요)
-      {
-        path: 'profile',
-        element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <AuthGuard>
-              <Profile />
-            </AuthGuard>
-          </Suspense>
-        ),
-      },
+      
 
       /* 아직 구현되지 않은 페이지 주석 처리
       // 검색 (누구나 접근 가능)

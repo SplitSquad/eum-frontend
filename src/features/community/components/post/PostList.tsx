@@ -8,6 +8,7 @@ import {
   useMediaQuery,
   useTheme,
   Paper,
+  Fade,
 } from '@mui/material';
 import PostCard from './PostCard';
 import { PostSummary, PostFilter } from '../../types';
@@ -37,7 +38,7 @@ const PostList: React.FC<PostListProps> = ({
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  
+
   // 스토어에서 상태와 액션을 가져옴
   const {
     posts: storePosts,
@@ -51,43 +52,77 @@ const PostList: React.FC<PostListProps> = ({
 
   // 현재 페이지 로컬 상태 (UI 표시용)
   const [currentPage, setCurrentPage] = useState(1);
-  
+
   // 초기 데이터 로드
   useEffect(() => {
     // 외부에서 데이터를 받은 경우 스토어 사용 안함
     if (propPosts) return;
-  
+
     // 첫 로드 시에만 데이터 가져오기
     if (storePosts.length === 0 && !postLoading) {
       console.log('[DEBUG] PostList - 초기 데이터 로드 시작');
       fetchPosts();
     }
   }, [propPosts, fetchPosts, storePosts.length, postLoading]);
-  
+
+  // postPageInfo가 변경될 때 현재 페이지 업데이트
+  useEffect(() => {
+    if (propPosts) return;
+
+    // postPageInfo.page는 0-based이므로 UI에 표시할 때는 1을 더함
+    const uiPage = postPageInfo.page + 1;
+    console.log('[DEBUG] postPageInfo 변경 감지 - 페이지 동기화:', uiPage);
+    setCurrentPage(uiPage);
+  }, [propPosts, postPageInfo]);
+
   // 필터 변경 시 효과 (페이지는 1로 리셋)
   useEffect(() => {
     // 외부에서 데이터를 받은 경우 필터 변경에 반응하지 않음
     if (propPosts) return;
-    
-    // postFilter에 변경이 있었을 때 현재 페이지 초기화
-    setCurrentPage(1);
+
+    // 페이지 정보 변경이 아닌 다른 필터 변경 시에만 페이지 초기화
+    if (postFilter.page === 0) {
+      setCurrentPage(1);
+    }
   }, [propPosts, postFilter]);
-  
+
   // 페이지 변경 처리
-  const handlePageChange = async (event: React.ChangeEvent<unknown>, page: number) => {
+  const handlePageChange = (event: React.ChangeEvent<unknown>, page: number) => {
     console.log('[DEBUG] 페이지 변경:', page);
-    
+
     // 현재 UI 표시용 페이지 업데이트
     setCurrentPage(page);
-    
+
     // API 페이지는 0부터 시작
     const apiPage = page - 1;
-    
-    // 스토어를 통해 데이터 요청
-    await fetchPosts({ ...postFilter, page: apiPage });
-    
-    // 페이지 변경 후 맨 위로 스크롤
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    try {
+      // 콘솔에 현재 필터 상태 기록
+      console.log('[DEBUG] 페이지 변경 - 현재 필터 상태:', postFilter);
+
+      // 스토어를 통해 데이터 요청
+      fetchPosts({
+        ...postFilter,
+        page: apiPage,
+        size: 6, // 페이지당 6개 아이템으로 고정
+      });
+
+      // 페이지 변경 후 맨 위로 스크롤
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (error) {
+      console.error('페이지 변경 중 오류 발생:', error);
+    }
+  };
+
+  // 게시글 목록 조회 함수 (필터 변경 시 사용)
+  const handleFilterChange = (newFilter: Partial<PostFilter>) => {
+    console.log('필터 변경:', newFilter);
+    fetchPosts({
+      ...postFilter,
+      ...newFilter,
+      page: 0, // 필터 변경 시 첫 페이지로 이동
+      size: 6, // 페이지 크기 명시적으로 6으로 설정
+    });
   };
 
   // 최종적으로 표시될 posts, loading, error
@@ -97,6 +132,16 @@ const PostList: React.FC<PostListProps> = ({
   const totalPages = (propPosts ? Math.ceil(propPosts.length / 6) : postPageInfo.totalPages) || 1;
   const totalItems = propPosts ? propPosts.length : postPageInfo.totalElements;
 
+  // 이전 게시글 데이터 저장 - 로딩 중에도 이전 데이터 표시
+  const [prevPosts, setPrevPosts] = useState<PostSummary[]>([]);
+
+  // 로딩 시작 시 이전 게시글 저장
+  useEffect(() => {
+    if (!loading && posts.length > 0) {
+      setPrevPosts(posts);
+    }
+  }, [loading, posts]);
+
   // 디버깅을 위한 임시 게시글 데이터
   const mockPosts: PostSummary[] = [
     {
@@ -104,7 +149,7 @@ const PostList: React.FC<PostListProps> = ({
       title: '테스트 게시글 (목업)',
       content:
         '렌더링 확인용 테스트 게시글입니다. 정상적으로 표시되면 스타일과 레이아웃이 작동하는 것입니다.',
-      category: '자유',
+      category: '모임',
       tags: [{ tagId: 1, name: '테스트', category: '자유' }],
       writer: {
         userId: 1,
@@ -121,8 +166,18 @@ const PostList: React.FC<PostListProps> = ({
     },
   ];
 
-  // 실제 게시글이 없고 로딩중이 아닐 경우에만 목업 데이터 사용
-  const displayPosts = !loading && posts && posts.length === 0 ? mockPosts : posts;
+  // 실제로 표시할 게시글 결정
+  // 로딩 중이면 이전 게시글 사용, 데이터 없으면 모의 데이터 사용
+  const displayPosts = loading
+    ? prevPosts.length > 0
+      ? prevPosts
+      : posts
+    : posts && posts.length > 0
+      ? posts
+      : mockPosts;
+
+  // 로딩 중이지만 표시할 데이터가 있는 경우
+  const isDataAvailableDuringLoading = loading && prevPosts.length > 0;
 
   return (
     <Box sx={{ width: '100%', mb: 4 }}>
@@ -137,7 +192,7 @@ const PostList: React.FC<PostListProps> = ({
         }}
       >
         <Typography variant="body1">
-          {loading
+          {loading && !isDataAvailableDuringLoading
             ? '게시글을 불러오는 중...'
             : error
               ? `오류: ${error}`
@@ -161,7 +216,8 @@ const PostList: React.FC<PostListProps> = ({
         </Typography>
       )}
 
-      {loading && (
+      {/* 전체 화면 로딩은 초기 로딩시에만 표시 */}
+      {loading && !isDataAvailableDuringLoading && (
         <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
           <CircularProgress size={40} sx={{ color: '#FF9999' }} />
         </Box>
@@ -173,18 +229,21 @@ const PostList: React.FC<PostListProps> = ({
         </Alert>
       )}
 
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(300px, 1fr))',
-          gap: 3,
-          width: '100%',
-        }}
-      >
-        {displayPosts.map(post => (
-          <PostCard key={post.postId} post={post} />
-        ))}
-      </Box>
+      <Fade in={true} style={{ transitionDuration: '300ms' }}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+            gap: 3,
+            width: '100%',
+            opacity: isDataAvailableDuringLoading ? 0.7 : 1, // 로딩 중일 때 살짝 투명하게
+          }}
+        >
+          {displayPosts.map(post => (
+            <PostCard key={post.postId} post={post} />
+          ))}
+        </Box>
+      </Fade>
 
       {!loading && !error && displayPosts.length === 0 && (
         <Box
@@ -216,6 +275,7 @@ const PostList: React.FC<PostListProps> = ({
           sx={{
             display: 'flex',
             justifyContent: 'center',
+            alignItems: 'center',
             mt: 4,
             '& .MuiPagination-ul': {
               '& .MuiPaginationItem-root': {
@@ -236,6 +296,11 @@ const PostList: React.FC<PostListProps> = ({
             showFirstButton
             showLastButton
           />
+
+          {/* 작은 로딩 인디케이터 - 페이지 전환 중에만 표시 */}
+          {isDataAvailableDuringLoading && (
+            <CircularProgress size={20} sx={{ color: '#FF9999', ml: 2 }} />
+          )}
         </Box>
       )}
     </Box>

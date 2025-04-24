@@ -6,7 +6,7 @@ import {
   Post,
   Comment,
   Reply,
-  CategoryType,
+  PostType,
   ReactionType,
   PostSummary,
 } from '../types';
@@ -31,7 +31,7 @@ interface CommunityStore {
     totalElements: number;
     totalPages: number;
   };
-  selectedCategory: CategoryType;
+  selectedCategory: PostType;
 
   // 댓글 관련 상태 (commentStore에서 구독)
   comments: Comment[];
@@ -70,7 +70,7 @@ interface CommunityStore {
     likeCount: number;
     dislikeCount: number;
   }) => void;
-  setSelectedCategory: (category: CategoryType) => void;
+  setSelectedCategory: (category: PostType) => void;
   setPostFilter: (filter: any) => void;
   resetPostsState: () => void;
 
@@ -100,7 +100,7 @@ interface CommunityStore {
   resetCommentsState: () => void;
 
   // 검색 관련 액션 (searchStore 액션 호출)
-  searchPosts: (keyword: string, searchType?: string) => Promise<void>;
+  searchPosts: (keyword: string, searchType?: string, searchParams?: any) => Promise<void>;
   setSearchKeyword: (keyword: string) => void;
   setSearchType: (type: string) => void;
   resetSearchState: () => void;
@@ -242,7 +242,7 @@ export const useCommunityStore = create<CommunityStore>((set, get) => {
       });
     },
     
-    setSelectedCategory: (category: CategoryType) => {
+    setSelectedCategory: (category: PostType) => {
       usePostStore.getState().setSelectedCategory(category);
     },
     
@@ -312,30 +312,55 @@ export const useCommunityStore = create<CommunityStore>((set, get) => {
     },
 
     // 검색 관련 액션 - searchStore 액션 호출
-    searchPosts: async (keyword: string, searchType?: string) => {
+    searchPosts: async (keyword: string, searchType?: string, searchParams?: any) => {
       // 검색 로딩 상태 표시
       set({ searchLoading: true });
       
       try {
-        // postStore의 검색 기능 사용
-        const searchParams = { keyword, searchType };
-        const posts = await usePostStore.getState().fetchPosts({
-          page: 0,
-          size: 10,
-          searchBy: searchType || 'all',
-          keyword: keyword
+        console.log('[DEBUG] communityStore.searchPosts 호출됨:', {
+          keyword: keyword,
+          searchType: searchType,
+          searchParams: searchParams
+        });
+        
+        // postStore의 searchPosts 호출 - 개별 파라미터로 전달
+        await usePostStore.getState().searchPosts(
+          keyword,
+          searchType || 'title_content',
+          searchParams?.page || 0,
+          searchParams?.size || 6
+        );
+        
+        // postStore에서 업데이트된 posts 가져오기
+        const searchResults = usePostStore.getState().posts;
+        console.log('[DEBUG] 검색 결과:', {
+          resultCount: searchResults.length,
+          firstResult: searchResults[0] || '결과 없음'
         });
         
         // 결과 저장
         set({ 
           searchKeyword: keyword,
-          searchType: searchType || 'all',
-          searchResults: usePostStore.getState().posts,
+          searchType: searchType || 'title_content',
+          searchResults: searchResults,
           searchLoading: false
         });
+        
+        return {
+          success: true,
+          resultCount: searchResults.length
+        };
       } catch (error) {
-        console.error('검색 실패:', error);
-        set({ searchLoading: false });
+        console.error('[ERROR] 검색 실패:', error);
+        set({ 
+          searchLoading: false,
+          searchResults: [] 
+        });
+        
+        return {
+          success: false,
+          error: error
+        };
       }
     },
     
