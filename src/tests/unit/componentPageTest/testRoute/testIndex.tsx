@@ -42,6 +42,11 @@ const TestAppRoutes = () => {
         </Route>
         {/*  그 외는 404 */}
         <Route path="/*" element={<NotFound />} />
+        {/* <Route path="/community/write" element={<PostArticle />} />
+        <Route path="/community/groups" element={<CommunityGroup />} />
+        <Route path="/community/groups/:id" element={<CommunityGroupDetail />} />
+        <Route path="/community/board" element={<CommunityBoard />} />
+        <Route path="/community/board/:id" element={<CommunityBoardDetail />} /> */}
       </Routes>
     </BrowserRouter>
   );

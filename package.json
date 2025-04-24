@@ -11,6 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ckeditor/ckeditor5-react": "^9.5.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^7.0.2",
@@ -19,10 +20,12 @@
     "@tailwindcss/vite": "^4.1.4",
     "axios": "^1.8.4",
     "date-fns": "^4.1.0",
+    "notistack": "^3.0.2",
+    "ckeditor5": "^45.0.0",
     "framer-motion": "^12.7.4",
     "i18next": "^25.0.0",
     "lottie-react": "^2.4.1",
-    "notistack": "^3.0.2",
+    "lucide-react": "^0.503.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-i18next": "^15.4.1",

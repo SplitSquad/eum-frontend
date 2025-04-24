@@ -47,8 +47,9 @@
   - npm install @mui/icons-material
   - npm install framer-motion
   - npm install lottie-react
-
-  설치 라이브러리
+  - npn install lucide-react
+  - npm install ckeditor5 @ckeditor/ckeditor5-react
+    설치 라이브러리
 
   - npm install zustand
 
