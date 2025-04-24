@@ -4,6 +4,7 @@ import Notification from '@/components/feedback/Notification';
 import logo from '@/assets/images/characters/이음로고.png';
 import Eum from '@/assets/images/characters/이음이.png';
 import { mockNotifications } from '@/tests/mocks';
+import DropDown from '../base/DropDown';
 
 /*notification 호출 여기서 추후 api 추가*/
 
@@ -50,12 +51,15 @@ function Header({ userName = '기본값', userCountry = '한국', userType = '�
               >
                 한국생활 가이드
               </button>
-              <button
-                onClick={() => navigate('/community')}
-                className="text-gray-800 font-medium hover:text-primary"
-              >
-                모임과 이야기
-              </button>
+              <DropDown
+                label="모임과 이야기"
+                items={[
+                  { label: '소모임', path: '/community/groups' },
+                  { label: '소통 게시판', path: '/community/board' },
+                ]}
+                defaultPath="/community/groups"
+                isTopNav={true}
+              />
               <button
                 onClick={() => navigate('/debate')}
                 className="text-gray-800 font-medium hover:text-primary"
