@@ -10,6 +10,10 @@ import TempAuthPage from '@/features/auth/pages/TempAuthPage';
 import CommunityCreate from '@/features/community/pages/PostCreateEditPage';
 import CommunityDetail from '@/features/community/pages/PostDetailPage';
 import AppLayout from '@/components/layout/AppLayout';
+import CommunityBoard from '../testPages/CommunityBoard';
+import CommunityBoardDetail from '../testPages/CommunityBoardDetail';
+import CommunityGroup from '../testPages/CommunityGroup';
+import CommunityGroupDetail from '../testPages/CommunityGroupDetail';
 
 //import Search from '@/tests/unit/componentPageTest/testPages/Search';
 //import TranslationLoading from '@/tests/unit/componentPageTest/testPages/TranslationLoading';
@@ -39,14 +43,15 @@ const TestAppRoutes = () => {
           <Route path="/info" element={<Info />} />
           <Route path="/ai-assistant" element={<AiAssistant />} />
           <Route path="/mypage" element={<MyPage />} />
+          <Route path="/community/board" element={<CommunityBoard />} />
+          <Route path="/community/groups" element={<CommunityGroup />} />
+          <Route path="/community/groups/:id" element={<CommunityGroupDetail />} />
+
+          <Route path="/community/board/:id" element={<CommunityBoardDetail />} />
         </Route>
         {/*  그 외는 404 */}
         <Route path="/*" element={<NotFound />} />
-        {/* <Route path="/community/write" element={<PostArticle />} />
-        <Route path="/community/groups" element={<CommunityGroup />} />
-        <Route path="/community/groups/:id" element={<CommunityGroupDetail />} />
-        <Route path="/community/board" element={<CommunityBoard />} />
-        <Route path="/community/board/:id" element={<CommunityBoardDetail />} /> */}
+        {/* <Route path="/community/write" element={<PostArticle />} /> */}
       </Routes>
     </BrowserRouter>
   );
