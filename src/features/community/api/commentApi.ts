@@ -1,5 +1,5 @@
 import apiClient from './apiClient';
-import { Comment, Reply, ReactionType } from '../types';
+import { Comment, Reply, ReactionType } from '../types/index';
 
 /**
  * 댓글 API 관련 상수
@@ -11,8 +11,8 @@ const REPLIES_BASE_URL = '/community/reply';
  * isState 문자열을 myReaction 타입으로 변환하는 헬퍼 함수
  */
 function convertIsStateToMyReaction(isState: string | null | undefined): ReactionType | undefined {
-  if (isState === '좋아요') return 'LIKE';
-  if (isState === '싫어요') return 'DISLIKE';
+  if (isState === '좋아요') return 'LIKE' as ReactionType;
+  if (isState === '싫어요') return 'DISLIKE' as ReactionType;
   return undefined;
 }
 
@@ -265,16 +265,40 @@ export const CommentApi = {
    * 대댓글 생성
    */
   createReply: async (
+    postId: number,
     commentId: number, 
     content: string
   ): Promise<Reply> => {
     try {
-      // 백엔드 API 요청 형식에 맞게 수정
-      const response = await apiClient.post<Reply>(REPLIES_BASE_URL, {
+      console.log('[DEBUG] 대댓글 생성 시작:', {
+        postId,
         commentId,
+        content: content && content.length > 0 ? content.substring(0, 20) + '...' : '(내용 없음)'
+      });
+      
+      // content가 undefined이거나 빈 문자열인 경우 예외 처리
+      if (!content || content.trim() === '') {
+        throw new Error('댓글 내용이 비어있습니다.');
+      }
+      
+      // postId와 commentId가 유효한 숫자인지 확인
+      if (isNaN(Number(postId)) || isNaN(Number(commentId))) {
+        throw new Error('유효하지 않은 게시글 ID 또는 댓글 ID입니다.');
+      }
+      
+      // 백엔드 API 요청 형식에 맞게 수정
+      const payload = {
+        postId: Number(postId),
+        commentId: Number(commentId),
         content,
         language: 'ko'  // 백엔드 요구사항에 맞게 추가
-      });
+      };
+      
+      console.log('[DEBUG] 대댓글 생성 페이로드:', payload);
+      
+      const response = await apiClient.post<Reply>(REPLIES_BASE_URL, payload);
+      
+      console.log('[DEBUG] 대댓글 생성 응답:', response);
       return response;
     } catch (error) {
       console.error('대댓글 생성 실패:', error);

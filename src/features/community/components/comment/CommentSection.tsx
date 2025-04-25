@@ -333,12 +333,56 @@ const CommentSection: React.FC<CommentSectionProps> = ({
 
     setSubmittingComment(true);
     try {
-      await CommentApi.createComment(postId, 'post', newCommentText);
+      console.log('[DEBUG] 댓글 작성 시작:', newCommentText.substring(0, 20) + '...');
+      
+      // 먼저 UI에 임시 댓글 추가 (사용자가 작성한 원문 그대로 표시)
+      const tempComment: Comment = {
+        commentId: -Date.now(), // 임시 고유 ID (음수로 설정하여 실제 ID와 충돌 방지)
+        postId,
+        content: newCommentText,
+        createdAt: new Date().toISOString(),
+        likeCount: 0,
+        dislikeCount: 0,
+        replyCount: 0,
+        writer: {
+          userId: user.id,
+          nickname: user.name || '사용자',
+          profileImage: '',
+        },
+        translating: true, // 번역 중임을 표시하는 플래그
+      };
+      
+      // 먼저 UI에 댓글 추가
+      setComments(prev => [tempComment, ...prev]);
+      setTotal(prev => prev + 1);
+      
+      // 입력 필드 초기화
       setNewCommentText('');
-      fetchComments(); // 새 댓글 생성 후에는 목록 갱신 필요
+      
+      // 백엔드 API 호출
+      const response = await CommentApi.createComment(postId, 'post', newCommentText);
+      console.log('[DEBUG] 댓글 생성 응답:', response);
+      
+      // 임시 댓글을 실제 댓글로 대체
+      setComments(prev => 
+        prev.map(comment => 
+          comment.commentId === tempComment.commentId
+            ? {
+                ...response,
+                translating: false // 번역 완료
+              }
+            : comment
+        )
+      );
+      
       enqueueSnackbar('댓글이 등록되었습니다.', { variant: 'success' });
     } catch (error) {
       console.error('[ERROR] 댓글 작성 실패:', error);
+      
+      // 에러 발생 시 임시 댓글 제거
+      setComments(prev => prev.filter(comment => comment.commentId > 0));
+      setTotal(prev => Math.max(0, prev - 1));
+      
       enqueueSnackbar('댓글 작성에 실패했습니다.', { variant: 'error' });
     } finally {
       setSubmittingComment(false);
@@ -733,16 +777,46 @@ const CommentSection: React.FC<CommentSectionProps> = ({
 
     try {
       console.log(`[DEBUG] 댓글 ${commentId}에 대댓글 작성 시작:`, content);
-      const response = await CommentApi.createReply(commentId, content);
-      console.log('[DEBUG] 대댓글 작성 응답:', response);
-
-      // 답글 폼 초기화 및 토글 유지
-      controls.handleReplyChange(commentId, '');
-
-      // 대댓글 목록만 다시 로드 (전체 새로고침 없이)
-      await loadReplies(commentId);
       
-      // 댓글의 대댓글 카운트 증가 (전체 새로고침 없이)
+      // 반드시 숫자형으로 변환하여 전달
+      const numericCommentId = Number(commentId);
+      
+      // 유효성 검사 추가: 숫자가 아니면 에러 처리
+      if (isNaN(numericCommentId)) {
+        throw new Error('유효하지 않은 댓글 ID입니다.');
+      }
+      
+      // 댓글 내용 유효성 검사 추가
+      if (!content || content.trim() === '') {
+        throw new Error('답글 내용이 비어있습니다.');
+      }
+      
+      // 임시 답글 객체 생성
+      const tempReply: Reply = {
+        replyId: -Date.now(), // 임시 ID (음수)
+        commentId: numericCommentId,
+        content: content,
+        createdAt: new Date().toISOString(),
+        likeCount: 0,
+        dislikeCount: 0,
+        writer: {
+          userId: user.id,
+          nickname: user.name || '사용자',
+          profileImage: '',
+        },
+        translating: true, // 번역 중임을 표시
+      };
+      
+      // 사용자 입력 초기화
+      controls.handleReplyChange(commentId, '');
+      
+      // 먼저 UI에 임시 답글 추가
+      setReplies(prev => ({
+        ...prev,
+        [numericCommentId]: [...(prev[numericCommentId] || []), tempReply]
+      }));
+      
+      // 댓글의 대댓글 카운트 증가
       setComments(prevComments => 
         prevComments.map(comment => 
           comment.commentId === commentId
@@ -754,10 +828,53 @@ const CommentSection: React.FC<CommentSectionProps> = ({
             : comment
         )
       );
+      
+      // 백엔드 API 호출
+      const response = await CommentApi.createReply(postId, numericCommentId, content);
+      console.log('[DEBUG] 대댓글 작성 응답:', response);
+
+      // 임시 답글을 실제 답글로 대체
+      setReplies(prev => {
+        const updatedReplies = { ...prev };
+        if (updatedReplies[numericCommentId]) {
+          updatedReplies[numericCommentId] = updatedReplies[numericCommentId].map(reply => 
+            reply.replyId === tempReply.replyId
+              ? {
+                  ...response,
+                  translating: false // 번역 완료
+                }
+              : reply
+          );
+        }
+        return updatedReplies;
+      });
 
       enqueueSnackbar('답글이 등록되었습니다.', { variant: 'success' });
     } catch (error) {
       console.error('[ERROR] 답글 작성 실패:', error);
+      
+      // 에러 발생 시 임시 답글 제거 및 카운트 복구
+      setReplies(prev => {
+        const updatedReplies = { ...prev };
+        if (updatedReplies[commentId]) {
+          updatedReplies[commentId] = updatedReplies[commentId].filter(reply => reply.replyId > 0);
+        }
+        return updatedReplies;
+      });
+      
+      // 댓글의 대댓글 카운트 복구
+      setComments(prevComments => 
+        prevComments.map(comment => 
+          comment.commentId === commentId
+            ? { 
+                ...comment, 
+                replyCount: Math.max(0, (comment.replyCount || 0) - 1),
+                reply: Math.max(0, (comment.reply || 0) - 1)
+              }
+            : comment
+        )
+      );
+      
       enqueueSnackbar('답글 작성에 실패했습니다.', { variant: 'error' });
     }
   };
@@ -873,39 +990,55 @@ const CommentSection: React.FC<CommentSectionProps> = ({
 
   // 개별 댓글 카드 렌더링
   const renderCommentCard = (comment: Comment) => (
-    <CommentCardWrapper key={comment.commentId}>
-      <CommentHeader>
-        <Box display="flex" alignItems="center" gap={1}>
-          <Avatar src={comment.writer?.profileImage} alt={comment.writer?.nickname || ''} />
-          <Typography variant="body2" fontWeight="bold">
-            {comment.writer?.nickname || '익명'}
-          </Typography>
+    <Box
+      sx={{
+        mb: 2,
+        p: 2,
+        borderRadius: 2,
+        backgroundColor: 'white',
+        boxShadow: 1,
+        transition: 'box-shadow 0.3s',
+        '&:hover': {
+          boxShadow: 2,
+        },
+      }}
+    >
+      {/* 댓글 작성자 정보 및 작성 시간 */}
+      <Box display="flex" alignItems="center" mb={1}>
+        <Avatar
+          src={comment.writer?.profileImage || ''}
+          sx={{ width: 40, height: 40, mr: 1 }}
+        >
+          {comment.writer?.nickname?.charAt(0) || '?'}
+        </Avatar>
+        <Box>
+          <Typography variant="subtitle2">{comment.writer?.nickname || '익명'}</Typography>
           <Typography variant="caption" color="text.secondary">
-            {formatDateToAbsolute(comment.createdAt)}
+            {format(new Date(comment.createdAt), 'yyyy년 MM월 dd일 HH:mm', { locale: ko })}
+            {comment.translating && (
+              <Typography 
+                component="span" 
+                variant="caption" 
+                sx={{ ml: 1, color: 'info.main', fontStyle: 'italic' }}
+              >
+                (번역 중...)
+              </Typography>
+            )}
           </Typography>
         </Box>
-        {currentUserId === comment.writer?.userId && (
-          <IconButton
-            onClick={e => controls.handleCommentMenuOpen(e, comment.commentId)}
-            size="small"
-          >
-            <MoreVertIcon fontSize="small" />
-          </IconButton>
-        )}
-      </CommentHeader>
+      </Box>
 
-      {controls.editMode[comment.commentId] ? (
-        <CommentForm
-          initialValue={comment.content}
-          onSubmit={async content => {
-            return await handleCommentForm(comment.commentId, content);
-          }}
-          onCancel={() => controls.handleEditCancel(comment.commentId)}
-          buttonText="수정"
-        />
-      ) : (
-        <CommentContent>{comment.content}</CommentContent>
-      )}
+      {/* 댓글 내용 */}
+      <Typography
+        variant="body1"
+        sx={{
+          mb: 2,
+          whiteSpace: 'pre-wrap',
+          wordBreak: 'break-word',
+        }}
+      >
+        {comment.content}
+      </Typography>
 
       <CommentFooter>
         <ReactionButton
@@ -1082,7 +1215,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
           </>
         )}
       </Box>
-    </CommentCardWrapper>
+    </Box>
   );
 
   // 댓글 메뉴

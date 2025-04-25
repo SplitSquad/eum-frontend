@@ -3,7 +3,7 @@ import { Table, TableBody, TableCell, TableRow, TableHead, TablePagination } fro
 import { Box } from '@mui/system';
 import { usePostStore } from '../../store/postStore';
 import Loading from '@components/Loading';
-import { PostSummary, CategoryType } from '../../types';
+import { PostSummary, PostType } from '../../types';
 import PostListHeader from './PostListHeader';
 import PostListEmptyRow from './PostListEmptyRow';
 import PostListItem from './PostListItem';
@@ -41,13 +41,22 @@ const PostList: React.FC<PostListProps> = ({ filter }) => {
   };
 
   // 카테고리 변경 이벤트 핸들러
-  const handleCategoryChange = (category: CategoryType) => {
+  const handleCategoryChange = (category: string) => {
     // 카테고리가 변경되면 필터 업데이트 및 데이터 재요청
     setSelectedCategory(category);
+    
+    // 카테고리 ID를 표시 이름으로 변환
+    let categoryName = '전체';
+    if (category === 'travel') categoryName = '여행';
+    else if (category === 'living') categoryName = '주거';
+    else if (category === 'study') categoryName = '유학';
+    else if (category === 'job') categoryName = '취업';
+    else if (category !== '전체') categoryName = category;
+    
     fetchPosts({
       ...postFilter,
       page: 0, // 카테고리 변경 시 첫 페이지로 이동
-      categoryId: category === 'ALL' ? undefined : category,
+      category: categoryName
     });
   };
 

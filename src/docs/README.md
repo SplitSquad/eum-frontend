@@ -2,10 +2,19 @@
 
 
 
+### 권장 개발 도구
+
+- Visual Studio Code
+- 추천 확장 프로그램:
+  - ESLint
+  - Prettier
+  - TypeScript React code snippets
+  - Material-UI Snippets
+
+<br>
+
 ## 의존성 설치
-
-기본적으로 package.json에 업데이트가 다 되어서 아마 잘 실행될 겁니다.
-
+package.json에 다 넣어놔서 아마 npm install 만 해도 잘 될 겁니다.
 프로젝트 루트 디렉토리에서 다음 명령어를 실행하여 모든 필요한 의존성을 설치합니다:
 
 ```bash
