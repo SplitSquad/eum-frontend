@@ -12,12 +12,13 @@ interface TempLoginResult {
  *  POST /join?nation=...&language=...&address=...&name=...
  */
 export async function tempJoin(
+  userId: number,
   nation: string,
   language: string,
   address: string,
   name: string
 ): Promise<void> {
-  await axiosInstance.post('/join', null, { params: { nation, language, address, name } });
+  await axiosInstance.post('/join', null, { params: { userId, nation, language, address, name } });
 }
 
 /**
@@ -26,7 +27,7 @@ export async function tempJoin(
  *  → 응답 헤더 'access-token' 에 JWT 토큰이 담겨 있습니다.
  */
 export const tempLogin = async (userId: number) => {
-  const res = await fetch(`http://localhost:8080/login?userId=${userId}`, {
+  const res = await fetch(`http://localhost:8082/login?userId=${userId}`, {
     method: 'POST',
     credentials: 'include',
   });

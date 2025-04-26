@@ -7,7 +7,7 @@ import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } f
  * API 요청의 기본 URL과 타임아웃 설정
  */
 const config: AxiosRequestConfig = {
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8082',
   timeout: 30000, // 30초
   headers: {
     'Content-Type': 'application/json',
@@ -38,7 +38,7 @@ axiosInstance.interceptors.request.use(
     } else if (config.headers) {
       // 토큰이 없는 경우 테스트용 토큰 추가 (개발 중에만 사용)
       const testToken =
-        'eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjQsInJvbGUiOiJST0xFX1VTRVIiLCJpYXQiOjE3NDQ4NjkyNzgsImV4cCI6MTc0ODQ2OTI3OH0.iJQ-_ej0AWjrFI5z0t7R4Y0uKmUJ8tyQalXu3qlfHA4';
+        'eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInJvbGUiOiJST0xFX1VTRVIiLCJpYXQiOjE3NDUyOTc0NzcsImV4cCI6MTc0NTMzMzQ3N30.Zg8LegolAmSAyWl0gpvbsUaB9czlh5UA3-1UAZu__Ho';
       config.headers.Authorization = `${testToken}`;
       console.log('테스트 토큰 사용:', `${testToken}`);
     }

@@ -220,8 +220,8 @@ export interface CommentType {
   likeCount: number;
   dislikeCount: number;
   parentId?: number;
-  reply?: number;  // 대댓글 개수
-  replyCount?: number;  // 대댓글 개수 (백엔드 응답 필드 변경에 대응)
+  reply?: number; // 대댓글 개수
+  replyCount?: number; // 대댓글 개수 (백엔드 응답 필드 변경에 대응)
   myReaction?: ReactionType;
   replies?: CommentType[];
   liked?: boolean;
@@ -411,3 +411,8 @@ export interface ReplyType {
   disliked?: boolean;
   translating?: boolean; // 번역 중 상태를 표시
 }
+
+export type PostType = '자유' | '모임' | '전체';
+
+// UI 표시용 선택 가능한 게시글
+export type SelectablePostType = '전체' | '자유' | '모임';
