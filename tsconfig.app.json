@@ -9,6 +9,7 @@
 
     /* Bundler mode */
     "moduleResolution": "bundler",
+    "allowJs": true,
     "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "moduleDetection": "force",
@@ -23,10 +24,11 @@
     "noUncheckedSideEffectImports": true,
 
     /*alias 설정을 위해서 배이스 루트 및 경로 지정*/
-    "baseUrl": ".",
+    "baseUrl": "/Users/jangeunsang/Desktop/SKS_Final_Project/eum-frontend",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@tiptap-editor/*": ["tiptap-editor/*"]
     }
   },
-  "include": ["src"]
+  "include": ["src", "tiptap-editor"]
 }
