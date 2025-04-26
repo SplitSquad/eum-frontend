@@ -29,7 +29,6 @@ function Footer() {
       isOnBoardDone: true,
     });
   };
-  console.log(userProfile);
   return (
     <footer className="w-full bg-gray-100 py-4 text-center text-sm text-gray-500 mt-auto">
       © 프롱프롱프론트 팀<button onClick={testClickHandelr}> 로그인 전환</button>
