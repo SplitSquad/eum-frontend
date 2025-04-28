@@ -2,16 +2,16 @@ import React, { JSX } from 'react';
 
 type Props = {
   children: React.ReactNode;
-  direction?: 'row' | 'row-reverse' | 'col' | 'col-reverse';
-  justify?: 'start' | 'center' | 'end' | 'between' | 'around' | 'evenly';
-  align?: 'start' | 'center' | 'end' | 'stretch' | 'baseline';
-  gap?: string;
+  direction?: string;
+  justify?: string;
+  align?: string;
+  gap?: string; // ex: 'gap-4', 'gap-x-6'
   wrap?: boolean;
   className?: string;
   as?: keyof JSX.IntrinsicElements;
 };
 
-function Flex({
+const Flex = ({
   children,
   direction = 'row',
   justify = 'start',
@@ -20,19 +20,22 @@ function Flex({
   wrap = false,
   className = '',
   as = 'div',
-}: Props) {
+}: Props) => {
   const Element = as;
 
-  const base = `flex flex-${direction}`;
-  const justifyClass = `justify-${justify}`;
-  const alignClass = `items-${align}`;
-  const wrapClass = wrap ? 'flex-wrap' : '';
+  const baseClass = [
+    'flex',
+    `flex-${direction}`,
+    `justify-${justify}`,
+    `items-${align}`,
+    wrap ? 'flex-wrap' : '',
+    gap,
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
-  return (
-    <Element className={`${base} ${justifyClass} ${alignClass} ${gap} ${wrapClass} ${className}`}>
-      {children}
-    </Element>
-  );
-}
+  return <Element className={baseClass}>{children}</Element>;
+};
 
 export default Flex;

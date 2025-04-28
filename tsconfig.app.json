@@ -9,6 +9,7 @@
 
     /* Bundler mode */
     "moduleResolution": "bundler",
+    "allowJs": true,
     "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "moduleDetection": "force",
@@ -29,7 +30,8 @@
     /* alias 설정 */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@tiptap-editor/*": ["tiptap-editor/*"]
     }
   },
   "include": ["src", "jest.setup.js"]

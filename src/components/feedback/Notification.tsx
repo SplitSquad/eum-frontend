@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import Bell from '@/components/animations/Bell';
 import Modal from '@/components/feedback/Modal';
 import NotificationList from './NotificationList';
+import useModal from '@/shared/hooks/UseModal';
 
 type NotificationItem = {
   id: number;
@@ -14,14 +15,12 @@ type NotificationProps = {
 };
 
 const Notification = ({ items }: NotificationProps) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const { isOpen, toggleModal } = useModal();
   const [isHovered, setIsHovered] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [prevCount, setPrevCount] = useState(items.length);
 
   const timeoutRefs = useRef<NodeJS.Timeout[]>([]);
-
-  const modalHandler = () => setIsOpen(prev => !prev);
 
   const countAnimation = () => {
     timeoutRefs.current.forEach(clearTimeout);
@@ -50,7 +49,7 @@ const Notification = ({ items }: NotificationProps) => {
     <div className="relative">
       {/*모달 핸들러*/}
       <div
-        onClick={modalHandler}
+        onClick={toggleModal}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className="cursor-pointer"
@@ -62,7 +61,7 @@ const Notification = ({ items }: NotificationProps) => {
           {items.length > 99 ? '99+' : items.length}
         </div>
       )}
-      <Modal isOpen={isOpen} onClose={modalHandler}>
+      <Modal isOpen={isOpen} onClose={toggleModal}>
         <div className="text-gray-800">
           <h2 className="text-lg font-semibold mb-4">알림</h2>
           <NotificationList items={items} />

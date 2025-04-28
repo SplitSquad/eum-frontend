@@ -47,7 +47,11 @@
   - npm install @mui/icons-material
   - npm install framer-motion
   - npm install lottie-react
+  - npn install lucide-react
+  - npm install ckeditor5 @ckeditor/ckeditor5-react
+  - npm i @tiptap/react @tiptap/starter-kit @tiptap/extension-image @tiptap/extension-task-item @tiptap/extension-task-list @tiptap/extension-text-align @tiptap/extension-typography
 
+  
   설치 라이브러리
 
   - npm install zustand

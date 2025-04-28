@@ -1,0 +1,30 @@
+import React from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+
+type Props = {
+  direction: 'left' | 'right';
+  onClick: () => void;
+  disabled?: boolean;
+};
+
+const ArrowButton = ({ direction, onClick, disabled = false }: Props) => {
+  const baseStyle =
+    'flex items-center justify-center w-8 h-8 md:w-10 md:h-10 border rounded-full transition-all duration-150';
+
+  const activeStyle = 'bg-white text-gray-700 border-gray-300 hover:bg-gray-200 hover:scale-105';
+  const disabledStyle = 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200';
+
+  const icon = direction === 'left' ? <ChevronLeft size={16} /> : <ChevronRight size={16} />;
+
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`${baseStyle} ${disabled ? disabledStyle : activeStyle}`}
+    >
+      {icon}
+    </button>
+  );
+};
+
+export default ArrowButton;
