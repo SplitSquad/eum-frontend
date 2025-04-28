@@ -79,7 +79,8 @@ const CommunityBoard: React.FC = () => {
         });
       }
     }
-    navigate('/community/create');
+    //navigate('/community/create');
+    navigate('/community/write');
   };
 
   return (

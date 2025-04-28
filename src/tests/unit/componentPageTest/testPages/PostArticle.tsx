@@ -8,14 +8,59 @@ import PostTypeSelector from '@/features/community/components/forms/PostTypeSele
 import PostRegionSelector from '@/features/community/components/forms/PostRegionSelector';
 import PostTagSelector from '@/features/community/components/forms/PostTagSelector';
 import PostBodyField from '@/features/community/components/forms/PostBodyField';
-
 import { usePostFormStore } from '@/features/community/store/postFormStore';
 import Button from '@/components/base/Button'; // 저장 버튼 스타일
+import { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useSnackbar } from 'notistack';
+
+import apiClient from '@/features/community/api/apiClient';
+
+interface FileWithMetadata {
+  id: number;
+  fileName: string;
+  fileUrl: string;
+}
 
 const PostArticle = () => {
-  const { title, postType, city, district, neighborhood, category, tag, content } =
+  const navigate = useNavigate();
+  const { enqueueSnackbar } = useSnackbar();
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // 파일 업로드 관련 상태
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { title, postType, city, district, neighborhood, category, tag, content, isAnonymous } =
     usePostFormStore();
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      setIsSaving(true);
+      // 폼 데이터 준비 - API 형식에 맞게 변환
+      const postData = {
+        title: title,
+        content: content,
+        category: category,
+        language: 'ko', // 기본값
+      };
+
+      console.log('서버로 전송할 데이터:', postData);
+      // 게시글 목록 페이지로 이동
+      const response = await apiClient.post<any>('/infomation', postData);
+      console.log('게시글 저장 성공:', response.data);
+    } catch (error) {
+      console.error('게시글 저장 오류:', error);
+      enqueueSnackbar('게시글 저장 중 오류가 발생했습니다.', { variant: 'error' });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+  /*
   const handleSubmit = () => {
     const payload = {
       title,
@@ -29,7 +74,7 @@ const PostArticle = () => {
 
     console.log('최종 제출 데이터:', payload);
     // TODO: 여기서 API 호출 (axios.post('/api/posts', payload))
-  };
+  };*/
 
   return (
     <AppLayout>

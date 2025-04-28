@@ -13,6 +13,7 @@ import CommunityBoard from '../testPages/CommunityBoard';
 import CommunityBoardDetail from '../testPages/CommunityBoardDetail';
 import CommunityGroup from '../testPages/CommunityGroup';
 import CommunityGroupDetail from '../testPages/CommunityGroupDetail';
+import PostArticle from '../testPages/PostArticle';
 
 //import Search from '@/tests/unit/componentPageTest/testPages/Search';
 //import TranslationLoading from '@/tests/unit/componentPageTest/testPages/TranslationLoading';
@@ -45,6 +46,7 @@ const TestAppRoutes = () => {
         <Route path="/community/board" element={<CommunityBoard />} />
         <Route path="/community/groups" element={<CommunityGroup />} />
         <Route path="/community/groups/:id" element={<CommunityGroupDetail />} />
+        <Route path="/community/write" element={<PostArticle />} />
 
         <Route path="/community/board/:id" element={<CommunityBoardDetail />} />
         {/*  그 외는 404 */}
