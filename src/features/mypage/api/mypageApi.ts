@@ -79,6 +79,7 @@ const MOCK_DEBATES: MyDebate[] = [
   }
 ];
 
+// 북마크 목업 데이터 (실제 API 연동 전까지 사용)
 const MOCK_BOOKMARKS: MyBookmark[] = [
   {
     id: 1,
@@ -104,13 +105,19 @@ class MypageApi {
    * 사용자 프로필 정보 조회
    * TODO: 실제 API 연동 시 수정 필요
    */
-  async getProfileInfo(): Promise<ProfileInfo> {
-    // TODO: 실제 API 호출로 변경
-    // const response = await apiClient.get<ApiResponse<ProfileInfo>>('/api/mypage/profile');
-    // return response.data;
-    
-    // 목업 데이터 반환
-    return MOCK_PROFILE;
+  async getProfileInfo(userId?: number): Promise<ProfileInfo> {
+    // 목업 데이터 반환 (실제 API 연결 전까지)
+    return {
+      userId: userId || 1,
+      name: '알렉스',
+      email: 'alex@example.com',
+      profileImage: 'https://i.pravatar.cc/150?img=12',
+      introduction: '한국에서 프로그래머로 일하고 있는 외국인입니다. 한국 문화와 음식을 좋아하고, 한국어 공부에 관심이 많습니다.',
+      country: '미국',
+      language: '영어',
+      joinDate: '2023-11-01',
+      role: '취업'
+    };
   }
 
   /**
@@ -118,14 +125,14 @@ class MypageApi {
    * TODO: 실제 API 연동 시 수정 필요
    */
   async updateProfile(profileData: Partial<ProfileInfo>): Promise<ProfileInfo> {
-    // TODO: 실제 API 호출로 변경
-    // const response = await apiClient.put<ApiResponse<ProfileInfo>>('/api/mypage/profile', profileData);
-    // return response.data;
-    
     // 목업 데이터 업데이트 시뮬레이션
     console.log('프로필 업데이트 요청:', profileData);
+    
+    // 기존 프로필 가져오기
+    const currentProfile = await this.getProfileInfo(profileData.userId);
+    
     return {
-      ...MOCK_PROFILE,
+      ...currentProfile,
       ...profileData
     };
   }
@@ -135,13 +142,6 @@ class MypageApi {
    * TODO: 실제 API 연동 시 수정 필요
    */
   async changePassword(currentPassword: string, newPassword: string): Promise<boolean> {
-    // TODO: 실제 API 호출로 변경
-    // const response = await apiClient.post<ApiResponse<boolean>>('/api/mypage/change-password', {
-    //   currentPassword,
-    //   newPassword
-    // });
-    // return response.data.success;
-    
     // 비밀번호 변경 성공 시뮬레이션
     console.log('비밀번호 변경 요청', { currentPassword, newPassword });
     return true;
@@ -149,80 +149,169 @@ class MypageApi {
 
   /**
    * 내가 작성한 게시글 목록 조회
-   * TODO: 실제 API 연동 시 수정 필요
    */
-  async getMyPosts(page: number = 0, size: number = 10): Promise<PaginatedResponse<MyPost>> {
-    // TODO: 실제 API 호출로 변경
-    // const response = await apiClient.get<ApiResponse<PaginatedResponse<MyPost>>>('/api/mypage/posts', {
-    //   params: { page, size }
-    // });
-    // return response.data;
-    
-    // 목업 데이터 반환
-    return {
-      content: MOCK_POSTS,
-      pageable: {
-        pageNumber: page,
-        pageSize: size
-      },
-      last: true,
-      totalElements: MOCK_POSTS.length,
-      totalPages: 1,
-      size: MOCK_POSTS.length,
-      number: page
-    };
+  async getMyPosts(userId: number, page: number = 0, size: number = 10): Promise<PaginatedResponse<MyPost>> {
+    try {
+      if (!userId) {
+        console.error('사용자 ID가 없습니다. 내 게시글을 불러올 수 없습니다.');
+        return this.getEmptyPaginatedResponse(page, size);
+      }
+      
+      console.log(`[API] 내가 작성한 게시글 조회: userId=${userId}, page=${page}, size=${size}`);
+      
+      const response = await apiClient.get<any>('/community/post/written', {
+        params: { userId, page, size }
+      });
+      
+      console.log('[API] 내가 작성한 게시글 응답:', response);
+      
+      // 백엔드 응답 구조에 맞게 변환
+      const posts = response.postList || [];
+      const total = response.total || 0;
+      
+      // 각 게시물 정보를 프론트엔드 타입으로 변환
+      const mappedPosts: MyPost[] = posts.map((post: any) => ({
+        id: post.postId || 0,
+        title: post.title || '[제목 없음]',
+        content: post.content || '',
+        category: post.category || '일반',
+        createdAt: post.createdAt || new Date().toISOString(),
+        viewCount: post.views || 0,
+        likeCount: post.like || 0,
+        commentCount: post.commentCnt || 0
+      }));
+      
+      return {
+        content: mappedPosts,
+        pageable: {
+          pageNumber: page,
+          pageSize: size
+        },
+        last: (page + 1) * size >= total,
+        totalElements: total,
+        totalPages: Math.ceil(total / size),
+        size: mappedPosts.length,
+        number: page
+      };
+    } catch (error) {
+      console.error('내가 작성한 게시글 조회 실패:', error);
+      return this.getEmptyPaginatedResponse(page, size);
+    }
   }
 
   /**
    * 내가 작성한 댓글 목록 조회
-   * TODO: 실제 API 연동 시 수정 필요
    */
-  async getMyComments(page: number = 0, size: number = 10): Promise<PaginatedResponse<MyComment>> {
-    // TODO: 실제 API 호출로 변경
-    // const response = await apiClient.get<ApiResponse<PaginatedResponse<MyComment>>>('/api/mypage/comments', {
-    //   params: { page, size }
-    // });
-    // return response.data;
-    
-    // 목업 데이터 반환
-    return {
-      content: MOCK_COMMENTS,
-      pageable: {
-        pageNumber: page,
-        pageSize: size
-      },
-      last: true,
-      totalElements: MOCK_COMMENTS.length,
-      totalPages: 1,
-      size: MOCK_COMMENTS.length,
-      number: page
-    };
+  async getMyComments(userId: number, page: number = 0, size: number = 10): Promise<PaginatedResponse<MyComment>> {
+    try {
+      if (!userId) {
+        console.error('사용자 ID가 없습니다. 내 댓글을 불러올 수 없습니다.');
+        return this.getEmptyPaginatedResponse(page, size);
+      }
+      
+      console.log(`[API] 내가 작성한 댓글 조회: userId=${userId}, page=${page}, size=${size}`);
+      
+      const response = await apiClient.get<any>('/community/comment/written', {
+        params: { userId, page, size }
+      });
+      
+      console.log('[API] 내가 작성한 댓글 응답:', response);
+      
+      // 백엔드 응답 구조에 맞게 변환
+      const comments = response.commentList || [];
+      const total = response.total || 0;
+      
+      // 각 댓글 정보를 프론트엔드 타입으로 변환
+      const mappedComments: MyComment[] = comments.map((comment: any) => ({
+        id: comment.commentId || 0,
+        content: comment.content || '',
+        createdAt: comment.createdAt || new Date().toISOString(),
+        postId: comment.postId || 0,
+        postTitle: comment.postTitle || '[게시글 제목 없음]'
+      }));
+      
+      return {
+        content: mappedComments,
+        pageable: {
+          pageNumber: page,
+          pageSize: size
+        },
+        last: (page + 1) * size >= total,
+        totalElements: total,
+        totalPages: Math.ceil(total / size),
+        size: mappedComments.length,
+        number: page
+      };
+    } catch (error) {
+      console.error('내가 작성한 댓글 조회 실패:', error);
+      return this.getEmptyPaginatedResponse(page, size);
+    }
   }
 
   /**
    * 내가 투표한 토론 목록 조회
-   * TODO: 실제 API 연동 시 수정 필요
    */
-  async getMyDebates(page: number = 0, size: number = 10): Promise<PaginatedResponse<MyDebate>> {
-    // TODO: 실제 API 호출로 변경
-    // const response = await apiClient.get<ApiResponse<PaginatedResponse<MyDebate>>>('/api/mypage/debates', {
-    //   params: { page, size }
-    // });
-    // return response.data;
-    
-    // 목업 데이터 반환
-    return {
-      content: MOCK_DEBATES,
-      pageable: {
-        pageNumber: page,
-        pageSize: size
-      },
-      last: true,
-      totalElements: MOCK_DEBATES.length,
-      totalPages: 1,
-      size: MOCK_DEBATES.length,
-      number: page
-    };
+  async getMyDebates(userId: number, page: number = 0, size: number = 10): Promise<PaginatedResponse<MyDebate>> {
+    try {
+      if (!userId) {
+        console.error('사용자 ID가 없습니다. 내 토론을 불러올 수 없습니다.');
+        return this.getEmptyPaginatedResponse(page, size);
+      }
+      
+      console.log(`[API] 내가 투표한 토론 조회: userId=${userId}, page=${page}, size=${size}`);
+      
+      // DebateApi의 getVotedDebates 직접 호출 대신 API 요청
+      const response = await apiClient.get<any>('/debate/voted', {
+        params: { userId, page, size } // 백엔드 페이지 번호는 0부터 시작
+      });
+      
+      console.log('[API] 내가 투표한 토론 응답:', response);
+      
+      let debates: any[] = [];
+      let total = 0;
+      
+      // 응답 형식에 따라 데이터 추출
+      if (response.content && Array.isArray(response.content)) {
+        debates = response.content;
+        total = response.totalElements || 0;
+      } else if (response.debates && Array.isArray(response.debates)) {
+        debates = response.debates;
+        total = response.total || 0;
+      } else if (response.debateList && Array.isArray(response.debateList)) {
+        // 백엔드에서 debateList 필드로 반환하는 경우 처리
+        debates = response.debateList;
+        total = response.total || 0;
+      }
+      
+      console.log('[DEBUG] 추출된 토론 목록:', debates);
+      
+      // 각 토론 정보를 프론트엔드 타입으로 변환
+      const mappedDebates: MyDebate[] = debates.map((debate: any) => ({
+        id: debate.debateId || 0,
+        title: debate.title || '[제목 없음]',
+        createdAt: debate.createdAt || new Date().toISOString(),
+        votedOption: debate.isVotedState || '투표 정보 없음',
+        totalVotes: debate.voteCnt || 0
+      }));
+      
+      console.log('[DEBUG] 변환된 토론 목록:', mappedDebates);
+      
+      return {
+        content: mappedDebates,
+        pageable: {
+          pageNumber: page,
+          pageSize: size
+        },
+        last: (page + 1) * size >= total,
+        totalElements: total,
+        totalPages: Math.ceil(total / size),
+        size: mappedDebates.length,
+        number: page
+      };
+    } catch (error) {
+      console.error('내가 투표한 토론 조회 실패:', error);
+      return this.getEmptyPaginatedResponse(page, size);
+    }
   }
 
   /**
@@ -230,12 +319,6 @@ class MypageApi {
    * TODO: 실제 API 연동 시 수정 필요
    */
   async getMyBookmarks(page: number = 0, size: number = 10): Promise<PaginatedResponse<MyBookmark>> {
-    // TODO: 실제 API 호출로 변경
-    // const response = await apiClient.get<ApiResponse<PaginatedResponse<MyBookmark>>>('/api/mypage/bookmarks', {
-    //   params: { page, size }
-    // });
-    // return response.data;
-    
     // 목업 데이터 반환
     return {
       content: MOCK_BOOKMARKS,
@@ -247,6 +330,24 @@ class MypageApi {
       totalElements: MOCK_BOOKMARKS.length,
       totalPages: 1,
       size: MOCK_BOOKMARKS.length,
+      number: page
+    };
+  }
+  
+  /**
+   * 빈 페이지네이션 응답 반환 (오류 시 사용)
+   */
+  private getEmptyPaginatedResponse<T>(page: number, size: number): PaginatedResponse<T> {
+    return {
+      content: [],
+      pageable: {
+        pageNumber: page,
+        pageSize: size
+      },
+      last: true,
+      totalElements: 0,
+      totalPages: 0,
+      size: 0,
       number: page
     };
   }

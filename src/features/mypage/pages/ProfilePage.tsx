@@ -6,10 +6,12 @@ import {
   FormField,
   StyledInput,
   StyledTextarea,
-  Button
+  Button,
 } from '../components';
 import { useMypageStore } from '../store/mypageStore';
 import styled from '@emotion/styled';
+
+// TODO : 실제 유저 정보 및 활동 연결(유저 정보, 유저가 투표한 토론, 유저가 작성한 게시글, 유저가 작성한 댓글)
 
 // 스타일링된 컴포넌트 - 나중에 디자인 변경 시 이 부분만 수정
 const PageContainer = styled.div`
@@ -21,7 +23,7 @@ const ProfileSection = styled.div`
   grid-template-columns: 1fr 2fr;
   gap: 24px;
   margin-bottom: 24px;
-  
+
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
     gap: 40px;
@@ -37,7 +39,7 @@ const ProfileInfoSection = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
-  
+
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
   }
@@ -47,7 +49,7 @@ const FieldGroup = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
-  
+
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
   }
@@ -77,9 +79,9 @@ const Spinner = styled.div`
   height: 40px;
   border: 3px solid rgba(0, 0, 0, 0.1);
   border-radius: 50%;
-  border-top-color: #FF9999;
+  border-top-color: #ff9999;
   animation: spin 1s linear infinite;
-  
+
   @keyframes spin {
     to {
       transform: rotate(360deg);
@@ -99,7 +101,7 @@ const ErrorMessage = styled.div`
  * 사용자 프로필 정보를 표시하고 수정할 수 있습니다.
  */
 const ProfilePage: React.FC = () => {
-  const { 
+  const {
     profile,
     profileLoading,
     profileError,
@@ -108,7 +110,7 @@ const ProfilePage: React.FC = () => {
     profileUpdated,
     fetchProfile,
     updateProfile,
-    resetProfileUpdateStatus
+    resetProfileUpdateStatus,
   } = useMypageStore();
 
   // 로컬 상태
@@ -118,7 +120,7 @@ const ProfilePage: React.FC = () => {
     email: '',
     introduction: '',
     country: '',
-    language: ''
+    language: '',
   });
 
   // 프로필 데이터 로드
@@ -134,7 +136,7 @@ const ProfilePage: React.FC = () => {
         email: profile.email,
         introduction: profile.introduction || '',
         country: profile.country || '',
-        language: profile.language || ''
+        language: profile.language || '',
       });
     }
   }, [profile]);
@@ -148,7 +150,9 @@ const ProfilePage: React.FC = () => {
   }, [profileUpdated, resetProfileUpdateStatus]);
 
   // 입력 핸들러
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
@@ -167,7 +171,7 @@ const ProfilePage: React.FC = () => {
         email: profile.email,
         introduction: profile.introduction || '',
         country: profile.country || '',
-        language: profile.language || ''
+        language: profile.language || '',
       });
     }
     setIsEditing(false);
@@ -190,11 +194,7 @@ const ProfilePage: React.FC = () => {
       <PageLayout title="내 프로필">
         <ErrorMessage>
           <p>{profileError}</p>
-          <Button 
-            onClick={() => fetchProfile()}
-            variant="primary"
-            className="mt-4"
-          >
+          <Button onClick={() => fetchProfile()} variant="primary" className="mt-4">
             다시 시도
           </Button>
         </ErrorMessage>
@@ -217,17 +217,17 @@ const ProfilePage: React.FC = () => {
               <ProfileActions>
                 {isEditing ? (
                   <>
-                    <Button 
-                      type="button" 
-                      variant="outline" 
+                    <Button
+                      type="button"
+                      variant="outline"
                       onClick={handleCancel}
                       disabled={profileUpdateLoading === 'loading'}
                     >
                       취소
                     </Button>
-                    <Button 
-                      type="submit" 
-                      variant="primary" 
+                    <Button
+                      type="submit"
+                      variant="primary"
                       isLoading={profileUpdateLoading === 'loading'}
                       className="ml-2"
                     >
@@ -235,9 +235,9 @@ const ProfilePage: React.FC = () => {
                     </Button>
                   </>
                 ) : (
-                  <Button 
-                    type="button" 
-                    variant="primary" 
+                  <Button
+                    type="button"
+                    variant="primary"
                     onClick={() => setIsEditing(true)}
                     fullWidth
                   >
@@ -291,9 +291,7 @@ const ProfilePage: React.FC = () => {
                     placeholder="국적을 입력하세요"
                   />
                 ) : (
-                  <ReadOnlyValue>
-                    {profile?.country || '설정되지 않음'}
-                  </ReadOnlyValue>
+                  <ReadOnlyValue>{profile?.country || '설정되지 않음'}</ReadOnlyValue>
                 )}
               </StyledFormField>
 
@@ -307,9 +305,7 @@ const ProfilePage: React.FC = () => {
                     placeholder="주 사용 언어를 입력하세요"
                   />
                 ) : (
-                  <ReadOnlyValue>
-                    {profile?.language || '설정되지 않음'}
-                  </ReadOnlyValue>
+                  <ReadOnlyValue>{profile?.language || '설정되지 않음'}</ReadOnlyValue>
                 )}
               </StyledFormField>
             </FieldGroup>
@@ -325,23 +321,17 @@ const ProfilePage: React.FC = () => {
                   rows={4}
                 />
               ) : (
-                <ReadOnlyValue>
-                  {profile?.introduction || '자기소개가 없습니다.'}
-                </ReadOnlyValue>
+                <ReadOnlyValue>{profile?.introduction || '자기소개가 없습니다.'}</ReadOnlyValue>
               )}
             </StyledFormField>
           </InfoCard>
 
           {/* 업데이트 에러 메시지 */}
-          {profileUpdateError && (
-            <ErrorMessage>
-              {profileUpdateError}
-            </ErrorMessage>
-          )}
+          {profileUpdateError && <ErrorMessage>{profileUpdateError}</ErrorMessage>}
         </form>
       </PageContainer>
     </PageLayout>
   );
 };
 
-export default ProfilePage; 
+export default ProfilePage;

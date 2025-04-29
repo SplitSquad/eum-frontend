@@ -1,5 +1,13 @@
 import apiClient from './apiClient';
-import { DebateComment, DebateReply, ReactionRequest } from '../types';
+import { 
+  DebateComment, 
+  DebateReply, 
+  CommentReqDto, 
+  mapCommentResToFrontend, 
+  mapReplyResToFrontend,
+  CommentResDto,
+  ReplyResDto
+} from '../types';
 
 // 목업 댓글 데이터
 const MOCK_COMMENTS: DebateComment[] = [
@@ -154,6 +162,15 @@ const MOCK_REPLIES: Record<number, DebateReply[]> = {
   ]
 };
 
+// API 응답 타입 정의
+interface PageResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+}
+
 /**
  * 토론 댓글 관련 API
  */
@@ -166,29 +183,59 @@ const CommentApi = {
     page?: number;
     size?: number;
     sortBy?: string;
-  }): Promise<{ comments: DebateComment[]; total: number; totalPages: number }> => {
+    language?: string;
+  }): Promise<{
+    comments: DebateComment[];
+    total: number;
+    totalPages: number;
+  }> => {
     try {
-      // TODO: 실제 API 연동 시 사용
-      // const response = await apiClient.get(`/debate/${params.debateId}/comments`, { params });
-      // return response.data;
-
-      // 목업 데이터 사용
-      const page = params.page || 1;
-      const size = params.size || 5;
-      const filteredComments = MOCK_COMMENTS.filter(
-        comment => comment.debateId === params.debateId
-      );
-      const startIdx = (page - 1) * size;
-      const endIdx = startIdx + size;
-      const paginatedComments = filteredComments.slice(startIdx, endIdx);
-
+      // 실제 API 연동 (MOCK 데이터 사용 대신 실제 API 호출)
+      const { debateId, page = 1, size = 10, sortBy = 'latest', language = 'ko' } = params;
+      
+      // API 호출
+      const token = localStorage.getItem('token') || '';
+      const response = await apiClient.get<any>(`/debate/comment`, {
+        headers: {
+          'Authorization': token
+        },
+        params: {
+          debateId,
+          page: page - 1, // Spring Boot는 0부터 시작하는 페이지 인덱스 사용
+          size,
+          sort: sortBy,
+          language // 사용자 언어 설정 추가
+        }
+      });
+      
+      // API 응답 데이터 확인 및 처리
+      console.log('댓글 API 응답:', response);
+      
+      if (response && response.commentList) {
+        // 실제 API 응답에 맞게 처리 (commentList 형식)
+        const { commentList, total } = response;
+        
+        // 응답 데이터를 프론트엔드 모델로 변환
+        const comments = commentList.map((item: CommentResDto) => mapCommentResToFrontend(item, debateId));
+        
+        return {
+          comments,
+          total: total || commentList.length,
+          totalPages: Math.ceil((total || commentList.length) / size)
+        };
+      }
+      
+      // API 응답이 예상과 다른 경우, 빈 결과 반환
+      console.error('API 응답 형식이 예상과 다릅니다:', response);
       return {
-        comments: paginatedComments,
-        total: filteredComments.length,
-        totalPages: Math.ceil(filteredComments.length / size)
+        comments: [],
+        total: 0,
+        totalPages: 0
       };
     } catch (error) {
       console.error('댓글 목록 조회 실패:', error);
+      
+      // 에러 발생 시 빈 결과 반환
       return {
         comments: [],
         total: 0,
@@ -200,42 +247,43 @@ const CommentApi = {
   /**
    * 댓글 작성
    */
-  createComment: async (params: {
-    debateId: number;
+  createComment: async (commentRequest: {
     content: string;
-    stance: 'pro' | 'con';
+    debateId: number;
+    stance?: 'pro' | 'con';
   }): Promise<DebateComment | null> => {
     try {
-      // TODO: 실제 API 연동 시 사용
-      // const response = await apiClient.post(`/debate/${params.debateId}/comments`, params);
-      // return response.data;
-
-      // 목업 데이터 생성
-      const newComment: DebateComment = {
-        id: Math.max(...MOCK_COMMENTS.map(c => c.id)) + 1,
-        debateId: params.debateId,
-        userId: 999, // 현재 로그인한 사용자 ID (예시)
-        userName: '현재 사용자', // 현재 로그인한 사용자 이름 (예시)
-        userProfileImage: 'https://i.pravatar.cc/150?img=8',
-        content: params.content,
-        createdAt: new Date().toISOString(),
-        reactions: {
-          like: 0,
-          dislike: 0,
-          happy: 0,
-          angry: 0,
-          sad: 0,
-          unsure: 0
-        },
-        stance: params.stance,
-        replyCount: 0,
-        countryCode: 'KR',
-        countryName: '대한민국'
+      // 사용자의 언어 설정 확인
+      const userLanguage = localStorage.getItem('userLanguage') || 'ko';
+      
+      // 백엔드 API 요청 형식으로 변환
+      const requestData: CommentReqDto = {
+        content: commentRequest.content,
+        debateId: commentRequest.debateId,
+        stance: commentRequest.stance,
+        language: userLanguage // 사용자 언어 설정 동적으로 추가
       };
-
-      // 실제로는 서버에 저장하고 응답을 받아야 함
-      console.log('새 댓글 작성:', newComment);
-      return newComment;
+      
+      // 실제 API 호출
+      const token = localStorage.getItem('token') || '';
+      const response = await apiClient.post<any>('/debate/comment', requestData, {
+        headers: {
+          'Authorization': token
+        }
+      });
+      
+      console.log('댓글 작성 응답:', response);
+      
+      // 백엔드 응답에 맞게 처리
+      if (response && response.commentId) {
+        // 응답 데이터를 프론트엔드 모델로 변환
+        return mapCommentResToFrontend(response, commentRequest.debateId);
+      } else if (response && response.comment) {
+        // 다른 응답 형식인 경우
+        return mapCommentResToFrontend(response.comment, commentRequest.debateId);
+      }
+      
+      return null;
     } catch (error) {
       console.error('댓글 작성 실패:', error);
       return null;
@@ -245,12 +293,25 @@ const CommentApi = {
   /**
    * 댓글 수정
    */
-  updateComment: async (params: { commentId: number; content: string }): Promise<boolean> => {
+  updateComment: async (commentId: number, content: string): Promise<boolean> => {
     try {
-      // TODO: 실제 API 연동 시 사용
-      // await apiClient.put(`/comment/${params.commentId}`, { content: params.content });
+      // 사용자의 언어 설정 확인
+      const userLanguage = localStorage.getItem('userLanguage') || 'ko';
       
-      console.log(`댓글 ID:${params.commentId} 수정 - 내용: ${params.content}`);
+      // 백엔드 API 요청 형식으로 변환
+      const requestData: CommentReqDto = {
+        content,
+        language: userLanguage // 사용자 언어 설정 추가
+      };
+      
+      // 실제 API 호출
+      const token = localStorage.getItem('token') || '';
+      await apiClient.patch<any>(`/debate/comment/${commentId}`, requestData, {
+        headers: {
+          'Authorization': token
+        }
+      });
+      
       return true;
     } catch (error) {
       console.error('댓글 수정 실패:', error);
@@ -263,10 +324,14 @@ const CommentApi = {
    */
   deleteComment: async (commentId: number): Promise<boolean> => {
     try {
-      // TODO: 실제 API 연동 시 사용
-      // await apiClient.delete(`/comment/${commentId}`);
+      // 실제 API 호출
+      const token = localStorage.getItem('token') || '';
+      await apiClient.delete<any>(`/debate/comment/${commentId}`, {
+        headers: {
+          'Authorization': token
+        }
+      });
       
-      console.log(`댓글 ID:${commentId} 삭제`);
       return true;
     } catch (error) {
       console.error('댓글 삭제 실패:', error);
@@ -277,16 +342,35 @@ const CommentApi = {
   /**
    * 댓글에 감정표현 추가
    */
-  reactToComment: async (reactionRequest: ReactionRequest): Promise<boolean> => {
+  reactToComment: async (commentId: number, emotion: string): Promise<any> => {
     try {
-      // TODO: 실제 API 연동 시 사용
-      // await apiClient.post('/debate/reaction', reactionRequest);
+      // 사용자의 언어 설정 확인
+      const userLanguage = localStorage.getItem('userLanguage') || 'ko';
+      
+      // 백엔드 API에 맞게 감정표현 변환
+      const emotionMapping: Record<string, string> = {
+        'like': '좋아요',
+        'dislike': '싫어요'
+      };
 
-      console.log(`댓글 ID:${reactionRequest.targetId}에 ${reactionRequest.reactionType} 반응 추가`);
-      return true;
+      // 백엔드 API 요청 형식으로 변환
+      const requestData: CommentReqDto = {
+        emotion: emotionMapping[emotion] || emotion,
+        language: userLanguage
+      };
+      
+      // 실제 API 호출
+      const token = localStorage.getItem('token') || '';
+      const response = await apiClient.post<any>(`/debate/comment/${commentId}`, requestData, {
+        headers: {
+          'Authorization': token
+        }
+      });
+      
+      return response;
     } catch (error) {
-      console.error(`댓글 감정표현 추가 실패:`, error);
-      return false;
+      console.error('댓글 감정표현 추가 실패:', error);
+      throw error;
     }
   },
 
@@ -299,20 +383,37 @@ const CommentApi = {
     size?: number;
   }): Promise<DebateReply[]> => {
     try {
-      // TODO: 실제 API 연동 시 사용
-      // const response = await apiClient.get(`/comment/${params.commentId}/replies`, { params });
-      // return response.data;
-
-      // 목업 데이터 사용
-      const replies = MOCK_REPLIES[params.commentId] || [];
-      const page = params.page || 1;
-      const size = params.size || 10;
-      const startIdx = (page - 1) * size;
-      const endIdx = startIdx + size;
-
-      return replies.slice(startIdx, endIdx);
+      // 실제 API 연동
+      const { commentId, page = 1, size = 5 } = params;
+      
+      const token = localStorage.getItem('token') || '';
+      const response = await apiClient.get<any>(`/debate/reply`, {
+        headers: {
+          'Authorization': token
+        },
+        params: { 
+          commentId, 
+          page: page - 1, // Spring Boot는 0부터 시작하는 페이지 인덱스 사용
+          size 
+        }
+      });
+      
+      console.log('대댓글 응답:', response);
+      
+      // 백엔드 응답에 맞게 처리
+      if (response && response.replyList) {
+        return response.replyList.map((item: ReplyResDto) => mapReplyResToFrontend(item, commentId));
+      } else if (response && Array.isArray(response)) {
+        // 배열로 응답할 경우
+        return response.map((item: ReplyResDto) => mapReplyResToFrontend(item, commentId));
+      }
+      
+      return [];
+      
     } catch (error) {
       console.error('대댓글 목록 조회 실패:', error);
+      
+      // API 연동 실패 시 빈 배열 반환
       return [];
     }
   },
@@ -320,36 +421,33 @@ const CommentApi = {
   /**
    * 대댓글 작성
    */
-  createReply: async (params: { commentId: number; content: string }): Promise<DebateReply | null> => {
+  createReply: async (commentId: number, content: string): Promise<DebateReply | null> => {
     try {
-      // TODO: 실제 API 연동 시 사용
-      // const response = await apiClient.post(`/comment/${params.commentId}/reply`, params);
-      // return response.data;
-
-      // 목업 데이터 생성
-      const newReply: DebateReply = {
-        id: 1000 + Math.floor(Math.random() * 1000), // 임의의 ID 생성
-        commentId: params.commentId,
-        userId: 999, // 현재 로그인한 사용자 ID (예시)
-        userName: '현재 사용자', // 현재 로그인한 사용자 이름 (예시)
-        userProfileImage: 'https://i.pravatar.cc/150?img=9',
-        content: params.content,
-        createdAt: new Date().toISOString(),
-        reactions: {
-          like: 0,
-          dislike: 0,
-          happy: 0,
-          angry: 0,
-          sad: 0,
-          unsure: 0
-        },
-        countryCode: 'KR',
-        countryName: '대한민국'
+      // 사용자의 언어 설정 확인
+      const userLanguage = localStorage.getItem('userLanguage') || 'ko';
+      
+      // 백엔드 API 요청 형식으로 변환
+      const requestData = {
+        content,
+        commentId,
+        language: userLanguage // 사용자 언어 설정 추가
       };
-
-      // 실제로는 서버에 저장하고 응답을 받아야 함
-      console.log('새 대댓글 작성:', newReply);
-      return newReply;
+      
+      // 실제 API 호출
+      const token = localStorage.getItem('token') || '';
+      const response = await apiClient.post<ReplyResDto>('/debate/reply', requestData, {
+        headers: {
+          'Authorization': token
+        }
+      });
+      
+      console.log('대댓글 작성 응답:', response);
+      
+      if (response) {
+        return mapReplyResToFrontend(response, commentId);
+      }
+      
+      return null;
     } catch (error) {
       console.error('대댓글 작성 실패:', error);
       return null;
@@ -359,12 +457,25 @@ const CommentApi = {
   /**
    * 대댓글 수정
    */
-  updateReply: async (params: { replyId: number; content: string }): Promise<boolean> => {
+  updateReply: async (replyId: number, content: string): Promise<boolean> => {
     try {
-      // TODO: 실제 API 연동 시 사용
-      // await apiClient.put(`/reply/${params.replyId}`, { content: params.content });
+      // 사용자의 언어 설정 확인
+      const userLanguage = localStorage.getItem('userLanguage') || 'ko';
       
-      console.log(`대댓글 ID:${params.replyId} 수정 - 내용: ${params.content}`);
+      // 백엔드 API 요청 형식으로 변환
+      const requestData = {
+        content,
+        language: userLanguage // 사용자 언어 설정 추가
+      };
+      
+      // 실제 API 호출
+      const token = localStorage.getItem('token') || '';
+      await apiClient.patch<any>(`/debate/reply/${replyId}`, requestData, {
+        headers: {
+          'Authorization': token
+        }
+      });
+      
       return true;
     } catch (error) {
       console.error('대댓글 수정 실패:', error);
@@ -377,10 +488,14 @@ const CommentApi = {
    */
   deleteReply: async (replyId: number): Promise<boolean> => {
     try {
-      // TODO: 실제 API 연동 시 사용
-      // await apiClient.delete(`/reply/${replyId}`);
+      // 실제 API 호출
+      const token = localStorage.getItem('token') || '';
+      await apiClient.delete<any>(`/debate/reply/${replyId}`, {
+        headers: {
+          'Authorization': token
+        }
+      });
       
-      console.log(`대댓글 ID:${replyId} 삭제`);
       return true;
     } catch (error) {
       console.error('대댓글 삭제 실패:', error);
@@ -391,16 +506,35 @@ const CommentApi = {
   /**
    * 대댓글에 감정표현 추가
    */
-  reactToReply: async (reactionRequest: ReactionRequest): Promise<boolean> => {
+  reactToReply: async (replyId: number, emotion: string): Promise<any> => {
     try {
-      // TODO: 실제 API 연동 시 사용
-      // await apiClient.post('/debate/reaction', reactionRequest);
-
-      console.log(`대댓글 ID:${reactionRequest.targetId}에 ${reactionRequest.reactionType} 반응 추가`);
-      return true;
+      // 사용자의 언어 설정 확인
+      const userLanguage = localStorage.getItem('userLanguage') || 'ko';
+      
+      // 백엔드 API에 맞게 감정표현 변환
+      const emotionMapping: Record<string, string> = {
+        'like': '좋아요',
+        'dislike': '싫어요'
+      };
+      
+      // 백엔드 API 요청 형식으로 변환
+      const requestData = {
+        emotion: emotionMapping[emotion] || emotion,
+        language: userLanguage
+      };
+      
+      // 실제 API 호출
+      const token = localStorage.getItem('token') || '';
+      const response = await apiClient.post<any>(`/debate/reply/${replyId}`, requestData, {
+        headers: {
+          'Authorization': token
+        }
+      });
+      
+      return response;
     } catch (error) {
-      console.error(`대댓글 감정표현 추가 실패:`, error);
-      return false;
+      console.error('대댓글 감정표현 추가 실패:', error);
+      throw error;
     }
   }
 };

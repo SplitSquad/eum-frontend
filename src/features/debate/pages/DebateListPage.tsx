@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDebateStore } from '../store';
 import { Debate } from '../types';
@@ -219,19 +219,36 @@ const DebateListPage: React.FC = () => {
 
   const handleCategoryClick = (category: string) => {
     setSelectedCategory(category);
+    console.log(`카테고리 선택: ${category}`);
+    
+    // 서버에 API 요청을 보내기 전에 로딩 상태 표시
+    fetchDebates(1, 20, category === '전체' ? '' : category);
+    
+    console.log('현재 데이터:', debates);
+    console.log('선택된 카테고리:', category);
   };
 
-  // 카테고리별 필터링
-  const filteredDebates = selectedCategory === '전체'
-    ? debates as EnhancedDebate[]
-    : (debates as EnhancedDebate[]).filter(debate => debate.category === selectedCategory);
+  // 필터링 로직 단순화
+  const filteredDebates = useMemo(() => {
+    console.log('필터링 수행:', selectedCategory);
+    
+    if (selectedCategory === '전체') {
+      return debates;
+    }
+    
+    // 카테고리가 정확히 일치하는 토론만 필터링
+    return debates.filter((debate: any) => {
+      // 백엔드에서 category 필드를 제공하지 않는 경우 대비
+      const debateCategory = debate.category || ''; 
+      const matched = debateCategory === selectedCategory;
+      console.log(`카테고리 비교: ${debateCategory} vs ${selectedCategory} => ${matched}`);
+      return matched;
+    });
+  }, [selectedCategory, debates]);
 
   // 특별 라벨 할당 (예시용)
-  const getSpecialLabel = (debate: EnhancedDebate) => {
-    // 예시 로직 - 실제로는 API에서 받거나 다른 로직으로 결정될 것
-    if (debate.id % 7 === 0) return specialLabels[1];
-    if (debate.id % 5 === 0) return specialLabels[2];
-    if (Math.abs(debate.agreeCount - debate.disagreeCount) < 3) return specialLabels[3];
+  const getSpecialLabel = (debate: any) => {
+    // 카테고리 뷰에서는 특별 라벨을 표시하지 않음
     return null;
   };
 
@@ -293,10 +310,13 @@ const DebateListPage: React.FC = () => {
           </Typography>
         </Paper>
       ) : (
-        filteredDebates.map((debate) => {
+        filteredDebates.map((debate: any) => {
           const categoryColor = (categoryColors as Record<string, string>)[debate.category] || '#757575';
           const specialLabel = getSpecialLabel(debate);
-          const voteRatio = calculateVoteRatio(debate.agreeCount, debate.disagreeCount);
+          const voteRatio = calculateVoteRatio(
+            debate.agreeCount || debate.proCount || 0, 
+            debate.disagreeCount || debate.conCount || 0
+          );
           
           return (
             <DebateCard key={debate.id} onClick={() => handleDebateClick(debate.id)}>
@@ -316,7 +336,7 @@ const DebateListPage: React.FC = () => {
                           color="text.secondary"
                           sx={{ mb: 0.5, display: 'flex', alignItems: 'center', gap: 0.5 }}
                         >
-                          {debate.category}
+                          {debate.category || '기타'}
                           <FlagWrapper>
                             <FlagIcon fontSize="small" />
                             한국

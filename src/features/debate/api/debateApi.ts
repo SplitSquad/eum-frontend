@@ -1,92 +1,18 @@
 import apiClient from './apiClient';
-import { Debate, DebateListResponse, PaginationParams, DebateSortOption, ReactionRequest, VoteRequest } from '../types';
-
-// 목업 데이터 - 실제 API 연동 전까지 사용
-const MOCK_DEBATES: Debate[] = [
-  {
-    id: 1,
-    title: '외국인 건강 보험 의무 가입: 찬성하시나요?',
-    content: '한국에서 6개월 이상 거주하는 외국인은 국민건강보험에 의무적으로 가입해야 한다는 정책에 대해 어떻게 생각하시나요? 이 정책은 모든 이들에게 의료 접근성을 제공하지만, 일부에서는 비용 부담과 혜택의 형평성에 대한 논란이 있습니다.',
-    createdAt: '2023-06-15T08:00:00Z',
-    viewCount: 1240,
-    source: 'https://news.example.com/foreign-health-insurance',
-    proCount: 752,
-    conCount: 488,
-    reactions: {
-      like: 320,
-      dislike: 45,
-      happy: 108,
-      angry: 67,
-      sad: 23,
-      unsure: 89
-    },
-    countryStats: [
-      { countryCode: 'KR', countryName: '대한민국', count: 820, percentage: 65 },
-      { countryCode: 'US', countryName: '미국', count: 230, percentage: 20 },
-      { countryCode: 'JP', countryName: '일본', count: 78, percentage: 8 },
-      { countryCode: 'CN', countryName: '중국', count: 42, percentage: 5 },
-      { countryCode: 'OT', countryName: '기타', count: 25, percentage: 2 }
-    ],
-    commentCount: 156
-  },
-  {
-    id: 2,
-    title: '직업 비자 취득 기간 단축: 찬성하시나요?',
-    content: '외국인 전문인력 유치를 위해 직업비자 발급 기간을 현행 30일에서 15일로 단축하는 방안이 논의되고 있습니다. 이 정책이 국내 산업 발전에 도움이 될 것인지, 아니면 국내 일자리에 부정적 영향을 미칠 것인지 의견을 나눠주세요.',
-    createdAt: '2023-06-14T08:00:00Z',
-    viewCount: 968,
-    source: 'https://news.example.com/visa-process-time',
-    proCount: 524,
-    conCount: 444,
-    reactions: {
-      like: 186,
-      dislike: 132,
-      happy: 45,
-      angry: 78,
-      sad: 12,
-      unsure: 115
-    },
-    commentCount: 103
-  },
-  {
-    id: 3,
-    title: '조국수 + 영문 기재 병행 도입',
-    content: '공문서에 국가명을 한글과 영문으로 병행 표기하는 방안에 대해 어떻게 생각하십니까? 글로벌 표준화와 소통 편의성 증진이 목적이지만, 일부에서는 불필요한 행정 변화라는 의견도 있습니다.',
-    createdAt: '2023-06-13T08:00:00Z',
-    viewCount: 756,
-    source: 'https://news.example.com/document-standardization',
-    proCount: 412,
-    conCount: 344,
-    reactions: {
-      like: 167,
-      dislike: 89,
-      happy: 34,
-      angry: 48,
-      sad: 8,
-      unsure: 102
-    },
-    commentCount: 87
-  },
-  {
-    id: 4,
-    title: '모든 한국어 기관 외국어 전환: 찬성하시나요?',
-    content: '한국 내 주요 공공기관과 관광지에서 모든 안내문을 다국어로 제공하는 정책에 대한 의견을 나눠주세요. 외국인 방문객 편의 증진이 목적이지만, 추가 비용과 한국 정체성 희석에 대한 우려도 있습니다.',
-    createdAt: '2023-06-12T08:00:00Z',
-    viewCount: 645,
-    source: 'https://news.example.com/multilingual-public-policy',
-    proCount: 325,
-    conCount: 320,
-    reactions: {
-      like: 134,
-      dislike: 126,
-      happy: 28,
-      angry: 45,
-      sad: 12,
-      unsure: 88
-    },
-    commentCount: 76
-  }
-];
+import { AxiosError } from 'axios';
+import axios from 'axios';
+import { 
+  Debate, 
+  DebateListResponse, 
+  DebateSortOption, 
+  ReactionRequest, 
+  VoteRequest, 
+  DebateReqDto,
+  VoteReqDto,
+  mapDebateResToFrontend,
+  DebateResDto,
+  ReactionType
+} from '../types';
 
 /**
  * 토론 관련 API
@@ -100,26 +26,202 @@ const DebateApi = {
     size?: number;
     sortBy?: DebateSortOption;
     filter?: string;
+    category?: string;
+    keyword?: string;
+    searchBy?: string;
   }): Promise<DebateListResponse> => {
     try {
-      // TODO: 실제 API 연동 시 사용
-      // const response = await apiClient.get('/debate', { params });
-      // return response.data;
+      // 실제 API 연동
+      const { page = 1, size = 5, sortBy = 'latest', category = '', keyword = '', searchBy = '' } = params;
+      
+      // 정렬 방식 매핑
+      let sort = '';
+      switch (sortBy) {
+        case 'latest': sort = 'newest'; break;
+        case 'popular': sort = 'popular'; break;
+        case 'controversial': sort = 'controversial'; break;
+        default: sort = 'newest';
+      }
+      
+      // 디버깅을 위한 상세 로깅
+      console.log("API 요청 파라미터:", { 
+        page, 
+        size, 
+        sort, 
+        category: category || '전체', 
+        keyword, 
+        searchBy 
+      });
+      
+      // 검색 조건이 있으면 search API 사용, 아니면 일반 목록 API 사용
+      let response;
+      if (keyword && keyword.trim() !== '') {
+        response = await apiClient.get<any>(`/debate/search`, { 
+          params: { 
+            page: page - 1, // Spring Boot는 0부터 시작하는 페이지 인덱스 사용
+            size, 
+            sort, 
+            category: category || '전체', 
+            keyword, 
+            searchBy 
+          } 
+        });
+      } else {
+        response = await apiClient.get<any>(`/debate`, { 
+          params: { 
+            page: page - 1, // Spring Boot는 0부터 시작하는 페이지 인덱스 사용
+            size, 
+            sort, 
+            category: category || '전체'
+          } 
+        });
+      }
+      
+      console.log("원본 응답 데이터:", response); // 디버깅용 로그
+      
+      // 응답이 없거나 유효하지 않은 경우 빈 결과 반환
+      if (!response) {
+        console.warn("API 응답이 없습니다.");
+        return { debates: [], total: 0, totalPages: 0 };
+      }
+      
+      // 응답 데이터 변환 - response.data가 없는 경우 response 자체를 사용
+      const responseData = response.data !== undefined ? response.data : response;
+      
+      // responseData가 없는 경우 빈 결과 반환
+      if (!responseData) {
+        console.warn("API 응답 데이터가 없습니다.");
+        return { debates: [], total: 0, totalPages: 0 };
+      }
 
-      // 목업 데이터 사용
-      const page = params.page || 1;
-      const size = params.size || 5;
-      const startIdx = (page - 1) * size;
-      const endIdx = startIdx + size;
-      const paginatedDebates = MOCK_DEBATES.slice(startIdx, endIdx);
-
-      return {
-        debates: paginatedDebates,
-        total: MOCK_DEBATES.length,
-        totalPages: Math.ceil(MOCK_DEBATES.length / size)
-      };
+      console.log("처리할 응답 데이터:", responseData);
+      
+      // Spring Data JPA Page 형식의 응답 (content 배열 포함)
+      if (responseData.content && Array.isArray(responseData.content)) {
+        const debates = responseData.content.map((item: DebateResDto) => {
+          const debate = mapDebateResToFrontend(item);
+          
+          // 카테고리 정보 유지 (중요: 항상 카테고리 정보를 유지해야 필터링 가능)
+          if (item.category) {
+            debate.category = item.category;
+          }
+          
+          // nationPercent 필드가 있는 경우 countryStats로 변환
+          if (item.nationPercent && typeof item.nationPercent === 'object') {
+            const countryStats = Object.entries(item.nationPercent).map(([countryCode, percentage]) => {
+              // 국가 코드에서 국가명 추출 (간단한 매핑)
+              let countryName = countryCode;
+              if (countryCode === 'KR') countryName = '대한민국';
+              else if (countryCode === 'US') countryName = '미국';
+              else if (countryCode === 'JP') countryName = '일본';
+              else if (countryCode === 'CN') countryName = '중국';
+              
+              return {
+                countryCode,
+                countryName,
+                count: Math.round((percentage as number / 100) * (item.voteCnt || 0)),
+                percentage: percentage as number
+              };
+            });
+            
+            debate.countryStats = countryStats;
+          }
+          
+          return debate;
+        });
+        
+        console.log("변환된 debates 목록:", debates.map((d: Debate) => ({ id: d.id, title: d.title, category: d.category })));
+        
+        return {
+          debates,
+          total: responseData.totalElements || 0,
+          totalPages: responseData.totalPages || 0
+        };
+      }
+      // {total: number, debateList: Array} 형식의 응답 (빈 배열 포함)
+      else if ('total' in responseData && 'debateList' in responseData) {
+        // debateList가 있고 배열인 경우
+        if (Array.isArray(responseData.debateList)) {
+          const debates = responseData.debateList.map((item: DebateResDto) => {
+            const debate = mapDebateResToFrontend(item);
+            
+            // 카테고리 정보 유지 (중요: 항상 카테고리 정보를 유지해야 필터링 가능)
+            if (item.category) {
+              debate.category = item.category;
+            }
+            
+            // nationPercent 필드가 있는 경우 countryStats로 변환
+            if (item.nationPercent && typeof item.nationPercent === 'object') {
+              const countryStats = Object.entries(item.nationPercent).map(([countryCode, percentage]) => {
+                // 국가 코드에서 국가명 추출 (간단한 매핑)
+                let countryName = countryCode;
+                if (countryCode === 'KR') countryName = '대한민국';
+                else if (countryCode === 'US') countryName = '미국';
+                else if (countryCode === 'JP') countryName = '일본';
+                else if (countryCode === 'CN') countryName = '중국';
+                
+                return {
+                  countryCode,
+                  countryName,
+                  count: Math.round((percentage as number / 100) * (item.voteCnt || 0)),
+                  percentage: percentage as number
+                };
+              });
+              
+              debate.countryStats = countryStats;
+            }
+            
+            return debate;
+          });
+          
+          console.log("변환된 debates 목록:", debates.map((d: Debate) => ({ id: d.id, title: d.title, category: d.category })));
+          
+          const totalPages = Math.ceil(responseData.total / size);
+          
+          return {
+            debates,
+            total: responseData.total || 0,
+            totalPages
+          };
+        } 
+        // debateList가 없거나 빈 배열인 경우
+        else {
+          return {
+            debates: [],
+            total: responseData.total || 0,
+            totalPages: Math.ceil((responseData.total || 0) / size)
+          };
+        }
+      }
+      // 직접 배열이 반환된 경우
+      else if (Array.isArray(responseData)) {
+        const debates = responseData.map((item: DebateResDto) => {
+          const debate = mapDebateResToFrontend(item);
+          // 카테고리 정보 유지
+          if (item.category) {
+            debate.category = item.category;
+          }
+          return debate;
+        });
+        
+        return {
+          debates,
+          total: debates.length,
+          totalPages: Math.ceil(debates.length / size)
+        };
+      }
+      // 기타 예상치 못한 응답 형식
+      else {
+        console.warn('처리할 수 없는 응답 형식:', responseData);
+        return {
+          debates: [],
+          total: 0,
+          totalPages: 0
+        };
+      }
     } catch (error) {
-      console.error('토론 주제 목록 조회 실패:', error);
+      console.error('토론 목록 조회 실패:', error);
+      // 에러 발생 시 빈 결과 반환
       return {
         debates: [],
         total: 0,
@@ -129,24 +231,171 @@ const DebateApi = {
   },
 
   /**
-   * 토론 주제 상세 조회
+   * 토론 주제 상세 조회 (댓글 및 답글 포함)
    */
-  getDebateById: async (debateId: number): Promise<Debate | null> => {
+  getDebateById: async (debateId: number, includeComments: boolean = true): Promise<Debate | null> => {
     try {
-      // TODO: 실제 API 연동 시 사용
-      // const response = await apiClient.get(`/debate/${debateId}`);
-      // return response.data;
-
-      // 목업 데이터 사용
-      const debate = MOCK_DEBATES.find(debate => debate.id === debateId);
-      if (!debate) {
-        throw new Error('토론 주제를 찾을 수 없습니다.');
+      // 실제 API 연동
+      const response = await apiClient.get<any>(`/debate/${debateId}`);
+      console.log(`토론 주제 상세 조회 응답 (ID: ${debateId}):`, response);
+      
+      if (response) {
+        const data = response.data || response;
+        console.log(`토론 주제 상세 원본 데이터:`, data);
+        
+        if (data) {
+          // 기본 데이터를 프론트엔드 형식으로 변환
+          const debate = mapDebateResToFrontend(data);
+          
+          // nationPercent 필드가 있는 경우 countryStats로 변환
+          if (data.nationPercent && typeof data.nationPercent === 'object') {
+            console.log('nationPercent 발견:', data.nationPercent);
+            
+            const countryStats = Object.entries(data.nationPercent).map(([countryCode, percentage]) => {
+              // 국가 코드에서 국가명 추출 (간단한 매핑)
+              let countryName = countryCode;
+              if (countryCode === 'KR') countryName = '대한민국';
+              else if (countryCode === 'US') countryName = '미국';
+              else if (countryCode === 'JP') countryName = '일본';
+              else if (countryCode === 'CN') countryName = '중국';
+              
+              return {
+                countryCode,
+                countryName,
+                count: Math.round((percentage as number / 100) * (data.voteCnt || 0)),
+                percentage: percentage as number
+              };
+            });
+            
+            debate.countryStats = countryStats;
+            console.log('countryStats로 변환됨:', countryStats);
+          }
+          
+          // 댓글과 답글을 함께 가져오기 (includeComments 옵션이 true인 경우)
+          if (includeComments) {
+            try {
+              console.log(`토론 ID ${debateId}의 댓글 및 답글 함께 가져오기 시작`);
+              
+              // 댓글 목록 가져오기 (첫 페이지, 최신순)
+              const commentsResponse = await apiClient.get<any>(`/debate/comment`, { 
+                params: { 
+                  debateId: debateId,
+                  sort: 'newest',
+                  page: 0,
+                  size: 10
+                } 
+              });
+              
+              if (commentsResponse && commentsResponse.commentList) {
+                console.log(`댓글 ${commentsResponse.commentList.length}개 로드됨`);
+                
+                // 댓글 데이터 처리
+                const comments = commentsResponse.commentList.map((comment: any) => {
+                  // 서버에서 제공하는 isState 값을 myReaction으로 변환
+                  const myReaction = convertIsStateToMyReaction(comment.isState);
+                  
+                  return {
+                    id: comment.commentId,
+                    debateId: debateId,
+                    userId: comment.userId || 0, // 서버에서 제공하지 않을 수 있음
+                    userName: comment.userName || '익명',
+                    userProfileImage: comment.userProfileImage,
+                    content: comment.content || '',
+                    createdAt: comment.createdAt || new Date().toISOString(),
+                    reactions: {
+                      like: comment.like || 0,
+                      dislike: comment.dislike || 0,
+                      happy: 0, // 백엔드에 없음
+                      angry: 0, // 백엔드에 없음
+                      sad: 0, // 백엔드에 없음
+                      unsure: 0, // 백엔드에 없음
+                    },
+                    // 사용자의 반응 상태 저장
+                    myReaction: myReaction,
+                    replyCount: comment.reply || 0,
+                    stance: 'pro' // 기본값
+                  };
+                });
+                
+                // 댓글 ID 목록 추출
+                const commentIds = comments.map((c: any) => c.id);
+                
+                // 답글이 있는 댓글에 대해 답글 미리 로드
+                const repliesMap: Record<number, any[]> = {};
+                
+                // 답글이 있는 댓글만 필터링
+                const commentsWithReplies = comments.filter((c: any) => c.replyCount > 0);
+                
+                // 각 댓글에 대한 답글 가져오기
+                if (commentsWithReplies.length > 0) {
+                  console.log(`${commentsWithReplies.length}개 댓글에 대한 답글 로드 시작`);
+                  
+                  // 병렬로 모든 댓글의 답글 가져오기
+                  await Promise.all(commentsWithReplies.map(async (comment: any) => {
+                    try {
+                      const replyResponse = await apiClient.get<any>(`/debate/reply`, { 
+                        params: { commentId: comment.id } 
+                      });
+                      
+                      if (replyResponse && replyResponse.replyList && Array.isArray(replyResponse.replyList)) {
+                        // 답글 데이터 변환 및 저장
+                        repliesMap[comment.id] = replyResponse.replyList.map((reply: any) => {
+                          // 서버에서 제공하는 isState 값을 myReaction으로 변환
+                          const myReaction = convertIsStateToMyReaction(reply.isState);
+                          
+                          return {
+                            id: reply.replyId,
+                            commentId: comment.id,
+                            userId: reply.userId || 0, // 서버에서 제공하지 않을 수 있음
+                            userName: reply.userName || '익명',
+                            userProfileImage: reply.userProfileImage,
+                            content: reply.content || '',
+                            createdAt: reply.createdAt || new Date().toISOString(),
+                            reactions: {
+                              like: reply.like || 0, 
+                              dislike: reply.dislike || 0,
+                              happy: 0, // 백엔드에 없음
+                              angry: 0, // 백엔드에 없음
+                              sad: 0, // 백엔드에 없음
+                              unsure: 0, // 백엔드에 없음
+                            },
+                            // 사용자의 반응 상태 저장
+                            myReaction: myReaction
+                          };
+                        });
+                      }
+                    } catch (replyError) {
+                      console.error(`댓글 ID ${comment.id}의 답글 로드 실패:`, replyError);
+                    }
+                  }));
+                  
+                  console.log(`모든 답글 로드 완료:`, Object.keys(repliesMap).length);
+                }
+                
+                // 토론에 댓글 및 답글 데이터 추가
+                debate.comments = comments;
+                debate.replies = repliesMap;
+                debate.commentOptions = {
+                  total: commentsResponse.total || comments.length,
+                  page: 0,
+                  totalPages: Math.ceil((commentsResponse.total || comments.length) / 10)
+                };
+                
+                console.log(`토론에 댓글 ${comments.length}개와 답글이 추가됨`);
+              }
+            } catch (commentError) {
+              console.error(`댓글 로드 중 오류 발생:`, commentError);
+              // 댓글 로드 실패해도 토론 데이터는 반환
+            }
+          }
+          
+          return debate;
+        }
       }
-
-      return {
-        ...debate,
-        viewCount: debate.viewCount + 1 // 조회수 증가
-      };
+      
+      console.warn('토론 주제를 찾을 수 없습니다.');
+      return null;
+      
     } catch (error) {
       console.error(`토론 주제 조회 실패 (ID: ${debateId}):`, error);
       return null;
@@ -154,30 +403,42 @@ const DebateApi = {
   },
 
   /**
-   * 조회수 증가
+   * 조회수 증가 (백엔드에서 자동 처리됨)
    */
   increaseViewCount: async (debateId: number): Promise<void> => {
-    try {
-      // TODO: 실제 API 연동 시 사용
-      // await apiClient.post(`/debate/${debateId}/view`);
-      console.log(`토론 ID:${debateId} 조회수 증가`);
-    } catch (error) {
-      console.error(`조회수 증가 실패 (ID: ${debateId}):`, error);
-    }
+    // 백엔드에서 자동으로 조회수 증가 처리하므로 별도 API 호출 불필요
+    console.log(`토론 ID:${debateId} 조회수 증가 - 백엔드에서 자동 처리됨`);
   },
 
   /**
    * 찬반 투표하기
    */
-  voteOnDebate: async (voteRequest: VoteRequest): Promise<boolean> => {
+  voteOnDebate: async (voteRequest: VoteRequest): Promise<any> => {
     try {
-      // TODO: 실제 API 연동 시 사용
-      // await apiClient.post(`/debate/${voteRequest.debateId}/vote`, { stance: voteRequest.stance });
-      console.log(`토론 ID:${voteRequest.debateId} ${voteRequest.stance} 투표`);
-      return true;
+      // 백엔드 API 요청 형식으로 변환
+      const requestData: VoteReqDto = {
+        debateId: voteRequest.debateId,
+        option: voteRequest.stance === 'pro' ? '찬성' : '반대'  // 백엔드에서는 '찬성' 또는 '반대'로 전달됨
+      };
+      
+      // 실제 API 호출
+      const response = await apiClient.post('/debate/vote', requestData);
+      
+      // 백엔드 응답 전체 반환 (nationPercent 포함)
+      return response;
     } catch (error) {
+      // 400 에러 검사
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { status: number, data: any } };
+        if (axiosError.response?.status === 400 && 
+            axiosError.response?.data === '찬성과 반대 중 택 1') {
+          console.warn('이미 다른 옵션에 투표했습니다. 먼저 기존 투표를 취소해야 합니다.');
+          return { success: false, error: '이미 다른 옵션에 투표했습니다.' };
+        }
+      }
+      
       console.error(`투표 실패 (ID: ${voteRequest.debateId}):`, error);
-      return false;
+      return { success: false, error: '투표 처리 중 오류가 발생했습니다.' };
     }
   },
   
@@ -186,9 +447,45 @@ const DebateApi = {
    */
   addReaction: async (reactionRequest: ReactionRequest): Promise<boolean> => {
     try {
-      // TODO: 실제 API 연동 시 사용
-      // await apiClient.post('/debate/reaction', reactionRequest);
-      console.log(`${reactionRequest.targetType} ID:${reactionRequest.targetId}에 ${reactionRequest.reactionType} 반응 추가`);
+      // debate에만 감정 표현 가능 (comment, reply는 like/dislike만 가능)
+      if (reactionRequest.targetType !== 'debate') {
+        throw new Error('토론 주제에만 감정표현이 가능합니다.');
+      }
+      
+      // 백엔드 API 요청 형식으로 변환
+      let emotionValue = '';
+      
+      // ReactionType에서 백엔드 형식으로 변환
+      switch(reactionRequest.reactionType) {
+        case ReactionType.LIKE:
+          emotionValue = '좋아요';
+          break;
+        case ReactionType.DISLIKE:
+          emotionValue = '싫어요';
+          break;
+        case ReactionType.HAPPY:
+          emotionValue = '좋아요'; // 백엔드에 '행복해요'가 없으므로 '좋아요'로 매핑 (UI에는 구분되어 표시됨)
+          break;
+        case ReactionType.SAD:
+          emotionValue = '슬퍼요';
+          break;
+        case ReactionType.ANGRY:
+          emotionValue = '화나요';
+          break;
+        case ReactionType.UNSURE:
+          emotionValue = '글쎄요';
+          break;
+        default:
+          emotionValue = '좋아요';
+      }
+      
+      const requestData: DebateReqDto = {
+        emotion: emotionValue
+      };
+      
+      // 실제 API 호출
+      await apiClient.post(`/debate/emotion/${reactionRequest.targetId}`, requestData);
+      
       return true;
     } catch (error) {
       console.error(`감정표현 추가 실패:`, error);
@@ -197,191 +494,405 @@ const DebateApi = {
   },
 
   /**
-   * 오늘의 토론 주제 가져오기
+   * 오늘의 토론 가져오기
    */
-  getTodayDebates: async (): Promise<Debate[]> => {
+  getTodayDebate: async (): Promise<Debate | null> => {
     try {
-      // TODO: 실제 API 연동 시 사용
-      // const response = await apiClient.get('/debate/today');
-      // return response.data;
-
-      // 목업 데이터에서 최신 3개 반환
-      return MOCK_DEBATES.slice(0, 3);
+      const response = await apiClient.get<any>('/debate/today');
+      
+      if (response && response.data) {
+        return mapDebateResToFrontend(response.data);
+      }
+      
+      return null;
     } catch (error) {
-      console.error('오늘의 토론 주제 조회 실패:', error);
-      return [];
+      console.error('오늘의 토론 조회 실패:', error);
+      return null;
     }
   },
 
   /**
-   * 인기 토론 주제 가져오기
+   * 내가 투표한 토론 목록 조회
    */
-  getPopularDebates: async (count: number = 3): Promise<Debate[]> => {
+  getVotedDebates: async (userId: number, page = 0, size = 5): Promise<DebateListResponse> => {
     try {
-      // TODO: 실제 API 연동 시 사용
-      // const response = await apiClient.get('/debate/popular', { params: { count } });
-      // return response.data;
-
-      // 목업 데이터를 조회수 기준으로 정렬하여 반환
-      return [...MOCK_DEBATES]
-        .sort((a, b) => b.viewCount - a.viewCount)
-        .slice(0, count);
+      console.log(`[DEBUG] 투표한 토론 목록 조회 시작: userId=${userId}, page=${page}, size=${size}`);
+      
+      // 유효성 검사
+      if (!userId || userId <= 0) {
+        console.error(`[ERROR] 유효하지 않은 userId: ${userId}`);
+        return { debates: [], total: 0, totalPages: 0 };
+      }
+      
+      // API 호출을 위한 헤더 확인 (디버깅용)
+      const token = localStorage.getItem('auth_token');
+      console.log(`[DEBUG] API 호출 전 토큰 확인: ${token ? '존재함' : '없음'}`);
+      
+      // API 호출
+      const response = await apiClient.get<any>('/debate/voted', {
+        params: { userId, page, size }
+      });
+      
+      console.log(`[DEBUG] 투표한 토론 응답 데이터:`, response);
+      
+      // 응답 데이터 구조 확인
+      if (!response) {
+        console.error('[ERROR] API 응답이 없습니다.');
+        return { debates: [], total: 0, totalPages: 0 };
+      }
+      
+      let debates = [];
+      let total = 0;
+      let totalPages = 0;
+      
+      // Spring Data의 Page 응답 구조인 경우
+      if (response.content && Array.isArray(response.content)) {
+        console.log('[DEBUG] Page 형식의 응답을 처리합니다.');
+        debates = response.content.map((item: DebateResDto) => mapDebateResToFrontend(item));
+        total = response.totalElements || 0;
+        totalPages = response.totalPages || 0;
+      } 
+      // debates 배열이 직접 있는 경우
+      else if (response.debates && Array.isArray(response.debates)) {
+        console.log('[DEBUG] debates 배열 형식의 응답을 처리합니다.');
+        debates = response.debates.map((item: DebateResDto) => mapDebateResToFrontend(item));
+        total = response.total || 0;
+        totalPages = Math.ceil(total / size);
+      }
+      // 직접 배열이 반환된 경우
+      else if (Array.isArray(response)) {
+        console.log('[DEBUG] 배열 형식의 응답을 처리합니다.');
+        debates = response.map((item: DebateResDto) => mapDebateResToFrontend(item));
+        total = debates.length;
+        totalPages = 1;
+      }
+      // 기타 응답 형식
+      else {
+        console.warn('[WARN] 알 수 없는 응답 형식입니다:', response);
+        if (typeof response === 'object') {
+          console.log('[DEBUG] 응답의 키:', Object.keys(response));
+        }
+      }
+      
+      console.log(`[DEBUG] 변환된 토론 데이터:`, {
+        count: debates.length,
+        total,
+        totalPages,
+        sample: debates.length > 0 ? debates[0] : null
+      });
+      
+      return {
+        debates,
+        total,
+        totalPages
+      };
     } catch (error) {
-      console.error('인기 토론 주제 조회 실패:', error);
-      return [];
+      console.error('투표한 토론 목록 조회 실패:', error);
+      
+      // 오류 세부 정보 기록
+      if (error instanceof Error) {
+        console.error('[ERROR] 메시지:', error.message);
+        console.error('[ERROR] 스택:', error.stack);
+      }
+      
+      // AxiosError인 경우 응답 세부 정보 기록
+      if (axios.isAxiosError(error)) {
+        console.error('[ERROR] 요청 URL:', error.config?.url);
+        console.error('[ERROR] 요청 파라미터:', error.config?.params);
+        console.error('[ERROR] 상태 코드:', error.response?.status);
+        console.error('[ERROR] 응답 데이터:', error.response?.data);
+      }
+      
+      return {
+        debates: [],
+        total: 0,
+        totalPages: 0
+      };
+    }
+  },
+
+  /**
+   * 토론 주제 작성하기
+   */
+  createDebate: async (data: DebateReqDto): Promise<number | null> => {
+    try {
+      const response = await apiClient.post<any>('/debate', data);
+      
+      if (response && response.data && response.data.debateId) {
+        return response.data.debateId;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('토론 주제 작성 실패:', error);
+      return null;
     }
   }
 };
 
-export default DebateApi;
-
-// 추가 API 기능들
-
 /**
- * 오늘의 이슈 조회
+ * 오늘의 이슈, 인기 이슈, 균형 이슈를 모두 한 번에 가져오는 함수
+ * 백엔드 API는 {todayDebateList: Array, balancedDebate: Object, topDebate: Object} 형태로 응답함
  */
+export const getSpecialIssues = async () => {
+  try {
+    const response = await apiClient.get<any>('/debate/today');
+    
+    console.log("특별 이슈 원본 응답:", response);
+    
+    // 결과 객체 초기화
+    const result = {
+      todayIssues: [] as Debate[],
+      hotIssue: null as Debate | null,
+      balancedIssue: null as Debate | null
+    };
+    
+    if (response) {
+      const data = response.data || response;
+      
+      // 오늘의 이슈 배열 처리
+      if (data.todayDebateList && Array.isArray(data.todayDebateList)) {
+        result.todayIssues = data.todayDebateList.map((item: DebateResDto) => 
+          mapDebateResToFrontend(item)
+        );
+      }
+      
+      // 인기 이슈 처리
+      if (data.topDebate) {
+        result.hotIssue = mapDebateResToFrontend(data.topDebate);
+      }
+      
+      // 균형 이슈 처리
+      if (data.balancedDebate) {
+        result.balancedIssue = mapDebateResToFrontend(data.balancedDebate);
+      }
+    }
+    
+    console.log("변환된 특별 이슈 데이터:", result);
+    return result;  // 응답 데이터가 없거나 형식이 다르더라도 기본 객체 반환
+  } catch (error) {
+    console.error('특별 이슈 조회 실패:', error);
+    
+    // 에러 발생 시 기본값 반환
+    return {
+      todayIssues: [],
+      hotIssue: null,
+      balancedIssue: null
+    };
+  }
+};
+
+// 오늘의 이슈 가져오기
 export const getTodayIssues = async () => {
   try {
-    // TODO: 실제 API 연동 시 사용
-    // const response = await apiClient.get('/api/debates/today');
-    // return response.json();
+    const response = await apiClient.get<any>('/debate/today');
+    console.log("getTodayIssues 응답:", response);
     
-    console.log('오늘의 이슈 조회');
-    // 여기서는, 실제 API 호출 대신 더미 데이터를 반환하도록 함
-    return new Promise(resolve => {
-      setTimeout(() => {
-        // 더미 데이터 구조를 Debate 타입을 확장한 형태로 정의
-        const dummyTodayIssues = [
-          {
-            id: 7,
-            title: '메타버스는 미래 사회를 어떻게 변화시킬까요?',
-            content: '페이스북이 메타로 사명을 바꾸며 메타버스에 투자하고 있습니다. 메타버스가 우리 사회에 어떤 영향을 미칠지에 대한 토론입니다.',
-            category: '과학/기술',
-            createdAt: new Date().toISOString(),
-            description: '페이스북이 메타로 사명을 바꾸며 메타버스에 투자하고 있습니다. 우리 사회는 어떻게 변할까요?',
-            viewCount: 3200,
-            proCount: 188,
-            conCount: 92,
-            commentCount: 42,
-            reactions: {
-              like: 75,
-              dislike: 18,
-              happy: 20,
-              angry: 10,
-              sad: 5,
-              unsure: 15
-            }
-          },
-          {
-            id: 8,
-            title: '현금 없는 사회가 올 것인가요?',
-            content: '디지털 결제 수단이 발전하면서 현금 사용이 줄고 있습니다. 미래에는 현금이 완전히 사라질지에 대한 토론입니다.',
-            category: '경제',
-            createdAt: new Date().toISOString(),
-            description: '디지털 결제 수단이 발전하면서 현금 사용이 줄고 있습니다. 현금은 완전히 사라질까요?',
-            viewCount: 2800,
-            proCount: 145,
-            conCount: 135,
-            commentCount: 38,
-            reactions: {
-              like: 65,
-              dislike: 25,
-              happy: 15,
-              angry: 12,
-              sad: 8,
-              unsure: 18
-            }
-          }
-        ];
-        resolve(dummyTodayIssues);
-      }, 500);
-    });
+    if (response) {
+      const data = response.data || response;
+      
+      // 백엔드 응답 형식: {todayDebateList: Array, balancedDebate: Object, topDebate: Object}
+      if (data.todayDebateList && Array.isArray(data.todayDebateList)) {
+        return data.todayDebateList.map((item: DebateResDto) => mapDebateResToFrontend(item));
+      }
+      
+      // 이전 형식과의 호환성 유지
+      if (Array.isArray(data)) {
+        return data.map((item: DebateResDto) => mapDebateResToFrontend(item));
+      }
+      
+      // 단일 항목인 경우
+      if (data.debateId) {
+        return [mapDebateResToFrontend(data)];
+      }
+    }
+    
+    return [];
   } catch (error) {
-    console.error('오늘의 이슈를 불러오는데 실패했습니다:', error);
-    throw new Error('오늘의 이슈를 불러오는데 실패했습니다');
+    console.error('오늘의 이슈 조회 실패:', error);
+    return [];
   }
 };
 
-/**
- * 모스트 핫 이슈 조회
- */
+// 인기 이슈 가져오기
 export const getHotIssue = async () => {
   try {
-    // TODO: 실제 API 연동 시 사용
-    // const response = await apiClient.get('/api/debates/hot');
-    // return response.json();
+    const response = await apiClient.get<any>('/debate/today');
+    console.log("getHotIssue 응답:", response);
     
-    console.log('핫 이슈 조회');
-    // 여기서는, 실제 API 호출 대신 더미 데이터를 반환하도록 함
-    return new Promise(resolve => {
-      setTimeout(() => {
-        const dummyHotIssue = {
-          id: 9,
-          title: '기본소득 제도를 도입해야 할까요?',
-          content: '모든 시민에게 조건 없이 정기적인 현금을 지급하는 기본소득 제도에 대한 토론입니다. 사회 안전망으로서의 역할과 경제적 지속 가능성을 함께 고려해야 합니다.',
-          category: '정치/사회',
-          createdAt: new Date().toISOString(),
-          description: '모든 시민에게 조건 없이 정기적인 현금을 지급하는 기본소득 제도에 대한 토론입니다.',
-          viewCount: 8500,
-          proCount: 450,
-          conCount: 380,
-          commentCount: 120,
-          reactions: {
-            like: 210,
-            dislike: 85,
-            happy: 45,
-            angry: 55,
-            sad: 20,
-            unsure: 40
-          }
-        };
-        resolve(dummyHotIssue);
-      }, 700);
-    });
+    if (response) {
+      const data = response.data || response;
+      
+      // 백엔드 응답에서 topDebate 추출
+      if (data.topDebate) {
+        return mapDebateResToFrontend(data.topDebate);
+      }
+      
+      // 이전 방식으로 시도 (인기 기준으로 정렬된 첫 번째 항목)
+      const popularResponse = await apiClient.get<any>('/debate', {
+        params: { page: 1, size: 1, sort: 'popular' }
+      });
+    
+      if (popularResponse) {
+        const popularData = popularResponse.data || popularResponse;
+        if (popularData.content && popularData.content.length > 0) {
+          return mapDebateResToFrontend(popularData.content[0]);
+        }
+      }
+    }
+    
+    return null;
   } catch (error) {
-    console.error('핫 이슈를 불러오는데 실패했습니다:', error);
-    throw new Error('핫 이슈를 불러오는데 실패했습니다');
+    console.error('인기 이슈 조회 실패:', error);
+    return null;
+  }
+};
+
+// 균형 이슈 가져오기
+export const getBalancedIssue = async () => {
+  try {
+    const response = await apiClient.get<any>('/debate/today');
+    console.log("getBalancedIssue 응답:", response);
+    
+    if (response) {
+      const data = response.data || response;
+      
+      // 백엔드 응답에서 balancedDebate 추출
+      if (data.balancedDebate) {
+        return mapDebateResToFrontend(data.balancedDebate);
+      }
+      
+      // 이전 방식으로 시도 (찬반 비율이 가장 50:50에 가까운 토론 찾기)
+      const debatesResponse = await apiClient.get<any>('/debate', {
+        params: { page: 1, size: 10, sort: 'newest' }
+      });
+    
+      if (debatesResponse) {
+        const debatesData = debatesResponse.data || debatesResponse;
+        if (debatesData.content && debatesData.content.length > 0) {
+          const debates = debatesData.content.map((item: DebateResDto) => ({
+            debate: mapDebateResToFrontend(item),
+            balance: Math.abs(item.agreePercent - 50) // 50%에서 얼마나 떨어져 있는지
+          }));
+      
+          // 가장 균형 잡힌 토론 반환
+          debates.sort((a: { debate: Debate; balance: number }, b: { debate: Debate; balance: number }) => a.balance - b.balance);
+          return debates[0].debate;
+        }
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('균형 이슈 조회 실패:', error);
+    return null;
+  }
+};
+
+// isState 문자열을 myReaction 타입으로 변환하는 헬퍼 함수
+export function convertIsStateToMyReaction(isState: string | null | undefined): ReactionType | undefined {
+  if (isState === '좋아요') return ReactionType.LIKE;
+  if (isState === '싫어요') return ReactionType.DISLIKE;
+  return undefined;
+}
+
+// myReaction을 서버에서 사용하는 isState 문자열로 변환하는 함수
+export function convertReactionTypeToIsState(reactionType: ReactionType | undefined): string | undefined {
+  if (reactionType === ReactionType.LIKE) return '좋아요';
+  if (reactionType === ReactionType.DISLIKE) return '싫어요';
+  return undefined;
+}
+
+/**
+ * 댓글 리액션 추가/취소하기
+ */
+export const reactToComment = async (
+  commentId: number,
+  reactionType: ReactionType
+): Promise<any> => {
+  try {
+    console.log(`[DEBUG] 댓글 반응 처리 시작 - 댓글ID: ${commentId}, 타입: ${reactionType}`);
+    
+    // 백엔드 API 요청 형식 - 한글 문자열로 변환
+    const emotionValue = convertReactionTypeToIsState(reactionType) || '좋아요';
+    
+    // API 요청
+    const response = await apiClient.post<any>(`/debate/comment/${commentId}`, {
+      emotion: emotionValue
+    });
+    
+    console.log(`[DEBUG] 댓글 반응 API 응답:`, response);
+    
+    // 응답이 유효하지 않은 경우
+    if (!response || typeof response !== 'object') {
+      console.warn('[WARN] 서버 응답이 유효하지 않습니다');
+      throw new Error('Invalid server response');
+    }
+    
+    // 서버 응답 그대로 반환
+    return response;
+  } catch (error) {
+    console.error(`[ERROR] 댓글 반응 처리 실패:`, error);
+    throw error;
   }
 };
 
 /**
- * 반반 이슈 조회
+ * 답글 리액션 추가/취소하기
  */
-export const getBalancedIssue = async () => {
+export const reactToReply = async (
+  replyId: number,
+  reactionType: ReactionType
+): Promise<any> => {
   try {
-    // TODO: 실제 API 연동 시 사용
-    // const response = await apiClient.get('/api/debates/balanced');
-    // return response.json();
+    console.log(`[DEBUG] 답글 반응 처리 시작 - 답글ID: ${replyId}, 타입: ${reactionType}`);
     
-    console.log('반반 이슈 조회');
-    // 여기서는, 실제 API 호출 대신 더미 데이터를 반환하도록 함
-    return new Promise(resolve => {
-      setTimeout(() => {
-        const dummyBalancedIssue = {
-          id: 10,
-          title: '학교에서 교복을 입어야 할까요?',
-          content: '교복이 학생들의 소속감을 높이고 경제적 격차를 줄인다는 주장과, 학생의 개성과 자유를 제한한다는 주장이 맞서는 토론입니다.',
-          category: '생활/문화',
-          createdAt: new Date().toISOString(),
-          description: '교복이 학생들의 소속감을 높이고 경제적 격차를 줄인다는 주장과, 학생의 개성과 자유를 제한한다는 주장이 맞서는 토론입니다.',
-          viewCount: 4200,
-          proCount: 200,
-          conCount: 200,
-          commentCount: 85,
-          reactions: {
-            like: 95,
-            dislike: 90,
-            happy: 25,
-            angry: 30,
-            sad: 15,
-            unsure: 35
-          }
-        };
-        resolve(dummyBalancedIssue);
-      }, 600);
+    // 백엔드 API 요청 형식 - 한글 문자열로 변환
+    const emotionValue = convertReactionTypeToIsState(reactionType) || '좋아요';
+    
+    // API 요청
+    const response = await apiClient.post<any>(`/debate/reply/${replyId}`, {
+      emotion: emotionValue
     });
+    
+    console.log(`[DEBUG] 답글 반응 API 응답:`, response);
+    
+    // 응답이 유효하지 않은 경우
+    if (!response || typeof response !== 'object') {
+      console.warn('[WARN] 서버 응답이 유효하지 않습니다');
+      throw new Error('Invalid server response');
+    }
+    
+    // 서버 응답 그대로 반환
+    return response;
   } catch (error) {
-    console.error('반반 이슈를 불러오는데 실패했습니다:', error);
-    throw new Error('반반 이슈를 불러오는데 실패했습니다');
+    console.error(`[ERROR] 답글 반응 처리 실패:`, error);
+    throw error;
   }
-}; 
+};
+
+/**
+ * 토론의 투표 상세 정보(국가별 통계 포함) 가져오기
+ */
+export const getVotesByDebateId = async (debateId: number): Promise<any> => {
+  try {
+    // 새로 추가한 RESTful 엔드포인트 사용
+    const response = await apiClient.get<any>(`/debate/vote/${debateId}`);
+    
+    console.log(`토론 ID ${debateId}의 투표 통계 조회 응답:`, response);
+    
+    if (response) {
+      const data = response.data || response;
+      if (data) {
+        return data;
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    console.error(`투표 통계 조회 실패 (ID: ${debateId}):`, error);
+    return null;
+  }
+};
+
+export default DebateApi; 

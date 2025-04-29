@@ -2,7 +2,6 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import DebateListPage from './pages/DebateListPage';
 import DebateDetailPage from './pages/DebateDetailPage';
-import DebateOldListPage from './pages/DebateOldListPage';
 import MainIssuesPage from './pages/MainIssuesPage';
 
 /**
@@ -13,11 +12,10 @@ const DebateRoutes: React.FC = () => {
     <Routes>
       <Route path="/" element={<MainIssuesPage />} />
       <Route path="/list" element={<DebateListPage />} />
-      <Route path="/old" element={<DebateOldListPage />} />
       <Route path="/:id" element={<DebateDetailPage />} />
       <Route path="*" element={<Navigate to="/debate" replace />} />
     </Routes>
   );
 };
 
-export default DebateRoutes; 
+export default DebateRoutes;

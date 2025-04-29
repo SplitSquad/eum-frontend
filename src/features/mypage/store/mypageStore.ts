@@ -8,6 +8,7 @@ import {
   PaginatedResponse 
 } from '../types';
 import mypageApi from '../api/mypageApi';
+import { useAuthStore } from '../../auth/store/authStore';
 
 // 프로필 섹션 로딩 상태를 나타내는 타입
 type LoadingState = 'idle' | 'loading' | 'success' | 'error';
@@ -96,7 +97,10 @@ export const useMypageStore = create<MypageState>((set, get) => ({
   fetchProfile: async () => {
     set({ profileLoading: 'loading', profileError: null });
     try {
-      const profile = await mypageApi.getProfileInfo();
+      // 현재 사용자 ID 가져오기
+      const userId = useAuthStore.getState().user?.userId ? Number(useAuthStore.getState().user?.userId) : undefined;
+      
+      const profile = await mypageApi.getProfileInfo(userId);
       set({ profile, profileLoading: 'success' });
     } catch (error) {
       console.error('프로필 정보 로딩 실패:', error);
@@ -147,8 +151,18 @@ export const useMypageStore = create<MypageState>((set, get) => ({
   fetchMyPosts: async (page = 0, size = 10) => {
     set({ postsLoading: 'loading', postsError: null });
     try {
-      const posts = await mypageApi.getMyPosts(page, size);
+      // 현재 사용자 ID 가져오기
+      const user = useAuthStore.getState().user;
+      const userId = user?.userId ? Number(user.userId) : 0;
+      
+      if (!userId) {
+        throw new Error('사용자 ID를 찾을 수 없습니다.');
+      }
+      
+      const posts = await mypageApi.getMyPosts(userId, page, size);
       set({ posts, postsLoading: 'success' });
+      
+      console.log('[DEBUG] 내 게시글 로드 성공:', posts);
     } catch (error) {
       console.error('내 게시글 로딩 실패:', error);
       set({ 
@@ -161,8 +175,18 @@ export const useMypageStore = create<MypageState>((set, get) => ({
   fetchMyComments: async (page = 0, size = 10) => {
     set({ commentsLoading: 'loading', commentsError: null });
     try {
-      const comments = await mypageApi.getMyComments(page, size);
+      // 현재 사용자 ID 가져오기
+      const user = useAuthStore.getState().user;
+      const userId = user?.userId ? Number(user.userId) : 0;
+      
+      if (!userId) {
+        throw new Error('사용자 ID를 찾을 수 없습니다.');
+      }
+      
+      const comments = await mypageApi.getMyComments(userId, page, size);
       set({ comments, commentsLoading: 'success' });
+      
+      console.log('[DEBUG] 내 댓글 로드 성공:', comments);
     } catch (error) {
       console.error('내 댓글 로딩 실패:', error);
       set({ 
@@ -175,8 +199,18 @@ export const useMypageStore = create<MypageState>((set, get) => ({
   fetchMyDebates: async (page = 0, size = 10) => {
     set({ debatesLoading: 'loading', debatesError: null });
     try {
-      const debates = await mypageApi.getMyDebates(page, size);
+      // 현재 사용자 ID 가져오기
+      const user = useAuthStore.getState().user;
+      const userId = user?.userId ? Number(user.userId) : 0;
+      
+      if (!userId) {
+        throw new Error('사용자 ID를 찾을 수 없습니다.');
+      }
+      
+      const debates = await mypageApi.getMyDebates(userId, page, size);
       set({ debates, debatesLoading: 'success' });
+      
+      console.log('[DEBUG] 내 토론 로드 성공:', debates);
     } catch (error) {
       console.error('내 토론 로딩 실패:', error);
       set({ 
@@ -200,23 +234,25 @@ export const useMypageStore = create<MypageState>((set, get) => ({
     }
   },
 
-  // 상태 리셋 메소드
+  // 비밀번호 변경 상태 리셋
   resetPasswordChangeStatus: () => {
-    set({ 
-      passwordChangeLoading: 'idle', 
-      passwordChangeError: null, 
-      passwordChanged: false 
+    set({
+      passwordChangeLoading: 'idle',
+      passwordChangeError: null,
+      passwordChanged: false
     });
   },
 
+  // 프로필 업데이트 상태 리셋
   resetProfileUpdateStatus: () => {
-    set({ 
-      profileUpdateLoading: 'idle', 
-      profileUpdateError: null, 
-      profileUpdated: false 
+    set({
+      profileUpdateLoading: 'idle',
+      profileUpdateError: null,
+      profileUpdated: false
     });
   },
 
+  // 전체 상태 리셋
   resetAllState: () => {
     set({
       profile: null,
@@ -245,7 +281,7 @@ export const useMypageStore = create<MypageState>((set, get) => ({
 
       profileUpdateLoading: 'idle',
       profileUpdateError: null,
-      profileUpdated: false,
+      profileUpdated: false
     });
   }
 }));

@@ -180,8 +180,6 @@ const router = createBrowserRouter([
         ),
       },
 
-      
-
       /* 아직 구현되지 않은 페이지 주석 처리
       // 검색 (누구나 접근 가능)
       {

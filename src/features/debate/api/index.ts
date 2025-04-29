@@ -3,21 +3,26 @@
  */
 import DebateApi, { getTodayIssues, getHotIssue, getBalancedIssue } from './debateApi';
 import CommentApi from './commentApi';
+import apiClient from './apiClient';
 
-// 모든 API 재노출
-export {
-  DebateApi,
-  CommentApi,
-  getTodayIssues,
-  getHotIssue,
-  getBalancedIssue
+// API 클라이언트
+export { apiClient };
+
+// 토론 관련 API
+export { DebateApi, getTodayIssues, getHotIssue, getBalancedIssue };
+
+// 댓글 관련 API
+export { CommentApi };
+
+// 통합 API 객체
+export const api = {
+  debate: DebateApi,
+  comment: CommentApi,
+  special: {
+    getTodayIssues,
+    getHotIssue,
+    getBalancedIssue
+  }
 };
 
-// 기본 내보내기 - DebateApi
-export default {
-  ...DebateApi,
-  comments: CommentApi,
-  getTodayIssues,
-  getHotIssue,
-  getBalancedIssue
-}; 
+export default api; 

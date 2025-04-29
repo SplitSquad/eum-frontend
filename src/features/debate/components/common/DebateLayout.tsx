@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, styled } from '@mui/material';
 import Header, { HeaderProps } from './Header';
 import SpringBackground from './SpringBackground';
+import Toast from './Toast';
 
 const LayoutRoot = styled(Box)({
   display: 'flex',
@@ -66,6 +67,7 @@ const DebateLayout: React.FC<DebateLayoutProps> = ({
           <Main>{children}</Main>
         </LayoutContent>
       </SpringBackground>
+      <Toast />
     </LayoutRoot>
   );
 };

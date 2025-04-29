@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from '@emotion/styled';
 import { keyframes } from '@emotion/react';
-import { SidebarMenu, SpringBackground } from './';
+import { SidebarMenu, SpringBackground } from '.';
 import { useLocation } from 'react-router-dom';
 
 // Animations
@@ -103,7 +103,7 @@ const Book = styled.div`
   position: relative;
   border-radius: 10px;
   overflow: hidden;
-  
+
   &:before {
     content: '';
     position: absolute;
@@ -111,14 +111,19 @@ const Book = styled.div`
     top: 0;
     width: 2px;
     height: 100%;
-    background: linear-gradient(to bottom, rgba(255, 182, 193, 0.1), rgba(255, 182, 193, 0.3), rgba(255, 182, 193, 0.1));
+    background: linear-gradient(
+      to bottom,
+      rgba(255, 182, 193, 0.1),
+      rgba(255, 182, 193, 0.3),
+      rgba(255, 182, 193, 0.1)
+    );
     z-index: 5;
     box-shadow: 0 0 10px rgba(255, 182, 193, 0.1);
   }
-  
+
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
-    
+
     &:before {
       display: none;
     }
@@ -134,7 +139,7 @@ const LeftPage = styled.aside`
   box-shadow: inset -5px 0 15px -5px rgba(255, 182, 193, 0.1);
   border-radius: 10px 0 0 10px;
   z-index: 2;
-  
+
   &:after {
     content: '';
     position: absolute;
@@ -142,7 +147,7 @@ const LeftPage = styled.aside`
     right: 0;
     width: 30px;
     height: 100%;
-    background: linear-gradient(to right, rgba(0,0,0,0), rgba(255, 182, 193, 0.03));
+    background: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(255, 182, 193, 0.03));
     pointer-events: none;
   }
 
@@ -201,12 +206,10 @@ const ContentArea = styled.main<{ isVisible: boolean; isLeaving: boolean }>`
   box-shadow: inset 5px 0 15px -5px rgba(255, 182, 193, 0.1);
   border-radius: 0 10px 10px 0;
   opacity: ${props => (props.isVisible ? 1 : 0)};
-  animation: ${props => props.isVisible 
-    ? fadeIn 
-    : (props.isLeaving ? fadeOut : 'none')} 
-    0.3s ease-in-out forwards;
+  animation: ${props => (props.isVisible ? fadeIn : props.isLeaving ? fadeOut : 'none')} 0.3s
+    ease-in-out forwards;
   z-index: 2;
-  
+
   &:before {
     content: '';
     position: absolute;
@@ -214,7 +217,7 @@ const ContentArea = styled.main<{ isVisible: boolean; isLeaving: boolean }>`
     left: 0;
     width: 30px;
     height: 100%;
-    background: linear-gradient(to left, rgba(0,0,0,0), rgba(255, 182, 193, 0.03));
+    background: linear-gradient(to left, rgba(0, 0, 0, 0), rgba(255, 182, 193, 0.03));
     pointer-events: none;
     z-index: 0;
   }
@@ -231,7 +234,7 @@ const PageContent = styled.div`
   height: 100%;
   position: relative;
   padding: 20px;
-  
+
   &:before {
     content: '';
     position: absolute;
@@ -244,7 +247,7 @@ const PageContent = styled.div`
     background-size: 500px 40px;
     opacity: 0.6;
   }
-  
+
   &:after {
     content: '';
     position: absolute;
@@ -286,7 +289,7 @@ const BookTitle = styled.h1`
 
   &:hover {
     transform: translateY(-2px);
-    
+
     &:after {
       transform: scaleX(1);
     }
@@ -303,7 +306,7 @@ const BookmarkRibbon = styled.div`
   border-radius: 0 0 5px 5px;
   box-shadow: 0 5px 10px rgba(255, 182, 193, 0.2);
   z-index: 10;
-  
+
   &:after {
     content: '';
     position: absolute;
@@ -356,13 +359,13 @@ const MobileMenuButton = styled.button`
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 2px 8px rgba(255, 182, 193, 0.2);
-  
+
   &:hover {
     background-color: rgba(255, 202, 212, 0.2);
     box-shadow: 0 4px 12px rgba(255, 182, 193, 0.3);
     transform: scale(1.05);
   }
-  
+
   &:active {
     transform: scale(0.95);
   }
@@ -376,7 +379,7 @@ const MenuIcon = styled.div`
   width: 24px;
   height: 20px;
   position: relative;
-  
+
   span {
     display: block;
     position: absolute;
@@ -388,15 +391,16 @@ const MenuIcon = styled.div`
     left: 0;
     transform: rotate(0deg);
     transition: 0.25s ease-in-out;
-    
+
     &:nth-of-type(1) {
       top: 0px;
     }
-    
-    &:nth-of-type(2), &:nth-of-type(3) {
+
+    &:nth-of-type(2),
+    &:nth-of-type(3) {
       top: 8px;
     }
-    
+
     &:nth-of-type(4) {
       top: 16px;
     }
@@ -407,7 +411,7 @@ const CloseIcon = styled.div`
   width: 24px;
   height: 20px;
   position: relative;
-  
+
   span {
     display: block;
     position: absolute;
@@ -419,12 +423,12 @@ const CloseIcon = styled.div`
     left: 0;
     transform: rotate(0deg);
     transition: 0.25s ease-in-out;
-    
+
     &:nth-of-type(1) {
       top: 8px;
       transform: rotate(45deg);
     }
-    
+
     &:nth-of-type(2) {
       top: 8px;
       transform: rotate(-45deg);
@@ -455,14 +459,14 @@ const PageLayout: React.FC<PageLayoutProps> = ({ children, title }) => {
       // 1. 페이드 아웃
       setIsLeaving(true);
       setContentVisible(false);
-      
+
       // 2. 콘텐츠 변경 및 페이드 인 (페이드 아웃이 완료된 후)
       const timer = setTimeout(() => {
         setContent(children);
         setIsLeaving(false);
         setContentVisible(true);
       }, 200); // 페이드 아웃 애니메이션(0.3s)보다 짧게 설정하여 부드러운 전환
-      
+
       return () => clearTimeout(timer);
     }
   }, [children, location.pathname]);
@@ -481,7 +485,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({ children, title }) => {
       <BackgroundLayer>
         <SpringBackground intensity={0.5} isFixed={true} />
       </BackgroundLayer>
-      
+
       {/* 콘텐츠 레이어 - 페이지 전환 시 내용만 변경됨 */}
       <ContentLayer>
         <BookContainer>
@@ -492,13 +496,13 @@ const PageLayout: React.FC<PageLayoutProps> = ({ children, title }) => {
               <BottomOrnament />
               <SidebarMenu />
             </LeftPage>
-            
+
             {/* Mobile sidebar */}
             <MobileSidebar isOpen={isMobileSidebarOpen}>
               <SidebarMenu />
             </MobileSidebar>
             <Overlay isOpen={isMobileSidebarOpen} onClick={closeMobileSidebar} />
-            
+
             <MobileMenuButton onClick={toggleMobileSidebar} aria-label="메뉴 열기/닫기">
               {isMobileSidebarOpen ? (
                 <CloseIcon>
@@ -531,4 +535,4 @@ const PageLayout: React.FC<PageLayoutProps> = ({ children, title }) => {
   );
 };
 
-export default PageLayout; 
+export default PageLayout;

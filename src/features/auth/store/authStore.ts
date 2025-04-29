@@ -7,10 +7,10 @@ import { checkAuthStatus, logout } from '../api'; // 임시 인증 API
  * 사용자 타입 정의
  */
 export interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: string;
+  userId: number;
+  email?: string;
+  name?: string;
+  role?: string;
   picture?: string;
   googleId?: string;
 }

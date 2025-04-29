@@ -13,6 +13,10 @@ const config: AxiosRequestConfig = {
     'Content-Type': 'application/json',
     Accept: 'application/json',
   },
+  maxRedirects: 0, // 리다이렉션 방지
+  validateStatus: (status) => {
+    return status >= 200 && status < 400; // 400 미만의 모든 상태 코드를 성공으로 처리
+  },
 };
 
 /**
@@ -36,11 +40,8 @@ axiosInstance.interceptors.request.use(
       config.headers.Authorization = `${token}`;
       console.log('토큰 헤더 추가됨:', `${token.substring(0, 10)}...`);
     } else if (config.headers) {
-      // 토큰이 없는 경우 테스트용 토큰 추가 (개발 중에만 사용)
-      const testToken =
-        'eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjQsInJvbGUiOiJST0xFX1VTRVIiLCJpYXQiOjE3NDQ4NjkyNzgsImV4cCI6MTc0ODQ2OTI3OH0.iJQ-_ej0AWjrFI5z0t7R4Y0uKmUJ8tyQalXu3qlfHA4';
-      config.headers.Authorization = `${testToken}`;
-      console.log('테스트 토큰 사용:', `${testToken}`);
+      // 토큰이 없는 경우 로깅만 수행
+      console.log('토큰 없음, 인증 헤더 추가되지 않음');
     }
 
     // 개발 환경에서 요청 로깅

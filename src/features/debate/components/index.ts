@@ -3,7 +3,7 @@ import DebateList from './list/DebateList';
 import DebateItem from './list/DebateItem';
 
 // 상세 페이지 관련 컴포넌트
-import DebateDetail from './detail/DebateDetail';
+//import DebateDetail from './detail/DebateDetail';
 
 // 댓글 관련 컴포넌트
 import CommentForm from './comment/CommentForm';
@@ -26,7 +26,7 @@ export {
   DebateItem,
   
   // 상세 페이지 관련
-  DebateDetail,
+  //DebateDetail,
   
   // 댓글 관련
   CommentForm,
