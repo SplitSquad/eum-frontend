@@ -41,16 +41,16 @@ const App: React.FC = () => {
       autoHideDuration={3000}
     >
       <SeasonalBackground>
-      <div className="app-container">
+        <div className="app-container">
           {/* 네비게이션 바 추가 */}
           <NavBar />
-          
+
           {/* 테마 전환기를 우측 하단 플로팅으로 배치 */}
-          <ThemeSwitcher position="floating" />
-        <main className="main-content">
-          <Outlet />
-        </main>
-      </div>
+          {/* <ThemeSwitcher position="floating" /> */}
+          <main className="main-content">
+            <Outlet />
+          </main>
+        </div>
       </SeasonalBackground>
     </SnackbarProvider>
   );

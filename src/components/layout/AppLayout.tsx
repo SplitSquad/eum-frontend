@@ -34,8 +34,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex flex-col min-h-screen overflow-hidden">
-      {isAuthenticated ? <Header /> : <GuestHeader />}
-
       {/* 전역 모달: content가 null이면 기본 ChatModalContent 사용 */}
       <Modal isOpen={isModalOpen} onClose={closeModal} position={position}>
         {content ?? <ModalContent />}
