@@ -63,7 +63,7 @@ export default function Modal({ isOpen, onClose, children, position }: ModalProp
               className="
                 pointer-events-auto
                 bg-white rounded-2xl shadow-xl 
-                max-w-sm w-[380px] overflow-hidden
+                max-w-sm w-[600px] overflow-hidden
               "
               style={
                 position

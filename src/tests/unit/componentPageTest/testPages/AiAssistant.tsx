@@ -13,6 +13,7 @@ const categories: Category[] = [
   { key: 'social', label: '🏛 사회보장제도' },
   { key: 'tax', label: '💰 세금/금융' },
   { key: 'health', label: '🚑 의료/건강' },
+  { key: 'employment', label: '💼 구인/구직' },
   { key: 'life', label: '👨‍👩‍👧 일상생활' },
 ];
 
