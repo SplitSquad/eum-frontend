@@ -169,9 +169,9 @@ const DrawerItem = styled(ListItem)<{ season: string; active: boolean }>`
 // 네비게이션 항목
 const navItems = [
   { name: '홈', path: '/', icon: <HomeIcon /> },
-  { name: '커뮤니티', path: '/community', icon: <ForumIcon /> },
-  { name: '토론', path: '/debate', icon: <ChatIcon /> },
-  { name: 'AI 비서', path: '/assistant', icon: <ChatIcon /> },
+  { name: '모임과이야기', path: '/community', icon: <ForumIcon /> },
+  { name: '핫이슈토론', path: '/debate', icon: <ChatIcon /> },
+  { name: 'AI전문가', path: '/assistant', icon: <ChatIcon /> },
   { name: '마이페이지', path: '/mypage', icon: <AccountCircleIcon />, requireAuth: true },
 ];
 

@@ -61,7 +61,7 @@ const DebateLayout: React.FC<DebateLayoutProps> = ({
   return (
     <LayoutRoot>
       <SpringBackground noPadding>
-        <Header {...headerProps} />
+        {/* <Header {...headerProps} /> */}
         <LayoutContent>
           {showSidebar && sidebar && <Sidebar>{sidebar}</Sidebar>}
           <Main>{children}</Main>
@@ -72,4 +72,4 @@ const DebateLayout: React.FC<DebateLayoutProps> = ({
   );
 };
 
-export default DebateLayout; 
+export default DebateLayout;

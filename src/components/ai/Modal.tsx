@@ -16,10 +16,9 @@ interface ModalProps {
 /**
  * Modal 컴포넌트
  * - 포탈을 통해 body 밖에 모달을 렌더링
- * - Escape 키 및 백드롭 클릭(포함되지 않았으므로 필요 시 추가)으로 닫힘
+ * - Escape 키로 닫힘
  * - Framer Motion으로 애니메이션 처리
  */
-
 export default function Modal({ isOpen, onClose, children, position }: ModalProps) {
   // Escape 키 누르면 모달 닫기 핸들링
   useEffect(() => {
@@ -27,11 +26,6 @@ export default function Modal({ isOpen, onClose, children, position }: ModalProp
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [onClose]);
-
-  // 모달 오픈 시 body 스크롤 잠금 처리
-  useEffect(() => {
-    document.body.style.overflow = isOpen ? 'hidden' : '';
-  }, [isOpen]);
 
   // 모달 포탈 root 엘리먼트 준비
   const portalRoot =
@@ -48,17 +42,16 @@ export default function Modal({ isOpen, onClose, children, position }: ModalProp
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* 백드롭: 투명도가 있지만 클릭 이벤트를 자식으로 통과 */}
+          {/* 백드롭 */}
           <motion.div
             className="fixed inset-0 bg-black/50 z-40 pointer-events-none"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 0 }}
+            animate={{ opacity: 0.5 }}
             exit={{ opacity: 0 }}
           />
 
-          {/* 모달 래퍼: 클릭 이벤트 통과 */}
+          {/* 모달 래퍼 */}
           <motion.div className="fixed inset-0 z-50 pointer-events-none">
-            {/* 실제 모달 박스: 포지션 및 스타일 적용 */}
             <div
               className="
                 pointer-events-auto

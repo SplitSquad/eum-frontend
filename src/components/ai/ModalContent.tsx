@@ -7,9 +7,11 @@ type Message = { id: number; sender: 'user' | 'bot'; text: string };
 type AgentType = 'schedule' | 'job';
 export default function ModalContent() {
   const [activeAgent, setActiveAgent] = useState<AgentType>('schedule');
+
   // 일정 에이전트 상태
   const [scheduleMessages, setScheduleMessages] = useState<Message[]>([]);
   const [scheduleLoading, setScheduleLoading] = useState(false);
+
   // 구직 에이전트 상태
   const [jobMessages, setJobMessages] = useState<Message[]>([]);
   const [jobLoading, setJobLoading] = useState(false);
@@ -20,7 +22,11 @@ export default function ModalContent() {
   useEffect(() => {
     if (activeAgent === 'schedule' && scheduleMessages.length === 0) {
       setScheduleMessages([
-        { id: Date.now(), sender: 'bot', text: '일정 에이전트입니다. 무엇을 도와드릴까요?' },
+        {
+          id: Date.now(),
+          sender: 'bot',
+          text: '일정 및 게시글 작성 에이전트입니다. 무엇을 도와드릴까요?',
+        },
       ]);
     }
     if (activeAgent === 'job' && jobMessages.length === 0) {
@@ -158,10 +164,10 @@ export default function ModalContent() {
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && !loading && sendMessage()}
           disabled={loading}
-          className="flex-1 px-3 py-1 border rounded-lg focus:outline-none focus:ring disabled:opacity-50"
+          className="flex-1 px-3 py-1 bg-white border rounded-lg focus:outline-none focus:ring disabled:opacity-50"
           placeholder={
             activeAgent === 'schedule'
-              ? '일정 요청을 입력하세요...'
+              ? '일정 및 게시글 작성 요청을 입력하세요...'
               : '구직 관련 질문을 입력하세요...'
           }
         />

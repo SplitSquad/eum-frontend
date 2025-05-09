@@ -30,7 +30,7 @@ export default function AiAssistant() {
 
   return (
     // 공통 레이아웃 감싸기(AppLayout 내부에 헤더/푸터/모달 챗봇 포함)
-    <AppLayout>
+    <>
       {/* 페이지 고정 너비 및 패딩을 주는 컨테이너 */}
       <Container>
         <div className="flex h-screen overflow-hidden space-x-6 py-8">
@@ -47,6 +47,6 @@ export default function AiAssistant() {
           </div>
         </div>
       </Container>
-    </AppLayout>
+    </>
   );
 }

@@ -16,24 +16,25 @@ export async function callAgentic(
   response: string;
   metadata: { query: string; state: string; uid: string; error: string };
 }> {
-  const token =
-    'eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjYsInJvbGUiOiJST0xFX1VTRVIiLCJpYXQiOjE3NDY1OTc2MjMsImV4cCI6MTc0NjYzMzYyM30.fYB_vGhI7YXc9nW3iHkPM1nU3A8rzAr4i8olcrRitMI';
+  // localStorage에서 토큰 읽기
+  const token = localStorage.getItem('auth_token');
+  if (!token) {
+    throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
+  }
 
-  // Agentic API 엔드포인트로 POST 요청 (JWT 포함)
-  const res = await fetch('http://127.0.0.1:8001/api/v1/agentic', {
+  const res = await fetch('http://127.0.0.1:8002/api/v1/agentic', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      // Bearer 스키마를 쓴다면: `Bearer ${token}`
       Authorization: token,
     },
-    body: JSON.stringify({ query, uid }),
+    body: JSON.stringify({ query, uid, state: 'first' }),
   });
 
-  // HTTP 상태 코드 확인
   if (!res.ok) {
     throw new Error(`Agentic API error ${res.status}`);
   }
 
-  // JSON 응답 파싱 및 반환
   return res.json();
 }

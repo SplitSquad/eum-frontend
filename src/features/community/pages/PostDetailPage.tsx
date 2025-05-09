@@ -117,16 +117,16 @@ const PostDetailPage: React.FC = () => {
   const actualPostId = postId || postIdAlt;
   const authStore = useAuthStore();
   const currentUser = authStore.user;
-  
+
   // postId 타입 안전하게 변환
   const numericPostId = actualPostId ? parseInt(actualPostId, 10) : 0;
-  
+
   // 로컬 상태 관리
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  
+
   // communityStore 사용
   const communityStore = useCommunityStore();
 
@@ -151,22 +151,22 @@ const PostDetailPage: React.FC = () => {
       setLoading(true);
       setError(null);
       setPost(null);
-      
+
       console.log('[DEBUG] 게시글 로딩 시작:', { actualPostId });
 
       // API에서 직접 데이터를 가져오도록 수정
       const numericPostId = parseInt(actualPostId);
-      
+
       try {
         const fetchedPost = await api.getPostById(numericPostId);
-        
+
         if (!fetchedPost || typeof fetchedPost !== 'object') {
           console.error('[ERROR] 게시글 로드 실패: 유효하지 않은 데이터');
           setError('게시글이 존재하지 않거나 삭제되었습니다.');
           setLoading(false);
           return;
         }
-        
+
         // 백엔드 응답 필드에 맞게 매핑
         const mappedPost = {
           ...fetchedPost,
@@ -182,22 +182,20 @@ const PostDetailPage: React.FC = () => {
           status: fetchedPost.status || 'ACTIVE',
           createdAt: fetchedPost.createdAt || new Date().toISOString(),
         };
-        
+
         console.log('[DEBUG] 게시글 API 로드 성공:', {
           id: mappedPost.postId,
           title: mappedPost.title,
         });
-        
+
         // 컴포넌트 상태 업데이트
         setPost(mappedPost);
-        
       } catch (apiError) {
         console.error('[ERROR] API 호출 실패:', apiError);
         setError('게시글을 불러오는데 실패했습니다.');
         setLoading(false);
         return;
       }
-
     } catch (err: any) {
       console.error('[ERROR] 게시글 로딩 중 오류:', err);
       setError(err?.message || '게시글을 불러오는데 실패했습니다. 다시 시도해주세요.');
@@ -216,14 +214,14 @@ const PostDetailPage: React.FC = () => {
     if (!post) return;
 
     try {
-      console.log("[DEBUG] 게시글 삭제 요청 시작:", post.postId);
+      console.log('[DEBUG] 게시글 삭제 요청 시작:', post.postId);
       await communityStore.deletePost(post.postId);
-      console.log("[DEBUG] 게시글 삭제 완료");
+      console.log('[DEBUG] 게시글 삭제 완료');
       setDeleteDialogOpen(false);
       navigate('/community');
       enqueueSnackbar('게시글이 삭제되었습니다.', { variant: 'success' });
     } catch (error) {
-      console.error("[ERROR] 게시글 삭제 실패:", error);
+      console.error('[ERROR] 게시글 삭제 실패:', error);
       enqueueSnackbar('게시글 삭제에 실패했습니다.', { variant: 'error' });
     }
   };
@@ -271,8 +269,9 @@ const PostDetailPage: React.FC = () => {
           return {
             ...prev,
             likeCount: type === 'LIKE' ? Math.max(0, (prev.likeCount || 0) - 1) : prev.likeCount,
-            dislikeCount: type === 'DISLIKE' ? Math.max(0, (prev.dislikeCount || 0) - 1) : prev.dislikeCount,
-            myReaction: undefined 
+            dislikeCount:
+              type === 'DISLIKE' ? Math.max(0, (prev.dislikeCount || 0) - 1) : prev.dislikeCount,
+            myReaction: undefined,
           };
         });
       } else {
@@ -281,13 +280,19 @@ const PostDetailPage: React.FC = () => {
           if (!prev) return prev;
           return {
             ...prev,
-            likeCount: type === 'LIKE' 
-              ? (prev.likeCount || 0) + 1 
-              : currentReaction === 'LIKE' ? Math.max(0, (prev.likeCount || 0) - 1) : (prev.likeCount || 0),
-            dislikeCount: type === 'DISLIKE' 
-              ? (prev.dislikeCount || 0) + 1 
-              : currentReaction === 'DISLIKE' ? Math.max(0, (prev.dislikeCount || 0) - 1) : (prev.dislikeCount || 0),
-            myReaction: type
+            likeCount:
+              type === 'LIKE'
+                ? (prev.likeCount || 0) + 1
+                : currentReaction === 'LIKE'
+                  ? Math.max(0, (prev.likeCount || 0) - 1)
+                  : prev.likeCount || 0,
+            dislikeCount:
+              type === 'DISLIKE'
+                ? (prev.dislikeCount || 0) + 1
+                : currentReaction === 'DISLIKE'
+                  ? Math.max(0, (prev.dislikeCount || 0) - 1)
+                  : prev.dislikeCount || 0,
+            myReaction: type,
           };
         });
       }
@@ -301,18 +306,20 @@ const PostDetailPage: React.FC = () => {
         // 백엔드가 isState를 반환하지 않으므로 클라이언트에서 myReaction 유지
         // 사용자가 방금 수행한 작업에 따라 myReaction 결정
         const newMyReaction = isActive ? undefined : type;
-        
+
         setPost(prev => {
           if (!prev) return prev;
           return {
             ...prev,
             likeCount: response.like,
             dislikeCount: response.dislike,
-            myReaction: newMyReaction
+            myReaction: newMyReaction,
           };
         });
-        
-        console.log(`[DEBUG] 업데이트된 상태: myReaction=${newMyReaction}, 좋아요=${response.like}, 싫어요=${response.dislike}`);
+
+        console.log(
+          `[DEBUG] 업데이트된 상태: myReaction=${newMyReaction}, 좋아요=${response.like}, 싫어요=${response.dislike}`
+        );
       }
     } catch (error) {
       console.error('[ERROR] 게시글 반응 처리 실패:', error);
@@ -345,11 +352,7 @@ const PostDetailPage: React.FC = () => {
         <SpringBackground>
           <Box mt={4}>
             <Alert severity="error">{error}</Alert>
-            <Button 
-              startIcon={<ArrowBackIcon />} 
-              onClick={handleBack}
-              sx={{ mt: 2 }}
-            >
+            <Button startIcon={<ArrowBackIcon />} onClick={handleBack} sx={{ mt: 2 }}>
               목록으로 돌아가기
             </Button>
           </Box>
@@ -365,11 +368,7 @@ const PostDetailPage: React.FC = () => {
         <SpringBackground>
           <Box mt={4}>
             <Alert severity="warning">게시글이 존재하지 않거나 삭제되었습니다.</Alert>
-            <Button 
-              startIcon={<ArrowBackIcon />} 
-              onClick={handleBack}
-              sx={{ mt: 2 }}
-            >
+            <Button startIcon={<ArrowBackIcon />} onClick={handleBack} sx={{ mt: 2 }}>
               목록으로 돌아가기
             </Button>
           </Box>
@@ -382,7 +381,14 @@ const PostDetailPage: React.FC = () => {
     <SpringBackground>
       <Container maxWidth="md" sx={{ py: 4, minHeight: 'calc(100vh - 70px)' }}>
         {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              height: '200px',
+            }}
+          >
             <CircularProgress color="secondary" />
           </Box>
         ) : error ? (
@@ -392,15 +398,17 @@ const PostDetailPage: React.FC = () => {
         ) : post ? (
           <>
             {/* 뒤로가기 버튼 */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Box
+              sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}
+            >
               <IconButton onClick={handleBack} sx={{ color: '#666' }}>
                 <ArrowBackIcon />
               </IconButton>
-              
+
               {/* 게시글 작성자일 경우 수정/삭제 버튼 표시 */}
               {isPostAuthor && (
                 <Box>
-                  <Button 
+                  <Button
                     startIcon={<EditIcon />}
                     sx={{ mr: 1, color: '#666', borderColor: '#ccc' }}
                     variant="outlined"
@@ -409,7 +417,7 @@ const PostDetailPage: React.FC = () => {
                   >
                     수정
                   </Button>
-                  <Button 
+                  <Button
                     startIcon={<DeleteIcon />}
                     sx={{ color: '#f44336', borderColor: '#f44336' }}
                     variant="outlined"
@@ -433,7 +441,9 @@ const PostDetailPage: React.FC = () => {
               </DialogContent>
               <DialogActions>
                 <Button onClick={() => setDeleteDialogOpen(false)}>취소</Button>
-                <Button onClick={handleDeletePost} color="error">삭제</Button>
+                <Button onClick={handleDeletePost} color="error">
+                  삭제
+                </Button>
               </DialogActions>
             </Dialog>
 
@@ -443,10 +453,7 @@ const PostDetailPage: React.FC = () => {
                 {post.title}
               </Typography>
               <Box display="flex" alignItems="center" mb={1}>
-                <Avatar 
-                  alt={post.userName} 
-                  sx={{ width: 32, height: 32, mr: 1 }} 
-                />
+                <Avatar alt={post.userName} sx={{ width: 32, height: 32, mr: 1 }} />
                 <Typography variant="body2" sx={{ mr: 2 }}>
                   {post.userName}
                 </Typography>
@@ -460,7 +467,7 @@ const PostDetailPage: React.FC = () => {
                   </Typography>
                 </Box>
               </Box>
-              
+
               {/* 태그 표시 */}
               {post.tags && post.tags.length > 0 && (
                 <Box mb={2}>
@@ -470,28 +477,28 @@ const PostDetailPage: React.FC = () => {
                 </Box>
               )}
             </Box>
-            
+
             {/* 게시글 내용 */}
-            <Box 
-              mb={4} 
+            <Box
+              mb={4}
               sx={{
                 backgroundColor: 'rgba(255,255,255,0.7)',
                 p: 3,
                 borderRadius: 2,
               }}
             >
-              <Typography 
-                variant="body1" 
+              <Typography
+                variant="body1"
                 component="div"
-                sx={{ 
+                sx={{
                   whiteSpace: 'pre-wrap',
                   overflowWrap: 'break-word',
-                  minHeight: '150px'
+                  minHeight: '150px',
                 }}
               >
                 {post.content}
               </Typography>
-              
+
               {/* 첨부파일 표시 (있는 경우) */}
               {post.files && post.files.length > 0 && (
                 <Box mt={3}>
@@ -504,18 +511,18 @@ const PostDetailPage: React.FC = () => {
                         <ListItemAvatar sx={{ minWidth: 36 }}>
                           <InsertDriveFileIcon fontSize="small" color="primary" />
                         </ListItemAvatar>
-                        <ListItemText 
+                        <ListItemText
                           primary={
-                            <Typography 
-                              variant="body2" 
-                              component="a" 
-                              href={file.url || file} 
+                            <Typography
+                              variant="body2"
+                              component="a"
+                              href={file.url || file}
                               target="_blank"
                               rel="noopener noreferrer"
-                              sx={{ 
+                              sx={{
                                 color: 'primary.main',
                                 textDecoration: 'none',
-                                '&:hover': { textDecoration: 'underline' } 
+                                '&:hover': { textDecoration: 'underline' },
                               }}
                             >
                               {file.name || `첨부파일 ${index + 1}`}
@@ -530,13 +537,13 @@ const PostDetailPage: React.FC = () => {
                 </Box>
               )}
             </Box>
-            
+
             {/* 게시글 평가 버튼 - disabled 속성 추가 */}
-            <Box 
-              display="flex" 
-              justifyContent="center" 
-              gap={2} 
-              mb={4} 
+            <Box
+              display="flex"
+              justifyContent="center"
+              gap={2}
+              mb={4}
               sx={{ maxWidth: 500, mx: 'auto' }}
             >
               <ReactionButton
@@ -550,7 +557,9 @@ const PostDetailPage: React.FC = () => {
               </ReactionButton>
               <ReactionButton
                 active={post.myReaction === 'DISLIKE'}
-                startIcon={post.myReaction === 'DISLIKE' ? <ThumbDownIcon /> : <ThumbDownOutlinedIcon />}
+                startIcon={
+                  post.myReaction === 'DISLIKE' ? <ThumbDownIcon /> : <ThumbDownOutlinedIcon />
+                }
                 onClick={() => handlePostReaction('DISLIKE')}
                 fullWidth
                 disabled={post.myReaction === 'LIKE'}
@@ -558,7 +567,7 @@ const PostDetailPage: React.FC = () => {
                 싫어요 {post.dislikeCount || 0}
               </ReactionButton>
             </Box>
-            
+
             {/* 댓글 섹션 */}
             <Divider sx={{ my: 4 }} />
             <CommentSection postId={numericPostId} />
