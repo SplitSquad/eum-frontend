@@ -1,0 +1,108 @@
+import React from 'react';
+import { Box, Button, useTheme, useMediaQuery } from '@mui/material';
+import { useThemeStore } from '../../../theme/store/themeStore';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import CheckIcon from '@mui/icons-material/Check';
+
+interface FormButtonsProps {
+  onBack?: () => void;
+  onNext?: () => void;
+  onSubmit?: () => void;
+  nextLabel?: string;
+  backLabel?: string;
+  submitLabel?: string;
+  isFirstStep?: boolean;
+  isLastStep?: boolean;
+  isSubmitting?: boolean;
+  isNextDisabled?: boolean;
+}
+
+/**
+ * 온보딩 폼의 다음/이전/완료 버튼 컴포넌트
+ */
+const FormButtons: React.FC<FormButtonsProps> = ({
+  onBack,
+  onNext,
+  onSubmit,
+  nextLabel = '다음',
+  backLabel = '이전',
+  submitLabel = '완료',
+  isFirstStep = false,
+  isLastStep = false,
+  isSubmitting = false,
+  isNextDisabled = false,
+}) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { season } = useThemeStore();
+  
+  // 계절에 따른 버튼 색상
+  const getPrimaryColor = () => {
+    switch (season) {
+      case 'spring': return '#FFAAA5';
+      case 'summer': return '#77AADD';
+      case 'autumn': return '#E8846B';
+      case 'winter': return '#8795B5';
+      default: return '#FFAAA5';
+    }
+  };
+  
+  const primaryColor = getPrimaryColor();
+  
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        mt: 4,
+        pt: 2,
+        borderTop: `1px solid ${theme.palette.divider}`,
+      }}
+    >
+      {/* 이전 버튼 */}
+      <Button
+        variant="outlined"
+        onClick={onBack}
+        disabled={isFirstStep || isSubmitting}
+        startIcon={<ArrowBackIcon />}
+        sx={{
+          borderColor: primaryColor,
+          color: primaryColor,
+          '&:hover': {
+            borderColor: primaryColor,
+            backgroundColor: `${primaryColor}10`,
+          },
+          visibility: isFirstStep ? 'hidden' : 'visible',
+        }}
+      >
+        {backLabel}
+      </Button>
+
+      {/* 다음/완료 버튼 */}
+      <Button
+        variant="contained"
+        onClick={isLastStep ? onSubmit : onNext}
+        disabled={isNextDisabled || isSubmitting}
+        endIcon={isLastStep ? <CheckIcon /> : <ArrowForwardIcon />}
+        sx={{
+          bgcolor: primaryColor,
+          '&:hover': {
+            bgcolor: theme.palette.mode === 'light'
+              ? `${primaryColor}dd`
+              : `${primaryColor}bb`,
+          },
+          ml: 'auto',
+        }}
+      >
+        {isSubmitting
+          ? '저장 중...'
+          : isLastStep
+            ? submitLabel
+            : nextLabel}
+      </Button>
+    </Box>
+  );
+};
+
+export default FormButtons; 
