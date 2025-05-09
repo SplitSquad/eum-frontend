@@ -514,28 +514,28 @@ export const useDebateStore = create<DebateState>()(
             });
             
             try {
-              // 백엔드 API 호출
-              const reply = await CommentApi.createReply(commentId, content);
+            // 백엔드 API 호출
+            const reply = await CommentApi.createReply(commentId, content);
+            
+            if (reply) {
+              // 임시 대댓글을 실제 대댓글로 교체
+              const updatedReplies = { ...get().replies };
               
-              if (reply) {
-                // 임시 대댓글을 실제 대댓글로 교체
-                const updatedReplies = { ...get().replies };
+              if (updatedReplies[commentId]) {
+                updatedReplies[commentId] = updatedReplies[commentId].map(r => 
+                  r.id === tempReply.id ? reply : r
+                );
                 
-                if (updatedReplies[commentId]) {
-                  updatedReplies[commentId] = updatedReplies[commentId].map(r => 
-                    r.id === tempReply.id ? reply : r
-                  );
-                  
-                  // 임시 대댓글이 목록에 없으면 추가
-                  if (!updatedReplies[commentId].some(r => r.id === reply.id)) {
-                    updatedReplies[commentId].unshift(reply);
-                  }
+                // 임시 대댓글이 목록에 없으면 추가
+                if (!updatedReplies[commentId].some(r => r.id === reply.id)) {
+                  updatedReplies[commentId].unshift(reply);
                 }
-                
-                set({
-                  replies: updatedReplies,
-                  isLoading: false
-                });
+              }
+              
+              set({
+                replies: updatedReplies,
+                isLoading: false
+              });
                 
                 return reply; // 성공 시 응답 반환
               }
@@ -604,10 +604,10 @@ export const useDebateStore = create<DebateState>()(
                   updatedReplies[targetCommentId] = replies;
                   
                   // 상태 업데이트를 한 번만 수행
-                  set({
+              set({
                     replies: updatedReplies
                     // isLoading: false - 불필요한 상태 업데이트 제거
-                  });
+              });
                 }
               }
               
@@ -664,20 +664,20 @@ export const useDebateStore = create<DebateState>()(
                     replyCount: Math.max(0, comments[commentIndex].replyCount - 1)
                   };
                   comments[commentIndex] = updatedComment;
-                  
+                
                   // 한 번에 모든 상태 업데이트
-                  set({
-                    replies: updatedReplies,
+                set({
+                  replies: updatedReplies,
                     comments
                     // isLoading: false - 불필요한 상태 업데이트 제거
-                  });
-                } else {
+                });
+              } else {
                   // 댓글을 찾지 못한 경우 답글만 업데이트
                   set({
                     replies: updatedReplies
                     // isLoading: false - 불필요한 상태 업데이트 제거
                   });
-                }
+              }
               }
               
               return true;

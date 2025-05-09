@@ -33,7 +33,7 @@ const CommentForm: React.FC<CommentFormProps> = ({ debateId, onSuccess }) => {
   // 댓글 작성 핸들러 - 직접 API 호출 방식으로 수정
   const handleSubmit = async (e?: React.FormEvent | React.MouseEvent) => {
     if (e) {
-      e.preventDefault();
+    e.preventDefault();
       e.stopPropagation();
     }
     

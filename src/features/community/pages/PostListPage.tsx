@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   Container,
   Box,
@@ -47,7 +47,6 @@ import PostTypeSelector from '../components/shared/PostTypeSelector';
 
 import useCommunityStore from '../store/communityStore';
 import { Post } from '../types';
-import { tempLogin } from '../../../features/auth/api/tempAuthApi';
 import useAuthStore from '../../../features/auth/store/authStore';
 import { usePostStore } from '../store/postStore';
 import { PostApi } from '../api/postApi';
@@ -166,6 +165,9 @@ const PostListPage: React.FC = () => {
     postType: (queryParams.get('postType') as PostType) || '',
   });
 
+  // 컴포넌트 마운트 시 게시글 목록 조회를 위한 트래킹
+  const initialDataLoadedRef = useRef(false);
+
   // 초기 상태 설정
   useEffect(() => {
     setSelectedPostType(initialPostType);
@@ -173,6 +175,12 @@ const PostListPage: React.FC = () => {
 
   // 컴포넌트 마운트 시 게시글 목록 조회
   useEffect(() => {
+    // 이미 데이터를 로드했으면 중복 요청 방지
+    if (initialDataLoadedRef.current) {
+      console.log('PostListPage - 이미 초기 데이터가 로드됨, 중복 요청 방지');
+      return;
+    }
+    
     console.log('PostListPage 컴포넌트 마운트, 게시글 목록 조회 시작');
     
     // 현재 카테고리에 맞는 태그 목록 설정
@@ -199,6 +207,9 @@ const PostListPage: React.FC = () => {
     fetchPosts(initialFilter);
     // 인기 게시글 로드
     fetchTopPosts(5);
+    
+    // 초기 데이터 로드 완료 플래그 설정
+    initialDataLoadedRef.current = true;
   }, []);
 
   // 검색 상태 표시를 위한 추가 컴포넌트
@@ -454,46 +465,9 @@ const PostListPage: React.FC = () => {
   };
 
   // 게시글 작성 페이지로 이동
-  const handleCreatePost = async () => {
-    try {
-      console.log('글 작성 버튼 클릭됨');
-
-      // AuthGuard 우회를 위해 임시 로그인 시도
-      const { isAuthenticated } = useAuthStore.getState();
-
-      if (!isAuthenticated) {
-        console.log('인증되지 않은 사용자, 임시 로그인 시도');
-        // 임시 로그인 수행 (userId 1로 고정)
-        const result = await tempLogin(1);
-        console.log('임시 로그인 결과:', result);
-
-        // 로컬 스토리지에 토큰이 저장되었는지 확인
-        const token = localStorage.getItem('auth_token');
-        if (token) {
-          // 임시 사용자 정보 생성
-          const user = {
-            id: result.userId.toString(),
-            email: `user${result.userId}@example.com`,
-            name: `User ${result.userId}`,
-            role: 'USER',
-          };
-          useAuthStore.getState().handleLogin(token, user);
-          console.log('임시 로그인 완료:', user);
-        } else {
-          console.error('임시 로그인 실패: 토큰이 저장되지 않았습니다');
-        }
-      } else {
-        console.log('이미 인증된 사용자');
-      }
-
-      // 글 작성 페이지로 이동 (올바른 경로 사용)
-      navigate('/community/create');
-    } catch (error) {
-      console.error('글 작성 페이지 이동 중 오류:', error);
-      alert(
-        '로그인 처리 중 오류가 발생했습니다.\n개발자 도구 콘솔(F12)에서 자세한 오류를 확인하세요.'
-      );
-    }
+  const handleCreatePost = () => {
+    console.log('글 작성 버튼 클릭됨');
+    navigate('/community/create');
   };
 
   // 필터 토글

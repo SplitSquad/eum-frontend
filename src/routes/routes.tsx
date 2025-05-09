@@ -1,8 +1,7 @@
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import React, { lazy, Suspense } from 'react';
 import { AuthGuard, GuestGuard, RoleGuard } from './guards';
-import TempAuthPage from '../features/auth/pages/TempAuthPage';
-// 직접 임포트 (지연 로딩 없이)
+// import TempAuthPage from '../features/auth/pages/TempAuthPage'; // 임시 로그인 제거
 import { LoginPage, OAuthCallbackPage, AccessDeniedPage } from '../features/auth';
 import Profile from '../pages/Profile';
 
@@ -15,6 +14,9 @@ import { DebateRoutes } from '../features/debate';
 
 // 마이페이지 기능 임포트
 import { MypageRoutes } from '../features/mypage';
+
+// 온보딩 라우트 컴포넌트 임포트
+const OnboardingRoutes = lazy(() => import('../features/onboarding/routes/OnboardingRoutes'));
 
 // 레이아웃
 const AppLayout = lazy(() => import('../app/App'));
@@ -60,15 +62,26 @@ const router = createBrowserRouter([
         ),
       },
 
-      // 로그인/회원가입 (비회원만 접근 가능)
-      // TODO: 현재 임시 로그인. 실제로 로그인 페이지로 이동 후 주석 처리 필요
+      // 임시 로그인 (비회원만 접근 가능)
+      // {
+      //   path: 'login',
+      //   element: (
+      //     <Suspense fallback={<LoadingFallback />}>
+      //       {/* <GuestGuard> */}
+      //       <TempAuthPage />
+      //       {/* </GuestGuard> */}
+      //     </Suspense>
+      //   ),
+      // },
+
+      // 실제 구글 로그인 페이지
       {
-        path: 'login',
+        path: 'google-login',
         element: (
           <Suspense fallback={<LoadingFallback />}>
-            {/* <GuestGuard> */}
-            <TempAuthPage />
-            {/* </GuestGuard> */}
+            <GuestGuard>
+              <LoginPage />
+            </GuestGuard>
           </Suspense>
         ),
       },
@@ -106,6 +119,18 @@ const router = createBrowserRouter([
         ),
       },
       */
+
+      // 온보딩 (로그인 필요)
+      {
+        path: 'onboarding/*',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+
+              <OnboardingRoutes />
+
+          </Suspense>
+        ),
+      },
 
       // 커뮤니티 (로그인 필요)
       {

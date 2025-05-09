@@ -314,11 +314,11 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
         
         try {
           // 답글 생성 API 호출 - store의 createReply 함수 사용
-          await createReply(id, replyContent);
-          
+        await createReply(id, replyContent);
+        
           // 성공적으로 생성되면 답글 폼 닫기
-          setShowReplyForm(false);
-          
+        setShowReplyForm(false);
+        
           // 답글 목록 펼치기
           setShowReplies(true);
           
@@ -409,7 +409,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
         }
         setCurrentReaction(reactionType);
       }
-        
+      
       // 서버 API 호출
       const response = await reactToComment(id, reactionType);
       
@@ -429,8 +429,8 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
             : undefined;
           
           setCurrentReaction(newState);
-          
-          // 버튼 상태 업데이트
+        
+        // 버튼 상태 업데이트
           setLikeButtonState(newState === ReactionType.LIKE ? 'primary' : 'default');
           setDislikeButtonState(newState === ReactionType.DISLIKE ? 'error' : 'default');
         }
@@ -491,14 +491,14 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
           </Typography>
         }
         action={
-          <Box>
-            <IconButton size="small" onClick={(e) => { e.stopPropagation(); e.preventDefault(); setIsEditing(true); }}>
-              <EditIcon fontSize="small" />
-            </IconButton>
-            <IconButton size="small" onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleDelete(); }}>
-              <DeleteIcon fontSize="small" />
-            </IconButton>
-          </Box>
+            <Box>
+              <IconButton size="small" onClick={(e) => { e.stopPropagation(); e.preventDefault(); setIsEditing(true); }}>
+                <EditIcon fontSize="small" />
+              </IconButton>
+              <IconButton size="small" onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleDelete(); }}>
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+            </Box>
         }
       />
       

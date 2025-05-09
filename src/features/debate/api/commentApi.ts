@@ -352,7 +352,7 @@ const CommentApi = {
         'like': '좋아요',
         'dislike': '싫어요'
       };
-
+      
       // 백엔드 API 요청 형식으로 변환
       const requestData: CommentReqDto = {
         emotion: emotionMapping[emotion] || emotion,

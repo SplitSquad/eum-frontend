@@ -19,10 +19,16 @@ const CardContainer = styled.div`
   width: 100%;
   position: relative;
   z-index: 1;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    transform: translateY(-3px);
+  }
 `;
 
 const CardHeader = styled.div`
-  background-color: #FFD1D1;
+  background: linear-gradient(135deg, #FFD1D1 0%, #FF9999 100%);
   height: 80px;
   position: relative;
 `;
@@ -47,6 +53,12 @@ const ProfileImage = styled.div`
   left: 50%;
   transform: translateX(-50%);
   background: white;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateX(-50%) scale(1.05);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+  }
 `;
 
 const Image = styled.img`
@@ -70,6 +82,12 @@ const Role = styled.div`
   border-radius: 12px;
   display: inline-block;
   margin-bottom: 8px;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background-color: #FF7777;
+    transform: translateY(-2px);
+  }
 `;
 
 const Email = styled.div`

@@ -18,7 +18,7 @@ const ReplyForm: React.FC<ReplyFormProps> = ({ commentId, onSuccess }) => {
   const submitReply = async (e?: React.MouseEvent | React.KeyboardEvent): Promise<void> => {
     // 이벤트 차단 강화 - 리다이렉션 방지
     if (e) {
-      e.preventDefault();
+    e.preventDefault();
       e.stopPropagation();
       if (e.nativeEvent) {
         e.nativeEvent.preventDefault();
@@ -37,9 +37,9 @@ const ReplyForm: React.FC<ReplyFormProps> = ({ commentId, onSuccess }) => {
       return;
     }
     
-    setIsSubmitting(true);
-    setError('');
-    
+      setIsSubmitting(true);
+      setError('');
+      
     try {
       // 비동기 요청 실행 및 await로 완료 대기
       const result = await createReply(commentId, content);
@@ -153,7 +153,7 @@ const ReplyForm: React.FC<ReplyFormProps> = ({ commentId, onSuccess }) => {
               size="small"
               onClick={handleCancel}
               disabled={isSubmitting}
-              type="button"
+          type="button"
             >
               취소
             </Button>
@@ -164,8 +164,8 @@ const ReplyForm: React.FC<ReplyFormProps> = ({ commentId, onSuccess }) => {
               onClick={(e) => submitReply(e)}
               disabled={isSubmitting || !content.trim()}
               type="button"
-            >
-              {isSubmitting ? '저장 중...' : '답글 작성'}
+        >
+          {isSubmitting ? '저장 중...' : '답글 작성'}
             </Button>
           </Box>
         </Box>

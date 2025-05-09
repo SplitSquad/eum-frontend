@@ -3,6 +3,8 @@ import { Box, Typography, IconButton, styled } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import NotificationsIcon from '@mui/icons-material/Notifications';
+import LogoutButton from '../../../auth/components/LogoutButton';
+import useAuthStore from '../../../auth/store/authStore';
 
 // Styled components
 const HeaderContainer = styled(Box)(({ theme }) => ({
@@ -34,6 +36,7 @@ export interface HeaderProps {
   showBackButton?: boolean;
   onBackClick?: () => void;
   showUserIcons?: boolean;
+  showLogoutButton?: boolean;
 }
 
 /**
@@ -47,7 +50,10 @@ const Header: React.FC<HeaderProps> = ({
   showBackButton = true,
   onBackClick,
   showUserIcons = true,
+  showLogoutButton = true,
 }) => {
+  const { isAuthenticated } = useAuthStore();
+  
   const handleBackClick = () => {
     if (onBackClick) {
       onBackClick();
@@ -79,13 +85,14 @@ const Header: React.FC<HeaderProps> = ({
     
     if (showUserIcons) {
       return (
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
           <IconButton sx={{ color: 'rgba(233, 30, 99, 0.7)' }}>
             <NotificationsIcon />
           </IconButton>
           <IconButton sx={{ color: 'rgba(233, 30, 99, 0.7)' }}>
             <AccountCircleIcon />
           </IconButton>
+          {isAuthenticated && showLogoutButton && <LogoutButton variant="icon" size="medium" />}
         </Box>
       );
     }

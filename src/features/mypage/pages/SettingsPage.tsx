@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { PageLayout, InfoCard, FormField, StyledInput, StyledSelect, Button } from '../components';
 import styled from '@emotion/styled';
+import LogoutButton from '../../auth/components/LogoutButton';
 
 // 스타일 컴포넌트
 const PageContainer = styled.div`
@@ -75,6 +76,32 @@ const ButtonGroup = styled.div`
   justify-content: flex-end;
   margin-top: 32px;
   gap: 12px;
+`;
+
+const DangerZone = styled.div`
+  border: 1px solid #ffcccc;
+  border-radius: 8px;
+  padding: 16px;
+  background-color: #fff8f8;
+  margin-top: 16px;
+`;
+
+const DangerTitle = styled.h3`
+  color: #e53935;
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 1.1rem;
+`;
+
+const DangerDescription = styled.p`
+  color: #666;
+  margin: 8px 0 16px 0;
+  font-size: 0.875rem;
+`;
+
+const LogoutButtonContainer = styled.div`
+  display: flex;
+  margin-top: 16px;
 `;
 
 /**
@@ -220,41 +247,36 @@ const SettingsPage: React.FC = () => {
           </SettingItem>
         </InfoCard>
 
-        <InfoCard title="계정 설정">
+        <InfoCard title="계정 관리">
           <SettingItem>
-            <FormField label="비밀번호 변경" htmlFor="current-password">
+            <FormField label="이메일 주소" htmlFor="email">
               <StyledInput
-                id="current-password"
-                type="password"
-                placeholder="현재 비밀번호"
+                id="email"
+                type="email"
+                placeholder="이메일 주소"
+                disabled
+                value="user@example.com" // This should be the actual user's email
               />
+              <SettingDescription>
+                이메일 주소는 변경할 수 없습니다.
+              </SettingDescription>
             </FormField>
           </SettingItem>
-
-          <SettingItem>
-            <FormField label="새 비밀번호" htmlFor="new-password">
-              <StyledInput
-                id="new-password"
-                type="password"
-                placeholder="새 비밀번호"
-              />
-            </FormField>
-          </SettingItem>
-
-          <SettingItem>
-            <FormField label="새 비밀번호 확인" htmlFor="confirm-password">
-              <StyledInput
-                id="confirm-password"
-                type="password"
-                placeholder="새 비밀번호 확인"
-              />
-            </FormField>
-          </SettingItem>
+          
+          <DangerZone>
+            <DangerTitle>로그아웃</DangerTitle>
+            <DangerDescription>
+              현재 계정에서 로그아웃합니다. 다시 로그인하려면 인증 정보가 필요합니다.
+            </DangerDescription>
+            <LogoutButtonContainer>
+              <LogoutButton variant="button" size="medium" />
+            </LogoutButtonContainer>
+          </DangerZone>
         </InfoCard>
 
         <ButtonGroup>
-          <Button variant="outline">취소</Button>
-          <Button variant="primary" onClick={handleSave}>저장하기</Button>
+          <Button type="button" variant="outline">취소</Button>
+          <Button type="button" onClick={handleSave} variant="primary">저장</Button>
         </ButtonGroup>
       </PageContainer>
     </PageLayout>

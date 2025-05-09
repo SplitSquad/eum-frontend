@@ -236,19 +236,19 @@ export const useMypageStore = create<MypageState>((set, get) => ({
 
   // 비밀번호 변경 상태 리셋
   resetPasswordChangeStatus: () => {
-    set({
-      passwordChangeLoading: 'idle',
-      passwordChangeError: null,
-      passwordChanged: false
+    set({ 
+      passwordChangeLoading: 'idle', 
+      passwordChangeError: null, 
+      passwordChanged: false 
     });
   },
 
   // 프로필 업데이트 상태 리셋
   resetProfileUpdateStatus: () => {
-    set({
-      profileUpdateLoading: 'idle',
-      profileUpdateError: null,
-      profileUpdated: false
+    set({ 
+      profileUpdateLoading: 'idle', 
+      profileUpdateError: null, 
+      profileUpdated: false 
     });
   },
 

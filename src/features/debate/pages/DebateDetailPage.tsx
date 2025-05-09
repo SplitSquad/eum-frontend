@@ -368,9 +368,9 @@ const DebateDetailPage: React.FC = () => {
           
           // 컴포넌트 강제 리렌더링을 위해 상태 업데이트 (빈 객체로 업데이트해도 리렌더링 발생)
           setUserVote(prev => prev);
-        } else {
+      } else {
           console.log('투표 API에서 국가별 참여 정보를 가져오지 못했습니다.');
-        }
+      }
       }).catch(error => {
         console.error('투표 API 호출 중 오류:', error);
       });

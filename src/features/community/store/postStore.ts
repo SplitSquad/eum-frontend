@@ -31,6 +31,8 @@ let lastFetchedFilter: ExtendedPostFilter | null = null;
 let activeRequest: Promise<void> | null = null;
 // 페이지별 캐시 데이터 저장
 let pageCache: Record<string, { data: any; timestamp: number }> = {};
+// 마지막 요청을 추적하기 위한 변수
+let lastRequestId = 0;
 
 // 게시글 관련 상태 타입
 interface PostState {
@@ -193,6 +195,9 @@ export const usePostStore = create<PostState & PostActions>()(
       fetchPosts: async filter => {
         try {
           console.log('[DEBUG] fetchPosts 시작 - 필터:', filter);
+          
+          // 현재 요청 ID 생성 - 중복 요청 추적용
+          const currentRequestId = ++lastRequestId;
 
           // 현재 상태에서 필터 정보 가져오기
           const currentState = get();
@@ -288,16 +293,22 @@ export const usePostStore = create<PostState & PostActions>()(
           if (filter && filter.postType !== undefined && filter.postType !== lastFetchedFilter?.postType) {
             console.log('[DEBUG] postType 변경됨, 캐시 무시 및 새 요청 시작');
             lastFetchTimestamp = 0; // 캐시 무효화
+            // 페이지 캐시도 초기화
+            pageCache = {};
           } 
           // 카테고리 변경 시는 강제로 캐시 무시
           else if (filter && filter.category !== undefined && filter.category !== lastFetchedFilter?.category) {
             console.log('[DEBUG] 카테고리 변경됨, 캐시 무시 및 새 요청 시작');
             lastFetchTimestamp = 0; // 캐시 무효화
+            // 페이지 캐시도 초기화
+            pageCache = {};
           }
           // 태그 변경 시는 강제로 캐시 무시
           else if (filter && filter.tag !== undefined && filter.tag !== lastFetchedFilter?.tag) {
             console.log('[DEBUG] 태그 변경됨, 캐시 무시 및 새 요청 시작');
             lastFetchTimestamp = 0; // 캐시 무효화
+            // 페이지 캐시도 초기화
+            pageCache = {};
           }
           else {
             // 3. 일반 캐시 확인 - 동일 필터 요청이 최근에 있었는지
@@ -317,8 +328,8 @@ export const usePostStore = create<PostState & PostActions>()(
           // 페이지네이션 이동 시 100ms 후에만 로딩 상태 표시 (깜빡임 방지)
           if (filter?.page !== undefined && currentState.posts.length > 0) {
             loadingTimeout = setTimeout(() => {
-              // 아직 요청이 완료되지 않았다면 로딩 상태 표시
-              if (activeRequest) {
+              // 이 요청이 여전히 최신 요청인 경우에만 로딩 상태 설정
+              if (currentRequestId === lastRequestId && activeRequest) {
                 set({ postLoading: true });
               }
             }, 100);
@@ -336,6 +347,19 @@ export const usePostStore = create<PostState & PostActions>()(
           // API 요청 생성 및 추적
           const fetchData = async () => {
             try {
+              // 요청이 최신 요청이 아니면 중단
+              if (currentRequestId !== lastRequestId) {
+                console.log(`[DEBUG] 이전 요청(${currentRequestId})이 최신 요청(${lastRequestId})이 아님. 중단.`);
+                
+                // 로딩 타임아웃 취소
+                if (loadingTimeout) {
+                  clearTimeout(loadingTimeout);
+                  loadingTimeout = null;
+                }
+                
+                return;
+              }
+              
               // API 호출용 파라미터 - size는 항상 6으로 고정
               const apiParams = {
                 page: mergedFilter.page,
@@ -348,6 +372,7 @@ export const usePostStore = create<PostState & PostActions>()(
               };
 
               console.log('[DEBUG] API 요청 파라미터:', apiParams);
+              
               // API 요청 시작
               let response;
               

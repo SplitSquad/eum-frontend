@@ -97,44 +97,182 @@ const MOCK_BOOKMARKS: MyBookmark[] = [
   }
 ];
 
+// API 응답 타입 정의
+interface UserProfileResponse {
+  userId: number;
+  email: string;
+  name: string;
+  phoneNumber?: string;
+  birthday?: string;
+  profileImagePath?: string;
+  address?: string;
+  signedAt?: string;
+  role?: string;
+}
+
+interface UserPreferenceResponse {
+  preferenceId?: number;
+  userId?: number;
+  nation?: string;
+  language?: string;
+  gender?: string;
+  visitPurpose?: string;
+  period?: string;
+  onBoardingPreference?: string | Record<string, any>;
+  isOnBoardDone?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// 프로필 업데이트 요청 타입 확장
+interface ProfileUpdateData extends Partial<ProfileInfo> {
+  phoneNumber?: string;
+  birthday?: string;
+  address?: string;
+}
+
 /**
  * 마이페이지 API 클래스
  */
 class MypageApi {
   /**
    * 사용자 프로필 정보 조회
-   * TODO: 실제 API 연동 시 수정 필요
    */
   async getProfileInfo(userId?: number): Promise<ProfileInfo> {
-    // 목업 데이터 반환 (실제 API 연결 전까지)
-    return {
-      userId: userId || 1,
-      name: '알렉스',
-      email: 'alex@example.com',
-      profileImage: 'https://i.pravatar.cc/150?img=12',
-      introduction: '한국에서 프로그래머로 일하고 있는 외국인입니다. 한국 문화와 음식을 좋아하고, 한국어 공부에 관심이 많습니다.',
-      country: '미국',
-      language: '영어',
-      joinDate: '2023-11-01',
-      role: '취업'
-    };
+    try {
+      // 토큰 가져오기
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        throw new Error('인증 토큰이 없습니다. 로그인이 필요합니다.');
+      }
+
+      console.log('[API] 사용자 프로필 요청 시작');
+
+      // 사용자 프로필 정보 가져오기
+      const profileResponse = await apiClient.get<UserProfileResponse>('/users/profile', {
+        headers: {
+          'Authorization': token
+        }
+      });
+
+      // 사용자 선호도 정보 가져오기
+      const preferenceResponse = await apiClient.get<UserPreferenceResponse>('/users/preference', {
+        headers: {
+          'Authorization': token
+        }
+      });
+
+      console.log('[API] 프로필 응답:', profileResponse);
+      console.log('[API] 선호도 응답:', preferenceResponse);
+
+      // 프로필 정보에서 필요한 데이터 추출
+      const profileData = profileResponse as UserProfileResponse;
+      const preferenceData = preferenceResponse as UserPreferenceResponse;
+
+      let onBoardingData: Record<string, any> = {};
+      if (preferenceData.onBoardingPreference) {
+        try {
+          // JSON 문자열이면 파싱
+          if (typeof preferenceData.onBoardingPreference === 'string') {
+            onBoardingData = JSON.parse(preferenceData.onBoardingPreference);
+          } else {
+            // 이미 객체면 그대로 사용
+            onBoardingData = preferenceData.onBoardingPreference as Record<string, any>;
+          }
+        } catch (e) {
+          console.error('온보딩 데이터 파싱 실패:', e);
+        }
+      }
+
+      // 백엔드 응답을 ProfileInfo 형식으로 변환
+      const userProfile: ProfileInfo = {
+        userId: profileData.userId,
+        name: profileData.name || '사용자',
+        email: profileData.email || '',
+        profileImage: profileData.profileImagePath || 'https://i.pravatar.cc/150?img=12', // 기본 이미지 설정
+        introduction: (onBoardingData.introduction as string) || '', // 온보딩 데이터에서 소개 가져오기
+        country: preferenceData.nation || '',
+        language: preferenceData.language || '',
+        joinDate: profileData.signedAt ? new Date(profileData.signedAt).toISOString().split('T')[0] : '',
+        role: preferenceData.visitPurpose || ''
+      };
+
+      console.log('[API] 처리된 사용자 프로필:', userProfile);
+      return userProfile;
+    } catch (error) {
+      console.error('사용자 프로필 조회 실패:', error);
+      
+      // 모의 데이터로 폴백 처리
+      console.warn('실제 API 연동 실패로 모의 데이터 반환');
+      return MOCK_PROFILE;
+    }
   }
 
   /**
    * 프로필 정보 업데이트
-   * TODO: 실제 API 연동 시 수정 필요
    */
-  async updateProfile(profileData: Partial<ProfileInfo>): Promise<ProfileInfo> {
-    // 목업 데이터 업데이트 시뮬레이션
-    console.log('프로필 업데이트 요청:', profileData);
-    
-    // 기존 프로필 가져오기
-    const currentProfile = await this.getProfileInfo(profileData.userId);
-    
-    return {
-      ...currentProfile,
-      ...profileData
-    };
+  async updateProfile(profileData: ProfileUpdateData): Promise<ProfileInfo> {
+    try {
+      // 토큰 가져오기
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        throw new Error('인증 토큰이 없습니다. 로그인이 필요합니다.');
+      }
+      
+      console.log('[API] 프로필 업데이트 요청 시작:', profileData);
+      
+      // 현재 선호도 데이터 가져오기
+      const preferenceResponse = await apiClient.get<UserPreferenceResponse>('/users/preference', {
+        headers: {
+          'Authorization': token
+        }
+      });
+      
+      // 프로필 정보 업데이트 API 호출
+      const profileUpdateData = {
+        name: profileData.name,
+        phoneNumber: profileData.phoneNumber || '',
+        birthday: profileData.birthday || '',
+        address: profileData.address || ''
+      };
+      
+      const profileResponse = await apiClient.put('/users/profile', profileUpdateData, {
+        headers: {
+          'Authorization': token
+        }
+      });
+      
+      console.log('[API] 프로필 업데이트 응답:', profileResponse);
+      
+      // 국가와 언어 정보가 변경되었다면 선호도 데이터도 업데이트
+      if (profileData.country || profileData.language) {
+        const preferenceData = preferenceResponse as UserPreferenceResponse;
+        
+        const preferenceUpdateData = {
+          nation: profileData.country || preferenceData.nation,
+          language: profileData.language || preferenceData.language,
+          gender: preferenceData.gender,
+          visitPurpose: profileData.role || preferenceData.visitPurpose,
+          period: preferenceData.period,
+          onBoardingPreference: preferenceData.onBoardingPreference,
+          isOnBoardDone: preferenceData.isOnBoardDone
+        };
+        
+        const updatedPreference = await apiClient.post('/users/preference', preferenceUpdateData, {
+          headers: {
+            'Authorization': token
+          }
+        });
+        
+        console.log('[API] 선호도 업데이트 응답:', updatedPreference);
+      }
+      
+      // 업데이트된 프로필 정보 반환
+      return this.getProfileInfo(profileData.userId);
+    } catch (error) {
+      console.error('프로필 업데이트 실패:', error);
+      throw error;
+    }
   }
 
   /**
@@ -168,7 +306,7 @@ class MypageApi {
       // 백엔드 응답 구조에 맞게 변환
       const posts = response.postList || [];
       const total = response.total || 0;
-      
+    
       // 각 게시물 정보를 프론트엔드 타입으로 변환
       const mappedPosts: MyPost[] = posts.map((post: any) => ({
         id: post.postId || 0,
@@ -181,18 +319,18 @@ class MypageApi {
         commentCount: post.commentCnt || 0
       }));
       
-      return {
+    return {
         content: mappedPosts,
-        pageable: {
-          pageNumber: page,
-          pageSize: size
-        },
+      pageable: {
+        pageNumber: page,
+        pageSize: size
+      },
         last: (page + 1) * size >= total,
         totalElements: total,
         totalPages: Math.ceil(total / size),
         size: mappedPosts.length,
-        number: page
-      };
+      number: page
+    };
     } catch (error) {
       console.error('내가 작성한 게시글 조회 실패:', error);
       return this.getEmptyPaginatedResponse(page, size);
@@ -220,7 +358,7 @@ class MypageApi {
       // 백엔드 응답 구조에 맞게 변환
       const comments = response.commentList || [];
       const total = response.total || 0;
-      
+    
       // 각 댓글 정보를 프론트엔드 타입으로 변환
       const mappedComments: MyComment[] = comments.map((comment: any) => ({
         id: comment.commentId || 0,
@@ -230,18 +368,18 @@ class MypageApi {
         postTitle: comment.postTitle || '[게시글 제목 없음]'
       }));
       
-      return {
+    return {
         content: mappedComments,
-        pageable: {
-          pageNumber: page,
-          pageSize: size
-        },
+      pageable: {
+        pageNumber: page,
+        pageSize: size
+      },
         last: (page + 1) * size >= total,
         totalElements: total,
         totalPages: Math.ceil(total / size),
         size: mappedComments.length,
-        number: page
-      };
+      number: page
+    };
     } catch (error) {
       console.error('내가 작성한 댓글 조회 실패:', error);
       return this.getEmptyPaginatedResponse(page, size);
@@ -296,18 +434,18 @@ class MypageApi {
       
       console.log('[DEBUG] 변환된 토론 목록:', mappedDebates);
       
-      return {
+    return {
         content: mappedDebates,
-        pageable: {
-          pageNumber: page,
-          pageSize: size
-        },
+      pageable: {
+        pageNumber: page,
+        pageSize: size
+      },
         last: (page + 1) * size >= total,
         totalElements: total,
         totalPages: Math.ceil(total / size),
         size: mappedDebates.length,
-        number: page
-      };
+      number: page
+    };
     } catch (error) {
       console.error('내가 투표한 토론 조회 실패:', error);
       return this.getEmptyPaginatedResponse(page, size);

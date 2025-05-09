@@ -104,7 +104,9 @@ const LoginPage: React.FC = () => {
 
   // 이미 로그인되어 있으면 메인 페이지로 리디렉션
   useEffect(() => {
-    if (isAuthenticated) {
+    // sessionStorage에도 토큰이 있으면 로그인 상태로 간주
+    const token = sessionStorage.getItem('auth_token');
+    if (isAuthenticated || token) {
       navigate('/');
     }
   }, [isAuthenticated, navigate]);
@@ -188,6 +190,7 @@ const LoginPage: React.FC = () => {
                   onSuccess={handleLoginSuccess}
                   onError={handleLoginError}
                   buttonText="구글 계정으로 로그인"
+                  useRealGoogleLogin={true}
                 />
               </Box>
 

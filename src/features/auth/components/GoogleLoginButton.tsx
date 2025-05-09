@@ -2,17 +2,11 @@ import React, { useState } from 'react';
 import {
   Button,
   CircularProgress,
-  TextField,
   Box,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
 } from '@mui/material';
 import styled from '@emotion/styled';
 import GoogleIcon from '@mui/icons-material/Google';
-// import { getGoogleAuthUrl } from '../api/authApi'; // 실제 구글 로그인 API
-import { tempLogin } from '../api'; // 임시 로그인 API
+import { getGoogleAuthUrl } from '../api/authApi'; // 실제 구글 로그인 API
 
 // 봄 테마 스타일 컴포넌트
 const SpringThemedButton = styled(Button)(({ theme }) => ({
@@ -46,21 +40,6 @@ const SpringThemedButton = styled(Button)(({ theme }) => ({
     opacity: 1,
   },
 }));
-
-// 벚꽃 애니메이션을 위한 래퍼
-const SpringThemedInput = styled(TextField)({
-  '& .MuiOutlinedInput-root': {
-    '& fieldset': {
-      borderColor: '#FFD7D7',
-    },
-    '&:hover fieldset': {
-      borderColor: '#FFAAA5',
-    },
-    '&.Mui-focused fieldset': {
-      borderColor: '#FF9999',
-    },
-  },
-});
 
 const BlossomWrapper = styled.div`
   position: relative;
@@ -103,12 +82,8 @@ const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
   buttonText = '구글로 계속하기',
 }) => {
   const [loading, setLoading] = useState<boolean>(false);
-  const [openDialog, setOpenDialog] = useState<boolean>(false);
-  const [userId, setUserId] = useState<string>('1');
 
-  // 실제 구글 로그인 처리 함수 (주석 처리)
-  // TODO: 백엔드 구현 완료 후 이 함수 사용
-  /*
+  // 실제 구글 로그인 처리 함수
   const handleGoogleLogin = async () => {
     try {
       setLoading(true);
@@ -131,115 +106,19 @@ const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
       }
     }
   };
-  */
-
-  // 임시 로그인 다이얼로그 열기
-  const handleOpenTempLogin = () => {
-    setOpenDialog(true);
-  };
-
-  // 임시 로그인 다이얼로그 닫기
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
-  };
-
-  // 임시 로그인 처리
-  const handleTempLogin = async () => {
-    try {
-      setLoading(true);
-      const userIdNumber = parseInt(userId);
-
-      if (isNaN(userIdNumber)) {
-        throw new Error('유효한 숫자를 입력해주세요');
-      }
-
-      // 임시 로그인 API 호출
-      const response = await tempLogin(userIdNumber);
-
-      // 성공 콜백 호출
-      if (onSuccess) {
-        onSuccess(response);
-      }
-
-      setOpenDialog(false);
-    } catch (error) {
-      console.error('임시 로그인 실패:', error);
-
-      if (onError) {
-        onError(error);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
-    <>
       <BlossomWrapper>
         <SpringThemedButton
           variant="contained"
           startIcon={!loading && <GoogleIcon />}
-          onClick={handleOpenTempLogin} // 임시 로그인 다이얼로그 열기
+        onClick={handleGoogleLogin}
           disabled={loading}
           fullWidth
         >
           {loading ? <CircularProgress size={24} color="inherit" /> : buttonText}
         </SpringThemedButton>
       </BlossomWrapper>
-
-      {/* 임시 로그인 다이얼로그 */}
-      <Dialog open={openDialog} onClose={handleCloseDialog}>
-        <DialogTitle
-          sx={{
-            background:
-              'linear-gradient(135deg, rgba(255, 245, 245, 1) 0%, rgba(255, 235, 235, 1) 100%)',
-            color: '#333',
-          }}
-        >
-          임시 로그인
-        </DialogTitle>
-        <DialogContent>
-          <Box sx={{ pt: 2 }}>
-            <SpringThemedInput
-              autoFocus
-              fullWidth
-              label="사용자 ID"
-              type="number"
-              variant="outlined"
-              value={userId}
-              onChange={e => setUserId(e.target.value)}
-              placeholder="임시 사용자 ID 입력 (1-100)"
-              InputProps={{ inputProps: { min: 1, max: 100 } }}
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions
-          sx={{
-            background:
-              'linear-gradient(135deg, rgba(255, 245, 245, 1) 0%, rgba(255, 235, 235, 1) 100%)',
-            p: 2,
-          }}
-        >
-          <Button onClick={handleCloseDialog} sx={{ color: '#777' }}>
-            취소
-          </Button>
-          <Button
-            onClick={handleTempLogin}
-            disabled={loading}
-            sx={{
-              background: '#FFFFFF',
-              color: '#555555',
-              border: '1px solid #FFD7D7',
-              '&:hover': {
-                backgroundColor: '#FFF5F5',
-              },
-            }}
-          >
-            {loading ? <CircularProgress size={24} color="inherit" /> : '로그인'}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </>
   );
 };
 

@@ -56,7 +56,7 @@ const SpringThemedChip = styled(Chip)<{ selected?: boolean }>`
 
   transition: all 0.3s ease;
 `;
-
+// tag
 // 대분류
 const mainCategories = [
   { id: 'travel', name: '여행' },

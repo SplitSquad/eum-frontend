@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   Typography,
   Box,
@@ -38,6 +38,8 @@ const PostList: React.FC<PostListProps> = ({
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  // 초기 로드 상태를 추적하는 ref
+  const hasInitialDataLoaded = useRef(false);
 
   // 스토어에서 상태와 액션을 가져옴
   const {
@@ -53,15 +55,22 @@ const PostList: React.FC<PostListProps> = ({
   // 현재 페이지 로컬 상태 (UI 표시용)
   const [currentPage, setCurrentPage] = useState(1);
 
-  // 초기 데이터 로드
+  // 초기 데이터 로드 - 한 번만 실행되도록 수정
   useEffect(() => {
     // 외부에서 데이터를 받은 경우 스토어 사용 안함
     if (propPosts) return;
 
-    // 첫 로드 시에만 데이터 가져오기
+    // 이미 데이터를 로드했으면 중복 요청 방지
+    if (hasInitialDataLoaded.current) {
+      console.log('[DEBUG] PostList - 이미 초기 데이터가 로드됨, 중복 요청 방지');
+      return;
+    }
+
+    // 데이터가 없고, 로딩 중이 아닐 때만 데이터 가져오기
     if (storePosts.length === 0 && !postLoading) {
       console.log('[DEBUG] PostList - 초기 데이터 로드 시작');
       fetchPosts();
+      hasInitialDataLoaded.current = true;
     }
   }, [propPosts, fetchPosts, storePosts.length, postLoading]);
 
