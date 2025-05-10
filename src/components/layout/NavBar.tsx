@@ -22,7 +22,9 @@ import {
 } from '@mui/material';
 import styled from '@emotion/styled';
 import { useThemeStore } from '../../features/theme/store/themeStore';
+import { useLanguageStore } from '../../features/theme/store/languageStore';
 import useAuthStore from '../../features/auth/store/authStore';
+import { useTranslation } from '../../shared/i18n';
 import MenuIcon from '@mui/icons-material/Menu';
 import HomeIcon from '@mui/icons-material/Home';
 import ForumIcon from '@mui/icons-material/Forum';
@@ -31,6 +33,9 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import CloseIcon from '@mui/icons-material/Close';
 import LogoutIcon from '@mui/icons-material/Logout';
 import LoginIcon from '@mui/icons-material/Login';
+import LanguageIcon from '@mui/icons-material/Language';
+import { SUPPORTED_LANGUAGES } from '../../features/onboarding/components/common/LanguageSelector';
+import { useLanguageContext } from '../../features/theme/components/LanguageProvider';
 
 // 계절별 스타일 적용을 위한 타입
 type SeasonColors = {
@@ -166,13 +171,13 @@ const DrawerItem = styled(ListItem)<{ season: string; active: boolean }>`
   }
 `;
 
-// 네비게이션 항목
-const navItems = [
-  { name: '홈', path: '/', icon: <HomeIcon /> },
-  { name: '모임과이야기', path: '/community', icon: <ForumIcon /> },
-  { name: '핫이슈토론', path: '/debate', icon: <ChatIcon /> },
-  { name: 'AI전문가', path: '/assistant', icon: <ChatIcon /> },
-  { name: '마이페이지', path: '/mypage', icon: <AccountCircleIcon />, requireAuth: true },
+// 네비게이션 항목 정의
+const getNavItems = (t: (key: string) => string) => [
+  { name: t('common.home'), path: '/', icon: <HomeIcon /> },
+  { name: t('common.community'), path: '/community', icon: <ForumIcon /> },
+  { name: t('common.debate'), path: '/debate', icon: <ChatIcon /> },
+  { name: t('AIAssistant'), path: '/assistant', icon: <ChatIcon /> },
+  { name: t('common.mypage'), path: '/mypage', icon: <AccountCircleIcon />, requireAuth: true },
 ];
 
 // NavBar 컴포넌트
@@ -180,13 +185,20 @@ const NavBar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { season } = useThemeStore();
+  const { language } = useLanguageStore();
+  const { currentLanguage, changeLanguage } = useLanguageContext();
+  const { t } = useTranslation();
   const { isAuthenticated, user, handleLogout } = useAuthStore();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   // 상태 관리
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [languageAnchorEl, setLanguageAnchorEl] = useState<null | HTMLElement>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // 번역된 네비게이션 항목
+  const navItems = getNavItems(t);
 
   // 현재 경로에 따라 활성화 여부 반환
   const isActive = (path: string) => {
@@ -225,6 +237,20 @@ const NavBar: React.FC = () => {
   // 모바일 드로어 핸들러
   const toggleDrawer = () => {
     setDrawerOpen(!drawerOpen);
+  };
+
+  // 언어 메뉴 핸들러
+  const handleLanguageMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setLanguageAnchorEl(event.currentTarget);
+  };
+
+  const handleLanguageMenuClose = () => {
+    setLanguageAnchorEl(null);
+  };
+
+  const handleLanguageChange = (languageCode: string) => {
+    changeLanguage(languageCode);
+    handleLanguageMenuClose();
   };
 
   return (
@@ -275,11 +301,63 @@ const NavBar: React.FC = () => {
             </Box>
           )}
 
+          {/* 언어 선택 메뉴 */}
+          <Box sx={{ mr: 2 }}>
+            <Tooltip title={t('common.selectLanguage')}>
+              <IconButton
+                onClick={handleLanguageMenuOpen}
+                sx={{
+                  color: seasonalColors[season]?.text,
+                  '&:hover': {
+                    backgroundColor: seasonalColors[season]?.hover,
+                  },
+                }}
+              >
+                <LanguageIcon />
+              </IconButton>
+            </Tooltip>
+            <Menu
+              anchorEl={languageAnchorEl}
+              open={Boolean(languageAnchorEl)}
+              onClose={handleLanguageMenuClose}
+              PaperProps={{
+                sx: {
+                  borderRadius: '8px',
+                  minWidth: '180px',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                },
+              }}
+              transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+              anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+            >
+              {SUPPORTED_LANGUAGES.map(lang => (
+                <MenuItem
+                  key={lang.code}
+                  onClick={() => handleLanguageChange(lang.code)}
+                  selected={currentLanguage === lang.code}
+                  sx={{
+                    '&.Mui-selected': {
+                      backgroundColor: `${seasonalColors[season]?.hover}`,
+                      '&:hover': {
+                        backgroundColor: `${seasonalColors[season]?.hover}`,
+                      },
+                    },
+                  }}
+                >
+                  <ListItemIcon sx={{ minWidth: '30px' }}>
+                    <span>{lang.flag}</span>
+                  </ListItemIcon>
+                  <ListItemText>{lang.name}</ListItemText>
+                </MenuItem>
+              ))}
+            </Menu>
+          </Box>
+
           {/* 사용자 프로필 또는 로그인 버튼 */}
-          <Box sx={{ ml: 2 }}>
+          <Box sx={{ ml: 0 }}>
             {isAuthenticated ? (
               <>
-                <Tooltip title="계정 설정">
+                <Tooltip title={t('nav.accountSettings')}>
                   <IconButton onClick={handleProfileMenuOpen}>
                     <Avatar
                       alt={user?.name || 'User'}
@@ -315,14 +393,14 @@ const NavBar: React.FC = () => {
                     <ListItemIcon>
                       <AccountCircleIcon fontSize="small" />
                     </ListItemIcon>
-                    <ListItemText>마이페이지</ListItemText>
+                    <ListItemText>{t('common.mypage')}</ListItemText>
                   </MenuItem>
                   <Divider />
                   <MenuItem onClick={handleLogoutClick}>
                     <ListItemIcon>
                       <LogoutIcon fontSize="small" />
                     </ListItemIcon>
-                    <ListItemText>로그아웃</ListItemText>
+                    <ListItemText>{t('common.logout')}</ListItemText>
                   </MenuItem>
                 </Menu>
               </>
@@ -338,7 +416,7 @@ const NavBar: React.FC = () => {
                   },
                 }}
               >
-                로그인
+                {t('common.login')}
               </Button>
             )}
           </Box>
@@ -379,20 +457,37 @@ const NavBar: React.FC = () => {
                 <ListItemText primary={item.name} />
               </DrawerItem>
             ))}
+
+          {/* 모바일 언어 선택 */}
+          <Divider sx={{ my: 2 }} />
+          {SUPPORTED_LANGUAGES.map(lang => (
+            <DrawerItem
+              key={lang.code}
+              onClick={() => changeLanguage(lang.code)}
+              season={season}
+              active={currentLanguage === lang.code}
+            >
+              <ListItemIcon>
+                <span style={{ fontSize: '18px' }}>{lang.flag}</span>
+              </ListItemIcon>
+              <ListItemText primary={lang.name} />
+            </DrawerItem>
+          ))}
+
           <Divider sx={{ my: 2 }} />
           {isAuthenticated ? (
             <DrawerItem onClick={handleLogoutClick} season={season} active={false}>
               <ListItemIcon>
                 <LogoutIcon />
               </ListItemIcon>
-              <ListItemText primary="로그아웃" />
+              <ListItemText primary={t('common.logout')} />
             </DrawerItem>
           ) : (
             <DrawerItem onClick={handleLogin} season={season} active={false}>
               <ListItemIcon>
                 <LoginIcon />
               </ListItemIcon>
-              <ListItemText primary="로그인" />
+              <ListItemText primary={t('common.login')} />
             </DrawerItem>
           )}
         </List>

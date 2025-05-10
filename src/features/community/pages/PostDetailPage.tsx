@@ -46,6 +46,7 @@ import useAuthStore from '../../auth/store/authStore';
 import { Post, Comment, ReactionType } from '../types';
 import { usePostReactions } from '../hooks';
 import * as api from '../api/communityApi';
+import { useLanguageContext } from '../../../features/theme/components/LanguageProvider';
 
 // 스타일 컴포넌트
 const StyledChip = styled(Chip)(({ theme }) => ({
@@ -117,6 +118,7 @@ const PostDetailPage: React.FC = () => {
   const actualPostId = postId || postIdAlt;
   const authStore = useAuthStore();
   const currentUser = authStore.user;
+  const { currentLanguage } = useLanguageContext();
 
   // postId 타입 안전하게 변환
   const numericPostId = actualPostId ? parseInt(actualPostId, 10) : 0;
@@ -132,6 +134,9 @@ const PostDetailPage: React.FC = () => {
 
   // 중복 호출 방지를 위한 ref
   const isInitialMount = useRef(true);
+  // 언어 변경 요청 추적을 위한 ref 추가
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const lastLanguageRef = useRef<string>(currentLanguage);
 
   const { handleReaction } = usePostReactions(numericPostId);
 
@@ -148,17 +153,37 @@ const PostDetailPage: React.FC = () => {
     if (!actualPostId) return;
 
     try {
+      // 이전 요청이 진행 중이면 중단
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+
+      // 새 요청을 위한 AbortController 생성
+      abortControllerRef.current = new AbortController();
+      const signal = abortControllerRef.current.signal;
+
       setLoading(true);
       setError(null);
-      setPost(null);
 
-      console.log('[DEBUG] 게시글 로딩 시작:', { actualPostId });
+      // 이미 게시글이 로드된 상태에서는 null로 설정하지 않음 (깜빡임 방지)
+      if (!post) {
+        setPost(null);
+      }
+
+      console.log('[DEBUG] 게시글 로딩 시작:', { actualPostId, language: currentLanguage });
 
       // API에서 직접 데이터를 가져오도록 수정
       const numericPostId = parseInt(actualPostId);
 
       try {
-        const fetchedPost = await api.getPostById(numericPostId);
+        // fetch 요청에 signal 전달 (필요시 중단 가능)
+        const fetchedPost = await api.getPostById(numericPostId, signal);
+
+        // 요청이 중단되었다면 처리 중단
+        if (signal.aborted) {
+          console.log('[INFO] 이전 요청이 중단되었습니다.');
+          return;
+        }
 
         if (!fetchedPost || typeof fetchedPost !== 'object') {
           console.error('[ERROR] 게시글 로드 실패: 유효하지 않은 데이터');
@@ -186,28 +211,75 @@ const PostDetailPage: React.FC = () => {
         console.log('[DEBUG] 게시글 API 로드 성공:', {
           id: mappedPost.postId,
           title: mappedPost.title,
+          language: currentLanguage,
         });
 
         // 컴포넌트 상태 업데이트
         setPost(mappedPost);
-      } catch (apiError) {
+      } catch (apiError: any) {
+        // 요청이 중단된 경우는 에러로 처리하지 않음
+        if (signal.aborted) {
+          console.log('[INFO] 언어 변경으로 요청이 중단되었습니다.');
+          return;
+        }
+
         console.error('[ERROR] API 호출 실패:', apiError);
         setError('게시글을 불러오는데 실패했습니다.');
-        setLoading(false);
-        return;
       }
     } catch (err: any) {
       console.error('[ERROR] 게시글 로딩 중 오류:', err);
       setError(err?.message || '게시글을 불러오는데 실패했습니다. 다시 시도해주세요.');
     } finally {
-      setLoading(false);
+      // 중단된 요청이 아닌 경우에만 로딩 상태 변경
+      if (abortControllerRef.current && !abortControllerRef.current.signal.aborted) {
+        setLoading(false);
+        abortControllerRef.current = null;
+      }
     }
   };
 
-  // 게시글 로딩 Effect
+  // 게시글 로딩 Effect - 게시글 ID 변경 시
   useEffect(() => {
     fetchPostData();
+
+    // Clean up 함수
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, [actualPostId]); // actualPostId가 변경될 때만 다시 실행
+
+  // 언어 변경 감지 Effect - 개선된 버전
+  useEffect(() => {
+    // 초기 렌더링인 경우 스킵
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      lastLanguageRef.current = currentLanguage;
+      return;
+    }
+
+    // 언어가 실제로 변경된 경우에만 실행
+    if (currentLanguage !== lastLanguageRef.current) {
+      console.log(`[INFO] 언어 변경 감지: ${lastLanguageRef.current} → ${currentLanguage}`);
+      lastLanguageRef.current = currentLanguage;
+
+      // 이미 로딩 중인 경우, 이전 요청 중단하고 새 요청 시작
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+
+      // 약간의 지연 후 데이터 로드 (UI 갱신 시간 확보)
+      const timer = setTimeout(() => {
+        if (actualPostId) {
+          console.log('[INFO] 언어 변경으로 게시글 새로고침');
+          fetchPostData();
+        }
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+  }, [currentLanguage, actualPostId]); // 의존성 배열에 필요한 항목 추가
 
   // 게시글 삭제 핸들러
   const handleDeletePost = async () => {

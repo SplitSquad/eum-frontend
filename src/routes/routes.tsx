@@ -3,6 +3,8 @@ import React, { lazy, Suspense } from 'react';
 import { AuthGuard, GuestGuard, RoleGuard } from './guards';
 // import TempAuthPage from '../features/auth/pages/TempAuthPage'; // 임시 로그인 제거
 import { LoginPage, OAuthCallbackPage, AccessDeniedPage } from '../features/auth';
+import Profile from '../pages/Profile';
+import { LanguageProvider } from '../features/theme';
 import AiAssistant from '@/tests/unit/componentPageTest/testPages/AiAssistant';
 
 // 커뮤니티 기능 임포트
@@ -176,8 +178,8 @@ const router = createBrowserRouter([
             ),
           },
         ],
-      },
-    */
+      },*/
+
       // AI 비서 (로그인 필요)
       {
         path: 'assistant',
@@ -252,10 +254,14 @@ const router = createBrowserRouter([
 ]);
 
 /**
- * 라우터 프로바이더 컴포넌트
+ * 애플리케이션 라우트 컴포넌트
  */
 const Routes = () => {
-  return <RouterProvider router={router} />;
+  return (
+    <LanguageProvider>
+      <RouterProvider router={router} />
+    </LanguageProvider>
+  );
 };
 
 export default Routes;
