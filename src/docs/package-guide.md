@@ -51,7 +51,6 @@
   - npm install ckeditor5 @ckeditor/ckeditor5-react
   - npm i @tiptap/react @tiptap/starter-kit @tiptap/extension-image @tiptap/extension-task-item @tiptap/extension-task-list @tiptap/extension-text-align @tiptap/extension-typography
 
-  
   설치 라이브러리
 
   - npm install zustand
@@ -86,3 +85,9 @@
   - npm install --save-dev @testing-library/dom --legacy-peer-deps
 
   React 19와의 호환성을 위해 @testing-library/react-hooks 대신 @testing-library/react와 @testing-library/dom을 사용
+
+  설치 라이브러리
+
+  - npm install event-source-polyfill
+
+  알림 관련하여 SSE 라이브러리 설치

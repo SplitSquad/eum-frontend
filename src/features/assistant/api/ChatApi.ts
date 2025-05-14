@@ -25,12 +25,20 @@ export interface ChatResponse {
  */
 
 export async function fetchChatbotResponse(query: string, uid: string): Promise<ChatResponse> {
+  // localStorage에서 토큰 읽기
+  const token = localStorage.getItem('auth_token');
+  if (!token) {
+    throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
+  }
   // API 엔드포인트로 요청
-  const res = await fetch('http://127.0.0.1:8000/api/v1/chatbot', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query, uid }),
-  });
+  const res = await fetch(
+    'http://af9c53d0f69ea45c793da25cdc041496-1311657830.ap-northeast-2.elb.amazonaws.com:80/api/v1/chatbot',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: token },
+      body: JSON.stringify({ query, uid }),
+    }
+  );
 
   // HTTP 상태 코드 확인
   if (!res.ok) {

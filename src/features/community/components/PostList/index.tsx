@@ -42,7 +42,8 @@ const PostList: React.FC<PostListProps> = ({ filter }) => {
   };
 
   // 카테고리 변경 이벤트 핸들러
-  const handleCategoryChange = (category: PostType) => {  //TODO 카테고리->postType으로 받으면 안 됨
+  const handleCategoryChange = (category: PostType) => {
+    //TODO 카테고리->postType으로 받으면 안 됨
     // 카테고리가 변경되면 필터 업데이트 및 데이터 재요청
     setSelectedCategory(category);
     fetchPosts({
@@ -74,11 +75,8 @@ const PostList: React.FC<PostListProps> = ({ filter }) => {
 
   return (
     <Box sx={{ width: '100%', mt: 2 }}>
-      <PostListHeader
-        selectedCategory={selectedCategory}
-        onCategoryChange={handleCategoryChange}
-      />
-      
+      <PostListHeader selectedCategory={selectedCategory} onCategoryChange={handleCategoryChange} />
+
       <Table sx={{ minWidth: 650 }} aria-label="post list">
         <TableHead>
           <TableRow>
@@ -107,15 +105,13 @@ const PostList: React.FC<PostListProps> = ({ filter }) => {
         </TableHead>
         <TableBody>
           {posts.length > 0 ? (
-            posts.map((post: PostSummary) => (
-              <PostListItem key={post.postId} post={post} />
-            ))
+            posts.map((post: PostSummary) => <PostListItem key={post.postId} post={post} />)
           ) : (
             <PostListEmptyRow />
           )}
         </TableBody>
       </Table>
-      
+
       <TablePagination
         component="div"
         count={postPageInfo.totalElements}
@@ -129,4 +125,4 @@ const PostList: React.FC<PostListProps> = ({ filter }) => {
   );
 };
 
-export default PostList; 
+export default PostList;

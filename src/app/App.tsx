@@ -7,7 +7,9 @@ import { NavBar } from '../components/layout';
 import { useModalStore } from '@/shared/store/ModalStore';
 import Modal from '@/components/ai/Modal';
 import ModalContent from '@/components/ai/ModalContent';
+
 import './App.css';
+import { AlarmCenter } from '@/components/notification/alarmCenter';
 
 /**
  * 애플리케이션 레이아웃 컴포넌트
@@ -66,7 +68,7 @@ const App: React.FC = () => {
         <div className="app-container">
           {/* 네비게이션 바 */}
           <NavBar />
-
+          <AlarmCenter />
           {/* 모달 */}
           <Modal isOpen={isModalOpen} onClose={closeModal} position={position}>
             {content ?? <ModalContent />}

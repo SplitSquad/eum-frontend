@@ -23,6 +23,67 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import GroupsIcon from '@mui/icons-material/Groups';
 import PersonIcon from '@mui/icons-material/Person';
 import { ko } from 'date-fns/locale';
+import { useLocation } from 'react-router-dom';
+
+/**-----------------------------------웹로그 관련------------------------------------ **/
+// userId 꺼내오는 헬퍼
+export function getUserId(): number | null {
+  try {
+    const raw = localStorage.getItem('auth-storage');
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed?.state?.user?.userId ?? null;
+  } catch {
+    return null;
+  }
+}
+
+// 로그 전송 타입 정의
+interface WebLog {
+  userId: number;
+  content: string;
+}
+
+// BASE URL에 엔드포인트 설정
+const BASE = import.meta.env.VITE_API_BASE_URL;
+
+// 로그 전송 함수
+export function sendWebLog(log: WebLog) {
+  // jwt token 가져오기
+  const token = localStorage.getItem('auth_token');
+  if (!token) {
+    throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
+  }
+  fetch(`${BASE}/logs`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: token },
+    body: JSON.stringify(log),
+  }).catch(err => {
+    console.error('WebLog 전송 실패:', err);
+  });
+  // 전송 완료
+  console.log('WebLog 전송 성공:', log);
+}
+
+// useTrackedPost 훅
+export function useTrackedPost() {
+  const location = useLocation();
+
+  return (title: string, content: string, tag: string | null = null) => {
+    const userId = getUserId() || 0;
+    const postLogPayload = {
+      UID: userId,
+      ClickPath: location.pathname,
+      TAG: tag,
+      CurrentPath: location.pathname,
+      Event: 'click',
+      Content: { title: title, content: content },
+      Timestamp: new Date().toISOString(),
+    };
+    sendWebLog({ userId, content: JSON.stringify(postLogPayload) });
+  };
+}
+/**------------------------------------------------------------------------------------**/
 
 // 스타일 컴포넌트
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -275,7 +336,8 @@ const PostTypeChip = styled(Chip)(({ theme }) => ({
   top: '12px',
   right: '12px',
   zIndex: 1,
-  backgroundColor: props => props.label === '모임' ? 'rgba(102, 187, 255, 0.85)' : 'rgba(255, 170, 165, 0.85)',
+  backgroundColor: props =>
+    props.label === '모임' ? 'rgba(102, 187, 255, 0.85)' : 'rgba(255, 170, 165, 0.85)',
   color: '#fff',
   fontWeight: 'bold',
   fontSize: '0.75rem',
@@ -306,47 +368,72 @@ interface PostCardProps {
 const PostCard: React.FC<PostCardProps> = ({ post, hideImage = false, onClick }) => {
   const navigate = useNavigate();
 
-  const handleCardClick = () => {
+  const handleCardClick = async () => {
+    const uid = getUserId() || 0;
+    // content는 받아 올 수가 없어, api 호출 후 값을 받아와서 웹 로그로 전송
+    const res = await fetch(`${BASE}/community/post/${post.postId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: localStorage.getItem('auth_token') || '',
+      },
+    });
+    const postContent = await res.json();
+
     if (onClick) {
       onClick(post);
     } else {
       navigate(`/community/post/${post.postId}`);
     }
+
+    // 웹로그 전송
+    sendWebLog({
+      userId: uid,
+      content: JSON.stringify({
+        UID: uid,
+        ClickPath: location.pathname,
+        TAG: post.category,
+        CurrentPath: location.pathname,
+        Event: 'click',
+        Content: { title: post.title, content: postContent.content },
+        Timestamp: new Date().toISOString(),
+      }),
+    });
   };
 
   // 기본 썸네일 이미지
   const defaultThumbnail = '/assets/images/default-post-thumbnail.jpg';
-  
+
   // 게시글 섬네일 이미지 결정 (files, thumbnail 속성 확인)
-  const thumbnailUrl = 
-    post.thumbnail ? post.thumbnail :
-    post.files && post.files.length > 0 ? post.files[0] : defaultThumbnail;
-  
+  const thumbnailUrl = post.thumbnail
+    ? post.thumbnail
+    : post.files && post.files.length > 0
+      ? post.files[0]
+      : defaultThumbnail;
+
   // 날짜 포맷팅
   const formattedDate = format(new Date(post.createdAt), 'yyyy년 MM월 dd일', { locale: ko });
-  
   return (
     <StyledCard>
       {/* 좌상단: 대분류(카테고리) 칩 */}
-      <CategoryChip 
-        label={post.category || '전체'} 
-        size="small" 
+      <CategoryChip
+        label={post.category || '전체'}
+        size="small"
         sx={{ backgroundColor: 'rgba(255, 170, 165, 0.85)' }}
       />
-      
+
       {/* 우상단: 게시글 타입(자유/모임) 칩 */}
-      <CategoryChip 
-        label={post.postType || '자유'} 
-        size="small" 
-        sx={{ 
-          backgroundColor: post.postType === '모임' 
-            ? 'rgba(144, 202, 249, 0.85)' 
-            : 'rgba(129, 199, 132, 0.85)',
+      <CategoryChip
+        label={post.postType || '자유'}
+        size="small"
+        sx={{
+          backgroundColor:
+            post.postType === '모임' ? 'rgba(144, 202, 249, 0.85)' : 'rgba(129, 199, 132, 0.85)',
           right: '12px',
-          left: 'auto'
+          left: 'auto',
         }}
       />
-      
+
       {/* 게시글 이미지 */}
       {!hideImage && (
         <CardMediaWrapper onClick={handleCardClick}>
@@ -358,24 +445,20 @@ const PostCard: React.FC<PostCardProps> = ({ post, hideImage = false, onClick })
           />
         </CardMediaWrapper>
       )}
-      
+
       <CardContentStyled onClick={handleCardClick}>
         <PostTitle variant="h6">{post.title}</PostTitle>
         <PostContent variant="body2">{post.content}</PostContent>
-        
+
         {/* 태그 표시 */}
         {post.tags && post.tags.length > 0 && (
           <TagsContainer>
             {post.tags.map((tag, index) => (
-              <TagChip
-                key={index}
-                label={typeof tag === 'string' ? tag : tag.name}
-                size="small"
-              />
+              <TagChip key={index} label={typeof tag === 'string' ? tag : tag.name} size="small" />
             ))}
           </TagsContainer>
         )}
-        
+
         {/* 지역 정보 표시 (모임일 경우) */}
         {post.postType === '모임' && post.address && post.address !== '자유' && (
           <AddressInfo>
@@ -383,7 +466,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, hideImage = false, onClick })
             <Typography variant="body2">{post.address}</Typography>
           </AddressInfo>
         )}
-        
+
         {/* 작성자 정보 */}
         <AuthorContainer>
           <StyledAvatar>
@@ -394,48 +477,40 @@ const PostCard: React.FC<PostCardProps> = ({ post, hideImage = false, onClick })
           </AuthorName>
         </AuthorContainer>
       </CardContentStyled>
-      
+
       <CardActionsStyled>
         {/* 메타 정보 (조회수, 좋아요, 싫어요, 댓글 수) */}
         <MetaContainer>
           <EnhancedTooltip title="조회수">
             <MetaItem>
               <VisibilityOutlinedIcon fontSize="small" />
-              <Typography variant="body2">
-                {post.viewCount || post.views || 0}
-              </Typography>
+              <Typography variant="body2">{post.viewCount || post.views || 0}</Typography>
             </MetaItem>
           </EnhancedTooltip>
-          
+
           <EnhancedTooltip title="좋아요">
             <MetaItem>
               <ThumbUpOutlinedIcon fontSize="small" />
-              <Typography variant="body2">
-                {post.likeCount || post.like || 0}
-              </Typography>
+              <Typography variant="body2">{post.likeCount || post.like || 0}</Typography>
             </MetaItem>
           </EnhancedTooltip>
-          
+
           <EnhancedTooltip title="싫어요">
             <MetaItem>
               <ThumbDownOutlinedIcon fontSize="small" />
-              <Typography variant="body2">
-                {post.dislikeCount || post.dislike || 0}
-              </Typography>
+              <Typography variant="body2">{post.dislikeCount || post.dislike || 0}</Typography>
             </MetaItem>
           </EnhancedTooltip>
-          
+
           {/* 댓글 수 표시 추가 */}
           <EnhancedTooltip title="댓글">
             <MetaItem>
               <ChatBubbleOutlineIcon fontSize="small" />
-              <Typography variant="body2">
-                {post.commentCount || post.commentCnt || 0}
-              </Typography>
+              <Typography variant="body2">{post.commentCount || post.commentCnt || 0}</Typography>
             </MetaItem>
           </EnhancedTooltip>
         </MetaContainer>
-        
+
         {/* 날짜 표시 */}
         <Typography variant="caption" color="text.secondary">
           {formattedDate}
