@@ -2,13 +2,13 @@ import { useState } from 'react';
 
 /**
  * useModal 커스텀 훅
- * - 모달의 열림/닫힘 상태를 관리합니다.
- * - 초기 상태를 설정할 수 있습니다.
+ * - 모달의 열림/닫힘 상태를 관리
+ * - 초기 상태를 설정할 수 있음
  *
  * @param {boolean} initialValue - 모달의 초기 상태 (기본 false)
  * @returns { isOpen, openModal, closeModal, toggleModal }
  */
-const useModal = (initialValue: boolean = false) => {
+const UseModal = (initialValue: boolean = false) => {
   // 1. useState를 사용해서 모달의 현재 상태를 관리
   // setIsOpen: 상태를 변경하기 위한 함수
   const [isOpen, setIsOpen] = useState(initialValue);
@@ -26,4 +26,4 @@ const useModal = (initialValue: boolean = false) => {
   return { isOpen, openModal, closeModal, toggleModal };
 };
 
-export default useModal;
+export default UseModal;

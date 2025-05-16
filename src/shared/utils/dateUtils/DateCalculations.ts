@@ -8,7 +8,7 @@
 /**
  * differenceInDays는 두 날짜 사이의 차이를 밀로초로 계산한 후, 일(day) 단위로 변환
  */
-export const differenceInDays = (startDate: Date, endDate: Date): number => {
+export const DifferenceInDays = (startDate: Date, endDate: Date): number => {
   const msPerDay = 1000 * 60 * 60 * 24;
   return Math.floor((endDate.getTime() - startDate.getTime()) / msPerDay);
 };
@@ -23,7 +23,7 @@ export const differenceInDays = (startDate: Date, endDate: Date): number => {
 /**
  * addDays는 기준 날짜에서 주어진 일 수만큼 더한 후 새 Date 객체를 반환
  */
-export const addDays = (date: Date, days: number): Date => {
+export const AddDays = (date: Date, days: number): Date => {
   const newDate = new Date(date);
   newDate.setDate(date.getDate() + days);
   return newDate;

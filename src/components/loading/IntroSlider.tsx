@@ -1,0 +1,50 @@
+import React, { useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+
+interface Props {
+  currentIndex: number;
+  children: React.ReactNode[];
+}
+
+/**
+ * 인트로 슬라이더 컴포넌트
+ * @param currentIndex 현재 표시할 슬라이드 인덱스
+ * @param children 슬라이드 컴포넌트 배열
+ */
+function IntroSlider({ currentIndex, children }: Props) {
+  const isFirst = currentIndex === 0;
+  const [viewportHeight, setViewportHeight] = useState('100vh');
+
+  // 모바일 브라우저 vh 단위 이슈 해결
+  useEffect(() => {
+    const updateViewportHeight = () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+      setViewportHeight(`${window.innerHeight}px`);
+    };
+
+    updateViewportHeight();
+    window.addEventListener('resize', updateViewportHeight);
+    return () => window.removeEventListener('resize', updateViewportHeight);
+  }, []);
+
+  return (
+    <div className="w-full relative overflow-hidden" style={{ minHeight: viewportHeight }}>
+      <AnimatePresence>
+        <motion.div
+          key={currentIndex}
+          initial={isFirst ? { opacity: 0 } : { opacity: 0, x: 100 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -100 }}
+          transition={{ duration: 0.6 }}
+          className="absolute w-full"
+          style={{ minHeight: viewportHeight }}
+        >
+          {children[currentIndex]}
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
+}
+
+export default IntroSlider;

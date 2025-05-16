@@ -11,7 +11,7 @@
  * truncateText 함수는 주어진 최대 길이보다 텍스트가 길면 해당
  * 길이까지 자르고 "..."를 추가하여 반환
  */
-export const truncateText = (text: string, maxLength: number): string => {
+export const TruncateText = (text: string, maxLength: number): string => {
   if (text.length <= maxLength) {
     return text;
   }
@@ -28,7 +28,7 @@ export const truncateText = (text: string, maxLength: number): string => {
 /**
  * capitalize 함수는 문자열의 첫 글자를 대문자로 변환
  */
-export const capitalize = (text: string): string => {
+export const Capitalize = (text: string): string => {
   if (!text) return text;
   return text.charAt(0).toUpperCase() + text.slice(1);
 };

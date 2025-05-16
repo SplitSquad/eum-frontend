@@ -12,7 +12,7 @@
  * 기본 통화는 'USD'이며, Locale 역시 기본적으로 'en-US'로 설정
  * 다른 통화나 Locale을 파라미터로 전달할 수 있음
  */
-export const formatCurrency = (
+export const FormatCurrency = (
   amount: number,
   currency: string = 'USD',
   locale: string = 'en-US'
