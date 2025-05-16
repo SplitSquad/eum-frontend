@@ -204,6 +204,7 @@ export type Reaction = {
 
 export type User = {
   userId: number;
+  id?: number;
   nickname: string;
   profileImage: string;
   profileImageUrl?: string;
@@ -220,8 +221,8 @@ export interface CommentType {
   likeCount: number;
   dislikeCount: number;
   parentId?: number;
-  reply?: number;  // 대댓글 개수
-  replyCount?: number;  // 대댓글 개수 (백엔드 응답 필드 변경에 대응)
+  reply?: number; // 대댓글 개수
+  replyCount?: number; // 대댓글 개수 (백엔드 응답 필드 변경에 대응)
   myReaction?: ReactionType;
   replies?: CommentType[];
   liked?: boolean;
@@ -254,22 +255,29 @@ export type PostSummary = {
   commentCnt?: number;
 };
 
-export type Post = PostSummary & {
+export type Post = {
+  postId: number;
+  title: string;
   content: string;
+  writerId: number;
+  writerNickname?: string;
+  category: string;
+  postType: PostType;
+  status: PostStatus;
+  createdAt: string;
   updatedAt?: string;
-  myReaction?: ReactionType;
-  dislikeCount?: number;
-  comments?: CommentType[];
-
-  views?: number;
-  like?: number;
-  dislike?: number;
-  userName?: string;
+  tags: Tag[];
   files?: string[];
-  postType?: PostType;
+  thumbnailUrl?: string;
+  viewCount: number;
+  likeCount: number;
+  dislikeCount: number;
+  commentCount: number;
+  myReaction?: ReactionType;
   address?: string;
-  isState?: string;
-  commentCnt?: number;
+  location?: string;
+  isState?: '좋아요' | '싫어요' | null;
+  comments?: CommentType[];
 };
 
 export type CreatePostRequest = {
@@ -411,3 +419,5 @@ export interface ReplyType {
   disliked?: boolean;
   translating?: boolean; // 번역 중 상태를 표시
 }
+
+export type Comment = CommentType;

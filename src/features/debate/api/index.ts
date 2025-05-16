@@ -21,8 +21,8 @@ export const api = {
   special: {
     getTodayIssues,
     getHotIssue,
-    getBalancedIssue
-  }
+    getBalancedIssue,
+  },
 };
 
-export default api; 
+export default api;

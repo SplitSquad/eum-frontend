@@ -13,6 +13,11 @@ const fadeIn = keyframes`
   }
 `;
 
+const fadeInOpacity = keyframes`
+  from { opacity: 0; }
+  to { opacity: 1; }
+`;
+
 // 눈송이 내리는 애니메이션 - 더 선명하게
 const snowfall = keyframes`
   0% {
@@ -81,8 +86,8 @@ const WinterContainer = styled(Box, {
   background: linear-gradient(135deg, #1b2735 0%, #395a7f 100%);
   padding: ${p => (p.noPadding ? '0' : '2rem 0')};
   position: relative;
-  overflow: hidden;
-  animation: ${fadeIn} 0.6s ease-in-out;
+  overflow: visible;
+  animation: ${fadeInOpacity} 0.6s ease-in-out;
   display: flex;
   flex-direction: column;
 `;
@@ -96,19 +101,25 @@ const largeSvgSnowflake = `
 `;
 
 // 큰 눈송이 컴포넌트
-const LargeSnowflake = styled.div<{ size: number; left: string; delay: number; duration: number; rotateSpeed: number }>`
+const LargeSnowflake = styled.div<{
+  size: number;
+  left: string;
+  delay: number;
+  duration: number;
+  rotateSpeed: number;
+}>`
   position: absolute;
   top: -50px;
   width: ${props => props.size}px;
   height: ${props => props.size}px;
   left: ${props => props.left};
-  background-image: url("data:image/svg+xml;utf8,${encodeURIComponent(largeSvgSnowflake)}");
+  background-image: url('data:image/svg+xml;utf8,${encodeURIComponent(largeSvgSnowflake)}');
   background-repeat: no-repeat;
   background-size: contain;
   filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.8));
   z-index: 2;
   opacity: 0;
-  animation: 
+  animation:
     ${snowfall} ${props => props.duration}s linear infinite,
     ${snowSwirl} ${props => props.rotateSpeed}s ease-in-out infinite;
   animation-delay: ${props => props.delay}s;
@@ -123,12 +134,20 @@ const MediumSnowflake = styled.div<{ size: number; left: string; delay: number; 
   left: ${props => props.left};
   background-color: white;
   clip-path: polygon(
-    50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 
-    50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%
+    50% 0%,
+    61% 35%,
+    98% 35%,
+    68% 57%,
+    79% 91%,
+    50% 70%,
+    21% 91%,
+    32% 57%,
+    2% 35%,
+    39% 35%
   );
   z-index: 2;
   opacity: 0;
-  animation: 
+  animation:
     ${snowfall} ${props => props.duration}s linear infinite,
     ${twinkle} 3s ease-in-out infinite;
   animation-delay: ${props => props.delay}s;
@@ -145,7 +164,7 @@ const SmallSnowflake = styled.div<{ size: number; left: string; delay: number; d
   border-radius: 50%;
   z-index: 2;
   opacity: 0;
-  animation: 
+  animation:
     ${snowfall} ${props => props.duration}s linear infinite,
     ${twinkle} 2s ease-in-out infinite;
   animation-delay: ${props => props.delay}s;
@@ -235,16 +254,16 @@ interface WinterBackgroundProps {
 const WinterBackground: React.FC<WinterBackgroundProps> = ({ children, noPadding = false }) => {
   // 큰 눈송이 생성
   const largeSnowflakes = createLargeSnowflakes(15);
-  
+
   // 중간 눈송이 생성
   const mediumSnowflakes = createMediumSnowflakes(30);
-  
+
   // 작은 눈송이 생성
   const smallSnowflakes = createSmallSnowflakes(60);
-  
+
   // 별 생성
   const stars = createStars(100);
-  
+
   return (
     <WinterContainer noPadding={noPadding}>
       {/* 별 */}
@@ -257,7 +276,7 @@ const WinterBackground: React.FC<WinterBackgroundProps> = ({ children, noPadding
           opacity={star.opacity}
         />
       ))}
-      
+
       {/* 큰 눈송이 */}
       {largeSnowflakes.map((snowflake, index) => (
         <LargeSnowflake
@@ -269,7 +288,7 @@ const WinterBackground: React.FC<WinterBackgroundProps> = ({ children, noPadding
           rotateSpeed={snowflake.rotateSpeed}
         />
       ))}
-      
+
       {/* 중간 눈송이 */}
       {mediumSnowflakes.map((snowflake, index) => (
         <MediumSnowflake
@@ -280,7 +299,7 @@ const WinterBackground: React.FC<WinterBackgroundProps> = ({ children, noPadding
           duration={snowflake.duration}
         />
       ))}
-      
+
       {/* 작은 눈송이 */}
       {smallSnowflakes.map((snowflake, index) => (
         <SmallSnowflake
@@ -291,10 +310,10 @@ const WinterBackground: React.FC<WinterBackgroundProps> = ({ children, noPadding
           duration={snowflake.duration}
         />
       ))}
-      
+
       {/* 바닥에 쌓이는 눈 */}
       <SnowAccumulation />
-      
+
       <Box
         sx={{
           position: 'relative',
@@ -311,4 +330,4 @@ const WinterBackground: React.FC<WinterBackgroundProps> = ({ children, noPadding
   );
 };
 
-export default WinterBackground; 
+export default WinterBackground;

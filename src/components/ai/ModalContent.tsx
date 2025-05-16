@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { callAgentic } from '@/shared/utils/Agentic';
 import { callJobAgent, processCoverLetterResponse } from '@/shared/utils/JobAgent';
-import { CoverLetterState, CoverLetterResponse } from '@/types/CoverLetterTypes';
+import { CoverLetterState } from '@/types/CoverLetterTypes';
 type Message = { id: number; sender: 'user' | 'bot'; text: string };
 type AgentType = 'schedule' | 'job';
 export default function ModalContent() {

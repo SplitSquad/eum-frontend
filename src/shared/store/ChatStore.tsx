@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
 /**
  * Message 인터페이스 정의
@@ -38,7 +38,7 @@ export const useChatStore = create<ChatStore>()(
     }),
     {
       name: 'chat-storage', // localStorage에 저장될 key 이름
-      getStorage: () => localStorage, // 브라우저 localStorage 사용
+      storage: createJSONStorage(() => localStorage), // 브라우저 localStorage 사용
     }
   )
 );

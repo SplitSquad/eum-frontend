@@ -1,12 +1,16 @@
-import React, { useEffect, useRef } from 'react';
-import { Outlet } from 'react-router-dom';
-import { SnackbarProvider } from 'notistack';
-import { SeasonalBackground } from '../features/theme';
-import useAuthStore from '../features/auth/store/authStore';
-import { NavBar } from '../components/layout';
-import { useModalStore } from '@/shared/store/ModalStore';
 import Modal from '@/components/ai/Modal';
 import ModalContent from '@/components/ai/ModalContent';
+import Footer from '@/components/layout/Footer';
+import Header from '@/components/layout/Header';
+import { useModalStore } from '@/shared/store/ModalStore';
+import ChatIcon from '@mui/icons-material/Chat';
+import CloseIcon from '@mui/icons-material/Close';
+import { IconButton } from '@mui/material';
+import { SnackbarProvider } from 'notistack';
+import React, { useEffect, useRef, useState } from 'react';
+import { Outlet, useLocation } from 'react-router-dom';
+import useAuthStore from '../features/auth/store/authStore';
+import { SeasonalBackground } from '../features/theme';
 import './App.css';
 
 /**
@@ -17,6 +21,63 @@ const App: React.FC = () => {
   const { loadUser } = useAuthStore();
   const { isModalOpen, content, position, openModal, closeModal } = useModalStore();
   const btnRef = useRef<HTMLButtonElement>(null);
+  const location = useLocation();
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const [isModalVisible, setIsModalVisible] = useState(true);
+
+  // 현재 링크와 이전 링크를 추적하는 refs
+  const currentPathRef = useRef<string>(location.pathname);
+  const previousPathRef = useRef<string>('');
+
+  // 경로에 따른 컴포넌트 가시성 설정
+  const updateVisibility = (path: string) => {
+    // 루트 경로 체크
+    if (path === '/') {
+      setIsHeaderVisible(false);
+      setIsModalVisible(false);
+      return;
+    }
+
+    // onboarding 경로 체크 (하위 경로 포함)
+    if (path.startsWith('/onboarding')) {
+      setIsHeaderVisible(false);
+      setIsModalVisible(false);
+      return;
+    }
+
+    // assistant 경로 체크 (하위 경로 포함)
+    if (path.startsWith('/assistant')) {
+      setIsHeaderVisible(true);
+      setIsModalVisible(false);
+      return;
+    }
+
+    // 기본 상태
+    setIsHeaderVisible(true);
+    setIsModalVisible(true);
+  };
+
+  // 초기 마운트와 경로 변경 시 실행
+  useEffect(() => {
+    // 현재 경로 업데이트
+    if (currentPathRef.current !== location.pathname) {
+      previousPathRef.current = currentPathRef.current;
+      currentPathRef.current = location.pathname;
+
+      console.log('Route changed:', {
+        from: previousPathRef.current,
+        to: currentPathRef.current,
+      });
+    }
+
+    // 현재 경로에 따른 가시성 업데이트
+    updateVisibility(location.pathname);
+  }, [location.pathname]);
+
+  // 초기 마운트 시 한 번 실행
+  useEffect(() => {
+    updateVisibility(location.pathname);
+  }, []);
 
   const onButtonClick = () => {
     if (isModalOpen) {
@@ -62,21 +123,47 @@ const App: React.FC = () => {
       }}
       autoHideDuration={3000}
     >
-      <SeasonalBackground>
-        <div className="app-container">
-          {/* 네비게이션 바 */}
-          <NavBar />
-
-          {/* 모달 */}
+      <div className={`app-container ${isModalOpen ? 'modal-open' : ''}`}>
+        {/* 모달 */}
+        {isModalVisible && (
           <Modal isOpen={isModalOpen} onClose={closeModal} position={position}>
             {content ?? <ModalContent />}
           </Modal>
+        )}
 
-          <main className="main-content">
-            <Outlet />
-          </main>
+        <div className={`app-content ${isModalOpen ? 'dimmed' : ''}`}>
+          <Header isVisible={isHeaderVisible} />
+          <SeasonalBackground>
+            <main className="main-content">
+              <Outlet />
+            </main>
+            {isModalVisible && (
+              <div className="fixed bottom-[170px] right-8 z-[1001]">
+                <IconButton
+                  ref={btnRef}
+                  onClick={onButtonClick}
+                  className="modal-toggle-button"
+                  sx={{
+                    backgroundColor: 'rgba(255, 182, 193, 0.4)',
+                    '&:hover': {
+                      backgroundColor: 'rgba(255, 182, 193, 0.6)',
+                    },
+                    padding: '12px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                  }}
+                >
+                  {isModalOpen ? (
+                    <CloseIcon sx={{ color: 'white', fontSize: '24px' }} />
+                  ) : (
+                    <ChatIcon sx={{ color: 'white', fontSize: '24px' }} />
+                  )}
+                </IconButton>
+              </div>
+            )}
+          </SeasonalBackground>
+          <Footer />
         </div>
-      </SeasonalBackground>
+      </div>
     </SnackbarProvider>
   );
 };

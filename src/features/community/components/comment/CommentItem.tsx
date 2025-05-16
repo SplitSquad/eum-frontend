@@ -22,7 +22,7 @@ import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 
 import useCommunityStore from '../../store/communityStore';
-import { Comment, ReactionType } from '../../types';
+import { Comment, User, ReactionType } from '../../types';
 import useAuthStore from '../../../auth/store/authStore';
 import ReplyForm from '../ReplyForm';
 import { useComments } from '../../hooks';
@@ -68,13 +68,6 @@ const ActionButton = styled(Button)(({ theme }) => ({
   },
 }));
 
-// User 인터페이스 정의
-interface User {
-  userId: number;
-  nickname: string;
-  profileImage?: string;
-}
-
 interface CommentItemProps {
   comment: Comment;
   postId: number;
@@ -102,7 +95,9 @@ const CommentItem: React.FC<CommentItemProps> = ({
   const { user: currentUser } = useAuthStore();
 
   // 현재 사용자가 댓글 작성자인지 확인
-  const isCommentAuthor = currentUser?.id === comment.writer?.userId?.toString();
+  const isCommentAuthor =
+    ((currentUser as any)?.id ?? (currentUser as any)?.userId)?.toString() ===
+    ((comment.writer as any)?.id ?? (comment.writer as any)?.userId)?.toString();
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -295,8 +290,8 @@ const CommentItem: React.FC<CommentItemProps> = ({
         {/* 댓글 푸터 (좋아요, 답글) */}
         <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
-            <ReactionButton size="small" onClick={() => handleReaction('LIKE')}>
-              {comment.myReaction === 'LIKE' ? (
+            <ReactionButton size="small" onClick={() => handleReaction(ReactionType.LIKE)}>
+              {comment.myReaction === ReactionType.LIKE ? (
                 <ThumbUpIcon fontSize="small" sx={{ color: '#4CAF50' }} />
               ) : (
                 <ThumbUpAltOutlinedIcon fontSize="small" />
@@ -306,8 +301,8 @@ const CommentItem: React.FC<CommentItemProps> = ({
               {comment.likeCount || 0}
             </Typography>
 
-            <ReactionButton size="small" onClick={() => handleReaction('DISLIKE')}>
-              {comment.myReaction === 'DISLIKE' ? (
+            <ReactionButton size="small" onClick={() => handleReaction(ReactionType.DISLIKE)}>
+              {comment.myReaction === ReactionType.DISLIKE ? (
                 <ThumbDownIcon fontSize="small" sx={{ color: '#F44336' }} />
               ) : (
                 <ThumbDownAltOutlinedIcon fontSize="small" />

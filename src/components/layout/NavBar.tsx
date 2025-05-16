@@ -117,6 +117,14 @@ const NavButton = styled(Button)<{ season: string; active: boolean }>`
       opacity: ${props => (props.active ? '1' : '0.5')};
     }
   }
+
+  &:focus {
+    outline: none;
+  }
+
+  &:focus-visible {
+    outline: none;
+  }
 `;
 
 const LogoText = styled(Typography)<{ season: string }>`
@@ -176,7 +184,7 @@ const getNavItems = (t: (key: string) => string) => [
   { name: t('common.home'), path: '/', icon: <HomeIcon /> },
   { name: t('common.community'), path: '/community', icon: <ForumIcon /> },
   { name: t('common.debate'), path: '/debate', icon: <ChatIcon /> },
-  { name: t('AIAssistant'), path: '/assistant', icon: <ChatIcon /> },
+  { name: t('common.aiassistant'), path: '/assistant', icon: <ChatIcon /> },
   { name: t('common.mypage'), path: '/mypage', icon: <AccountCircleIcon />, requireAuth: true },
 ];
 

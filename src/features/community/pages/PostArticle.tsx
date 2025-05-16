@@ -1,7 +1,12 @@
-import AppLayout from '@/components/layout/AppLayout';
+/**
+ * @deprecated This component is for testing purposes only.
+ * The actual post creation/editing functionality is implemented in PostCreateEditPage.tsx
+ * This component should only be used in test files.
+ */
+
+import AppLayout from '@/components/layout/LegacyAppLayout';
 import PageWrapper from '@/components/layout/PageWrapper';
 import Container from '@/components/layout/Contianer';
-import Grid from '@/components/layout/Grid';
 
 import PostTitleField from '@/features/community/components/forms/PostTitleField';
 import PostTypeSelector from '@/features/community/components/forms/PostTypeSelector';
@@ -12,6 +17,9 @@ import PostBodyField from '@/features/community/components/forms/PostBodyField';
 import { usePostFormStore } from '../store/postFormStore';
 import Button from '@/components/base/Button'; // 저장 버튼 스타일
 
+/**
+ * @deprecated This is a test component. Use PostCreateEditPage instead for actual post creation/editing.
+ */
 const PostArticle = () => {
   const { title, postType, city, district, neighborhood, category, tag, content } =
     usePostFormStore();

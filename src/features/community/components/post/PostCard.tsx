@@ -17,7 +17,7 @@ import ThumbUpOutlinedIcon from '@mui/icons-material/ThumbUpOutlined';
 import ThumbDownOutlinedIcon from '@mui/icons-material/ThumbDownOutlined';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
-import { PostSummary } from '../../types';
+import { PostSummary } from '../../types-folder/index';
 import { format } from 'date-fns';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import GroupsIcon from '@mui/icons-material/Groups';
@@ -219,32 +219,10 @@ const StyledCardMedia = styled(CardMedia)(({ theme }) => ({
 }));
 
 // 카테고리 칩 스타일
-const CategoryChip = styled(Chip)(({ theme }) => ({
-  position: 'absolute',
-  top: '12px',
-  left: '12px',
-  zIndex: 1,
-  backgroundColor: 'rgba(255, 170, 165, 0.85)',
-  color: '#fff',
-  fontWeight: 'bold',
-  fontSize: '0.75rem',
-  height: '24px',
-  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-}));
+const CategoryChip = styled(Chip as any)('');
 
 // 태그 스타일
-const TagChip = styled(Chip)(({ theme }) => ({
-  backgroundColor: '#FFF5F5',
-  color: '#888',
-  border: '1px solid #FFE5E5',
-  margin: '0 4px 4px 0',
-  fontSize: '0.7rem',
-  height: '24px',
-
-  '&:hover': {
-    backgroundColor: '#FFE5E5',
-  },
-}));
+const TagChip = styled(Chip as any)('');
 
 // 반응 표시 컨테이너
 const ReactionContainer = styled(Box)(({ theme }) => ({
@@ -270,18 +248,7 @@ const ReactionItem = styled(Box)(({ theme }) => ({
 }));
 
 // 게시글 타입 칩 스타일
-const PostTypeChip = styled(Chip)(({ theme }) => ({
-  position: 'absolute',
-  top: '12px',
-  right: '12px',
-  zIndex: 1,
-  backgroundColor: props => props.label === '모임' ? 'rgba(102, 187, 255, 0.85)' : 'rgba(255, 170, 165, 0.85)',
-  color: '#fff',
-  fontWeight: 'bold',
-  fontSize: '0.75rem',
-  height: '24px',
-  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-}));
+const PostTypeChip = styled(Chip as any)('');
 
 // 지역 정보 스타일
 const AddressInfo = styled(Box)(({ theme }) => ({
@@ -316,66 +283,61 @@ const PostCard: React.FC<PostCardProps> = ({ post, hideImage = false, onClick })
 
   // 기본 썸네일 이미지
   const defaultThumbnail = '/assets/images/default-post-thumbnail.jpg';
-  
+
   // 게시글 섬네일 이미지 결정 (files, thumbnail 속성 확인)
-  const thumbnailUrl = 
-    post.thumbnail ? post.thumbnail :
-    post.files && post.files.length > 0 ? post.files[0] : defaultThumbnail;
-  
+  const thumbnailUrl = post.files && post.files.length > 0 ? post.files[0] : undefined;
+
   // 날짜 포맷팅
-  const formattedDate = format(new Date(post.createdAt), 'yyyy년 MM월 dd일', { locale: ko });
-  
+  const formattedDate = post.createdAt
+    ? format(new Date(post.createdAt), 'yyyy년 MM월 dd일 HH:mm', { locale: ko })
+    : '날짜 없음';
+
   return (
     <StyledCard>
       {/* 좌상단: 대분류(카테고리) 칩 */}
-      <CategoryChip 
-        label={post.category || '전체'} 
-        size="small" 
+      <CategoryChip
+        label={post.category || '전체'}
+        size="small"
         sx={{ backgroundColor: 'rgba(255, 170, 165, 0.85)' }}
       />
-      
+
       {/* 우상단: 게시글 타입(자유/모임) 칩 */}
-      <CategoryChip 
-        label={post.postType || '자유'} 
-        size="small" 
-        sx={{ 
-          backgroundColor: post.postType === '모임' 
-            ? 'rgba(144, 202, 249, 0.85)' 
-            : 'rgba(129, 199, 132, 0.85)',
+      <CategoryChip
+        label={post.postType || '자유'}
+        size="small"
+        sx={{
+          backgroundColor:
+            post.postType === '모임' ? 'rgba(144, 202, 249, 0.85)' : 'rgba(129, 199, 132, 0.85)',
           right: '12px',
-          left: 'auto'
+          left: 'auto',
         }}
       />
-      
+
       {/* 게시글 이미지 */}
       {!hideImage && (
         <CardMediaWrapper onClick={handleCardClick}>
           <CardMedia
             component="img"
             className="post-card-image"
-            image={thumbnailUrl}
+            image={thumbnailUrl || defaultThumbnail}
             alt={post.title}
           />
         </CardMediaWrapper>
       )}
-      
+
       <CardContentStyled onClick={handleCardClick}>
         <PostTitle variant="h6">{post.title}</PostTitle>
         <PostContent variant="body2">{post.content}</PostContent>
-        
+
         {/* 태그 표시 */}
         {post.tags && post.tags.length > 0 && (
           <TagsContainer>
             {post.tags.map((tag, index) => (
-              <TagChip
-                key={index}
-                label={typeof tag === 'string' ? tag : tag.name}
-                size="small"
-              />
+              <TagChip key={index} label={typeof tag === 'string' ? tag : ''} size="small" />
             ))}
           </TagsContainer>
         )}
-        
+
         {/* 지역 정보 표시 (모임일 경우) */}
         {post.postType === '모임' && post.address && post.address !== '자유' && (
           <AddressInfo>
@@ -383,59 +345,47 @@ const PostCard: React.FC<PostCardProps> = ({ post, hideImage = false, onClick })
             <Typography variant="body2">{post.address}</Typography>
           </AddressInfo>
         )}
-        
+
         {/* 작성자 정보 */}
         <AuthorContainer>
-          <StyledAvatar>
-            {post.writer?.nickname?.charAt(0) || post.userName?.charAt(0) || '?'}
-          </StyledAvatar>
-          <AuthorName variant="body2">
-            {post.writer?.nickname || post.userName || '익명'}
-          </AuthorName>
+          <StyledAvatar>{post.writer?.nickname?.charAt(0) || '?'}</StyledAvatar>
+          <AuthorName variant="body2">{post.writer?.nickname || '익명'}</AuthorName>
         </AuthorContainer>
       </CardContentStyled>
-      
+
       <CardActionsStyled>
         {/* 메타 정보 (조회수, 좋아요, 싫어요, 댓글 수) */}
         <MetaContainer>
           <EnhancedTooltip title="조회수">
             <MetaItem>
               <VisibilityOutlinedIcon fontSize="small" />
-              <Typography variant="body2">
-                {post.viewCount || post.views || 0}
-              </Typography>
+              <Typography variant="body2">{post.viewCount || post.views || 0}</Typography>
             </MetaItem>
           </EnhancedTooltip>
-          
+
           <EnhancedTooltip title="좋아요">
             <MetaItem>
               <ThumbUpOutlinedIcon fontSize="small" />
-              <Typography variant="body2">
-                {post.likeCount || post.like || 0}
-              </Typography>
+              <Typography variant="body2">{post.likeCount || post.like || 0}</Typography>
             </MetaItem>
           </EnhancedTooltip>
-          
+
           <EnhancedTooltip title="싫어요">
             <MetaItem>
               <ThumbDownOutlinedIcon fontSize="small" />
-              <Typography variant="body2">
-                {post.dislikeCount || post.dislike || 0}
-              </Typography>
+              <Typography variant="body2">{post.dislikeCount || post.dislike || 0}</Typography>
             </MetaItem>
           </EnhancedTooltip>
-          
+
           {/* 댓글 수 표시 추가 */}
           <EnhancedTooltip title="댓글">
             <MetaItem>
-              <ChatBubbleOutlineIcon fontSize="small" />
-              <Typography variant="body2">
-                {post.commentCount || post.commentCnt || 0}
-              </Typography>
+              <ChatBubbleOutlineIcon sx={{ fontSize: 18, color: '#888', mr: 0.5 }} />
+              <span>{post.commentCount ?? 0}</span>
             </MetaItem>
           </EnhancedTooltip>
         </MetaContainer>
-        
+
         {/* 날짜 표시 */}
         <Typography variant="caption" color="text.secondary">
           {formattedDate}

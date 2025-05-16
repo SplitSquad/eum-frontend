@@ -1,8 +1,10 @@
 const ko = {
   common: {
     home: '홈',
-    community: '커뮤니티',
-    debate: '토론',
+    community: '모임과 이야기',
+    debate: '핫 이슈 토론',
+    aiassistant: 'AI 전문가',
+    info: '한국생활 가이드',
     mypage: '마이페이지',
     login: '로그인',
     logout: '로그아웃',
@@ -11,6 +13,8 @@ const ko = {
     settings: '설정',
     languageSettings: '언어 설정',
     selectLanguage: '언어 선택',
+    smallGroups: '소그룹 모임',
+    communicationBoard: '자유 게시판',
   },
   nav: {
     accountSettings: '계정 설정',
@@ -28,4 +32,4 @@ const ko = {
   },
 };
 
-export default ko; 
+export default ko;

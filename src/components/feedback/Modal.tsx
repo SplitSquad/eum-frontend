@@ -1,36 +1,64 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import Button from '@/components/base/Button';
 
 type ModalProps = {
   isOpen: boolean;
   onClose: () => void;
   children: React.ReactNode;
+  anchorEl?: HTMLElement | null;
 };
 
-const Modal = ({ isOpen, onClose, children }: ModalProps) => {
+const Modal = ({ isOpen, onClose, children, anchorEl }: ModalProps) => {
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
-  return (
-    <div
-      className="fixed inset-0 z-50 bg-black/30 flex items-center justify-center px-4"
-      onClick={onClose}
-    >
-      <div
-        className="bg-white rounded-lg shadow-lg max-w-md w-full max-h-[80vh] overflow-y-auto p-6 relative"
-        onClick={e => e.stopPropagation()}
-      >
-        {/* ✕ 닫기 버튼 */}
-        <Button
-          variant="exit"
-          size="lg"
-          onClick={onClose}
-          className="absolute top-2 right-2"
-          aria-label="모달 닫기"
-        >
-          x
-        </Button>
+  const getPosition = () => {
+    if (!anchorEl) return {};
+    const rect = anchorEl.getBoundingClientRect();
+    return {
+      position: 'absolute' as const,
+      top: `${rect.bottom + 10}px`,
+      right: `${window.innerWidth - rect.right}px`,
+    };
+  };
 
-        {children}
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-end px-4">
+      <div
+        ref={modalRef}
+        className="bg-white/40 backdrop-blur-sm rounded-lg shadow-lg w-[250px] max-w-md max-h-[300px] overflow-y-auto p-6 relative scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent"
+        style={getPosition()}
+      >
+        <div className="absolute top-4 right-4">
+          <Button
+            variant="exit"
+            size="lg"
+            onClick={onClose}
+            className="!bg-white !text-gray-600 !border-gray-300 hover:!bg-gray-100 hover:!text-gray-800 hover:!border-gray-400 !p-2 !min-w-0 !w-8 !h-8"
+            aria-label="모달 닫기"
+          >
+            x
+          </Button>
+        </div>
+
+        <div className="truncate">{children}</div>
       </div>
     </div>
   );

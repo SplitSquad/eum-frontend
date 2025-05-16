@@ -11,9 +11,27 @@ import {
   Fade,
 } from '@mui/material';
 import PostCard from './PostCard';
-import { PostSummary, PostFilter } from '../../types';
+import { PostSummary, PostType } from '../../types-folder/index';
+// import { PostSummary, PostFilter } from '../../types'; // 타입 import 불가로 임시 주석 처리
 import useCommunityStore from '../../store/communityStore';
 import { usePostStore } from '../../store/postStore';
+
+// 임시 타입 선언 (실제 타입 정의에 맞게 수정 필요)
+type PostFilter = {
+  page?: number;
+  size?: number;
+  sort?: string;
+  postType?: PostType | string;
+  region?: string;
+  category?: string;
+  tags?: string[];
+  location?: string;
+  tag?: string;
+  sortBy?: 'latest' | 'popular';
+  searchBy?: string;
+  keyword?: string;
+  resetSearch?: boolean;
+};
 
 interface PostListProps {
   title?: string;
@@ -126,7 +144,7 @@ const PostList: React.FC<PostListProps> = ({
   // 게시글 목록 조회 함수 (필터 변경 시 사용)
   const handleFilterChange = (newFilter: Partial<PostFilter>) => {
     console.log('필터 변경:', newFilter);
-    fetchPosts({
+    (fetchPosts as any)({
       ...postFilter,
       ...newFilter,
       page: 0, // 필터 변경 시 첫 페이지로 이동
@@ -249,7 +267,7 @@ const PostList: React.FC<PostListProps> = ({
           }}
         >
           {displayPosts.map(post => (
-            <PostCard key={post.postId} post={post} />
+            <PostCard key={post.postId} post={post as PostSummary} />
           ))}
         </Box>
       </Fade>

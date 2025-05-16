@@ -18,7 +18,7 @@ const LoadingOverlay = ({ isLoaded = true }: Props) => {
   // 조건: 로딩 완료 && 슬라이드 전부 돌았으면 로그인 화면으로 이동
   useEffect(() => {
     if (hasCompletedAll) {
-      const timeout = setTimeout(() => navigate('/login'), 800);
+      const timeout = setTimeout(() => navigate('/home'), 800);
       return () => clearTimeout(timeout);
     }
   }, [hasCompletedAll, navigate]);
@@ -26,7 +26,7 @@ const LoadingOverlay = ({ isLoaded = true }: Props) => {
   useEffect(() => {}, [isLoaded]);
 
   return (
-    <main className="w-screen h-screen bg-[#fefefe]">
+    <main className="w-screen opacity-100" style={{ minHeight: '20vh', height: 'auto' }}>
       <IntroSlider currentIndex={currentIndex}>
         <Slide1 />
         <Slide2 />

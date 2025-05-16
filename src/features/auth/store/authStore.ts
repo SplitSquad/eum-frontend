@@ -14,6 +14,7 @@ export interface User {
   isOnBoardDone?: boolean; // 온보딩 완료 여부
   name?: string;
   picture?: string;
+  profileImagePath?: string; // 프로필 이미지 경로 추가
   googleId?: string;
 }
 
@@ -63,6 +64,7 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       isLoading: false,
       error: null,
+      isOnBoardDone: false,
 
       // 기본 액션 - 상태 변경
       setUser: user => set({ user }),
@@ -168,7 +170,7 @@ export const useAuthStore = create<AuthState>()(
                 role,
                 // 이메일 정보는 토큰에서 가져올 수 없으므로 기본값으로 설정
                 email: '',
-                isOnBoardDone: true, // 온보딩 완료 상태로 설정
+                //isOnBoardDone: true, // 온보딩 완료 상태로 설정
               };
 
               console.log('토큰에서 추출한 사용자 정보로 인증 상태 설정:', extractedUser);

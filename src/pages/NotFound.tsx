@@ -36,7 +36,7 @@ const NotFound: React.FC = () => {
         <Button
           variant="contained"
           size="large"
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/home')}
           sx={{
             bgcolor: '#FF9999',
             '&:hover': { bgcolor: '#FF7777' },

@@ -38,7 +38,7 @@ const CategoryItem = styled(ListItemButton)(({ theme }) => ({
   },
   '& .MuiListItemText-primary': {
     fontWeight: 500,
-  }
+  },
 }));
 
 const DebateListContainer = styled(Box)(({ theme }) => ({
@@ -65,7 +65,7 @@ const DebateCardContent = styled(CardContent)(({ theme }) => ({
   padding: theme.spacing(2, 3),
   '&:last-child': {
     paddingBottom: theme.spacing(2),
-  }
+  },
 }));
 
 const DebateItemWrapper = styled(Box)(({ theme }) => ({
@@ -81,7 +81,7 @@ interface CategoryIndicatorProps {
 }
 
 const CategoryIndicator = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'color',
+  shouldForwardProp: prop => prop !== 'color',
 })<CategoryIndicatorProps>(({ color }) => ({
   width: 6,
   backgroundColor: color || '#1976d2',
@@ -96,7 +96,7 @@ interface CategoryBadgeProps {
 }
 
 const CategoryBadge = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'color',
+  shouldForwardProp: prop => prop !== 'color',
 })<CategoryBadgeProps>(({ color }) => ({
   display: 'inline-block',
   padding: '4px 8px',
@@ -129,7 +129,7 @@ interface BarProps {
 }
 
 const AgreeBar = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'width',
+  shouldForwardProp: prop => prop !== 'width',
 })<BarProps>(({ width }) => ({
   width: `${width}%`,
   height: '100%',
@@ -137,7 +137,7 @@ const AgreeBar = styled(Box, {
 }));
 
 const DisagreeBar = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'width',
+  shouldForwardProp: prop => prop !== 'width',
 })<BarProps>(({ width }) => ({
   width: `${width}%`,
   height: '100%',
@@ -171,12 +171,7 @@ interface EnhancedDebate extends Debate {
 
 const DebateListPage: React.FC = () => {
   const navigate = useNavigate();
-  const { 
-    debates, 
-    isLoading: loading, 
-    error, 
-    getDebates: fetchDebates 
-  } = useDebateStore();
+  const { debates, isLoading: loading, error, getDebates: fetchDebates } = useDebateStore();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [selectedCategory, setSelectedCategory] = useState('전체');
@@ -195,11 +190,11 @@ const DebateListPage: React.FC = () => {
   // 카테고리별 색상
   const categoryColors = {
     '정치/사회': '#1976d2',
-    '경제': '#ff9800',
+    경제: '#ff9800',
     '생활/문화': '#4caf50',
     '과학/기술': '#9c27b0',
-    '스포츠': '#f44336',
-    '엔터테인먼트': '#2196f3',
+    스포츠: '#f44336',
+    엔터테인먼트: '#2196f3',
   };
 
   // 특별 라벨
@@ -220,10 +215,10 @@ const DebateListPage: React.FC = () => {
   const handleCategoryClick = (category: string) => {
     setSelectedCategory(category);
     console.log(`카테고리 선택: ${category}`);
-    
+
     // 서버에 API 요청을 보내기 전에 로딩 상태 표시
     fetchDebates(1, 20, category === '전체' ? '' : category);
-    
+
     console.log('현재 데이터:', debates);
     console.log('선택된 카테고리:', category);
   };
@@ -231,15 +226,15 @@ const DebateListPage: React.FC = () => {
   // 필터링 로직 단순화
   const filteredDebates = useMemo(() => {
     console.log('필터링 수행:', selectedCategory);
-    
+
     if (selectedCategory === '전체') {
       return debates;
     }
-    
+
     // 카테고리가 정확히 일치하는 토론만 필터링
     return debates.filter((debate: any) => {
       // 백엔드에서 category 필드를 제공하지 않는 경우 대비
-      const debateCategory = debate.category || ''; 
+      const debateCategory = debate.category || '';
       const matched = debateCategory === selectedCategory;
       console.log(`카테고리 비교: ${debateCategory} vs ${selectedCategory} => ${matched}`);
       return matched;
@@ -247,7 +242,7 @@ const DebateListPage: React.FC = () => {
   }, [selectedCategory, debates]);
 
   // 특별 라벨 할당 (예시용)
-  const getSpecialLabel = (debate: any) => {
+  const getSpecialLabel = (debate: any): { text: string; color: string } | null => {
     // 카테고리 뷰에서는 특별 라벨을 표시하지 않음
     return null;
   };
@@ -256,11 +251,11 @@ const DebateListPage: React.FC = () => {
   const calculateVoteRatio = (agree: number, disagree: number) => {
     const total = agree + disagree;
     if (total === 0) return { agree: 50, disagree: 50 };
-    
+
     const agreePercent = Math.round((agree / total) * 100);
     return {
       agree: agreePercent,
-      disagree: 100 - agreePercent
+      disagree: 100 - agreePercent,
     };
   };
 
@@ -273,7 +268,7 @@ const DebateListPage: React.FC = () => {
         </Typography>
       </Box>
       <List disablePadding>
-        {categories.map((category) => (
+        {categories.map(category => (
           <CategoryItem
             key={category.id}
             onClick={() => handleCategoryClick(category.name)}
@@ -302,7 +297,14 @@ const DebateListPage: React.FC = () => {
           토론 목록을 불러오는데 실패했습니다: {error}
         </Typography>
       ) : filteredDebates.length === 0 ? (
-        <Paper sx={{ p: 3, textAlign: 'center', backgroundColor: 'rgba(255, 255, 255, 0.85)', backdropFilter: 'blur(8px)' }}>
+        <Paper
+          sx={{
+            p: 3,
+            textAlign: 'center',
+            backgroundColor: 'rgba(255, 255, 255, 0.85)',
+            backdropFilter: 'blur(8px)',
+          }}
+        >
           <Typography>
             {selectedCategory === '전체'
               ? '등록된 토론이 없습니다.'
@@ -311,20 +313,27 @@ const DebateListPage: React.FC = () => {
         </Paper>
       ) : (
         filteredDebates.map((debate: any) => {
-          const categoryColor = (categoryColors as Record<string, string>)[debate.category] || '#757575';
+          const categoryColor =
+            (categoryColors as Record<string, string>)[debate.category] || '#757575';
           const specialLabel = getSpecialLabel(debate);
           const voteRatio = calculateVoteRatio(
-            debate.agreeCount || debate.proCount || 0, 
+            debate.agreeCount || debate.proCount || 0,
             debate.disagreeCount || debate.conCount || 0
           );
-          
+
           return (
             <DebateCard key={debate.id} onClick={() => handleDebateClick(debate.id)}>
               <CardActionArea>
                 <DebateItemWrapper>
                   <CategoryIndicator color={categoryColor} />
                   <DebateCardContent sx={{ width: '100%', pl: 3 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                      }}
+                    >
                       <Box>
                         {specialLabel && (
                           <CategoryBadge color={specialLabel.color}>
@@ -350,13 +359,13 @@ const DebateListPage: React.FC = () => {
                         {formatDate(debate.createdAt)}
                       </Typography>
                     </Box>
-                    
+
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                       {debate.description && debate.description.length > 100
                         ? `${debate.description.substring(0, 100)}...`
                         : debate.description}
                     </Typography>
-                    
+
                     <VoteProgressWrapper>
                       <Typography variant="body2" fontWeight={600} color="#4caf50" width={40}>
                         {voteRatio.agree}%
@@ -384,7 +393,7 @@ const DebateListPage: React.FC = () => {
       sidebar={renderSidebar()}
       headerProps={{
         title: '신규 토론',
-        showUserIcons: true
+        showUserIcons: true,
       }}
     >
       {renderContent()}
@@ -392,4 +401,4 @@ const DebateListPage: React.FC = () => {
   );
 };
 
-export default DebateListPage; 
+export default DebateListPage;

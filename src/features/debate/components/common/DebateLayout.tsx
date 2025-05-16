@@ -1,13 +1,13 @@
 import React from 'react';
-import { Box, styled } from '@mui/material';
+import { Box, Container, styled } from '@mui/material';
 import Header, { HeaderProps } from './Header';
-import SpringBackground from './SpringBackground';
 import Toast from './Toast';
 
 const LayoutRoot = styled(Box)({
   display: 'flex',
   flexDirection: 'column',
-  minHeight: '100vh',
+  minHeight: '20vh',
+  height: 'auto',
 });
 
 const LayoutContent = styled(Box)({
@@ -15,15 +15,13 @@ const LayoutContent = styled(Box)({
   flex: 1,
   position: 'relative',
   zIndex: 5,
+  padding: 0,
 });
 
 const Sidebar = styled(Box)(({ theme }) => ({
   width: '240px',
-  backgroundColor: 'rgba(255, 255, 255, 0.9)',
-  boxShadow: '0 0 10px rgba(0, 0, 0, 0.05)',
-  backdropFilter: 'blur(8px)',
-  borderRight: '1px solid rgba(238, 238, 238, 0.8)',
-  padding: theme.spacing(2),
+  backgroundColor: 'rgba(255, 255, 255, 0)',
+  paddingRight: theme.spacing(2),
   [theme.breakpoints.down('md')]: {
     display: 'none',
   },
@@ -33,9 +31,9 @@ const Sidebar = styled(Box)(({ theme }) => ({
 
 const Main = styled(Box)(({ theme }) => ({
   flex: 1,
-  padding: theme.spacing(2),
+  //padding: theme.spacing(2),
   [theme.breakpoints.up('md')]: {
-    padding: theme.spacing(3),
+    //padding: theme.spacing(2),
   },
   position: 'relative',
   zIndex: 5,
@@ -59,16 +57,23 @@ const DebateLayout: React.FC<DebateLayoutProps> = ({
   headerProps = {},
 }) => {
   return (
-    <LayoutRoot>
-      <SpringBackground noPadding>
-        {/* <Header {...headerProps} /> */}
-        <LayoutContent>
-          {showSidebar && sidebar && <Sidebar>{sidebar}</Sidebar>}
-          <Main>{children}</Main>
-        </LayoutContent>
-      </SpringBackground>
+    <Container
+      maxWidth="lg"
+      sx={{
+        py: 3,
+        display: 'flex',
+        flexDirection: 'column',
+        flexGrow: 1,
+        position: 'relative',
+        zIndex: 5,
+      }}
+    >
+      <LayoutContent>
+        {showSidebar && sidebar && <Sidebar>{sidebar}</Sidebar>}
+        <Main>{children}</Main>
+      </LayoutContent>
       <Toast />
-    </LayoutRoot>
+    </Container>
   );
 };
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import PaginationButton from '@/components/base/paginationButton';
+import PaginationButton from '@/components/base/PaginationButton';
 import ArrowButton from '@/components/base/ArrowButton';
 
 type Props = {
@@ -11,7 +11,7 @@ type Props = {
 const Pagination = ({ currentPage, totalPages, onPageChange }: Props) => {
   const getPageNumbers = () => {
     const delta = 2;
-    const pages = [];
+    const pages: number[] = [];
 
     const start = Math.max(1, currentPage - delta);
     const end = Math.min(totalPages, currentPage + delta);

@@ -48,7 +48,7 @@ function PageWrapper({
         className={customClassName}
         onClick={clickHandler}
       >
-        <div className="flex-1 overflow-y-auto px-4 py-6 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto px-4 py-6">
           {(title || subtitle) && (
             <div className="mb-6">
               {title && <h1 className="text-2xl font-bold text-gray-800">{title}</h1>}

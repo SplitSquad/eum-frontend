@@ -1,9 +1,11 @@
 const en = {
   common: {
     home: 'Home',
-    community: 'Community',
-    debate: 'Debate',
-    mypage: 'My Page',
+    community: 'Clubs & Forums',
+    debate: 'Hot Issues Debate',
+    aiassistant: 'AI Expert',
+    info: 'Korean Life Guide',
+    mypage: 'MyPage',
     login: 'Login',
     logout: 'Logout',
     search: 'Search',
@@ -11,6 +13,8 @@ const en = {
     settings: 'Settings',
     languageSettings: 'Language Settings',
     selectLanguage: 'Select Language',
+    smallGroups: 'Small Groups',
+    communicationBoard: 'Communication Board',
   },
   nav: {
     accountSettings: 'Account Settings',
@@ -28,4 +32,4 @@ const en = {
   },
 };
 
-export default en; 
+export default en;
