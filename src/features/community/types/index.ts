@@ -194,7 +194,7 @@ export type Tag = {
 
 export type PostStatus = 'ACTIVE' | 'INACTIVE' | 'DELETED';
 
-export type ReactionType = 'LIKE' | 'DISLIKE' | 'CANCEL';
+export type ReactionType = 'LIKE' | 'DISLIKE' | 'NONE';
 
 export type Reaction = {
   reactionId: number;
@@ -202,13 +202,14 @@ export type Reaction = {
   userId: number;
 };
 
-export type User = {
+export interface User {
+  id: string;
   userId: number;
   nickname: string;
   profileImage: string;
   profileImageUrl?: string;
   role?: string;
-};
+}
 
 export interface CommentType {
   commentId: number;
@@ -229,7 +230,7 @@ export interface CommentType {
   translating?: boolean; // 번역 중 상태를 표시
 }
 
-export type PostSummary = {
+export interface PostSummary {
   postId: number;
   title: string;
   content?: string;
@@ -252,9 +253,9 @@ export type PostSummary = {
   postType?: PostType;
   address?: string;
   commentCnt?: number;
-};
+}
 
-export type Post = PostSummary & {
+export interface Post extends PostSummary {
   content: string;
   updatedAt?: string;
   myReaction?: ReactionType;
@@ -270,7 +271,7 @@ export type Post = PostSummary & {
   address?: string;
   isState?: string;
   commentCnt?: number;
-};
+}
 
 export type CreatePostRequest = {
   title: string;

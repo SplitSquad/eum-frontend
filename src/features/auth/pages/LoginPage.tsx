@@ -160,7 +160,7 @@ const LoginPage: React.FC = () => {
                     fontFamily: '"Roboto", "Noto Sans KR", sans-serif',
                   }}
                 >
-                  봄날의 기억
+                  거짓말 하지 마 오류 그만 떠
                 </Typography>
               </LogoContainer>
 

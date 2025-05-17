@@ -1,0 +1,79 @@
+@import 'tailwindcss';
+@import '../../tiptap-editor/styles/_keyframe-animations.scss';
+@import '../../tiptap-editor/styles/_variables.scss';
+
+@keyframes fade-in-down {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-down {
+  animation: fade-in-down 0.5s ease-out;
+}
+.ck-content h1 {
+  font-size: 1.875rem; /* text-3xl */
+  font-weight: 700;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.ck-content h2 {
+  font-size: 1.5rem; /* text-2xl */
+  font-weight: 600;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.ck-content h3 {
+  font-size: 1.25rem; /* text-xl */
+  font-weight: 600;
+  margin-top: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+.ck-content h4 {
+  font-size: 1.125rem; /* text-lg */
+  font-weight: 600;
+  margin-top: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.ck-content h5 {
+  font-size: 1rem; /* text-base */
+  font-weight: 500;
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.ck-content h6 {
+  font-size: 0.875rem; /* text-sm */
+  font-weight: 500;
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+/* 에디터 컨테이너 너비와 오버플로우 처리 */
+.editor-container {
+  overflow: visible;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* 에디터 내부 컨텐츠 padding 확보 */
+.ck-content {
+  padding: 0.5rem;
+  box-sizing: border-box;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* 목록(dot, number) 보이도록 */
+.ck-content ul,
+.ck-content ol {
+  padding-left: 1.5rem;
+  list-style-position: outside;
+}

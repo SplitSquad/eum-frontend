@@ -65,7 +65,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children, requiredRoles = [] }) =
 
   // 인증되지 않은 경우 로그인 페이지로 리디렉션
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/google-login" state={{ from: location }} replace />;
   }
 
   // 권한 확인이 필요한 경우

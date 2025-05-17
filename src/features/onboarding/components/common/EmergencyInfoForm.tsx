@@ -6,10 +6,25 @@ import {
   FormControlLabel,
   Switch,
   useTheme,
-  useMediaQuery,
-  Grid,
 } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import { useThemeStore } from '../../../theme/store/themeStore';
+
+// Grid 컴포넌트 대체
+const GridContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexWrap: 'wrap',
+  width: '100%',
+  margin: theme.spacing(-1),
+  '& > *': {
+    padding: theme.spacing(1),
+  },
+}));
+
+const GridItem = styled(Box)(({ theme }) => ({
+  width: '100%',
+  padding: theme.spacing(1),
+}));
 
 interface EmergencyInfoFormProps {
   emergencyContact: string;
@@ -40,7 +55,6 @@ const EmergencyInfoForm: React.FC<EmergencyInfoFormProps> = ({
   subtitle = '응급 상황 발생 시를 대비한 정보를 입력해주세요.',
 }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { season } = useThemeStore();
   
   // 계절에 따른 색상 가져오기
@@ -70,9 +84,9 @@ const EmergencyInfoForm: React.FC<EmergencyInfoFormProps> = ({
         </Typography>
       )}
       
-      <Grid container spacing={2}>
+      <GridContainer sx={{ mt: -1 }}>
         {/* 비상 연락처 */}
-        <Grid item xs={12}>
+        <GridItem>
           <TextField
             label="비상 연락처"
             fullWidth
@@ -91,10 +105,10 @@ const EmergencyInfoForm: React.FC<EmergencyInfoFormProps> = ({
               },
             }}
           />
-        </Grid>
+        </GridItem>
         
         {/* 건강 상태 */}
-        <Grid item xs={12}>
+        <GridItem>
           <TextField
             label="건강 상태 및 복용 중인 약물"
             fullWidth
@@ -115,10 +129,10 @@ const EmergencyInfoForm: React.FC<EmergencyInfoFormProps> = ({
               },
             }}
           />
-        </Grid>
+        </GridItem>
         
         {/* 음식 알레르기 */}
-        <Grid item xs={12}>
+        <GridItem>
           <TextField
             label="음식 알레르기"
             fullWidth
@@ -139,10 +153,10 @@ const EmergencyInfoForm: React.FC<EmergencyInfoFormProps> = ({
               },
             }}
           />
-        </Grid>
+        </GridItem>
         
         {/* 응급 알림 수신 설정 */}
-        <Grid item xs={12}>
+        <GridItem>
           <FormControlLabel
             control={
               <Switch
@@ -167,8 +181,8 @@ const EmergencyInfoForm: React.FC<EmergencyInfoFormProps> = ({
               </Box>
             }
           />
-        </Grid>
-      </Grid>
+        </GridItem>
+      </GridContainer>
     </Box>
   );
 };

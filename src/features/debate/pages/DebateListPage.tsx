@@ -169,6 +169,12 @@ interface EnhancedDebate extends Debate {
   disagreeCount: number;
 }
 
+// 특별 라벨 정의
+interface SpecialLabel {
+  text: string;
+  color: string;
+}
+
 const DebateListPage: React.FC = () => {
   const navigate = useNavigate();
   const { 
@@ -203,10 +209,10 @@ const DebateListPage: React.FC = () => {
   };
 
   // 특별 라벨
-  const specialLabels = {
-    1: { text: '오늘의 이슈', color: '#ff9800' },
-    2: { text: '모스트 핫 이슈', color: '#f44336' },
-    3: { text: '반반 이슈', color: '#9c27b0' },
+  const specialLabels: Record<string, SpecialLabel> = {
+    '1': { text: '오늘의 이슈', color: '#ff9800' },
+    '2': { text: '모스트 핫 이슈', color: '#f44336' },
+    '3': { text: '반반 이슈', color: '#9c27b0' },
   };
 
   useEffect(() => {
@@ -246,9 +252,14 @@ const DebateListPage: React.FC = () => {
     });
   }, [selectedCategory, debates]);
 
-  // 특별 라벨 할당 (예시용)
-  const getSpecialLabel = (debate: any) => {
-    // 카테고리 뷰에서는 특별 라벨을 표시하지 않음
+  // 특별 라벨 할당
+  const getSpecialLabel = (debate: any): SpecialLabel | null => {
+    // 임의로 특정 조건(예: 첫 번째 토론)에 특별 라벨 할당
+    if (debate.id === 1) return specialLabels['1'];
+    if (debate.id === 2) return specialLabels['2'];
+    if (debate.id === 3) return specialLabels['3'];
+    
+    // 기본적으로는 특별 라벨 없음
     return null;
   };
 

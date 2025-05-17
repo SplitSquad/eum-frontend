@@ -2,6 +2,7 @@ import axiosInstance from '../../../config/axios';
 import { User } from '../store/authStore';
 import { setToken, removeToken, getToken } from '../tokenUtils';
 import { AxiosResponse } from 'axios';
+import { env } from '../../../config/env';
 
 // OAuth 응답 타입 정의
 interface OAuthResponse {
@@ -77,7 +78,7 @@ export const getGoogleAuthUrl = async () => {
 export const handleOAuthCallback = async (code: string) => {
   try {
     // 백엔드에 인증 코드 전송 (리다이렉트 없이 JSON 응답 받기)
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/auth/login?code=${code}`, {
+    const response = await fetch(`${env.API_BASE_URL}/auth/login?code=${code}`, {
       method: 'GET',
       headers: {
         'Accept': 'application/json'

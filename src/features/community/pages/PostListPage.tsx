@@ -125,9 +125,9 @@ const PostListPage: React.FC = () => {
     living: ['부동산/계약', '생활환경/편의', '문화/생활', '주거지 관리/유지'],
     study: ['학사/캠퍼스', '학업지원/시설', '행정/비자/서류', '기숙사/주거'],
     job: ['이력/채용준비', '비자/법률/노동', '잡페어/네트워킹', '알바/파트타임'],
-    '전체': ['인기', '추천', '정보공유', '질문', '후기']
+    전체: ['인기', '추천', '정보공유', '질문', '후기'],
   };
-  
+
   // 현재 선택된 카테고리에 해당하는 태그 목록
   const [availableTags, setAvailableTags] = useState<string[]>(categoryTags['전체']);
 
@@ -145,7 +145,7 @@ const PostListPage: React.FC = () => {
 
   // 현재 URL에서 쿼리 파라미터 가져오기
   const queryParams = new URLSearchParams(location.search);
-  
+
   // 초기 포스트 타입 결정
   const initialPostType = (() => {
     const postTypeParam = queryParams.get('postType');
@@ -180,34 +180,36 @@ const PostListPage: React.FC = () => {
       console.log('PostListPage - 이미 초기 데이터가 로드됨, 중복 요청 방지');
       return;
     }
-    
+
     console.log('PostListPage 컴포넌트 마운트, 게시글 목록 조회 시작');
-    
+
     // 현재 카테고리에 맞는 태그 목록 설정
     if (filter.category && filter.category !== '전체') {
-      setAvailableTags(categoryTags[filter.category as keyof typeof categoryTags] || categoryTags['전체']);
+      setAvailableTags(
+        categoryTags[filter.category as keyof typeof categoryTags] || categoryTags['전체']
+      );
     }
-    
+
     // 태그가 있으면 선택된 태그 상태 설정
     if (filter.tag) {
       setSelectedTags(filter.tag.split(','));
     }
-    
+
     // 초기 로드 시 명시적으로 기본 필터 설정 (자유 게시글, 자유 지역)
     const initialFilter = {
       ...filter,
       postType: '자유' as PostType,
       location: '자유',
       page: 0,
-      size: 6
+      size: 6,
     };
     setFilter(initialFilter);
-    
+
     // 게시글 목록 조회
     fetchPosts(initialFilter);
     // 인기 게시글 로드
     fetchTopPosts(5);
-    
+
     // 초기 데이터 로드 완료 플래그 설정
     initialDataLoadedRef.current = true;
   }, []);
@@ -215,7 +217,7 @@ const PostListPage: React.FC = () => {
   // 검색 상태 표시를 위한 추가 컴포넌트
   const SearchStatusIndicator = () => {
     if (!isSearchMode || !searchTerm) return null;
-    
+
     // 현재 적용된 필터 정보 표시
     const filterInfo = [];
     if (filter.category && filter.category !== '전체') {
@@ -227,31 +229,29 @@ const PostListPage: React.FC = () => {
     if (filter.location && filter.location !== '전체' && filter.location !== '자유') {
       filterInfo.push(`지역: ${filter.location}`);
     }
-    
+
     return (
-      <Box 
-        sx={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          bgcolor: 'rgba(255, 230, 230, 0.8)', 
-          p: 1, 
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          bgcolor: 'rgba(255, 230, 230, 0.8)',
+          p: 1,
           borderRadius: 1,
           mb: 2,
           gap: 1,
-          flexWrap: 'wrap'
+          flexWrap: 'wrap',
         }}
       >
         <SearchIcon color="secondary" fontSize="small" />
         <Typography variant="body2" color="secondary.dark">
           "{searchTerm}" 검색 중 {searchType === '제목_내용' ? '(제목+내용)' : `(${searchType})`}
-          {filterInfo.length > 0 && (
-            <span> - {filterInfo.join(' / ')}</span>
-          )}
+          {filterInfo.length > 0 && <span> - {filterInfo.join(' / ')}</span>}
         </Typography>
         <Box sx={{ flexGrow: 1 }} />
-        <Button 
-          size="small" 
-          variant="outlined" 
+        <Button
+          size="small"
+          variant="outlined"
           color="secondary"
           onClick={() => {
             setIsSearchMode(false);
@@ -259,7 +259,7 @@ const PostListPage: React.FC = () => {
             fetchPosts({
               ...filter,
               page: 0,
-              resetSearch: true // 검색 상태만 초기화
+              resetSearch: true, // 검색 상태만 초기화
             });
           }}
           startIcon={<ClearIcon />}
@@ -273,7 +273,7 @@ const PostListPage: React.FC = () => {
   // 필터 변경 시 검색 상태를 유지하는 함수
   const applyFilterWithSearchState = (newFilter: Partial<LocalPostFilter>) => {
     const updatedFilter = { ...filter, ...newFilter };
-    
+
     if (isSearchMode && searchTerm) {
       // 검색 중이면 필터와 함께 검색 재실행
       console.log('[DEBUG] 검색 상태에서 필터 변경 - 세부 정보:', {
@@ -281,9 +281,9 @@ const PostListPage: React.FC = () => {
         새필터: newFilter,
         병합필터: updatedFilter,
         검색어: searchTerm,
-        검색타입: searchType
+        검색타입: searchType,
       });
-      
+
       // postType 처리
       let postTypeValue = updatedFilter.postType || '자유';
       if (selectedPostType === 'ALL') {
@@ -293,10 +293,10 @@ const PostListPage: React.FC = () => {
       } else {
         postTypeValue = selectedPostType;
       }
-      
+
       // UI용 필터 상태 먼저 업데이트 (로딩 상태 표시용)
       setFilter(updatedFilter);
-      
+
       // searchPosts 함수 호출 - 필터 변경 사항 적용하여 재검색
       const searchOptions = {
         page: updatedFilter.page !== undefined ? updatedFilter.page : 0,
@@ -305,11 +305,11 @@ const PostListPage: React.FC = () => {
         region: updatedFilter.location,
         category: updatedFilter.category,
         tag: updatedFilter.tag,
-        sort: updatedFilter.sortBy === 'popular' ? 'views,desc' : 'createdAt,desc'
+        sort: updatedFilter.sortBy === 'popular' ? 'views,desc' : 'createdAt,desc',
       };
-      
+
       console.log('[DEBUG] 검색 API 파라미터:', searchOptions);
-      
+
       // 이번에는 서버에 직접 API 요청 (postApi 직접 사용)
       try {
         const postApi = usePostStore.getState();
@@ -327,30 +327,30 @@ const PostListPage: React.FC = () => {
   // 카테고리 변경 핸들러
   const handleCategoryChange = (category: string) => {
     console.log('[DEBUG] 카테고리 변경:', category);
-    
+
     // 이전 카테고리와 같으면 변경 없음
     if (category === selectedCategory) {
       console.log('[DEBUG] 같은 카테고리 선택, 변경 없음');
       return;
     }
-    
+
     // 카테고리 상태 업데이트
     setSelectedCategory(category);
-    
+
     // 카테고리에 맞는 태그 목록 설정
     if (category && category !== '전체') {
       setAvailableTags(categoryTags[category as keyof typeof categoryTags] || categoryTags['전체']);
     } else {
       setAvailableTags(categoryTags['전체']);
     }
-    
+
     // 새 필터 생성
-    const newFilter = { 
-      ...filter, 
-      category, 
-      page: 0
+    const newFilter = {
+      ...filter,
+      category,
+      page: 0,
     };
-    
+
     // 필터 적용 (검색 상태 유지하면서)
     applyFilterWithSearchState(newFilter);
   };
@@ -358,29 +358,29 @@ const PostListPage: React.FC = () => {
   // 태그 선택 핸들러
   const handleTagSelect = (tag: string) => {
     console.log('[DEBUG] 태그 선택:', tag);
-    
+
     // 이미 선택된 태그면 취소
     if (selectedTags.includes(tag)) {
       console.log('[DEBUG] 태그 선택 취소');
       setSelectedTags([]);
-      
+
       // 필터에서 태그 제거
       const updatedFilter = { ...filter };
       delete updatedFilter.tag;
       updatedFilter.page = 0;
-      
+
       // 필터 적용 (검색 상태 유지하면서)
       applyFilterWithSearchState(updatedFilter);
     } else {
       // 새 태그 선택
       setSelectedTags([tag]);
-      
+
       const updatedFilter = { ...filter };
       // 태그 설정
       updatedFilter.tag = tag;
       // 페이지 초기화
       updatedFilter.page = 0;
-      
+
       // 필터 적용 (검색 상태 유지하면서)
       applyFilterWithSearchState(updatedFilter);
     }
@@ -394,31 +394,29 @@ const PostListPage: React.FC = () => {
   // 검색 핸들러 - 검색 버튼 클릭 시 실행
   const handleSearch = () => {
     console.log('[검색 시작] 검색어:', searchTerm, '검색 타입:', searchType);
-    
+
     // 검색어가 비어있으면 전체 게시글 목록 가져오기
     if (!searchTerm.trim()) {
       console.log('검색어가 비어있어 전체 목록을 불러옵니다.');
       setIsSearchMode(false);
-      fetchPosts({...filter, page: 0, resetSearch: true});
+      fetchPosts({ ...filter, page: 0, resetSearch: true });
       return;
     }
-    
+
     // 검색 모드 활성화
     setIsSearchMode(true);
-    
+
     // 검색용 postType 설정
-    let postTypeForSearch = 
-      selectedPostType === 'ALL' ? '자유' : 
-      selectedPostType as PostType;
-    
+    let postTypeForSearch = selectedPostType === 'ALL' ? '자유' : (selectedPostType as PostType);
+
     // 검색 시 필터 상태 업데이트
     const searchFilter = {
       ...filter,
       page: 0,
-      postType: postTypeForSearch
+      postType: postTypeForSearch,
     };
     setFilter(searchFilter);
-    
+
     // 검색 타입 그대로 전달 (postApi.ts에서 변환 처리)
     const searchOptions = {
       page: 0,
@@ -427,13 +425,13 @@ const PostListPage: React.FC = () => {
       region: selectedRegion,
       category: selectedCategory,
       tag: filter.tag,
-      sort: filter.sortBy === 'popular' ? 'views,desc' : 'createdAt,desc'
+      sort: filter.sortBy === 'popular' ? 'views,desc' : 'createdAt,desc',
     };
-    
+
     console.log('[DEBUG] 검색 API 파라미터:', {
       keyword: searchTerm,
       searchType,
-      ...searchOptions
+      ...searchOptions,
     });
 
     // 검색 요청 직접 실행
@@ -483,7 +481,7 @@ const PostListPage: React.FC = () => {
   // 정렬 방식 변경 핸들러
   const handleSortChange = (sortBy: 'latest' | 'popular') => {
     console.log('정렬 방식 변경:', sortBy);
-    
+
     // 검색 상태 고려하여 필터 적용
     applyFilterWithSearchState({ sortBy, page: 0 });
   };
@@ -491,23 +489,25 @@ const PostListPage: React.FC = () => {
   // 게시글 타입(자유/모임) 변경 핸들러
   const handlePostTypeChange = (newPostType: 'ALL' | '자유' | '모임') => {
     if (!newPostType) return; // 값이 null이면 무시
-    
+
     console.log('[DEBUG] 게시글 타입 변경 시작:', newPostType);
-    
+
     // 이전 타입과 같으면 변경 없음
-    if ((newPostType === 'ALL' && selectedPostType === 'ALL') ||
-        (newPostType === '자유' && selectedPostType === '자유') ||
-        (newPostType === '모임' && selectedPostType === '모임')) {
+    if (
+      (newPostType === 'ALL' && selectedPostType === 'ALL') ||
+      (newPostType === '자유' && selectedPostType === '자유') ||
+      (newPostType === '모임' && selectedPostType === '모임')
+    ) {
       console.log('[DEBUG] 같은 게시글 타입 선택, 변경 없음');
       return;
     }
-    
+
     // 상태 업데이트
     setSelectedPostType(newPostType);
-    
+
     // 필터 업데이트
     const newFilter = { ...filter };
-    
+
     if (newPostType === 'ALL') {
       // 전체 선택 시 자유 게시글로 기본 설정 (백엔드 요구사항)
       newFilter.postType = '자유' as PostType;
@@ -519,21 +519,24 @@ const PostListPage: React.FC = () => {
       // 자유 게시글에는 무조건 자유 지역
       newFilter.location = '자유';
       console.log(`[DEBUG] 자유 게시글 선택: postType을 '자유'로 설정, location을 "자유"로 설정`);
-    } else { // 모임 게시글
-      newFilter.postType = '모임' as PostType; // 명시적으로 타입 설정 
+    } else {
+      // 모임 게시글
+      newFilter.postType = '모임' as PostType; // 명시적으로 타입 설정
       // 모임 게시글은 기존 지역 유지하거나 새로 설정
       if (newFilter.location === '자유') {
         newFilter.location = '전체'; // 기존에 자유였으면 전체로 변경
       }
-      console.log(`[DEBUG] 모임 게시글 선택: postType을 '모임'로 설정, location: ${newFilter.location}`);
+      console.log(
+        `[DEBUG] 모임 게시글 선택: postType을 '모임'로 설정, location: ${newFilter.location}`
+      );
     }
-    
+
     // 지역 선택기 업데이트
     setSelectedRegion(newFilter.location);
-    
+
     // 페이지 초기화
     newFilter.page = 0;
-    
+
     // 필터 적용 (검색 상태 유지하면서)
     applyFilterWithSearchState(newFilter);
   };
@@ -541,22 +544,22 @@ const PostListPage: React.FC = () => {
   // 지역 변경 핸들러
   const handleRegionChange = (region: string) => {
     console.log('[DEBUG] 지역 변경:', region);
-    
+
     // 이전 지역과 같으면 변경 없음
     if (region === selectedRegion) {
       console.log('[DEBUG] 같은 지역 선택, 변경 없음');
       return;
     }
-    
+
     setSelectedRegion(region);
-    
+
     // 필터 업데이트
-    const newFilter = { 
-      ...filter, 
-      location: region, 
-      page: 0
+    const newFilter = {
+      ...filter,
+      location: region,
+      page: 0,
     };
-    
+
     // 필터 적용 (검색 상태 유지하면서)
     applyFilterWithSearchState(newFilter);
   };
@@ -590,7 +593,8 @@ const PostListPage: React.FC = () => {
           <Typography variant="body2">
             선택 카테고리: {selectedCategory} | 카테고리 타입: {typeof selectedCategory} | 게시글
             수: {posts.length} <br />
-            선택 게시글 타입: {selectedPostType} | 필터 게시글 타입: {filter.postType || 'ALL'} <br />
+            선택 게시글 타입: {selectedPostType} | 필터 게시글 타입: {filter.postType || 'ALL'}{' '}
+            <br />
             로딩 상태: {postLoading ? 'LOADING...' : 'READY'} | 오류: {postError || 'NONE'}
           </Typography>
         </Paper>
@@ -877,7 +881,7 @@ const PostListPage: React.FC = () => {
                 >
                   카테고리 선택
                 </Typography>
-                
+
                 {/* 카테고리 선택 버튼 */}
                 <ToggleButtonGroup
                   color="primary"
@@ -924,7 +928,7 @@ const PostListPage: React.FC = () => {
                     job
                   </ToggleButton>
                 </ToggleButtonGroup>
-                
+
                 {/* 카테고리에 따른 태그 선택 */}
                 <Typography
                   variant="subtitle2"
@@ -933,28 +937,32 @@ const PostListPage: React.FC = () => {
                 >
                   세부 태그 선택
                 </Typography>
-                <Box 
-                  sx={{ 
-                    display: 'flex', 
-                    flexWrap: 'wrap', 
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
                     gap: 1,
-                    mt: 1 
+                    mt: 1,
                   }}
                 >
-                  {availableTags.map((tag) => (
+                  {availableTags.map(tag => (
                     <Chip
                       key={tag}
                       label={tag}
                       onClick={() => handleTagSelect(tag)}
-                      color={selectedTags.includes(tag) ? "primary" : "default"}
-                      variant={selectedTags.includes(tag) ? "filled" : "outlined"}
+                      color={selectedTags.includes(tag) ? 'primary' : 'default'}
+                      variant={selectedTags.includes(tag) ? 'filled' : 'outlined'}
                       sx={{
                         borderRadius: '16px',
                         borderColor: selectedTags.includes(tag) ? '#FF6B6B' : '#FFD7D7',
-                        backgroundColor: selectedTags.includes(tag) ? 'rgba(255, 170, 165, 0.2)' : 'transparent',
+                        backgroundColor: selectedTags.includes(tag)
+                          ? 'rgba(255, 170, 165, 0.2)'
+                          : 'transparent',
                         color: selectedTags.includes(tag) ? '#FF6B6B' : '#666',
                         '&:hover': {
-                          backgroundColor: selectedTags.includes(tag) ? 'rgba(255, 170, 165, 0.3)' : 'rgba(255, 235, 235, 0.2)',
+                          backgroundColor: selectedTags.includes(tag)
+                            ? 'rgba(255, 170, 165, 0.3)'
+                            : 'rgba(255, 235, 235, 0.2)',
                         },
                       }}
                     />
@@ -1012,10 +1020,12 @@ const PostListPage: React.FC = () => {
                 오류가 발생했습니다
               </Typography>
               <Typography variant="body1" color="textSecondary">
-                {typeof postError === 'string' ? postError : '게시글을 불러오는 중 문제가 발생했습니다.'}
+                {typeof postError === 'string'
+                  ? postError
+                  : '게시글을 불러오는 중 문제가 발생했습니다.'}
               </Typography>
             </Box>
-            <Button 
+            <Button
               variant="outlined"
               color="secondary"
               onClick={() => {
@@ -1024,7 +1034,7 @@ const PostListPage: React.FC = () => {
                 fetchPosts({
                   ...filter,
                   page: 0,
-                  resetSearch: true
+                  resetSearch: true,
                 });
               }}
             >
@@ -1057,7 +1067,7 @@ const PostListPage: React.FC = () => {
                 다른 검색어로 다시 시도해보세요.
               </Typography>
             </Box>
-            <Button 
+            <Button
               variant="outlined"
               color="secondary"
               onClick={() => {
@@ -1066,7 +1076,7 @@ const PostListPage: React.FC = () => {
                 fetchPosts({
                   ...filter,
                   page: 0,
-                  resetSearch: true
+                  resetSearch: true,
                 });
               }}
             >
@@ -1081,7 +1091,7 @@ const PostListPage: React.FC = () => {
         )}
       </Container>
 
-      {/* 맨 위로 이동 버튼 */}
+      {/* 맨 위로 이동 버튼
       <IconButton
         size="large"
         onClick={scrollToTop}
@@ -1099,7 +1109,7 @@ const PostListPage: React.FC = () => {
         }}
       >
         <ArrowUpwardIcon />
-      </IconButton>
+      </IconButton> */}
     </SpringBackground>
   );
 };

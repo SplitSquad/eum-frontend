@@ -8,7 +8,6 @@ import {
   Radio,
   Paper,
   useTheme,
-  useMediaQuery,
 } from '@mui/material';
 import { useThemeStore } from '../../../theme/store/themeStore';
 import { languageLevels } from '../../components/common/CommonTags';
@@ -63,7 +62,6 @@ const LanguageLevelSelector: React.FC<LanguageLevelSelectorProps> = ({
   subtitle = '본인의 한국어 수준을 선택해주세요.',
 }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { season } = useThemeStore();
   
   // 계절에 따른 색상 가져오기

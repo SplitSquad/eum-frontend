@@ -1,6 +1,7 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { setToken, getToken } from '../features/auth/tokenUtils';
 import { checkDomainOfScale } from 'recharts/types/util/ChartUtils';
+import { env, isDevelopment } from './env';
 
 // 환경 변수 타입 확인이 필요하면 env.ts에서 import
 // import { ENV } from './env';
@@ -9,7 +10,7 @@ import { checkDomainOfScale } from 'recharts/types/util/ChartUtils';
  * API 요청의 기본 URL과 타임아웃 설정
  */
 const config: AxiosRequestConfig = {
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
+  baseURL: env.API_BASE_URL,
   timeout: 30000, // 30초
   headers: {
     'Content-Type': 'application/json',
@@ -102,54 +103,24 @@ const addSubscriber = (callback: (token: string) => void) => {
  */
 axiosInstance.interceptors.request.use(
   config => {
-    // 로컬 스토리지에서 토큰 가져오기
-    const token = getToken() || localStorage.getItem('auth_token');
+    const token = getToken();
+    const userEmail = localStorage.getItem('userEmail');
 
-    // 개발 환경에서만 로깅
-    if (import.meta.env.DEV) {
-      console.log('인터셉터 실행: 토큰 확인', token ? '토큰 있음' : '토큰 없음');
-      if (token) {
-        console.log('토큰 첫 부분:', token.substring(0, 15) + '...');
-        try {
-          // JWT 디코딩 시도 (디버깅용)
-          const parts = token.split('.');
-          if (parts.length === 3) {
-            const payload = JSON.parse(atob(parts[1]));
-            console.log('토큰 페이로드:', payload);
-          }
-        } catch (e) {
-          console.error('토큰 디코딩 실패:', e);
-        }
-      }
+    if (token) {
+      config.headers['Authorization'] = token;
     }
 
-    // 요청 헤더에 인증 토큰 추가
-    if (token && config.headers) {
-      // Authorization 헤더에 토큰 설정 (Bearer 접두사 없이 토큰만 전달)
-      config.headers.Authorization = token;
-
-      // 헤더 설정 메서드가 있는 경우 사용 (Axios v1.x 이상의 형식)
-      if (typeof config.headers.set === 'function') {
-        config.headers.set('Authorization', token);
-      }
-
-      if (import.meta.env.DEV) {
-        console.log('토큰 헤더 추가됨:', `${token.substring(0, 10)}...`);
-      }
-    } else if (config.headers) {
-      // 토큰이 없는 경우 로깅만 수행
-      console.log('토큰 없음, 인증 헤더 추가되지 않음');
+    if (userEmail) {
+      config.headers['X-User-Email'] = userEmail;
     }
 
-    // 개발 환경에서 요청 로깅
-    if (import.meta.env.DEV) {
-      console.log('API 요청:', config.url, config.method, config.data);
-      console.log('요청 헤더:', config.headers);
+    if (isDevelopment) {
+      console.log('Request:', config.method?.toUpperCase(), config.url);
     }
 
     return config;
   },
-  (error: AxiosError) => {
+  error => {
     return Promise.reject(error);
   }
 );
@@ -160,7 +131,7 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response: AxiosResponse) => {
     // 개발 환경에서 응답 로깅
-    if (import.meta.env.DEV) {
+    if (isDevelopment) {
       console.log('API 응답:', response.config.url, response.status, response.data);
     }
 
@@ -211,7 +182,7 @@ axiosInstance.interceptors.response.use(
 
               // 로그인 페이지로 이동 전에 플래그 리셋
               isRefreshing = false;
-              window.location.href = '/login';
+              window.location.href = '/google-login';
             }
           } catch (refreshError) {
             console.error('토큰 갱신 중 오류:', refreshError);
@@ -220,7 +191,7 @@ axiosInstance.interceptors.response.use(
             localStorage.removeItem('userEmail');
 
             isRefreshing = false;
-            window.location.href = '/login';
+            window.location.href = '/google-login';
           }
         } else if (requestUrl !== '/auth/refresh' && isRefreshing) {
           console.log('토큰 갱신 시도3');
@@ -243,7 +214,7 @@ axiosInstance.interceptors.response.use(
           sessionStorage.removeItem('auth_token');
           localStorage.removeItem('userEmail');
 
-          window.location.href = '/login';
+          window.location.href = '/google-login';
         }
       }
 

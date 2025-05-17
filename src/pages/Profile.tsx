@@ -70,7 +70,7 @@ const Profile: React.FC = () => {
   const onLogout = async () => {
     try {
       await handleLogout();
-      navigate('/login');
+      navigate('/google-login');
     } catch (error) {
       console.error('로그아웃 중 오류 발생:', error);
     }
@@ -91,7 +91,7 @@ const Profile: React.FC = () => {
           <Typography variant="h5" gutterBottom>
             사용자 정보를 찾을 수 없습니다.
           </Typography>
-          <Button variant="outlined" onClick={() => navigate('/login')} sx={{ mt: 2 }}>
+          <Button variant="outlined" onClick={() => navigate('/google-login')} sx={{ mt: 2 }}>
             로그인하러 가기
           </Button>
         </Box>

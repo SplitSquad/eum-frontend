@@ -1,5 +1,8 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
+import { shallow } from 'zustand/shallow';
+import { useLanguageStore } from '../../../features/theme/store/languageStore';
+import * as postApi from '../api/postApi';
 import {
   Post,
   PostFilter,
@@ -15,12 +18,12 @@ import {
   PostSummary,
   PageResponse,
 } from '../types/index';
-import * as postApi from '../api/postApi';
 import { Category } from '@mui/icons-material';
 
 // 확장된 PostFilter 타입 - 검색 초기화 플래그 추가
 interface ExtendedPostFilter extends PostFilter {
   resetSearch?: boolean;
+  _forceRefresh?: number;
 }
 
 // 불필요한 API 호출을 방지하기 위한 캐시 타임스탬프
@@ -91,7 +94,7 @@ interface PostActions {
   setSelectedCategory: (category: string) => void;
   setPostFilter: (filter: PostFilter) => void;
   setSearchParams: (params: Partial<PostListParams>) => void;
-  
+
   // postType 관련 액션 추가
   handlePostTypeChange: (postType: PostType) => void;
 
@@ -104,15 +107,17 @@ interface PostActions {
 
   // 검색 관련 액션
   searchPosts: (
-    keywordOrOptions: string | {
-      page?: number;
-      size?: number;
-      sort?: string;
-      postType?: string;
-      region?: string;
-      category?: string;
-      tag?: string;
-    },
+    keywordOrOptions:
+      | string
+      | {
+          page?: number;
+          size?: number;
+          sort?: string;
+          postType?: string;
+          region?: string;
+          category?: string;
+          tag?: string;
+        },
     searchType?: string,
     options?: {
       page?: number;
@@ -143,6 +148,48 @@ const areFiltersEqual = (a: ExtendedPostFilter | null, b: ExtendedPostFilter | n
   );
 };
 
+// 언어 변경 감시 함수 추가 - 스토어 생성 후 호출
+const setupLanguageChangeListener = () => {
+  let previousLanguage = useLanguageStore.getState().language;
+
+  useLanguageStore.subscribe(state => {
+    const currentLanguage = state.language;
+
+    // 언어가 변경되었을 때만 실행
+    if (currentLanguage !== previousLanguage) {
+      console.log(
+        `[INFO] 언어가 변경됨: ${previousLanguage} → ${currentLanguage}, 게시글 데이터 새로고침`
+      );
+      previousLanguage = currentLanguage;
+
+      const postState = usePostStore.getState();
+
+      // 현재 필터 정보를 유지하면서 게시글 목록 새로고침
+      const currentFilter = postState.postFilter;
+
+      // 캐시를 무시하고 새로 요청하기 위해 임시 필터 속성 추가
+      const refreshFilter = {
+        ...currentFilter,
+        _forceRefresh: Date.now(), // 강제 새로고침을 위한 임시 속성
+      };
+
+      // 게시글 목록 데이터 다시 로드
+      setTimeout(() => {
+        usePostStore.getState().fetchPosts(refreshFilter);
+
+        // 현재 보고 있는 게시글이 있다면 상세 정보도 새로고침
+        const currentPost = postState.currentPost;
+        if (currentPost) {
+          console.log(
+            `[INFO] 언어 변경으로 현재 게시글(ID: ${currentPost.postId}) 상세 정보 새로고침`
+          );
+          usePostStore.getState().fetchPostById(currentPost.postId);
+        }
+      }, 0);
+    }
+  });
+};
+
 // 게시글 관련 상태 관리 스토어 - 스토어 자체를 export
 export const usePostStore = create<PostState & PostActions>()(
   devtools(
@@ -160,7 +207,7 @@ export const usePostStore = create<PostState & PostActions>()(
         location: '전체',
         page: 0,
         size: 6,
-        postType: '자유',  // 초기값으로 자유 게시글 설정
+        postType: '자유', // 초기값으로 자유 게시글 설정
       },
       postPageInfo: {
         page: 0,
@@ -195,7 +242,7 @@ export const usePostStore = create<PostState & PostActions>()(
       fetchPosts: async filter => {
         try {
           console.log('[DEBUG] fetchPosts 시작 - 필터:', filter);
-          
+
           // 현재 요청 ID 생성 - 중복 요청 추적용
           const currentRequestId = ++lastRequestId;
 
@@ -208,9 +255,9 @@ export const usePostStore = create<PostState & PostActions>()(
             set({
               searchActive: false,
               searchTerm: '',
-              searchType: ''
+              searchType: '',
             });
-          } 
+          }
           // 검색 활성화된 경우, 검색 상태 유지하고 페이지 이동만 처리
           else if (currentState.searchActive && currentState.searchTerm) {
             console.log(
@@ -225,8 +272,19 @@ export const usePostStore = create<PostState & PostActions>()(
               sort: currentState.postFilter.sortBy,
               postType: filter?.postType || currentState.postFilter.postType,
               region: filter?.location || currentState.postFilter.location,
-              category: filter?.category || currentState.postFilter.category
+              category: filter?.category || currentState.postFilter.category,
             });
+          }
+
+          // 필터 병합 전에 언어 변경 확인
+          if (filter && filter._forceRefresh) {
+            console.log('[DEBUG] 언어 변경으로 인한 강제 새로고침, 캐시 무시');
+            lastFetchTimestamp = 0; // 캐시 무효화
+            pageCache = {}; // 페이지 캐시도 초기화
+
+            // 임시 속성 제거 (복사본 만들어서 원본 변경 방지)
+            filter = { ...filter };
+            delete (filter as any)._forceRefresh;
           }
 
           // 병합된 필터 생성 (새 필터 우선)
@@ -244,24 +302,29 @@ export const usePostStore = create<PostState & PostActions>()(
             // 태그 처리
             tag: filter?.tag || currentState.postFilter.tag,
             // postType 처리 - 빈 문자열이거나 undefined이면 '전체'로 설정
-            postType: filter?.postType !== undefined ? filter.postType : 
-                      (currentState.postFilter.postType || '전체' as PostType)
+            postType:
+              filter?.postType !== undefined
+                ? filter.postType
+                : currentState.postFilter.postType || ('전체' as PostType),
           };
 
           // 더 자세한 필터 로깅 추가
           console.log('[DEBUG] 병합된 필터 상세:', {
             ...mergedFilter,
             category: mergedFilter.category || '전체',
-            postType: mergedFilter.postType || '전체'
+            postType: mergedFilter.postType || '전체',
           });
 
           // 캐시 키 생성 - 페이지, 카테고리, 정렬, 지역, postType, 태그 포함
-          const postTypeForCache = !mergedFilter.postType || mergedFilter.postType === ('ALL' as any) ? '전체' : mergedFilter.postType;
+          const postTypeForCache =
+            !mergedFilter.postType || mergedFilter.postType === ('ALL' as any)
+              ? '전체'
+              : mergedFilter.postType;
           const tagForCache = mergedFilter.tag || 'notag';
           const cacheKey = `${mergedFilter.page}_${mergedFilter.category || '전체'}_${mergedFilter.sortBy || 'latest'}_${mergedFilter.location || '전체'}_${postTypeForCache}_${tagForCache}`;
-          
+
           console.log(`[DEBUG] 생성된 캐시 키: ${cacheKey}`);
-          
+
           const now = Date.now();
           const CACHE_TTL = 5000; // 5초로 단축 (디버깅 편의를 위해)
 
@@ -290,14 +353,22 @@ export const usePostStore = create<PostState & PostActions>()(
           }
 
           // postType 변경 시는 강제로 캐시 무시
-          if (filter && filter.postType !== undefined && filter.postType !== lastFetchedFilter?.postType) {
+          if (
+            filter &&
+            filter.postType !== undefined &&
+            filter.postType !== lastFetchedFilter?.postType
+          ) {
             console.log('[DEBUG] postType 변경됨, 캐시 무시 및 새 요청 시작');
             lastFetchTimestamp = 0; // 캐시 무효화
             // 페이지 캐시도 초기화
             pageCache = {};
-          } 
+          }
           // 카테고리 변경 시는 강제로 캐시 무시
-          else if (filter && filter.category !== undefined && filter.category !== lastFetchedFilter?.category) {
+          else if (
+            filter &&
+            filter.category !== undefined &&
+            filter.category !== lastFetchedFilter?.category
+          ) {
             console.log('[DEBUG] 카테고리 변경됨, 캐시 무시 및 새 요청 시작');
             lastFetchTimestamp = 0; // 캐시 무효화
             // 페이지 캐시도 초기화
@@ -309,8 +380,7 @@ export const usePostStore = create<PostState & PostActions>()(
             lastFetchTimestamp = 0; // 캐시 무효화
             // 페이지 캐시도 초기화
             pageCache = {};
-          }
-          else {
+          } else {
             // 3. 일반 캐시 확인 - 동일 필터 요청이 최근에 있었는지
             if (
               currentState.posts.length > 0 &&
@@ -349,17 +419,19 @@ export const usePostStore = create<PostState & PostActions>()(
             try {
               // 요청이 최신 요청이 아니면 중단
               if (currentRequestId !== lastRequestId) {
-                console.log(`[DEBUG] 이전 요청(${currentRequestId})이 최신 요청(${lastRequestId})이 아님. 중단.`);
-                
+                console.log(
+                  `[DEBUG] 이전 요청(${currentRequestId})이 최신 요청(${lastRequestId})이 아님. 중단.`
+                );
+
                 // 로딩 타임아웃 취소
                 if (loadingTimeout) {
                   clearTimeout(loadingTimeout);
                   loadingTimeout = null;
                 }
-                
+
                 return;
               }
-              
+
               // API 호출용 파라미터 - size는 항상 6으로 고정
               const apiParams = {
                 page: mergedFilter.page,
@@ -372,29 +444,29 @@ export const usePostStore = create<PostState & PostActions>()(
               };
 
               console.log('[DEBUG] API 요청 파라미터:', apiParams);
-              
+
               // API 요청 시작
               let response;
-              
+
               try {
                 response = await postApi.PostApi.getPosts(apiParams);
                 console.log('[DEBUG] API 응답 받음:', response);
               } catch (apiError) {
                 console.error('[ERROR] API 호출 실패:', apiError);
-                
+
                 // 로딩 타임아웃 취소
                 if (loadingTimeout) {
                   clearTimeout(loadingTimeout);
                   loadingTimeout = null;
                 }
-                
+
                 // 오류 상태 설정 및 빈 배열 반환
-                set({ 
-                  postLoading: false, 
+                set({
+                  postLoading: false,
                   postError: '게시글을 불러올 수 없습니다.',
-                  posts: [] // 에러 시 빈 목록으로 설정
+                  posts: [], // 에러 시 빈 목록으로 설정
                 });
-                
+
                 // 에러 발생 시 캐시 타임스탬프 초기화
                 lastFetchTimestamp = 0;
                 lastFetchedFilter = null;
@@ -404,25 +476,25 @@ export const usePostStore = create<PostState & PostActions>()(
               // 응답이 없는 경우 처리
               if (!response) {
                 console.log('[INFO] 응답이 없습니다.');
-                
+
                 // 로딩 타임아웃 취소
                 if (loadingTimeout) {
                   clearTimeout(loadingTimeout);
                   loadingTimeout = null;
                 }
-                
+
                 // 빈 결과 설정
-                set({ 
+                set({
                   posts: [],
                   postPageInfo: {
                     page: mergedFilter.page,
                     size: 6,
                     totalElements: 0,
-                    totalPages: 0
+                    totalPages: 0,
                   },
-                  postLoading: false
+                  postLoading: false,
                 });
-                
+
                 return;
               }
 
@@ -500,7 +572,11 @@ export const usePostStore = create<PostState & PostActions>()(
                 loadingTimeout = null;
               }
 
-              set({ postLoading: false, postError: '게시글을 불러오는 중 오류가 발생했습니다.', posts: [] });
+              set({
+                postLoading: false,
+                postError: '게시글을 불러오는 중 오류가 발생했습니다.',
+                posts: [],
+              });
 
               // 에러 발생 시 캐시 타임스탬프 초기화
               lastFetchTimestamp = 0;
@@ -516,7 +592,11 @@ export const usePostStore = create<PostState & PostActions>()(
           await activeRequest;
         } catch (error) {
           console.error('fetchPosts 전체 실패:', error);
-          set({ postLoading: false, postError: '게시글을 불러오는 중 오류가 발생했습니다.', posts: [] });
+          set({
+            postLoading: false,
+            postError: '게시글을 불러오는 중 오류가 발생했습니다.',
+            posts: [],
+          });
 
           // 진행 중인 요청 추적 제거
           activeRequest = null;
@@ -616,7 +696,7 @@ export const usePostStore = create<PostState & PostActions>()(
               content: postDto.content ? postDto.content.substring(0, 50) + '...' : '',
             },
             filesCount: files?.length || 0,
-            removeFileIds
+            removeFileIds,
           });
 
           const updatedPost = await postApi.PostApi.updatePost(
@@ -633,14 +713,14 @@ export const usePostStore = create<PostState & PostActions>()(
               category: updatedPost.category,
               postType: updatedPost.postType,
               address: updatedPost.address || updatedPost.location,
-              tags: updatedPost.tags
-            }
+              tags: updatedPost.tags,
+            },
           });
 
           set(state => {
             // 게시글 목록에서 해당 게시글 업데이트
-            const updatedPosts = state.posts.map(post => 
-              post.postId === postId 
+            const updatedPosts = state.posts.map(post =>
+              post.postId === postId
                 ? {
                     ...post,
                     title: updatedPost.title,
@@ -649,26 +729,27 @@ export const usePostStore = create<PostState & PostActions>()(
                     tags: updatedPost.tags,
                     postType: updatedPost.postType as PostType,
                     address: updatedPost.address || updatedPost.location,
-                    location: updatedPost.address || updatedPost.location
-                  } 
+                    location: updatedPost.address || updatedPost.location,
+                  }
                 : post
             );
 
             // 현재 게시글도 업데이트
-            const updatedCurrentPost = state.currentPost?.postId === postId
-              ? {
-                  ...state.currentPost,
-                  title: updatedPost.title,
-                  content: updatedPost.content,
-                  category: updatedPost.category,
-                  tags: updatedPost.tags,
-                  postType: updatedPost.postType as PostType,
-                  address: updatedPost.address || updatedPost.location,
-                  location: updatedPost.address || updatedPost.location,
-                  // 파일 업데이트
-                  files: updatedPost.files || state.currentPost.files
-                }
-              : state.currentPost;
+            const updatedCurrentPost =
+              state.currentPost?.postId === postId
+                ? {
+                    ...state.currentPost,
+                    title: updatedPost.title,
+                    content: updatedPost.content,
+                    category: updatedPost.category,
+                    tags: updatedPost.tags,
+                    postType: updatedPost.postType as PostType,
+                    address: updatedPost.address || updatedPost.location,
+                    location: updatedPost.address || updatedPost.location,
+                    // 파일 업데이트
+                    files: updatedPost.files || state.currentPost.files,
+                  }
+                : state.currentPost;
 
             return {
               posts: updatedPosts,
@@ -773,37 +854,37 @@ export const usePostStore = create<PostState & PostActions>()(
       },
 
       // postType 변경 처리 함수 추가
-      handlePostTypeChange: (postType) => {
+      handlePostTypeChange: postType => {
         console.log('[DEBUG] handlePostTypeChange 호출, postType:', postType);
-        
+
         // 현재 필터 가져오기
         const currentFilter = get().postFilter;
-        
+
         // 새 필터 설정 (postType 명시적 설정)
         const newFilter: PostFilter = {
           ...currentFilter,
           postType: postType,
           page: 0, // 페이지 초기화
-          resetSearch: true // 검색 상태 초기화
+          resetSearch: true, // 검색 상태 초기화
         };
-        
+
         // 모임 게시글 선택 시 지역 설정 초기화
         if (postType === '모임') {
           newFilter.location = '전체';
         } else if (postType === '자유') {
           newFilter.location = '자유';
         }
-        
+
         console.log('[DEBUG] handlePostTypeChange - 새 필터:', newFilter);
-        
+
         // 필터 적용 및 데이터 로드
         set({
           postFilter: newFilter,
           searchActive: false, // 검색 상태 초기화
           searchTerm: '',
-          searchType: ''
+          searchType: '',
         });
-        
+
         // 데이터 로드
         get().fetchPosts(newFilter);
       },
@@ -852,7 +933,7 @@ export const usePostStore = create<PostState & PostActions>()(
             location: '전체',
             page: 0,
             size: 6,
-            postType: '자유',  // 초기값으로 자유 게시글 설정
+            postType: '자유', // 초기값으로 자유 게시글 설정
           },
           postPageInfo: {
             page: 0,
@@ -885,15 +966,17 @@ export const usePostStore = create<PostState & PostActions>()(
       },
 
       searchPosts: async (
-        keywordOrOptions: string | {
-          page?: number;
-          size?: number;
-          sort?: string;
-          postType?: string;
-          region?: string;
-          category?: string;
-          tag?: string;
-        },
+        keywordOrOptions:
+          | string
+          | {
+              page?: number;
+              size?: number;
+              sort?: string;
+              postType?: string;
+              region?: string;
+              category?: string;
+              tag?: string;
+            },
         searchType?: string,
         options?: {
           page?: number;
@@ -908,42 +991,58 @@ export const usePostStore = create<PostState & PostActions>()(
         try {
           let keyword: string = '';
           let searchOptions = options || {};
-          
+
           // First argument is an object (for backward compatibility)
           if (typeof keywordOrOptions === 'object' && keywordOrOptions !== null) {
             searchOptions = keywordOrOptions;
             keyword = get().searchTerm || '';
             searchType = get().searchType || '제목_내용';
-            console.log('[DEBUG] Object argument detected, using existing search term/type:', keyword, searchType);
+            console.log(
+              '[DEBUG] Object argument detected, using existing search term/type:',
+              keyword,
+              searchType
+            );
           } else {
             keyword = keywordOrOptions as string;
           }
 
-          console.log(`[DEBUG] searchPosts called: {keyword: '${keyword}', searchType: '${searchType}', page: ${searchOptions.page}, size: ${searchOptions.size}, category: ${searchOptions.category}, region: ${searchOptions.region}, postType: ${searchOptions.postType}, tag: ${searchOptions.tag}}`);
-          
+          console.log(
+            `[DEBUG] searchPosts called: {keyword: '${keyword}', searchType: '${searchType}', page: ${searchOptions.page}, size: ${searchOptions.size}, category: ${searchOptions.category}, region: ${searchOptions.region}, postType: ${searchOptions.postType}, tag: ${searchOptions.tag}}`
+          );
+
           // Important: Prevent duplicate execution if same search is in progress
           const currentState = get();
-          
+
           // 검색 상태 설정 - 항상 로딩 시작
-          set({ 
-            postLoading: true, 
-            searchActive: true, 
-            searchTerm: keyword, 
-            searchType: searchType, 
+          set({
+            postLoading: true,
+            searchActive: true,
+            searchTerm: keyword,
+            searchType: searchType,
             postPageInfo: {
               ...currentState.postPageInfo,
-              page: searchOptions.page || 0
+              page: searchOptions.page || 0,
             },
             // 필터 상태 업데이트 - 검색 시 필터도 함께 업데이트
             postFilter: {
               ...currentState.postFilter,
-              category: searchOptions.category !== undefined ? searchOptions.category : currentState.postFilter.category,
-              location: searchOptions.region !== undefined ? searchOptions.region : currentState.postFilter.location,
-              postType: searchOptions.postType !== undefined ? searchOptions.postType as PostType : currentState.postFilter.postType,
-              tag: searchOptions.tag !== undefined ? searchOptions.tag : currentState.postFilter.tag,
+              category:
+                searchOptions.category !== undefined
+                  ? searchOptions.category
+                  : currentState.postFilter.category,
+              location:
+                searchOptions.region !== undefined
+                  ? searchOptions.region
+                  : currentState.postFilter.location,
+              postType:
+                searchOptions.postType !== undefined
+                  ? (searchOptions.postType as PostType)
+                  : currentState.postFilter.postType,
+              tag:
+                searchOptions.tag !== undefined ? searchOptions.tag : currentState.postFilter.tag,
               sortBy: searchOptions.sort === 'views,desc' ? 'popular' : 'latest',
-              page: searchOptions.page || 0
-            }
+              page: searchOptions.page || 0,
+            },
           });
 
           // 검색 API 호출 시 필터 적용
@@ -954,7 +1053,7 @@ export const usePostStore = create<PostState & PostActions>()(
             size: searchOptions.size || 6,
             sort: searchOptions.sort || 'createdAt,desc',
           };
-          
+
           // 필터 조건 추가
           if (searchOptions.category) {
             apiParams.category = searchOptions.category;
@@ -968,10 +1067,10 @@ export const usePostStore = create<PostState & PostActions>()(
           if (searchOptions.tag) {
             apiParams.tag = searchOptions.tag;
           }
-          
+
           // 디버깅을 위한 API 파라미터 로깅
           console.log('[DEBUG] 검색 API 파라미터:', apiParams);
-          
+
           // API call with timeout for safety
           let apiCallCompleted = false;
           const timeoutPromise = new Promise((_, reject) => {
@@ -982,33 +1081,33 @@ export const usePostStore = create<PostState & PostActions>()(
               }
             }, 10000); // 10초 타임아웃
           });
-          
+
           try {
             // API 호출과 타임아웃 중 먼저 완료되는 것 처리
-            const response = await Promise.race([
+            const response = (await Promise.race([
               postApi.PostApi.searchPosts(keyword, searchType, searchOptions),
-              timeoutPromise
-            ]) as any;
-            
+              timeoutPromise,
+            ])) as any;
+
             apiCallCompleted = true;
-            
+
             if (!response) {
               console.log('[INFO] 검색 결과가 없습니다.');
-              set({ 
+              set({
                 postLoading: false,
                 posts: [], // 빈 결과 설정
                 postPageInfo: {
                   page: searchOptions.page || 0,
                   size: searchOptions.size || 6,
                   totalPages: 0,
-                  totalElements: 0
-                }
+                  totalElements: 0,
+                },
               });
               return { postList: [], total: 0, totalPages: 0 };
             }
-            
+
             // Process response
-            set((state) => ({
+            set(state => ({
               ...state,
               searchTerm: keyword,
               searchType: searchType,
@@ -1017,9 +1116,9 @@ export const usePostStore = create<PostState & PostActions>()(
                 page: searchOptions.page || 0,
                 size: searchOptions.size || 6,
                 totalPages: response.totalPages || 0,
-                totalElements: response.total || 0
+                totalElements: response.total || 0,
               },
-              postLoading: false // 로딩 상태 종료
+              postLoading: false, // 로딩 상태 종료
             }));
 
             return response;
@@ -1028,7 +1127,7 @@ export const usePostStore = create<PostState & PostActions>()(
             // API 호출 실패 시 상태 업데이트
             set({
               postLoading: false,
-              postError: '검색 중 오류가 발생했습니다.'
+              postError: '검색 중 오류가 발생했습니다.',
             });
             throw apiError;
           }
@@ -1037,7 +1136,7 @@ export const usePostStore = create<PostState & PostActions>()(
           set({
             postError: '게시글 검색 중 오류가 발생했습니다.',
             postLoading: false, // 항상 로딩 상태 종료
-            posts: [] // 에러 시 빈 목록으로 설정
+            posts: [], // 에러 시 빈 목록으로 설정
           });
           return {
             postList: [],
@@ -1050,6 +1149,9 @@ export const usePostStore = create<PostState & PostActions>()(
     { name: 'post-store' }
   )
 );
+
+// 언어 변경 리스너 설정
+setupLanguageChangeListener();
 
 // 함수형 사용을 위한 hook - 필요할 경우 사용
 export default () => usePostStore(state => state);

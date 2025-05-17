@@ -5,7 +5,7 @@ import {
 import LanguageLevelSelector from '../components/common/LanguageLevelSelector';
 import EmergencyInfoForm from '../components/common/EmergencyInfoForm';
 import OnboardingTagSelector from '../components/common/TagSelector';
-import { interestTags, debateCategories } from '../components/common/CommonTags';
+import { interestTags } from '../components/common/CommonTags';
 
 // 공통 스텝에서 사용할 언어 레벨 데이터
 export interface LanguageData {
@@ -117,7 +117,7 @@ const CommonStep: React.FC<CommonStepProps> = ({
             onChange={onInterestsChange}
             maxSelection={10}
             title="관심사 선택"
-            subtitle="관심 있는 주제를 선택해주세요. 최대 10개까지 선택 가능합니다."
+            description="관심 있는 주제를 선택해주세요. 최대 10개까지 선택 가능합니다."
             grouped={true}
             groupMapping={{
               basic: interestTags.slice(0, 20).map(tag => tag.id),

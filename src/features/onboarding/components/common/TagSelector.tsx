@@ -156,7 +156,7 @@ const OnboardingTagSelector: React.FC<OnboardingTagSelectorProps> = ({
   const { season } = useThemeStore();
   const [expanded, setExpanded] = useState<string | false>(categories.length > 0 ? categories[0].id : false);
 
-  const handleAccordionChange = (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
+  const handleAccordionChange = (panel: string) => (_: React.SyntheticEvent, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
   };
 
