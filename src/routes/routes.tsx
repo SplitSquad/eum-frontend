@@ -18,6 +18,9 @@ import { DebateRoutes } from '../features/debate';
 // 마이페이지 기능 임포트
 import { MypageRoutes } from '../features/mypage';
 
+// 관리자페이지 기능 임포트
+import { AdminpageRoutes } from '../features/adminpage';
+
 // 온보딩 라우트 컴포넌트 임포트
 const OnboardingRoutes = lazy(() => import('../features/onboarding/routes/OnboardingRoutes'));
 
@@ -143,6 +146,16 @@ const router = createBrowserRouter([
             <AuthGuard>
               <MypageRoutes />
             </AuthGuard>
+          </Suspense>
+        ),
+      },
+      {
+        path: '/adminpage/*',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            {/* <AuthGuard> */}
+            <AdminpageRoutes />
+            {/* </AuthGuard> */}
           </Suspense>
         ),
       },
