@@ -1,0 +1,20 @@
+import { create } from 'zustand';
+export const usePostFormStore = create(set => ({
+    title: '',
+    postType: '',
+    city: '',
+    district: '',
+    neighborhood: '',
+    category: '',
+    tag: '',
+    content: JSON.stringify({ type: 'doc', content: [] }),
+    //content: {type:'doc',content:[]},
+    setTitle: title => set({ title }),
+    setPostType: postType => set({ postType }),
+    setCity: city => set({ city, district: '', neighborhood: '' }),
+    setDistrict: district => set({ district, neighborhood: '' }),
+    setNeighborhood: neighborhood => set({ neighborhood }),
+    setCategory: category => set({ category, tag: '' }),
+    setTag: tag => set({ tag }),
+    setContent: content => set({ content }),
+}));

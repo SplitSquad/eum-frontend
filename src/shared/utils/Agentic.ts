@@ -22,15 +22,17 @@ export async function callAgentic(
     throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
   }
 
-  const res = await fetch('http://127.0.0.1:8002/api/v1/agentic', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      // Bearer 스키마를 쓴다면: `Bearer ${token}`
-      Authorization: token,
-    },
-    body: JSON.stringify({ query, uid, state: 'first' }),
-  });
+  const res = await fetch(
+    'http://af9c53d0f69ea45c793da25cdc041496-1311657830.ap-northeast-2.elb.amazonaws.com:80/api/v1/agentic',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: token,
+      },
+      body: JSON.stringify({ query, uid, state: 'first' }),
+    }
+  );
 
   if (!res.ok) {
     throw new Error(`Agentic API error ${res.status}`);

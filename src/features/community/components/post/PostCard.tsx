@@ -23,6 +23,67 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 //import GroupsIcon from '@mui/icons-material/Groups';
 //import PersonIcon from '@mui/icons-material/Person';
 import { ko } from 'date-fns/locale';
+import { useLocation } from 'react-router-dom';
+
+/**-----------------------------------웹로그 관련------------------------------------ **/
+// userId 꺼내오는 헬퍼
+export function getUserId(): number | null {
+  try {
+    const raw = localStorage.getItem('auth-storage');
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed?.state?.user?.userId ?? null;
+  } catch {
+    return null;
+  }
+}
+
+// 로그 전송 타입 정의
+interface WebLog {
+  userId: number;
+  content: string;
+}
+
+// BASE URL에 엔드포인트 설정
+const BASE = import.meta.env.VITE_API_BASE_URL;
+
+// 로그 전송 함수
+export function sendWebLog(log: WebLog) {
+  // jwt token 가져오기
+  const token = localStorage.getItem('auth_token');
+  if (!token) {
+    throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
+  }
+  fetch(`${BASE}/logs`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: token },
+    body: JSON.stringify(log),
+  }).catch(err => {
+    console.error('WebLog 전송 실패:', err);
+  });
+  // 전송 완료
+  console.log('WebLog 전송 성공:', log);
+}
+
+// useTrackedPost 훅
+export function useTrackedPost() {
+  const location = useLocation();
+
+  return (title: string, content: string, tag: string | null = null) => {
+    const userId = getUserId() || 0;
+    const postLogPayload = {
+      UID: userId,
+      ClickPath: location.pathname,
+      TAG: tag,
+      CurrentPath: location.pathname,
+      Event: 'click',
+      Content: { title: title, content: content },
+      Timestamp: new Date().toISOString(),
+    };
+    sendWebLog({ userId, content: JSON.stringify(postLogPayload) });
+  };
+}
+/**------------------------------------------------------------------------------------**/
 
 // 스타일 컴포넌트
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -274,12 +335,37 @@ interface PostCardProps {
 const PostCard: React.FC<PostCardProps> = ({ post, hideImage = false, onClick }) => {
   const navigate = useNavigate();
 
-  const handleCardClick = () => {
+  const handleCardClick = async () => {
+    const uid = getUserId() || 0;
+    // content는 받아 올 수가 없어, api 호출 후 값을 받아와서 웹 로그로 전송
+    const res = await fetch(`${BASE}/community/post/${post.postId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: localStorage.getItem('auth_token') || '',
+      },
+    });
+    const postContent = await res.json();
+
     if (onClick) {
       onClick(post);
     } else {
       navigate(`/community/post/${post.postId}`);
     }
+
+    // 웹로그 전송
+    sendWebLog({
+      userId: uid,
+      content: JSON.stringify({
+        UID: uid,
+        ClickPath: location.pathname,
+        TAG: post.category,
+        CurrentPath: location.pathname,
+        Event: 'click',
+        Content: { title: post.title, content: postContent.content },
+        Timestamp: new Date().toISOString(),
+      }),
+    });
   };
 
   // 기본 썸네일 이미지

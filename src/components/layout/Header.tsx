@@ -36,10 +36,78 @@ import CloseIcon from '@mui/icons-material/Close';
 import LogoutIcon from '@mui/icons-material/Logout';
 import LoginIcon from '@mui/icons-material/Login';
 import LanguageIcon from '@mui/icons-material/Language';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { SUPPORTED_LANGUAGES } from '@/features/onboarding/components/common/LanguageSelector';
 import { getGoogleAuthUrl } from '@/features/auth/api/authApi';
+import { AlarmCenter } from '@/components/notification/AlarmCenter';
+
 // import Cloud from '@/components/animations/Cloud';
+
+/**-----------------------------------웹로그 관련------------------------------------ **/
+// userId 꺼내오는 헬퍼
+export function getUserId(): number | null {
+  try {
+    const raw = localStorage.getItem('auth-storage');
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed?.state?.user?.userId ?? null;
+  } catch {
+    return null;
+  }
+}
+
+// 로그 전송 타입 정의
+interface WebLog {
+  userId: number;
+  content: string;
+}
+
+// BASE URL에 엔드포인트 설정
+const BASE = import.meta.env.VITE_API_BASE_URL;
+
+// 로그 전송 함수
+export function sendWebLog(log: WebLog) {
+  // jwt token 가져오기
+  const token = localStorage.getItem('auth_token');
+  if (!token) {
+    throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
+  }
+  fetch(`${BASE}/logs`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: token },
+    body: JSON.stringify(log),
+  }).catch(err => {
+    console.error('WebLog 전송 실패:', err);
+  });
+  // 전송 완료
+  console.log('WebLog 전송 성공:', log);
+}
+
+// useTrackedNavigation 훅
+export function useTrackedNavigation() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // to는 이동하려는 페이지, tag는 현재 페이지
+  return (to: string, tag: string | null = null) => {
+    const userId = getUserId() || 0;
+    const navLogPayload = {
+      UID: userId,
+      ClickPath: location.pathname,
+      TAG: tag,
+      CurrentPath: location.pathname,
+      Event: 'click',
+      Content: `Navigated to ${to} from ${location.pathname}`,
+      Timestamp: new Date().toISOString(),
+    };
+    // '/mypage'로 이동할 때는 로그를 보내지 않음
+    if (tag !== '' && to !== '/mypage') {
+      sendWebLog({ userId, content: JSON.stringify(navLogPayload) });
+    }
+    navigate(to);
+  };
+}
+
+/**------------------------------------------------------------------------------------**/
 
 // 계절별 스타일 적용을 위한 타입
 type SeasonColors = {
@@ -432,7 +500,8 @@ function Header({
   const { t } = useTranslation();
   const { isAuthenticated, user, handleLogout, loadUser } = useAuthStore();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  //const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = false;
   const token = localStorage.getItem('auth_token');
 
   // 인증 상태가 변경될 때마다 사용자 정보 로드
@@ -528,6 +597,8 @@ function Header({
     navigate(path);
   };
 
+  const trackedNavigate = useTrackedNavigation();
+
   const handleCommunityMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setCommunityAnchorEl(event.currentTarget);
   };
@@ -603,7 +674,12 @@ function Header({
                           <MenuNavButton
                             season={season}
                             active={isActive(item.path)}
-                            onClick={() => handleNavigation(item.path)}
+                            onClick={() =>
+                              trackedNavigate(
+                                item.path, // ClickPath
+                                item.name.toLowerCase() // TAG (예: 'home', 'community' 등)
+                              )
+                            }
                           >
                             {item.name}
                           </MenuNavButton>
@@ -626,7 +702,13 @@ function Header({
                                   key={subItem.path}
                                   season={season}
                                   onClick={
-                                    isSubActive ? undefined : () => handleNavigation(subItem.path)
+                                    isSubActive
+                                      ? undefined
+                                      : () =>
+                                          trackedNavigate(
+                                            subItem.path, // ClickPath
+                                            subItem.name.toLowerCase() // TAG (예: 'home', 'community' 등)
+                                          )
                                   }
                                   style={{
                                     background: undefined,
@@ -645,7 +727,12 @@ function Header({
                         <MenuNavButton
                           season={season}
                           active={isActive(item.path)}
-                          onClick={() => handleNavigation(item.path)}
+                          onClick={() =>
+                            trackedNavigate(
+                              item.path, // ClickPath
+                              item.name.toLowerCase() // TAG (예: 'home', 'community' 등)
+                            )
+                          }
                         >
                           {item.name}
                         </MenuNavButton>
@@ -712,7 +799,10 @@ function Header({
                 )}
 
                 {/* 알림 */}
-                <Notification items={mockNotifications} />
+                <Box sx={{ ml: 2, mr: 1 }}>
+                  <AlarmCenter />
+                </Box>
+                {/*<Notification items={mockNotifications} />*/}
 
                 {/* 언어 선택 */}
                 <IconButton onClick={handleLanguageMenuOpen} sx={{ ml: 0.5 }}>

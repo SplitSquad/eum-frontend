@@ -25,12 +25,20 @@ export interface ChatResponse {
  */
 
 export async function fetchChatbotResponse(query: string, uid: string): Promise<ChatResponse> {
+  // localStorage에서 토큰 읽기
+  const token = localStorage.getItem('auth_token');
+  if (!token) {
+    throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
+  }
   // API 엔드포인트로 요청
-  const res = await fetch('http://127.0.0.1:8000/api/v1/chatbot', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query, uid }),
-  });
+  const res = await fetch(
+    `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/v1/chatbot`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: token },
+      body: JSON.stringify({ query, uid }),
+    }
+  );
 
   // HTTP 상태 코드 확인
   if (!res.ok) {

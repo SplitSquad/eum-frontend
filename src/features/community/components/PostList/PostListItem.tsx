@@ -17,7 +17,6 @@ const PostListItem: React.FC<PostListItemProps> = ({ post }) => {
   const formattedDate = post.createdAt
     ? format(new Date(post.createdAt), 'yyyy.MM.dd', { locale: ko })
     : '';
-
   return (
     <TableRow
       hover
@@ -58,7 +57,6 @@ const PostListItem: React.FC<PostListItemProps> = ({ post }) => {
           }}
         >
           {post.title}
-
           {/* 댓글 수가 있으면 표시 */}
           {post.commentCount > 0 && (
             <Typography
