@@ -1,15 +1,13 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { AppBar, Toolbar, Typography, Button, IconButton, Box, Menu, MenuItem, Avatar, useMediaQuery, useTheme, Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, } from '@mui/material';
+import { AppBar, Toolbar, Typography, Button, IconButton, Box, Menu, MenuItem, Avatar, useTheme, Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, } from '@mui/material';
 import styled from '@emotion/styled';
 import { useThemeStore } from '@/features/theme/store/themeStore';
 import { useLanguageStore } from '@/features/theme/store/languageStore';
 import useAuthStore from '@/features/auth/store/authStore';
 import { useTranslation } from '@/shared/i18n';
 import { useLanguageContext } from '@/features/theme/components/LanguageProvider';
-import Notification from '@/components/feedback/Notification';
-import { mockNotifications } from '@/tests/mocks';
 import MenuIcon from '@mui/icons-material/Menu';
 import HomeIcon from '@mui/icons-material/Home';
 import ForumIcon from '@mui/icons-material/Forum';
@@ -21,6 +19,64 @@ import LoginIcon from '@mui/icons-material/Login';
 import LanguageIcon from '@mui/icons-material/Language';
 import { SUPPORTED_LANGUAGES } from '@/features/onboarding/components/common/LanguageSelector';
 import { getGoogleAuthUrl } from '@/features/auth/api/authApi';
+import { AlarmCenter } from '@/components/notification/AlarmCenter';
+// import Cloud from '@/components/animations/Cloud';
+/**-----------------------------------웹로그 관련------------------------------------ **/
+// userId 꺼내오는 헬퍼
+export function getUserId() {
+    try {
+        const raw = localStorage.getItem('auth-storage');
+        if (!raw)
+            return null;
+        const parsed = JSON.parse(raw);
+        return parsed?.state?.user?.userId ?? null;
+    }
+    catch {
+        return null;
+    }
+}
+// BASE URL에 엔드포인트 설정
+const BASE = import.meta.env.VITE_API_BASE_URL;
+// 로그 전송 함수
+export function sendWebLog(log) {
+    // jwt token 가져오기
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+        throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
+    }
+    fetch(`${BASE}/logs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: token },
+        body: JSON.stringify(log),
+    }).catch(err => {
+        console.error('WebLog 전송 실패:', err);
+    });
+    // 전송 완료
+    console.log('WebLog 전송 성공:', log);
+}
+// useTrackedNavigation 훅
+export function useTrackedNavigation() {
+    const navigate = useNavigate();
+    const location = useLocation();
+    // to는 이동하려는 페이지, tag는 현재 페이지
+    return (to, tag = null) => {
+        const userId = getUserId() || 0;
+        const navLogPayload = {
+            UID: userId,
+            ClickPath: location.pathname,
+            TAG: tag,
+            CurrentPath: location.pathname,
+            Event: 'click',
+            Content: `Navigated to ${to} from ${location.pathname}`,
+            Timestamp: new Date().toISOString(),
+        };
+        // '/mypage'로 이동할 때는 로그를 보내지 않음
+        if (tag !== '' && to !== '/mypage') {
+            sendWebLog({ userId, content: JSON.stringify(navLogPayload) });
+        }
+        navigate(to);
+    };
+}
 // 계절별 색상 정의
 const seasonalColors = {
     spring: {
@@ -54,13 +110,10 @@ const seasonalColors = {
 };
 // 스타일드 컴포넌트
 const StyledAppBar = styled(AppBar) `
-  background: linear-gradient(
-    to bottom,
-    rgba(230, 245, 255, 0.95) 0%,
-    rgba(255, 255, 255, 0.95) 100%
+  background: linear-gradient(to bottom, rgba(235, 245, 255, 0.95), rgba(255, 255, 255, 0.98));
   );
   box-shadow: none;
-  border-bottom: 0.5px solid rgba(0, 0, 0, 0.03);
+  border-bottom: 0px solid rgba(0, 0, 0, 0);
   backdrop-filter: blur(10px);
   color: ${props => seasonalColors[props.season]?.text || '#333333'};
 
@@ -352,7 +405,8 @@ function Header({ userName = '기본값', userCountry = '한국', userType = '�
     const { t } = useTranslation();
     const { isAuthenticated, user, handleLogout, loadUser } = useAuthStore();
     const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+    //const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+    const isMobile = false;
     const token = localStorage.getItem('auth_token');
     // 인증 상태가 변경될 때마다 사용자 정보 로드
     useEffect(() => {
@@ -396,7 +450,7 @@ function Header({ userName = '기본값', userCountry = '한국', userType = '�
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
     const profileMenuRef = useRef(null);
-    const isActive = (path) => location.pathname === path;
+    const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
     const handleProfileMenuOpen = (event) => {
         setAnchorEl(event.currentTarget);
     };
@@ -429,6 +483,7 @@ function Header({ userName = '기본값', userCountry = '한국', userType = '�
         logMenuClick(menuName, location.pathname, path);
         navigate(path);
     };
+    const trackedNavigate = useTrackedNavigation();
     const handleCommunityMenuOpen = (event) => {
         setCommunityAnchorEl(event.currentTarget);
     };
@@ -466,15 +521,34 @@ function Header({ userName = '기본값', userCountry = '한국', userType = '�
         setIsProfileMenuOpen(false);
         navigate(path);
     };
-    return (_jsx("header", { children: _jsx(StyledAppBar, { season: season, children: _jsxs(Toolbar, { sx: { minHeight: '72px' }, children: [_jsx(Box, { sx: { display: 'flex', alignItems: 'center', cursor: 'pointer' }, onClick: () => handleMenuClick('/home', '로고'), children: _jsx(LogoText, { season: season, children: "EUM" }) }), _jsx(Box, { sx: { flexGrow: 1 } }), isVisible && (_jsxs(_Fragment, { children: [!isMobile && (_jsx(MenuContainer, { children: navItems.map(item => (_jsx(React.Fragment, { children: item.dropdown ? (_jsxs(DropdownContainer, { onMouseEnter: () => setIsDropdownOpen(true), onMouseLeave: () => setIsDropdownOpen(false), children: [_jsx(MenuNavButton, { season: season, active: isActive(item.path), onClick: () => handleNavigation(item.path), children: item.name }), _jsx(DropdownMenu, { season: season, style: {
+    return (_jsx("header", { children: _jsx(StyledAppBar, { season: season, position: "sticky", children: _jsxs(Toolbar, { sx: { minHeight: '72px', position: 'sticky' }, children: [_jsx(Box, { sx: { display: 'flex', alignItems: 'center', cursor: 'pointer' }, onClick: () => handleMenuClick('/home', '로고'), children: _jsx(LogoText, { season: season, children: "EUM" }) }), _jsx(Box, { sx: { flexGrow: 1 } }), isVisible && (_jsxs(_Fragment, { children: [!isMobile && (_jsx(MenuContainer, { children: navItems.map(item => (_jsx(React.Fragment, { children: item.dropdown ? (_jsxs(DropdownContainer, { onMouseEnter: () => setIsDropdownOpen(true), onMouseLeave: () => setIsDropdownOpen(false), children: [_jsx(MenuNavButton, { season: season, active: isActive(item.path), onClick: () => trackedNavigate(item.path, // ClickPath
+                                                item.name.toLowerCase() // TAG (예: 'home', 'community' 등)
+                                                ), children: item.name }), _jsx(DropdownMenu, { season: season, style: {
                                                     opacity: isDropdownOpen ? 1 : 0,
                                                     visibility: isDropdownOpen ? 'visible' : 'hidden',
                                                     transform: isDropdownOpen ? 'translateY(0)' : 'translateY(-10px)',
-                                                }, children: item.dropdown.map(subItem => (_jsx(CommunityDropdownItem, { season: season, onClick: () => handleNavigation(subItem.path), children: subItem.name }, subItem.path))) })] })) : (_jsx(MenuNavButton, { season: season, active: isActive(item.path), onClick: () => handleNavigation(item.path), children: item.name })) }, item.path))) })), _jsxs(Box, { sx: { display: 'flex', alignItems: 'center', gap: 1, ml: 4 }, children: [isAuthenticated ? (_jsxs(Box, { sx: { position: 'relative' }, ref: profileMenuRef, children: [_jsxs(ProfileSection, { season: season, onClick: handleProfileClick, children: [_jsx(Avatar, { src: user?.profileImagePath || user?.picture, alt: user?.name || 'User', sx: {
+                                                }, children: item.dropdown.map(subItem => {
+                                                    const isSubActive = (subItem.path === '/community/groups' &&
+                                                        (location.pathname === '/community' ||
+                                                            location.pathname.startsWith('/community/groups'))) ||
+                                                        location.pathname === subItem.path;
+                                                    return (_jsx(CommunityDropdownItem, { season: season, onClick: isSubActive
+                                                            ? undefined
+                                                            : () => trackedNavigate(subItem.path, // ClickPath
+                                                            subItem.name.toLowerCase() // TAG (예: 'home', 'community' 등)
+                                                            ), style: {
+                                                            background: undefined,
+                                                            color: isSubActive ? '#e91e63' : undefined,
+                                                            pointerEvents: isSubActive ? 'none' : undefined,
+                                                            opacity: isSubActive ? 0.7 : 1,
+                                                        }, children: subItem.name }, subItem.path));
+                                                }) })] })) : (_jsx(MenuNavButton, { season: season, active: isActive(item.path), onClick: () => trackedNavigate(item.path, // ClickPath
+                                        item.name.toLowerCase() // TAG (예: 'home', 'community' 등)
+                                        ), children: item.name })) }, item.path))) })), _jsxs(Box, { sx: { display: 'flex', alignItems: 'center', gap: 1, ml: 4 }, children: [isAuthenticated ? (_jsxs(Box, { sx: { position: 'relative' }, ref: profileMenuRef, children: [_jsxs(ProfileSection, { season: season, onClick: handleProfileClick, children: [_jsx(Avatar, { src: user?.profileImagePath || user?.picture, alt: user?.name || 'User', sx: {
                                                             width: 40,
                                                             height: 40,
                                                             border: `2px solid ${seasonalColors[season]?.primary}`,
                                                             cursor: 'pointer',
-                                                        } }), _jsxs(ProfileInfo, { children: [_jsxs(ProfileRow, { children: [_jsx(ProfileName, { children: user?.name || userName }), _jsx(FlagEmoji, { children: flagEmoji })] }), _jsxs(DetailRow, { children: [_jsx(ProfileDetail, { children: userType }), _jsx(ProfileDetail, { children: userCountry })] })] })] }), isProfileMenuOpen && (_jsxs(ProfileDropdown, { season: season, children: [_jsxs(ProfileDropdownItem, { season: season, onClick: () => handleMenuItemClick('/mypage'), children: [_jsx(AccountCircleIcon, {}), "\uB9C8\uC774\uD398\uC774\uC9C0"] }), _jsxs(ProfileDropdownItem, { season: season, onClick: handleLogoutClick, children: [_jsx(LogoutIcon, {}), "\uB85C\uADF8\uC544\uC6C3"] })] }))] })) : (_jsx(LoginNavButton, { variant: "contained", onClick: handleGoogleLogin, startIcon: _jsx(LoginIcon, {}), season: season, active: false, children: t('common.login') })), _jsx(Notification, { items: mockNotifications }), _jsx(IconButton, { onClick: handleLanguageMenuOpen, sx: { ml: 0.5 }, children: _jsx(LanguageIcon, {}) }), isMobile && (_jsx(IconButton, { onClick: toggleDrawer, children: _jsx(MenuIcon, {}) }))] })] })), isVisible && (_jsx(Menu, { anchorEl: languageAnchorEl, open: Boolean(languageAnchorEl), onClose: handleLanguageMenuClose, children: SUPPORTED_LANGUAGES.map(lang => (_jsx(MenuItem, { onClick: () => handleLanguageChange(lang.code), selected: currentLanguage === lang.code, children: lang.name }, lang.code))) })), isVisible && (_jsxs(Drawer, { anchor: "right", open: drawerOpen, onClose: toggleDrawer, children: [_jsxs(DrawerHeader, { season: season, children: [_jsx(LogoText, { season: season, children: "EUM" }), _jsx(IconButton, { onClick: toggleDrawer, children: _jsx(CloseIcon, {}) })] }), _jsxs(List, { children: [navItems.map(item => (_jsxs(DrawerItem, { season: season, active: isActive(item.path), onClick: () => handleNavigation(item.path), children: [_jsx(ListItemIcon, { children: item.icon }), _jsx(ListItemText, { primary: item.name })] }, item.path))), _jsx(Divider, {}), isAuthenticated ? (_jsxs(DrawerItem, { season: season, active: false, onClick: handleLogoutClick, children: [_jsx(ListItemIcon, { children: _jsx(LogoutIcon, {}) }), _jsx(ListItemText, { primary: t('common.logout') })] })) : (_jsxs(DrawerItem, { season: season, active: false, onClick: handleGoogleLogin, children: [_jsx(ListItemIcon, { children: _jsx(LoginIcon, {}) }), _jsx(ListItemText, { primary: t('common.login') })] }))] })] }))] }) }) }));
+                                                        } }), _jsxs(ProfileInfo, { children: [_jsxs(ProfileRow, { children: [_jsx(ProfileName, { children: user?.name || userName }), _jsx(FlagEmoji, { children: flagEmoji })] }), _jsxs(DetailRow, { children: [_jsx(ProfileDetail, { children: userType }), _jsx(ProfileDetail, { children: userCountry })] })] })] }), isProfileMenuOpen && (_jsxs(ProfileDropdown, { season: season, children: [_jsxs(ProfileDropdownItem, { season: season, onClick: () => handleMenuItemClick('/mypage'), children: [_jsx(AccountCircleIcon, {}), "\uB9C8\uC774\uD398\uC774\uC9C0"] }), _jsxs(ProfileDropdownItem, { season: season, onClick: handleLogoutClick, children: [_jsx(LogoutIcon, {}), "\uB85C\uADF8\uC544\uC6C3"] })] }))] })) : (_jsx(LoginNavButton, { variant: "contained", onClick: handleGoogleLogin, startIcon: _jsx(LoginIcon, {}), season: season, active: false, children: t('common.login') })), _jsx(Box, { sx: { ml: 2, mr: 1 }, children: _jsx(AlarmCenter, {}) }), _jsx(IconButton, { onClick: handleLanguageMenuOpen, sx: { ml: 0.5 }, children: _jsx(LanguageIcon, {}) }), isMobile && (_jsx(IconButton, { onClick: toggleDrawer, children: _jsx(MenuIcon, {}) }))] })] })), isVisible && (_jsx(Menu, { anchorEl: languageAnchorEl, open: Boolean(languageAnchorEl), onClose: handleLanguageMenuClose, children: SUPPORTED_LANGUAGES.map(lang => (_jsx(MenuItem, { onClick: () => handleLanguageChange(lang.code), selected: currentLanguage === lang.code, children: lang.name }, lang.code))) })), isVisible && (_jsxs(Drawer, { anchor: "right", open: drawerOpen, onClose: toggleDrawer, children: [_jsxs(DrawerHeader, { season: season, children: [_jsx(LogoText, { season: season, children: "EUM" }), _jsx(IconButton, { onClick: toggleDrawer, children: _jsx(CloseIcon, {}) })] }), _jsxs(List, { children: [navItems.map(item => (_jsxs(DrawerItem, { season: season, active: isActive(item.path), onClick: () => handleNavigation(item.path), children: [_jsx(ListItemIcon, { children: item.icon }), _jsx(ListItemText, { primary: item.name })] }, item.path))), _jsx(Divider, {}), isAuthenticated ? (_jsxs(DrawerItem, { season: season, active: false, onClick: handleLogoutClick, children: [_jsx(ListItemIcon, { children: _jsx(LogoutIcon, {}) }), _jsx(ListItemText, { primary: t('common.logout') })] })) : (_jsxs(DrawerItem, { season: season, active: false, onClick: handleGoogleLogin, children: [_jsx(ListItemIcon, { children: _jsx(LoginIcon, {}) }), _jsx(ListItemText, { primary: t('common.login') })] }))] })] }))] }) }) }));
 }
 export default Header;

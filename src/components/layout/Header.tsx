@@ -36,10 +36,78 @@ import CloseIcon from '@mui/icons-material/Close';
 import LogoutIcon from '@mui/icons-material/Logout';
 import LoginIcon from '@mui/icons-material/Login';
 import LanguageIcon from '@mui/icons-material/Language';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { SUPPORTED_LANGUAGES } from '@/features/onboarding/components/common/LanguageSelector';
 import { getGoogleAuthUrl } from '@/features/auth/api/authApi';
+import { AlarmCenter } from '@/components/notification/AlarmCenter';
+
 // import Cloud from '@/components/animations/Cloud';
+
+/**-----------------------------------웹로그 관련------------------------------------ **/
+// userId 꺼내오는 헬퍼
+export function getUserId(): number | null {
+  try {
+    const raw = localStorage.getItem('auth-storage');
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed?.state?.user?.userId ?? null;
+  } catch {
+    return null;
+  }
+}
+
+// 로그 전송 타입 정의
+interface WebLog {
+  userId: number;
+  content: string;
+}
+
+// BASE URL에 엔드포인트 설정
+const BASE = import.meta.env.VITE_API_BASE_URL;
+
+// 로그 전송 함수
+export function sendWebLog(log: WebLog) {
+  // jwt token 가져오기
+  const token = localStorage.getItem('auth_token');
+  if (!token) {
+    throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
+  }
+  fetch(`${BASE}/logs`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: token },
+    body: JSON.stringify(log),
+  }).catch(err => {
+    console.error('WebLog 전송 실패:', err);
+  });
+  // 전송 완료
+  console.log('WebLog 전송 성공:', log);
+}
+
+// useTrackedNavigation 훅
+export function useTrackedNavigation() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // to는 이동하려는 페이지, tag는 현재 페이지
+  return (to: string, tag: string | null = null) => {
+    const userId = getUserId() || 0;
+    const navLogPayload = {
+      UID: userId,
+      ClickPath: location.pathname,
+      TAG: tag,
+      CurrentPath: location.pathname,
+      Event: 'click',
+      Content: `Navigated to ${to} from ${location.pathname}`,
+      Timestamp: new Date().toISOString(),
+    };
+    // '/mypage'로 이동할 때는 로그를 보내지 않음
+    if (tag !== '' && to !== '/mypage') {
+      sendWebLog({ userId, content: JSON.stringify(navLogPayload) });
+    }
+    navigate(to);
+  };
+}
+
+/**------------------------------------------------------------------------------------**/
 
 // 계절별 스타일 적용을 위한 타입
 type SeasonColors = {
@@ -84,13 +152,10 @@ const seasonalColors: Record<string, SeasonColors> = {
 
 // 스타일드 컴포넌트
 const StyledAppBar = styled(AppBar)<{ season: string }>`
-  background: linear-gradient(
-    to bottom,
-    rgba(230, 245, 255, 0.95) 0%,
-    rgba(255, 255, 255, 0.95) 100%
+  background: linear-gradient(to bottom, rgba(235, 245, 255, 0.95), rgba(255, 255, 255, 0.98));
   );
   box-shadow: none;
-  border-bottom: 0.5px solid rgba(0, 0, 0, 0.03);
+  border-bottom: 0px solid rgba(0, 0, 0, 0);
   backdrop-filter: blur(10px);
   color: ${props => seasonalColors[props.season]?.text || '#333333'};
 
@@ -435,7 +500,8 @@ function Header({
   const { t } = useTranslation();
   const { isAuthenticated, user, handleLogout, loadUser } = useAuthStore();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  //const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = false;
   const token = localStorage.getItem('auth_token');
 
   // 인증 상태가 변경될 때마다 사용자 정보 로드
@@ -487,7 +553,8 @@ function Header({
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) =>
+    location.pathname === path || location.pathname.startsWith(path + '/');
 
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -529,6 +596,8 @@ function Header({
     logMenuClick(menuName, location.pathname, path);
     navigate(path);
   };
+
+  const trackedNavigate = useTrackedNavigation();
 
   const handleCommunityMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setCommunityAnchorEl(event.currentTarget);
@@ -577,8 +646,8 @@ function Header({
 
   return (
     <header>
-      <StyledAppBar season={season}>
-        <Toolbar sx={{ minHeight: '72px' }}>
+      <StyledAppBar season={season} position="sticky">
+        <Toolbar sx={{ minHeight: '72px', position: 'sticky' }}>
           {/* 로고 - Always visible */}
           <Box
             sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
@@ -605,7 +674,12 @@ function Header({
                           <MenuNavButton
                             season={season}
                             active={isActive(item.path)}
-                            onClick={() => handleNavigation(item.path)}
+                            onClick={() =>
+                              trackedNavigate(
+                                item.path, // ClickPath
+                                item.name.toLowerCase() // TAG (예: 'home', 'community' 등)
+                              )
+                            }
                           >
                             {item.name}
                           </MenuNavButton>
@@ -617,22 +691,48 @@ function Header({
                               transform: isDropdownOpen ? 'translateY(0)' : 'translateY(-10px)',
                             }}
                           >
-                            {item.dropdown.map(subItem => (
-                              <CommunityDropdownItem
-                                key={subItem.path}
-                                season={season}
-                                onClick={() => handleNavigation(subItem.path)}
-                              >
-                                {subItem.name}
-                              </CommunityDropdownItem>
-                            ))}
+                            {item.dropdown.map(subItem => {
+                              const isSubActive =
+                                (subItem.path === '/community/groups' &&
+                                  (location.pathname === '/community' ||
+                                    location.pathname.startsWith('/community/groups'))) ||
+                                location.pathname === subItem.path;
+                              return (
+                                <CommunityDropdownItem
+                                  key={subItem.path}
+                                  season={season}
+                                  onClick={
+                                    isSubActive
+                                      ? undefined
+                                      : () =>
+                                          trackedNavigate(
+                                            subItem.path, // ClickPath
+                                            subItem.name.toLowerCase() // TAG (예: 'home', 'community' 등)
+                                          )
+                                  }
+                                  style={{
+                                    background: undefined,
+                                    color: isSubActive ? '#e91e63' : undefined,
+                                    pointerEvents: isSubActive ? 'none' : undefined,
+                                    opacity: isSubActive ? 0.7 : 1,
+                                  }}
+                                >
+                                  {subItem.name}
+                                </CommunityDropdownItem>
+                              );
+                            })}
                           </DropdownMenu>
                         </DropdownContainer>
                       ) : (
                         <MenuNavButton
                           season={season}
                           active={isActive(item.path)}
-                          onClick={() => handleNavigation(item.path)}
+                          onClick={() =>
+                            trackedNavigate(
+                              item.path, // ClickPath
+                              item.name.toLowerCase() // TAG (예: 'home', 'community' 등)
+                            )
+                          }
                         >
                           {item.name}
                         </MenuNavButton>
@@ -699,7 +799,10 @@ function Header({
                 )}
 
                 {/* 알림 */}
-                <Notification items={mockNotifications} />
+                <Box sx={{ ml: 2, mr: 1 }}>
+                  <AlarmCenter />
+                </Box>
+                {/*<Notification items={mockNotifications} />*/}
 
                 {/* 언어 선택 */}
                 <IconButton onClick={handleLanguageMenuOpen} sx={{ ml: 0.5 }}>

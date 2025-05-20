@@ -4,15 +4,15 @@ import ModalContent from '@/components/ai/ModalContent';
 import Footer from '@/components/layout/Footer';
 import Header from '@/components/layout/Header';
 import { useModalStore } from '@/shared/store/ModalStore';
-import ChatIcon from '@mui/icons-material/Chat';
-import CloseIcon from '@mui/icons-material/Close';
 import { IconButton } from '@mui/material';
 import { SnackbarProvider } from 'notistack';
 import { useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import useAuthStore from '../features/auth/store/authStore';
 import { SeasonalBackground } from '../features/theme';
+import FloatingNavigator from '@/components/layout/FloatingNavigator';
 import './App.css';
+import eum2Image from '@/assets/images/characters/이음이.png';
 /**
  * 애플리케이션 레이아웃 컴포넌트
  * 모든 라우트의 부모 컴포넌트로 작동
@@ -105,13 +105,19 @@ const App = () => {
     return (_jsx(SnackbarProvider, { maxSnack: 3, anchorOrigin: {
             vertical: 'top',
             horizontal: 'right',
-        }, autoHideDuration: 3000, children: _jsxs("div", { className: `app-container ${isModalOpen ? 'modal-open' : ''}`, children: [isModalVisible && (_jsx(Modal, { isOpen: isModalOpen, onClose: closeModal, position: position, children: content ?? _jsx(ModalContent, {}) })), _jsxs("div", { className: `app-content ${isModalOpen ? 'dimmed' : ''}`, children: [_jsx(Header, { isVisible: isHeaderVisible }), _jsxs(SeasonalBackground, { children: [_jsx("main", { className: "main-content", children: _jsx(Outlet, {}) }), isModalVisible && (_jsx("div", { className: "fixed bottom-[170px] right-8 z-[1001]", children: _jsx(IconButton, { ref: btnRef, onClick: onButtonClick, className: "modal-toggle-button", sx: {
+        }, autoHideDuration: 3000, children: _jsxs("div", { className: `app-container ${isModalOpen ? 'modal-open' : ''}`, children: [isModalVisible && (_jsx(Modal, { isOpen: isModalOpen, onClose: closeModal, position: position, children: content ?? _jsx(ModalContent, {}) })), _jsxs("div", { className: `app-content ${isModalOpen ? 'dimmed' : ''}`, children: [_jsx(Header, { isVisible: isHeaderVisible }), _jsxs(SeasonalBackground, { children: [_jsx("main", { className: "main-content", children: _jsx("div", { style: { paddingTop: '2.5rem', height: '100%' }, children: _jsx(Outlet, {}) }) }), isModalVisible && (_jsx("div", { className: "fixed bottom-[170px] right-8 z-[1001]", children: _jsx(IconButton, { ref: btnRef, onClick: onButtonClick, className: "modal-toggle-button", sx: {
                                             backgroundColor: 'rgba(255, 182, 193, 0.4)',
                                             '&:hover': {
                                                 backgroundColor: 'rgba(255, 182, 193, 0.6)',
                                             },
                                             padding: '12px',
                                             boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                                        }, children: isModalOpen ? (_jsx(CloseIcon, { sx: { color: 'white', fontSize: '24px' } })) : (_jsx(ChatIcon, { sx: { color: 'white', fontSize: '24px' } })) }) }))] }), _jsx(Footer, {})] })] }) }));
+                                        }, children: _jsx("img", { src: eum2Image, alt: "\uC774\uC74C\uC774", style: {
+                                                width: 32,
+                                                height: 32,
+                                                objectFit: 'contain',
+                                                transition: 'transform 0.3s',
+                                                transform: isModalOpen ? 'rotate(90deg)' : 'none',
+                                            } }) }) }))] }), _jsx(Footer, {})] }), _jsx(FloatingNavigator, { isHeaderVisible: isHeaderVisible })] }) }));
 };
 export default App;

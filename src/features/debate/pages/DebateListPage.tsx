@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDebateStore } from '../store';
 import { Debate } from '../types';
@@ -22,6 +23,49 @@ import { styled } from '@mui/material/styles';
 
 import DebateLayout from '../components/common/DebateLayout';
 import { formatDate } from '../utils/dateUtils';
+import { send } from 'process';
+
+/**-----------------------------------웹로그 관련------------------------------------ **/
+// userId 꺼내오는 헬퍼
+export function getUserId(): number | null {
+  try {
+    const raw = localStorage.getItem('auth-storage');
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed?.state?.user?.userId ?? null;
+  } catch {
+    return null;
+  }
+}
+
+// 로그 전송 타입 정의
+interface WebLog {
+  userId: number;
+  content: string;
+}
+
+// BASE URL에 엔드포인트 설정
+const BASE = import.meta.env.VITE_API_BASE_URL;
+
+// 로그 전송 함수
+export function sendWebLog(log: WebLog) {
+  // jwt token 가져오기
+  const token = localStorage.getItem('auth_token');
+  if (!token) {
+    throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
+  }
+  fetch(`${BASE}/logs`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: token },
+    body: JSON.stringify(log),
+  }).catch(err => {
+    console.error('WebLog 전송 실패:', err);
+  });
+  // 전송 완료
+  console.log('WebLog 전송 성공:', log);
+}
+
+/**------------------------------------------------------------------------------------ **/
 
 // 스타일 컴포넌트
 const CategoryItem = styled(ListItemButton)(({ theme }) => ({
@@ -214,6 +258,30 @@ const DebateListPage: React.FC = () => {
 
   const handleCategoryClick = (category: string) => {
     setSelectedCategory(category);
+    // 웹로그 전송
+    const userId = getUserId() ?? 0;
+    const chatLogPayload = {
+      UID: userId,
+      ClickPath: location.pathname,
+      TAG: category,
+      CurrentPath: location.pathname,
+      Event: 'chat',
+      Content: null,
+      Timestamp: new Date().toISOString(),
+    };
+    sendWebLog({ userId, content: JSON.stringify(chatLogPayload) });
+
+    // 웹 로그 테스트 로그
+    // console.log('토론 카테고리 웹로그', {
+    //   UID: getUserId(),
+    //   ClickPath: `/debate/${category}`,
+    //   TAG: category,
+    //   CurrentPath: location.pathname,
+    //   Event: 'click',
+    //   Content: null,
+    //   Timestamp: new Date().toISOString(),
+    // });
+
     console.log(`카테고리 선택: ${category}`);
 
     // 서버에 API 요청을 보내기 전에 로딩 상태 표시

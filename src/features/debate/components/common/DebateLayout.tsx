@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Container, styled } from '@mui/material';
+import { Box, Container, styled, Typography, useTheme, useMediaQuery } from '@mui/material';
 import Header, { HeaderProps } from './Header';
 import Toast from './Toast';
 
@@ -56,6 +56,8 @@ const DebateLayout: React.FC<DebateLayoutProps> = ({
   showSidebar = true,
   headerProps = {},
 }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   return (
     <Container
       maxWidth="lg"
@@ -68,6 +70,29 @@ const DebateLayout: React.FC<DebateLayoutProps> = ({
         zIndex: 5,
       }}
     >
+      {/* 페이지 헤더 */}
+      <Box
+        sx={{
+          mb: 3,
+          display: 'flex',
+          flexDirection: isMobile ? 'column' : 'row',
+          justifyContent: 'space-between',
+          alignItems: isMobile ? 'flex-start' : 'center',
+          gap: 2,
+        }}
+      >
+        <Typography
+          variant={isMobile ? 'h5' : 'h4'}
+          component="h1"
+          sx={{
+            fontWeight: 600,
+            color: '#555',
+            fontFamily: '"Noto Sans KR", sans-serif',
+          }}
+        >
+          토론 게시판
+        </Typography>
+      </Box>
       <LayoutContent>
         {showSidebar && sidebar && <Sidebar>{sidebar}</Sidebar>}
         <Main>{children}</Main>

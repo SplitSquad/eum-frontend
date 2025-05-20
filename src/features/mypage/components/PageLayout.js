@@ -45,7 +45,7 @@ const springBookStyle = `
 // 레이아웃 기본 구조
 const AppRoot = styled.div `
   width: 100%;
-  min-height: 20vh;
+  min-height: 60vh;
   position: relative;
   overflow-x: hidden;
   padding: 0 0 0 0;

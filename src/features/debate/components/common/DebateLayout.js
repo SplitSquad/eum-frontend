@@ -1,5 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { Box, Container, styled } from '@mui/material';
+import { Box, Container, styled, Typography, useTheme, useMediaQuery } from '@mui/material';
 import Toast from './Toast';
 const LayoutRoot = styled(Box)({
     display: 'flex',
@@ -38,6 +38,8 @@ const Main = styled(Box)(({ theme }) => ({
  * 다른 개발자가 만든 레이아웃 컴포넌트로 쉽게 교체할 수 있는 구조
  */
 const DebateLayout = ({ children, sidebar, showSidebar = true, headerProps = {}, }) => {
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     return (_jsxs(Container, { maxWidth: "lg", sx: {
             py: 3,
             display: 'flex',
@@ -45,6 +47,17 @@ const DebateLayout = ({ children, sidebar, showSidebar = true, headerProps = {},
             flexGrow: 1,
             position: 'relative',
             zIndex: 5,
-        }, children: [_jsxs(LayoutContent, { children: [showSidebar && sidebar && _jsx(Sidebar, { children: sidebar }), _jsx(Main, { children: children })] }), _jsx(Toast, {})] }));
+        }, children: [_jsx(Box, { sx: {
+                    mb: 3,
+                    display: 'flex',
+                    flexDirection: isMobile ? 'column' : 'row',
+                    justifyContent: 'space-between',
+                    alignItems: isMobile ? 'flex-start' : 'center',
+                    gap: 2,
+                }, children: _jsx(Typography, { variant: isMobile ? 'h5' : 'h4', component: "h1", sx: {
+                        fontWeight: 600,
+                        color: '#555',
+                        fontFamily: '"Noto Sans KR", sans-serif',
+                    }, children: "\uD1A0\uB860 \uAC8C\uC2DC\uD310" }) }), _jsxs(LayoutContent, { children: [showSidebar && sidebar && _jsx(Sidebar, { children: sidebar }), _jsx(Main, { children: children })] }), _jsx(Toast, {})] }));
 };
 export default DebateLayout;

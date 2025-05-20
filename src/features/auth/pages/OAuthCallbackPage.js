@@ -8,12 +8,12 @@ import styled from '@emotion/styled';
 // 로딩 컨테이너 스타일
 const LoadingContainer = styled(Box) `
   width: 100%;
-  height: 100vh;
+  height: auto;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(135deg, rgba(255, 245, 245, 1) 0%, rgba(255, 235, 235, 1) 100%);
+  background: rgba(255, 255, 255, 0);
 `;
 // 로딩 메시지 애니메이션
 const LoadingMessage = styled(Typography) `

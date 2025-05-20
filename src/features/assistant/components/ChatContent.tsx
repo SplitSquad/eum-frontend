@@ -5,6 +5,47 @@ import { fetchChatbotResponse } from '@/features/assistant/api/ChatApi';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
+/**-----------------------------------웹로그 관련------------------------------------ **/
+// userId 꺼내오는 헬퍼
+export function getUserId(): number | null {
+  try {
+    const raw = localStorage.getItem('auth-storage');
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed?.state?.user?.userId ?? null;
+  } catch {
+    return null;
+  }
+}
+
+// 로그 전송 타입 정의
+interface WebLog {
+  userId: number;
+  content: string;
+}
+
+// BASE URL에 엔드포인트 설정
+const BASE = import.meta.env.VITE_API_BASE_URL;
+
+// 로그 전송 함수
+export function sendWebLog(log: WebLog) {
+  // jwt token 가져오기
+  const token = localStorage.getItem('auth_token');
+  if (!token) {
+    throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
+  }
+  fetch(`${BASE}/logs`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: token },
+    body: JSON.stringify(log),
+  }).catch(err => {
+    console.error('WebLog 전송 실패:', err);
+  });
+  // 전송 완료
+  console.log('WebLog 전송 성공:', log);
+}
+/**------------------------------------------------------------------------------------**/
+
 // 채팅 메시지 객체 형태 정의
 interface Message {
   id: number;
@@ -23,7 +64,7 @@ interface ChatContentProps {
 /**
  * ChatContent 컴포넌트
  * - AI 챗봇과의 상호작용 UI를 렌더링하고,
- *   타자기 효과로 메시지를 한 글자씩 표시합니다.
+ *   타자기 효과로 메시지를 한 글자씩 표시
  */
 export default function ChatContent({
   categoryLabel = '전체',
@@ -52,6 +93,21 @@ export default function ChatContent({
 
     // 사용자 메시지 추가
     setMessages(prev => [...prev, { id: Date.now(), sender: 'user', text }]);
+
+    // 웹로그 전송
+    const userId = getUserId() ?? 0;
+    const chatLogPayload = {
+      UID: userId,
+      ClickPath: location.pathname,
+      TAG: categoryLabel,
+      CurrentPath: location.pathname,
+      Event: 'chat',
+      Content: text,
+      Timestamp: new Date().toISOString(),
+    };
+    sendWebLog({ userId, content: JSON.stringify(chatLogPayload) });
+
+    // 입력창 초기화 및 로딩 상태 설정
     setInput('');
     setLoading(true);
 
@@ -69,6 +125,19 @@ export default function ChatContent({
         },
       ]);
 
+      // 봇 웹로그 전송
+      const userId = getUserId() ?? 0;
+      const chatLogPayload = {
+        UID: userId,
+        ClickPath: location.pathname,
+        TAG: categoryLabel,
+        CurrentPath: location.pathname,
+        Event: 'chat',
+        Content: text,
+        Timestamp: new Date().toISOString(),
+      };
+      sendWebLog({ userId, content: JSON.stringify(chatLogPayload) });
+
       // 예시: 카테고리 매핑 로직
       const map: Record<string, string> = {
         visa_law: 'visa',
@@ -79,6 +148,7 @@ export default function ChatContent({
         daily_life: 'life',
         all: 'all',
       };
+
       const rag = data.metadata?.rag_type;
       const newKey = rag && map[rag] ? map[rag] : undefined;
       if (newKey && onCategoryChange) onCategoryChange(newKey);
@@ -96,6 +166,7 @@ export default function ChatContent({
       ]);
     } finally {
       setLoading(false);
+      // 웹로그
     }
   };
 

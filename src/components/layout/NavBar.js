@@ -18,6 +18,59 @@ import LoginIcon from '@mui/icons-material/Login';
 import LanguageIcon from '@mui/icons-material/Language';
 import { SUPPORTED_LANGUAGES } from '../../features/onboarding/components/common/LanguageSelector';
 import { useLanguageContext } from '../../features/theme/components/LanguageProvider';
+/**-----------------------------------웹로그 관련------------------------------------ **/
+// userId 꺼내오는 헬퍼
+export function getUserId() {
+    try {
+        const raw = localStorage.getItem('auth-storage');
+        if (!raw)
+            return null;
+        const parsed = JSON.parse(raw);
+        return parsed?.state?.user?.userId ?? null;
+    }
+    catch {
+        return null;
+    }
+}
+// BASE URL에 엔드포인트 설정
+const BASE = import.meta.env.VITE_API_BASE_URL;
+// 로그 전송 함수
+export function sendWebLog(log) {
+    // jwt token 가져오기
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+        throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
+    }
+    fetch(`${BASE}/logs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: token },
+        body: JSON.stringify(log),
+    }).catch(err => {
+        console.error('WebLog 전송 실패:', err);
+    });
+    // 전송 완료
+    console.log('WebLog 전송 성공:', log);
+}
+// useTrackedNavigation 훅
+export function useTrackedNavigation() {
+    const navigate = useNavigate();
+    const location = useLocation();
+    // to는 현재 페이지, tag는 이동하려는 페이지
+    return (to, tag = null) => {
+        const userId = getUserId() || 0;
+        const navLogPayload = {
+            UID: userId,
+            ClickPath: location.pathname,
+            TAG: tag,
+            CurrentPath: location.pathname,
+            Event: 'click',
+            Content: `Navigated to ${to} from ${location.pathname}`,
+            Timestamp: new Date().toISOString(),
+        };
+        sendWebLog({ userId, content: JSON.stringify(navLogPayload) });
+        navigate(to);
+    };
+}
 // 계절별 색상 정의
 const seasonalColors = {
     spring: {
@@ -206,6 +259,7 @@ const NavBar = () => {
         changeLanguage(languageCode);
         handleLanguageMenuClose();
     };
+    const trackedNavigate = useTrackedNavigation();
     return (_jsxs(_Fragment, { children: [_jsx(StyledAppBar, { position: "sticky", season: season, children: _jsxs(Toolbar, { children: [isMobile ? (_jsx(MobileMenuButton, { edge: "start", color: "inherit", "aria-label": "menu", onClick: toggleDrawer, season: season, children: _jsx(MenuIcon, {}) })) : null, _jsx(Box, { sx: {
                                 flexGrow: 1,
                                 display: 'flex',
@@ -213,7 +267,11 @@ const NavBar = () => {
                                 cursor: 'pointer',
                             }, onClick: () => navigate('/'), children: _jsx(LogoText, { variant: "h6", season: season, children: "EUM" }) }), !isMobile && (_jsx(Box, { sx: { display: 'flex' }, children: navItems
                                 .filter(item => !item.requireAuth || (item.requireAuth && isAuthenticated))
-                                .map(item => (_jsx(NavButton, { season: season, active: isActive(item.path), onClick: () => handleNavigation(item.path), children: item.name }, item.name))) })), _jsxs(Box, { sx: { mr: 2 }, children: [_jsx(Tooltip, { title: t('common.selectLanguage'), children: _jsx(IconButton, { onClick: handleLanguageMenuOpen, sx: {
+                                .map(item => (_jsx(NavButton, { season: season, active: isActive(item.path), onClick: () => 
+                                // 클릭 로그 + 네비게이션
+                                trackedNavigate(item.path, // ClickPath
+                                item.name.toLowerCase() // TAG (예: 'home', 'community' 등)
+                                ), children: item.name }, item.name))) })), "/", _jsxs(Box, { sx: { mr: 2 }, children: [_jsx(Tooltip, { title: t('common.selectLanguage'), children: _jsx(IconButton, { onClick: handleLanguageMenuOpen, sx: {
                                             color: seasonalColors[season]?.text,
                                             '&:hover': {
                                                 backgroundColor: seasonalColors[season]?.hover,

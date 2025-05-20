@@ -68,25 +68,6 @@ const PostListPage = () => {
     const { posts, postLoading, postError, selectedCategory, setSelectedCategory, fetchPosts, setPostFilter, searchPosts, fetchTopPosts, } = useCommunityStore();
     // 현재 URL에서 쿼리 파라미터 가져오기
     const queryParams = new URLSearchParams(location.search);
-    // URL 경로에 따른 초기 게시글 타입 설정
-    useEffect(() => {
-        const path = location.pathname;
-        if (path.includes('/community/groups')) {
-            setSelectedPostType('모임');
-            handlePostTypeChange('모임');
-            setShowFilters(true);
-        }
-        else if (path.includes('/community/board')) {
-            setSelectedPostType('자유');
-            handlePostTypeChange('자유');
-            setShowFilters(true);
-        }
-        else {
-            setSelectedPostType('ALL');
-            handlePostTypeChange('ALL');
-            setShowFilters(false);
-        }
-    }, [location.pathname]);
     // URL 쿼리 파라미터에서 필터 상태 초기화
     const [filter, setFilter] = useState({
         category: queryParams.get('category') || '전체',

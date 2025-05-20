@@ -1,6 +1,6 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useEffect, useState, useRef } from 'react';
-import { Typography, Box, Pagination, CircularProgress, Alert, useMediaQuery, useTheme, Paper, Fade, } from '@mui/material';
+import { Typography, Box, Pagination, CircularProgress, Alert, useMediaQuery, useTheme, Fade, } from '@mui/material';
 import PostCard from './PostCard';
 import { usePostStore } from '../../store/postStore';
 /**
@@ -132,17 +132,16 @@ const PostList = ({ title, posts: propPosts, loading: propLoading, error: propEr
             : mockPosts;
     // 로딩 중이지만 표시할 데이터가 있는 경우
     const isDataAvailableDuringLoading = loading && prevPosts.length > 0;
-    return (_jsxs(Box, { sx: { width: '100%', mb: 4 }, children: [_jsx(Paper, { elevation: 0, sx: {
-                    p: 2,
-                    mb: 2,
-                    backgroundColor: 'rgba(255,255,255,0.8)',
-                    borderRadius: '8px',
-                    border: '1px solid rgba(255, 170, 165, 0.3)',
-                }, children: _jsx(Typography, { variant: "body1", children: loading && !isDataAvailableDuringLoading
-                        ? '게시글을 불러오는 중...'
-                        : error
-                            ? `오류: ${error}`
-                            : `총 ${totalItems || displayPosts.length}개의 게시글이 있습니다.` }) }), title && (_jsx(Typography, { variant: "h5", component: "h2", sx: {
+    return (_jsxs(Box, { sx: { width: '100%', mb: 4 }, children: [_jsx(Typography, { variant: "body1", sx: {
+                    textAlign: 'right',
+                    color: '#888',
+                    fontSize: '0.97rem',
+                    paddingBottom: '6px',
+                }, children: loading && !isDataAvailableDuringLoading
+                    ? '게시글을 불러오는 중...'
+                    : error
+                        ? `오류: ${error}`
+                        : `총 ${totalItems || displayPosts.length}개의 게시글이 있습니다.` }), title && (_jsx(Typography, { variant: "h5", component: "h2", sx: {
                     mb: 3,
                     fontWeight: 600,
                     color: '#555',

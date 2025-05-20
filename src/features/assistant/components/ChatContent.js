@@ -4,10 +4,43 @@ import { useState, useRef, useEffect } from 'react';
 import { fetchChatbotResponse } from '@/features/assistant/api/ChatApi';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+/**-----------------------------------웹로그 관련------------------------------------ **/
+// userId 꺼내오는 헬퍼
+export function getUserId() {
+    try {
+        const raw = localStorage.getItem('auth-storage');
+        if (!raw)
+            return null;
+        const parsed = JSON.parse(raw);
+        return parsed?.state?.user?.userId ?? null;
+    }
+    catch {
+        return null;
+    }
+}
+// BASE URL에 엔드포인트 설정
+const BASE = import.meta.env.VITE_API_BASE_URL;
+// 로그 전송 함수
+export function sendWebLog(log) {
+    // jwt token 가져오기
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+        throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
+    }
+    fetch(`${BASE}/logs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: token },
+        body: JSON.stringify(log),
+    }).catch(err => {
+        console.error('WebLog 전송 실패:', err);
+    });
+    // 전송 완료
+    console.log('WebLog 전송 성공:', log);
+}
 /**
  * ChatContent 컴포넌트
  * - AI 챗봇과의 상호작용 UI를 렌더링하고,
- *   타자기 효과로 메시지를 한 글자씩 표시합니다.
+ *   타자기 효과로 메시지를 한 글자씩 표시
  */
 export default function ChatContent({ categoryLabel = '전체', onCategoryChange, }) {
     // 메시지 목록, 초기 봇 메시지 포함
@@ -32,6 +65,19 @@ export default function ChatContent({ categoryLabel = '전체', onCategoryChange
             return;
         // 사용자 메시지 추가
         setMessages(prev => [...prev, { id: Date.now(), sender: 'user', text }]);
+        // 웹로그 전송
+        const userId = getUserId() ?? 0;
+        const chatLogPayload = {
+            UID: userId,
+            ClickPath: location.pathname,
+            TAG: categoryLabel,
+            CurrentPath: location.pathname,
+            Event: 'chat',
+            Content: text,
+            Timestamp: new Date().toISOString(),
+        };
+        sendWebLog({ userId, content: JSON.stringify(chatLogPayload) });
+        // 입력창 초기화 및 로딩 상태 설정
         setInput('');
         setLoading(true);
         try {
@@ -47,6 +93,18 @@ export default function ChatContent({ categoryLabel = '전체', onCategoryChange
                     isTyping: true,
                 },
             ]);
+            // 봇 웹로그 전송
+            const userId = getUserId() ?? 0;
+            const chatLogPayload = {
+                UID: userId,
+                ClickPath: location.pathname,
+                TAG: categoryLabel,
+                CurrentPath: location.pathname,
+                Event: 'chat',
+                Content: text,
+                Timestamp: new Date().toISOString(),
+            };
+            sendWebLog({ userId, content: JSON.stringify(chatLogPayload) });
             // 예시: 카테고리 매핑 로직
             const map = {
                 visa_law: 'visa',
@@ -77,6 +135,7 @@ export default function ChatContent({ categoryLabel = '전체', onCategoryChange
         }
         finally {
             setLoading(false);
+            // 웹로그
         }
     };
     /**

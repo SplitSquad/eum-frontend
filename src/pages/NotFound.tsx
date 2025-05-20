@@ -1,10 +1,20 @@
 import React from 'react';
 import { Box, Typography, Container, Button, Paper } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import error404 from '../assets/images/characters/404error.png';
+import styled from '@emotion/styled';
 
 /**
  * 404 페이지 컴포넌트
  */
+
+export const CenteredImg = styled.img`
+  display: block;
+  margin: 0 auto;
+  width: 30%;
+  height: 30%;
+`;
+
 const NotFound: React.FC = () => {
   const navigate = useNavigate();
 
@@ -27,6 +37,7 @@ const NotFound: React.FC = () => {
         >
           404
         </Typography>
+        <CenteredImg src={error404} alt="404" />
         <Typography variant="h4" gutterBottom>
           페이지를 찾을 수 없습니다
         </Typography>
