@@ -18,14 +18,19 @@ import ThumbUpAltOutlinedIcon from '@mui/icons-material/ThumbUpAltOutlined';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import ThumbDownAltOutlinedIcon from '@mui/icons-material/ThumbDownAltOutlined';
 import ThumbDownIcon from '@mui/icons-material/ThumbDown';
+import FlagIcon from '@mui/icons-material/Flag';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 
 import useCommunityStore from '../../store/communityStore';
-import { Comment, ReactionType } from '../../types';
-import useAuthStore from '../../../auth/store/authStore';
-import ReplyForm from '../ReplyForm';
 import { useComments } from '../../hooks';
+import useAuthStore, { User as AuthUser } from '../../../auth/store/authStore';
+import ReplyForm from '../ReplyForm';
+import { useSnackbar } from 'notistack';
+import ReportDialog, { ReportTargetType } from '../../../common/components/ReportDialog';
+
+// ServiceType 정의
+type ServiceType = 'COMMUNITY' | 'DISCUSSION' | 'DEBATE';
 
 // 스타일링된 컴포넌트
 const CommentBox = styled(Box)(({ theme }) => ({
@@ -68,12 +73,27 @@ const ActionButton = styled(Button)(({ theme }) => ({
   },
 }));
 
-// User 인터페이스 정의
-interface User {
+// 댓글 작성자 인터페이스 정의
+interface CommentUser {
   userId: number;
   nickname: string;
   profileImage?: string;
 }
+
+// 기존 types.ts 파일에서 가져오거나 여기서 정의
+interface Comment {
+  commentId: number;
+  content: string;
+  createdAt: string;
+  writer?: CommentUser;
+  likeCount?: number;
+  dislikeCount?: number;
+  myReaction?: string;
+  replies?: Comment[];
+}
+
+// ReactionType 정의
+type ReactionType = 'LIKE' | 'DISLIKE';
 
 interface CommentItemProps {
   comment: Comment;
@@ -93,16 +113,22 @@ const CommentItem: React.FC<CommentItemProps> = ({
   const [repliesVisible, setRepliesVisible] = useState(true);
   const [editMode, setEditMode] = useState(false);
   const [editedContent, setEditedContent] = useState(comment.content);
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
 
-  // 커스텀 훅 사용
-  const { updateComment, deleteComment, replyComment, reactToComment } = useComments(postId);
+  // Snackbar for notifications
+  const { enqueueSnackbar } = useSnackbar();
 
-  // 기존 스토어 사용 (훅으로 대체되지 않은 기능이 있을 수 있음)
+  // 커뮤니티 스토어 사용
   const communityStore = useCommunityStore();
+  
+  // 사용자 인증 정보
   const { user: currentUser } = useAuthStore();
 
   // 현재 사용자가 댓글 작성자인지 확인
-  const isCommentAuthor = currentUser?.id === comment.writer?.userId?.toString();
+  const isCommentAuthor = 
+    currentUser && 
+    comment.writer && 
+    currentUser.userId === comment.writer.userId;
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -125,8 +151,8 @@ const CommentItem: React.FC<CommentItemProps> = ({
 
       console.log(`댓글 ${type} 반응 추가 시도:`, { commentId: comment.commentId, type });
 
-      // 커스텀 훅 사용
-      await reactToComment(comment.commentId, type);
+      // 커뮤니티 스토어 사용
+      await communityStore.addCommentReaction(postId, comment.commentId, type);
     } catch (error) {
       console.error('댓글 반응 추가 실패:', error);
     }
@@ -139,8 +165,8 @@ const CommentItem: React.FC<CommentItemProps> = ({
         return;
       }
 
-      // 커스텀 훅 사용
-      await deleteComment(comment.commentId);
+      // 커뮤니티 스토어 사용
+      await communityStore.deleteComment(comment.commentId);
       handleMenuClose();
     } catch (error) {
       console.error('댓글 삭제 실패:', error);
@@ -164,8 +190,11 @@ const CommentItem: React.FC<CommentItemProps> = ({
   const handleEditSubmit = async () => {
     if (editedContent.trim()) {
       try {
-        // 커스텀 훅 사용
-        await updateComment(comment.commentId, editedContent.trim());
+        // 커뮤니티 스토어 사용
+        await communityStore.updateComment(comment.commentId, {
+          content: editedContent.trim(),
+          language: 'ko'
+        });
         setEditMode(false);
       } catch (error) {
         console.error('댓글 수정 실패:', error);
@@ -175,6 +204,25 @@ const CommentItem: React.FC<CommentItemProps> = ({
 
   const handleReplyFormClose = () => {
     setShowReplyForm(false);
+  };
+
+  // 신고 다이얼로그 열기
+  const handleOpenReportDialog = () => {
+    console.log('현재 사용자 정보:', currentUser);
+    
+    // currentUser 객체 확인
+    if (!currentUser || !currentUser.userId) {
+      console.error('사용자 정보 없음 또는 userId 누락:', currentUser);
+      enqueueSnackbar('로그인이 필요한 기능입니다.', { variant: 'warning' });
+      return;
+    }
+    
+    setReportDialogOpen(true);
+  };
+
+  // 신고 다이얼로그 닫기
+  const handleCloseReportDialog = () => {
+    setReportDialogOpen(false);
   };
 
   const formattedDate = comment.createdAt
@@ -191,12 +239,12 @@ const CommentItem: React.FC<CommentItemProps> = ({
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Avatar
               src={comment.writer?.profileImage}
-              alt={comment.writer?.nickname || '사용자'}
+              alt={comment.writer?.nickname || '번역 중...'}
               sx={{ width: 32, height: 32, mr: 1 }}
             />
             <Box>
               <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#555' }}>
-                {comment.writer?.nickname || '사용자'}
+                {comment.writer?.nickname || (comment as any).userName || '번역 중...'}
               </Typography>
               <Typography variant="caption" sx={{ color: '#888' }}>
                 {formattedDate} {isReply && <span style={{ color: '#FFAAA5' }}>(답글)</span>}
@@ -327,9 +375,25 @@ const CommentItem: React.FC<CommentItemProps> = ({
               '&:hover': {
                 backgroundColor: 'rgba(255, 170, 165, 0.2)',
               },
+              mr: 1,
             }}
           >
             답글 작성 {comment.replies?.length ? `(${comment.replies.length})` : ''}
+          </ActionButton>
+          
+          {/* 신고하기 버튼 추가 */}
+          <ActionButton
+            startIcon={<FlagIcon fontSize="small" />}
+            onClick={handleOpenReportDialog}
+            variant="text"
+            sx={{
+              color: '#F44336',
+              '&:hover': {
+                backgroundColor: 'rgba(244, 67, 54, 0.1)',
+              },
+            }}
+          >
+            신고
           </ActionButton>
         </Box>
 
@@ -363,6 +427,16 @@ const CommentItem: React.FC<CommentItemProps> = ({
           </Collapse>
         </>
       )}
+      
+      {/* 신고 다이얼로그 */}
+      <ReportDialog
+        open={reportDialogOpen}
+        onClose={handleCloseReportDialog}
+        targetId={comment.commentId}
+        targetType={isReply ? "REPLY" : "COMMENT"}
+        serviceType="COMMUNITY"
+        reportedUserId={comment.writer?.userId || 0}
+      />
     </>
   );
 };

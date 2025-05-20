@@ -8,6 +8,9 @@ export interface Debate {
   source?: string; // 기사 출처
   imageUrl?: string; // 관련 이미지
   
+  // 추천 시스템에서 사용할 사용자 관심사와의 일치도 점수
+  matchScore?: number; // 0~100 사이의 값
+  
   // 찬반 통계
   proCount: number;
   conCount: number;
@@ -224,6 +227,7 @@ export interface CommentResDto {
   isState: string;
   content: string;
   userName: string;
+  userId?: number; // userId 필드 추가
   createdAt: string;
   stance?: 'pro' | 'con';
 }
@@ -235,6 +239,7 @@ export interface ReplyResDto {
   isState: string;
   content: string;
   userName: string;
+  userId?: number; // userId 필드 추가
   createdAt: string;
 }
 
@@ -281,7 +286,7 @@ export function mapCommentResToFrontend(dto: CommentResDto, debateId: number): D
   return {
     id: dto.commentId,
     debateId: debateId,
-    userId: 0, // 백엔드에서 제공하지 않음
+    userId: dto.userId || 0, // 백엔드에서 userId를 제공하면 사용
     userName: dto.userName || '익명',
     content: dto.content || '',
     createdAt: dto.createdAt || new Date().toISOString(),
@@ -303,7 +308,7 @@ export function mapReplyResToFrontend(dto: ReplyResDto, commentId: number): Deba
   return {
     id: dto.replyId,
     commentId: commentId,
-    userId: 0, // 백엔드에서 제공하지 않음
+    userId: dto.userId || 0, // 백엔드에서 userId를 제공하면 사용
     userName: dto.userName,
     content: dto.content,
     createdAt: dto.createdAt,

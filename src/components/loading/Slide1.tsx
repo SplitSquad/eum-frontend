@@ -1,6 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
+TODO: 이음이 애니메이션 추가 및 슬라이드 하나로 통합합
+
+
 const Slide1 = () => {
   return (
     <motion.div

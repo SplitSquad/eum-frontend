@@ -76,7 +76,7 @@ interface PostActions {
   fetchTopPosts: (count?: number) => Promise<void>;
   fetchRecentPosts: (count?: number) => Promise<void>;
   fetchPostById: (postId: number) => Promise<Post | null>;
-  createPost: (postDto: ApiCreatePostRequest, files?: File[]) => Promise<void>;
+  createPost: (postDto: ApiCreatePostRequest, files?: File[]) => Promise<Post>;
   updatePost: (
     postId: number,
     postDto: ApiUpdatePostRequest,
@@ -248,6 +248,18 @@ export const usePostStore = create<PostState & PostActions>()(
 
           // 현재 상태에서 필터 정보 가져오기
           const currentState = get();
+
+          // 새로고침 파라미터가 있으면 캐시 무시 및 강제 새로고침
+          if (filter && 'refresh' in filter) {
+            console.log('[DEBUG] 새로고침 파라미터 발견, 캐시 무시하고 새로 요청');
+            lastFetchTimestamp = 0; // 캐시 무효화
+            pageCache = {}; // 페이지 캐시도 초기화
+            
+            // 진행 중인 요청 취소
+            if (activeRequest) {
+              activeRequest = null;
+            }
+          }
 
           // resetSearch가 명시적으로 true인 경우에만 검색 상태 초기화
           if (filter?.resetSearch === true) {
@@ -676,13 +688,27 @@ export const usePostStore = create<PostState & PostActions>()(
         set({ isLoading: true, error: null });
         try {
           const createdPost = await postApi.PostApi.createPost(postDto, files);
-          set(state => ({
-            posts: [createdPost, ...state.posts],
-            isLoading: false,
-          }));
+          
+          // Add the new post to the posts list - use type assertion to avoid type errors
+          set(state => {
+            // Create a new array with the created post at the beginning
+            const updatedPosts = [createdPost as any, ...state.posts];
+            return {
+              posts: updatedPosts,
+              isLoading: false,
+            } as any; // Type assertion to bypass TypeScript errors
+          });
+          
+          // Force reset cache to ensure new posts are loaded on next fetch
+          lastFetchTimestamp = 0; 
+          pageCache = {};
+          
+          console.log('[DEBUG] Post created successfully:', createdPost);
+          return createdPost;
         } catch (error) {
           console.error('게시글 생성 실패:', error);
           set({ error: '게시글을 생성하는데 실패했습니다.', isLoading: false });
+          throw error;
         }
       },
 

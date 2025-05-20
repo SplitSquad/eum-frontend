@@ -42,6 +42,11 @@ import ThumbDownIcon from '@mui/icons-material/ThumbDown';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { format } from 'date-fns';
 import { useAuthStore } from '../../../auth';
+import { useSnackbar } from 'notistack';
+import ReportDialog, { ReportTargetType } from '../../../common/components/ReportDialog';
+
+// ServiceType을 직접 정의
+type ServiceType = 'COMMUNITY' | 'DISCUSSION' | 'DEBATE';
 
 interface CommentItemProps {
   comment: DebateComment;
@@ -187,6 +192,142 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const isMenuOpen = Boolean(anchorEl);
 
+  // 신고 다이얼로그 관련 상태
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const { enqueueSnackbar } = useSnackbar();
+  
+  // 사용자 정보 (한 번만 선언)
+  const { user } = useAuthStore();
+
+  // 안전하게 댓글 목록 가져오기
+  const commentReplies = replies && id && replies[id] ? replies[id] : [];
+
+  // 메뉴 열기
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  // 메뉴 닫기
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  // 댓글 좋아요/싫어요 처리
+  const handleReaction = async (type: 'like' | 'dislike') => {
+    if (!user) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+
+    try {
+      if (!id) return;
+      
+      // 백엔드 API 호출 
+      const reactionType = type === 'like' ? ReactionType.LIKE : ReactionType.DISLIKE;
+      
+      // 먼저 UI 상태 업데이트 (낙관적 UI 업데이트)
+      // 이미 같은 상태면 취소
+      if (currentReaction === reactionType) {
+        setCurrentReaction(undefined);
+        if (type === 'like') {
+          setLikeCount(prevCount => Math.max(0, prevCount - 1));
+          setLikeButtonState('default');
+        } else {
+          setDislikeCount(prevCount => Math.max(0, prevCount - 1));
+          setDislikeButtonState('default');
+        }
+      } 
+      // 다른 상태로 변경
+      else {
+        // 이전에 다른 버튼이 활성화되어 있었다면 취소
+        if (currentReaction === ReactionType.LIKE && type === 'dislike') {
+          setLikeCount(prevCount => Math.max(0, prevCount - 1));
+          setLikeButtonState('default');
+          setDislikeCount(prevCount => prevCount + 1);
+          setDislikeButtonState('error');
+        } else if (currentReaction === ReactionType.DISLIKE && type === 'like') {
+          setDislikeCount(prevCount => Math.max(0, prevCount - 1));
+          setDislikeButtonState('default');
+          setLikeCount(prevCount => prevCount + 1);
+          setLikeButtonState('primary');
+        } else {
+          // 기존 상태가 없는 경우
+          if (type === 'like') {
+            setLikeCount(prevCount => prevCount + 1);
+            setLikeButtonState('primary');
+          } else {
+            setDislikeCount(prevCount => prevCount + 1);
+            setDislikeButtonState('error');
+          }
+        }
+        setCurrentReaction(reactionType);
+      }
+      
+      // 서버 API 호출
+      const response = await reactToComment(id, reactionType);
+      
+      // 서버 응답 처리
+      if (response) {
+        const { like = 0, dislike = 0 } = response;
+        
+        // UI 상태 업데이트
+        setLikeCount(like);
+        setDislikeCount(dislike);
+        
+        // API 응답 구조에 따라 isState가 존재하는지 확인
+        if ('isState' in response) {
+          const newState = response.isState ? 
+            (response.isState === '좋아요' ? ReactionType.LIKE : 
+             response.isState === '싫어요' ? ReactionType.DISLIKE : undefined) 
+            : undefined;
+          
+          setCurrentReaction(newState);
+        
+        // 버튼 상태 업데이트
+          setLikeButtonState(newState === ReactionType.LIKE ? 'primary' : 'default');
+          setDislikeButtonState(newState === ReactionType.DISLIKE ? 'error' : 'default');
+        }
+      }
+    } catch (error) {
+      console.error('댓글 반응 처리 실패:', error);
+      // 에러 발생 시 UI 상태 복원 로직 구현 가능
+    }
+  };
+
+  // 내가 작성한 댓글인지 확인
+  const isMyComment = (authorId?: number) => {
+    if (!authorId || !user?.userId) return false;
+    return authorId === user.userId;
+  };
+
+  // 내가 작성한 답글인지 확인 
+  const isMyReply = (replyAuthorId?: number) => {
+    if (!replyAuthorId || !user?.userId) return false;
+    return replyAuthorId === user.userId;
+  };
+
+  // 메뉴 아이콘 표시 여부 - 사용자 확인 로직 간소화
+  const isAuthor = user && userId !== undefined && 
+    user.userId !== undefined && String(user.userId) === String(userId);
+
+  // 신고 버튼 클릭 핸들러
+  const handleReportClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    if (!user?.userId) {
+      enqueueSnackbar('로그인이 필요한 기능입니다.', { variant: 'warning' });
+      return;
+    }
+
+    setReportDialogOpen(true);
+  };
+
+  // 신고 다이얼로그 닫기 핸들러
+  const handleCloseReportDialog = () => {
+    setReportDialogOpen(false);
+  };
+
   // 댓글 수정 핸들러 - 낙관적 UI 업데이트 적용
   const handleEdit = async (e?: React.MouseEvent) => {
     if (e) {
@@ -302,160 +443,11 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
     }
   };
 
-  // 답글 제출 함수
-  const submitReply = async (replyContent: string): Promise<void> => {
-    if (!replyContent.trim()) return;
-    
-    try {
-      // 서버에 답글 제출
-      if (typeof createReply === 'function' && id && debateId) {
-        // 답글 작성 중임을 표시하는 로딩 상태 설정
-        setIsSubmitting(true);
-        
-        try {
-          // 답글 생성 API 호출 - store의 createReply 함수 사용
-        await createReply(id, replyContent);
-        
-          // 성공적으로 생성되면 답글 폼 닫기
-        setShowReplyForm(false);
-        
-          // 답글 목록 펼치기
-          setShowReplies(true);
-          
-          // 부모 컴포넌트에 변경 알림 - 리다이렉션 방지를 위해 제거
-          // onUpdate();
-        } catch (error) {
-          console.error('답글 생성 API 호출 실패:', error);
-          throw error;
-        }
-      }
-    } catch (error) {
-      console.error('답글 작성 실패:', error);
-      alert('답글 작성 중 오류가 발생했습니다.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   // 댓글 아이템의 클릭 이벤트를 막아 부모 컴포넌트로의 전파 방지
   const handleCardClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
   };
-
-  // 사용자 정보
-  const { user } = useAuthStore();
-
-  // 안전하게 댓글 목록 가져오기
-  const commentReplies = replies && id && replies[id] ? replies[id] : [];
-
-  // 메뉴 열기
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  // 메뉴 닫기
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
-  // 댓글 좋아요/싫어요 처리
-  const handleReaction = async (type: 'like' | 'dislike') => {
-    if (!user) {
-      alert('로그인이 필요합니다.');
-      return;
-    }
-
-    try {
-      if (!id) return;
-      
-      // 백엔드 API 호출 
-      const reactionType = type === 'like' ? ReactionType.LIKE : ReactionType.DISLIKE;
-      
-      // 먼저 UI 상태 업데이트 (낙관적 UI 업데이트)
-      // 이미 같은 상태면 취소
-      if (currentReaction === reactionType) {
-        setCurrentReaction(undefined);
-        if (type === 'like') {
-          setLikeCount(prevCount => Math.max(0, prevCount - 1));
-          setLikeButtonState('default');
-        } else {
-          setDislikeCount(prevCount => Math.max(0, prevCount - 1));
-          setDislikeButtonState('default');
-        }
-      } 
-      // 다른 상태로 변경
-      else {
-        // 이전에 다른 버튼이 활성화되어 있었다면 취소
-        if (currentReaction === ReactionType.LIKE && type === 'dislike') {
-          setLikeCount(prevCount => Math.max(0, prevCount - 1));
-          setLikeButtonState('default');
-          setDislikeCount(prevCount => prevCount + 1);
-          setDislikeButtonState('error');
-        } else if (currentReaction === ReactionType.DISLIKE && type === 'like') {
-          setDislikeCount(prevCount => Math.max(0, prevCount - 1));
-          setDislikeButtonState('default');
-          setLikeCount(prevCount => prevCount + 1);
-          setLikeButtonState('primary');
-        } else {
-          // 기존 상태가 없는 경우
-          if (type === 'like') {
-            setLikeCount(prevCount => prevCount + 1);
-            setLikeButtonState('primary');
-          } else {
-            setDislikeCount(prevCount => prevCount + 1);
-            setDislikeButtonState('error');
-          }
-        }
-        setCurrentReaction(reactionType);
-      }
-      
-      // 서버 API 호출
-      const response = await reactToComment(id, reactionType);
-      
-      // 서버 응답 처리
-      if (response) {
-        const { like = 0, dislike = 0 } = response;
-        
-        // UI 상태 업데이트
-        setLikeCount(like);
-        setDislikeCount(dislike);
-        
-        // API 응답 구조에 따라 isState가 존재하는지 확인
-        if ('isState' in response) {
-          const newState = response.isState ? 
-            (response.isState === '좋아요' ? ReactionType.LIKE : 
-             response.isState === '싫어요' ? ReactionType.DISLIKE : undefined) 
-            : undefined;
-          
-          setCurrentReaction(newState);
-        
-        // 버튼 상태 업데이트
-          setLikeButtonState(newState === ReactionType.LIKE ? 'primary' : 'default');
-          setDislikeButtonState(newState === ReactionType.DISLIKE ? 'error' : 'default');
-        }
-      }
-    } catch (error) {
-      console.error('댓글 반응 처리 실패:', error);
-      // 에러 발생 시 UI 상태 복원 로직 구현 가능
-    }
-  };
-
-  // 내가 작성한 댓글인지 확인
-  const isMyComment = (authorId?: number) => {
-    if (!authorId || !user?.id) return false;
-    return authorId === (typeof user.id === 'string' ? parseInt(user.id, 10) : user.id);
-  };
-
-  // 내가 작성한 답글인지 확인 
-  const isMyReply = (replyAuthorId?: number) => {
-    if (!replyAuthorId || !user?.id) return false;
-    return replyAuthorId === (typeof user.id === 'string' ? parseInt(user.id, 10) : user.id);
-  };
-
-  // 메뉴 아이콘 표시 여부 - 사용자 확인 로직 간소화
-  const isAuthor = user && userId !== undefined && 
-    user.id !== undefined && String(user.id) === String(userId);
 
   return (
     <StyledCard variant="outlined" onClick={handleCardClick}>
@@ -587,6 +579,16 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
               {showReplies ? '답글 숨기기' : `답글 ${replyCount}개`}
             </ActionButton>
           )}
+          
+          {/* 신고 버튼 추가 */}
+          <ActionButton
+            size="small"
+            startIcon={<FlagIcon />}
+            onClick={handleReportClick}
+            color="error"
+          >
+            신고
+          </ActionButton>
         </Box>
       </CardActions>
       
@@ -638,6 +640,16 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
           )}
         </ReplyListContainer>
       </Collapse>
+
+      {/* 신고 다이얼로그 추가 */}
+      <ReportDialog
+        open={reportDialogOpen}
+        onClose={handleCloseReportDialog}
+        targetId={id}
+        targetType="COMMENT"
+        serviceType="DEBATE"
+        reportedUserId={userId || 0}
+      />
     </StyledCard>
   );
 };

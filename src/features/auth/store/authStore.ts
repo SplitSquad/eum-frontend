@@ -45,7 +45,21 @@ interface AuthState {
   handleLogout: () => Promise<void>;
   loadUser: () => Promise<void>;
   clearAuthState: () => void;
+
+  // isOnBoardDone 직접 제어 (추가)
+  setOnBoardDone: (isDone: boolean) => void;
+  getOnBoardDone: () => boolean;
 }
+
+// 타입 변환 헬퍼 함수: isOnBoardDone 값을 항상 boolean으로 처리
+const ensureBoolean = (value: any): boolean => {
+  if (value === undefined || value === null) return false;
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'string') {
+    return value.toLowerCase() === 'true';
+  }
+  return Boolean(value);
+};
 
 /**
  * 인증 상태 관리 스토어
@@ -65,18 +79,62 @@ export const useAuthStore = create<AuthState>()(
       error: null,
 
       // 기본 액션 - 상태 변경
-      setUser: user => set({ user }),
+      setUser: user => {
+        // user 객체가 있고, isOnBoardDone 필드가 있는 경우 boolean으로 변환
+        if (user && 'isOnBoardDone' in user) {
+          // isOnBoardDone 값을 명시적으로 boolean으로 변환
+          const normalizedUser = {
+            ...user,
+            isOnBoardDone: ensureBoolean(user.isOnBoardDone),
+          };
+          set({ user: normalizedUser });
+
+          // 디버깅용: 원본 값과 변환된 값 비교
+          console.log('setUser - isOnBoardDone 정규화:', {
+            원본값: user.isOnBoardDone,
+            원본타입: typeof user.isOnBoardDone,
+            변환값: normalizedUser.isOnBoardDone,
+            변환타입: typeof normalizedUser.isOnBoardDone,
+          });
+        } else {
+          set({ user });
+        }
+      },
       setToken: token => set({ token }),
       setAuthenticated: isAuthenticated => set({ isAuthenticated }),
       setLoading: isLoading => set({ isLoading }),
       setError: error => set({ error }),
 
+      // isOnBoardDone 직접 제어 함수 (추가)
+      setOnBoardDone: (isDone: boolean) => {
+        const { user } = get();
+        if (user) {
+          const updatedUser = { ...user, isOnBoardDone: isDone };
+          set({ user: updatedUser });
+
+          // 디버깅용 로그
+          console.log('isOnBoardDone 직접 설정:', isDone);
+        }
+      },
+
+      getOnBoardDone: () => {
+        const { user } = get();
+        if (!user) return false;
+        return ensureBoolean(user.isOnBoardDone);
+      },
+
       // OAuthCallback에서 사용하는 메서드
       setAuthState: user => {
         const token = getToken();
+        // isOnBoardDone 값을 boolean으로 정규화
+        const normalizedUser = {
+          ...user,
+          isOnBoardDone: ensureBoolean(user.isOnBoardDone),
+        };
+
         set({
           isAuthenticated: true,
-          user,
+          user: normalizedUser,
           token,
           error: null,
         });
@@ -99,15 +157,35 @@ export const useAuthStore = create<AuthState>()(
           console.log('사용자 이메일 저장됨:', user.email);
         }
 
+        // 사용자 이름 저장 (댓글/답글 작성 시 사용)
+        if (user.name) {
+          localStorage.setItem('userName', user.name);
+          console.log('사용자 이름 저장됨:', user.name);
+        }
+
         // 사용자 권한도 별도 저장 (로그인 가드용)
         if (user.role) {
           localStorage.setItem('userRole', user.role);
         }
 
+        // isOnBoardDone 값을 boolean으로 정규화
+        const normalizedUser = {
+          ...user,
+          isOnBoardDone: ensureBoolean(user.isOnBoardDone),
+        };
+
+        // 디버깅: 원본 값과 정규화된 값 로깅
+        console.log('handleLogin - isOnBoardDone 정규화:', {
+          원본값: user.isOnBoardDone,
+          원본타입: typeof user.isOnBoardDone,
+          변환값: normalizedUser.isOnBoardDone,
+          변환타입: typeof normalizedUser.isOnBoardDone,
+        });
+
         // 상태 업데이트
         set({
           isAuthenticated: true,
-          user,
+          user: normalizedUser,
           token,
           error: null,
         });
@@ -145,10 +223,29 @@ export const useAuthStore = create<AuthState>()(
             // 백엔드에서 현재 사용자 정보 조회
             const userData = await checkAuthStatus();
 
-            console.log('사용자 정보 로드 성공:', userData);
+            // isOnBoardDone 값을 명시적으로 boolean으로 변환
+            const normalizedUserData = {
+              ...userData,
+              isOnBoardDone: ensureBoolean(userData.isOnBoardDone),
+            };
 
+            console.log('사용자 정보 로드 성공:', normalizedUserData);
+            console.log('isOnBoardDone 값 확인:', {
+              원본값: userData.isOnBoardDone,
+              원본타입: typeof userData.isOnBoardDone,
+              변환값: normalizedUserData.isOnBoardDone,
+              변환타입: typeof normalizedUserData.isOnBoardDone,
+            });
+
+            // 사용자 이름을 로컬 스토리지에 저장 (댓글/답글 작성 시 사용)
+            if (normalizedUserData.name) {
+              localStorage.setItem('userName', normalizedUserData.name);
+              console.log('사용자 이름 저장됨:', normalizedUserData.name);
+            }
+
+            // 명확한 타입으로 변환된 사용자 정보로 상태 업데이트
             set({
-              user: userData,
+              user: normalizedUserData,
               isAuthenticated: true,
               token: storedToken,
             });
@@ -161,17 +258,18 @@ export const useAuthStore = create<AuthState>()(
               const payload = JSON.parse(atob(storedToken.split('.')[1]));
               const userId = payload.userId || 0;
               const role = payload.role || 'ROLE_USER';
+              const email = localStorage.getItem('userEmail') || '';
 
               // 사용자 정보 생성
               const extractedUser = {
                 userId,
                 role,
-                // 이메일 정보는 토큰에서 가져올 수 없으므로 기본값으로 설정
-                email: '',
-                isOnBoardDone: true, // 온보딩 완료 상태로 설정
+                email,
+                // isOnBoardDone 값은 boolean으로 명확히 설정
+                isOnBoardDone: true,
               };
 
-              console.log('토큰에서 추출한 사용자 정보로 인증 상태 설정:', extractedUser);
+              console.log('토큰에서 추출한 사용자 정보:', extractedUser);
 
               // 상태 업데이트 - API 호출 없이 토큰 기반으로 인증
               set({
@@ -212,12 +310,36 @@ export const useAuthStore = create<AuthState>()(
     {
       name: 'auth-storage',
       storage: createJSONStorage(() => localStorage),
-      // 민감 정보는 제외
-      partialize: state => ({
-        isAuthenticated: state.isAuthenticated,
-        user: state.user,
-        token: state.token,
-      }),
+      // 모든 필드를 명시적으로 처리
+      partialize: state => {
+        // 사용자 정보가 있을 경우 isOnBoardDone 값 정규화
+        let normalizedUser = state.user;
+        if (normalizedUser && 'isOnBoardDone' in normalizedUser) {
+          normalizedUser = {
+            ...normalizedUser,
+            isOnBoardDone: ensureBoolean(normalizedUser.isOnBoardDone),
+          };
+        }
+
+        return {
+          isAuthenticated: state.isAuthenticated,
+          user: normalizedUser,
+          token: state.token,
+        };
+      },
+      // 스토리지에서 값을 읽어올 때 변환 로직 추가
+      onRehydrateStorage: () => state => {
+        // 로컬 스토리지에서 상태를 복원할 때 호출됨
+        if (state && state.user && 'isOnBoardDone' in state.user) {
+          // isOnBoardDone 값을 명시적으로 boolean으로 변환
+          state.user.isOnBoardDone = ensureBoolean(state.user.isOnBoardDone);
+
+          console.log('스토리지에서 복원된 isOnBoardDone 값:', {
+            값: state.user.isOnBoardDone,
+            타입: typeof state.user.isOnBoardDone,
+          });
+        }
+      },
     }
   )
 );

@@ -129,10 +129,10 @@ const OAuthCallbackPage: React.FC = () => {
             
             // 신규 사용자이거나 온보딩이 완료되지 않은 경우 온보딩 페이지로
             if (userInfo.isNewUser || !userInfo.isOnBoardDone) {
-              navigate('/onboarding');
+              navigate('/onboarding', { replace: true });
             } else {
-              // 기존 사용자는 홈페이지로
-              navigate('/');
+              // 기존 사용자는 홈페이지로 (/ 대신 /home으로 직접 이동)
+              navigate('/home', { replace: true });
             }
           } else {
             console.error('로그인 실패: 유저 정보가 없음');

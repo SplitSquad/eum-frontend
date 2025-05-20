@@ -25,8 +25,13 @@ export interface Post {
   viewCount: number;
   images?: string[];
   tags?: string[];
-  source: 'community' | 'discussion' | 'information';
+  source: 'community' | 'discussion' | 'information' | 'debate';
   matchScore?: number; // 추천 매칭 점수 (0-100)
+  debateStats?: {
+    agreePercent: number;
+    disagreePercent: number;
+    voteCnt: number;
+  };
 }
 
 /**
@@ -52,15 +57,15 @@ const convertToWidgetPost = (post: any): Post => {
     content: post.content || '',
     author: {
       id: post.writer?.userId?.toString() || '',
-      name: post.writer?.nickname || '',
+      name: post.userName || post.writer?.nickname || '',
       profileImagePath: post.writer?.profileImage || '',
     },
     category: post.category || '',
     categoryColor: getCategoryColor(post.category || ''),
     createdAt: post.createdAt || new Date().toISOString(),
-    likeCount: post.likeCount || 0,
-    commentCount: post.commentCount || 0,
-    viewCount: post.viewCount || 0,
+    likeCount: post.like || post.likeCount || 0,
+    commentCount: post.commentCnt || post.commentCount || 0,
+    viewCount: post.views || post.viewCount || 0,
     images: post.thumbnail ? [post.thumbnail] : [],
     tags: post.tags || [],
     source: post.postType === '모임' ? 'discussion' : 'community',
@@ -172,7 +177,9 @@ const CommunityService = {
       });
 
       // 토론 API 응답을 위젯용 Post 형식으로 변환
-      const widgetPosts: Post[] = response.debates.map((debate: Debate) => ({
+      const widgetPosts: Post[] = response.debates.map((debate: any) => {
+        // 기본 변환
+        const post: Post = {
         id: debate.id.toString(),
         title: debate.title || '',
         content: debate.content || '',
@@ -184,14 +191,26 @@ const CommunityService = {
         category: debate.category || '토론',
         categoryColor: getCategoryColor(debate.category || '토론'),
         createdAt: debate.createdAt || new Date().toISOString(),
-        likeCount: (debate.reactions?.like || 0) + (debate.reactions?.happy || 0),
-        commentCount: debate.commentCount || 0,
+          likeCount: debate.voteCnt || (debate.reactions?.like || 0) + (debate.reactions?.happy || 0),
+          commentCount: debate.commentCnt || debate.commentCount || 0,
         viewCount: debate.viewCount || 0,
         images: debate.imageUrl ? [debate.imageUrl] : [],
         tags: [],
-        source: 'discussion',
+          source: 'debate', // 소스를 'debate'로 설정
         matchScore: Math.floor(Math.random() * 15) + 80 // 임시 매칭 점수
-      }));
+        };
+
+        // 토론 특화 필드 추가
+        if (debate.agreePercent !== undefined || debate.disagreePercent !== undefined || debate.voteCnt !== undefined) {
+          post.debateStats = {
+            agreePercent: debate.agreePercent || 0,
+            disagreePercent: debate.disagreePercent || 0,
+            voteCnt: debate.voteCnt || 0
+          };
+        }
+
+        return post;
+      });
       
       return {
         content: widgetPosts,
@@ -220,23 +239,82 @@ const CommunityService = {
   /**
    * 추천 게시글 목록 조회 (사용자 관심사 기반)
    * @param size 요청할 게시글 수
+   * @param address 위치 정보 (옵션)
    * @returns 추천 게시글 목록
    */
-  getRecommendedPosts: async (size: number = 10): Promise<Post[]> => {
+  getRecommendedPosts: async (size: number = 10, address?: string): Promise<Post[]> => {
     try {
+      // 사용자 위치 정보가 없는 경우 현재 위치 정보 가져오기 시도
+      let userAddress = address;
+      if (!userAddress) {
+        try {
+          // WeatherService에서 현재 위치 정보 가져오기
+          const WeatherService = (await import('../../services/weather/weatherService')).default;
+          const position = await WeatherService.getCurrentPosition();
+          
+          // 카카오맵 스크립트 로드
+          await new Promise<void>((resolve, reject) => {
+            if (window.kakao && window.kakao.maps) {
+              resolve();
+              return;
+            }
+            
+            const script = document.createElement('script');
+            script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${import.meta.env.VITE_KAKAO_MAP_KEY}&libraries=services&autoload=false`;
+            script.onload = () => {
+              window.kakao.maps.load(() => resolve());
+            };
+            script.onerror = reject;
+            document.head.appendChild(script);
+          });
+          
+          // 위치를 주소로 변환
+          const geocoder = new window.kakao.maps.services.Geocoder();
+          userAddress = await new Promise<string>((resolve) => {
+            geocoder.coord2RegionCode(
+              position.longitude,
+              position.latitude,
+              (result: any, status: any) => {
+                if (status === window.kakao.maps.services.Status.OK && result[0]) {
+                  // ~구 단위까지만 주소 추출 (예: '서울시 강남구')
+                  const address = result[0].region_1depth_name + ' ' + result[0].region_2depth_name;
+                  resolve(address);
+                } else {
+                  resolve('자유'); // 변환 실패 시 기본값
+                }
+              }
+            );
+          });
+        } catch (error) {
+          console.error('위치 정보 가져오기 실패:', error);
+          userAddress = '자유'; // 오류 발생 시 기본값으로 '자유' 사용
+        }
+      }
+
       // 백엔드에서 추천 게시글 API 호출
-      const response = await apiClient.get<any[]>('/community/post/recommendation', {
-        params: { cnt: size }
+      const response = await apiClient.get<any>('/community/post/recommendation', {
+        params: { address: userAddress }
       });
 
-      // 추천 게시글 속성 추가
-      return response.map(post => {
+      // 응답 구조를 확인하고 처리
+      const postList = Array.isArray(response) ? response : 
+                     (response.postList && Array.isArray(response.postList) ? response.postList : []);
+      const analysis = response.analysis || {};
+
+      // 게시글 목록 반환
+      return postList.flat().filter(Boolean).map(post => {
         // 위젯용 포스트로 변환
         const widgetPost = convertToWidgetPost(post);
-        // 추천 점수 추가
+        
+        // 응답에 tag 정보가 있으면 이를 활용하여 매칭 점수 계산
+        const matchTag = post.tags && post.tags.length > 0 ? post.tags[0] : '';
+        const matchScore = matchTag && analysis[matchTag] 
+          ? Math.round(analysis[matchTag] * 100) 
+          : Math.floor(Math.random() * 15) + 80; // 분석 정보가 없으면 임의의 점수
+          
         return {
           ...widgetPost,
-          matchScore: post.matchScore || Math.floor(Math.random() * 15) + 80 // 임시로 80~95 사이 랜덤 점수 부여
+          matchScore
         };
       });
     } catch (error) {

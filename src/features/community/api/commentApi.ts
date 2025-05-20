@@ -23,12 +23,20 @@ function transformCommentData(comment: any, postId?: number): Comment {
   // isState를 myReaction으로 변환
   const myReaction = convertIsStateToMyReaction(comment.isState);
   
+  // writer 객체 생성 또는 보강
+  const writer = comment.writer || {
+    userId: comment.userId,
+    nickname: comment.userName || '사용자',
+    profileImage: comment.userProfileImage || ''
+  };
+  
   return {
     ...comment,
     postId: comment.postId || postId, // postId가 null이면 인자로 받은 postId 사용
     myReaction: myReaction, // isState -> myReaction으로 변환
     likeCount: comment.like || 0, // like -> likeCount로 매핑
     dislikeCount: comment.dislike || 0, // dislike -> dislikeCount로 매핑
+    writer: writer // writer 객체 추가 또는 보강
   };
 }
 
@@ -126,11 +134,17 @@ export const CommentApi = {
         url: COMMENTS_BASE_URL
       });
       
+      // 현재 로그인된 사용자 정보 가져오기
+      const authStore = (window as any).__AUTH_STORE__;
+      const currentUser = authStore ? authStore.getState().user : null;
+      const userName = currentUser?.name || '';
+      
       // 백엔드 API 요청 형식에 맞게 수정
       const payload = {
         postId: numericPostId,
         content,
-        language: 'ko'  // 백엔드 요구사항에 맞게 추가
+        language: 'ko',  // 백엔드 요구사항에 맞게 추가
+        anonymous: false,  // 익명 댓글 명시적으로 비활성화 - 항상 실명 사용
       };
       
       console.log('[DEBUG] 댓글 생성 요청 페이로드:', payload);
@@ -142,11 +156,21 @@ export const CommentApi = {
       // 응답에 postId가 없거나 null인 경우, 요청한 postId를 사용하여 보완
       if (!response.postId) {
         console.log('[DEBUG] 응답에 postId가 없어 요청 값으로 보완:', numericPostId);
-        return {
-          ...response,
-          postId: numericPostId
+        response.postId = numericPostId;
+      }
+      
+      // 응답에 writer 객체 추가
+      if (!response.writer && currentUser) {
+        response.writer = {
+          userId: currentUser.userId,
+          nickname: userName,
+          profileImage: currentUser.profileImage || ''
         };
       }
+      
+      // 사용자 정보 삽입
+      response.userName = userName;  
+      response.userId = currentUser?.userId;
       
       return response;
     } catch (error) {
@@ -286,12 +310,24 @@ export const CommentApi = {
         throw new Error('유효하지 않은 게시글 ID 또는 댓글 ID입니다.');
       }
       
+      // 현재 로그인된 사용자 정보 가져오기
+      const authStore = (window as any).__AUTH_STORE__;
+      const currentUser = authStore ? authStore.getState().user : null;
+      const userName = currentUser?.name || '';
+      
       // 백엔드 API 요청 형식에 맞게 수정
       const payload = {
         postId: Number(postId),
         commentId: Number(commentId),
         content,
-        language: 'ko'  // 백엔드 요구사항에 맞게 추가
+        language: 'ko',  // 백엔드 요구사항에 맞게 추가
+        anonymous: false, // 익명 대댓글 비활성화
+        userName: userName,  // 사용자 이름 직접 전달
+        nickname: userName,  // nickname 필드도 추가 (백엔드가 이 필드를 사용할 수 있음)
+        writer: {  // writer 객체로도 추가 (UI 표시용 구조와 일치)
+          userId: currentUser?.userId,
+          nickname: userName
+        }
       };
       
       console.log('[DEBUG] 대댓글 생성 페이로드:', payload);

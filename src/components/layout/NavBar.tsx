@@ -173,7 +173,7 @@ const DrawerItem = styled(ListItem)<{ season: string; active: boolean }>`
 
 // 네비게이션 항목 정의
 const getNavItems = (t: (key: string) => string) => [
-  { name: t('common.home'), path: '/', icon: <HomeIcon /> },
+  { name: t('common.home'), path: '/home', icon: <HomeIcon /> },
   { name: t('common.community'), path: '/community', icon: <ForumIcon /> },
   { name: t('common.debate'), path: '/debate', icon: <ChatIcon /> },
   { name: t('AIAssistant'), path: '/assistant', icon: <ChatIcon /> },
@@ -202,8 +202,8 @@ const NavBar: React.FC = () => {
 
   // 현재 경로에 따라 활성화 여부 반환
   const isActive = (path: string) => {
-    if (path === '/') {
-      return location.pathname === '/';
+    if (path === '/home') {
+      return location.pathname === '/home' || location.pathname === '/';
     }
     return location.pathname.startsWith(path);
   };
@@ -220,7 +220,7 @@ const NavBar: React.FC = () => {
   const handleLogoutClick = () => {
     handleLogout();
     handleProfileMenuClose();
-    navigate('/');
+    navigate('/google-login');
   };
 
   const handleLogin = () => {
@@ -276,7 +276,7 @@ const NavBar: React.FC = () => {
               alignItems: 'center',
               cursor: 'pointer',
             }}
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/home')}
           >
             <LogoText variant="h6" season={season}>
               EUM

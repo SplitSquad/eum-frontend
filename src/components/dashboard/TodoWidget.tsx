@@ -2,6 +2,7 @@ import React from 'react';
 import { Paper, Box, Typography, List, ListItem, ListItemText, ListItemIcon, Avatar, Chip } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
+import { widgetPaperBase, widgetGradients } from './theme/dashboardWidgetTheme';
 
 interface TodoItem {
   id: string;
@@ -41,8 +42,10 @@ const TodoWidget: React.FC = () => {
 
   return (
     <Paper 
-      elevation={1} 
+      elevation={0}
       sx={{ 
+        ...widgetPaperBase,
+        background: widgetGradients.yellow,
         p: 2, 
         height: '100%',
         borderRadius: 2,

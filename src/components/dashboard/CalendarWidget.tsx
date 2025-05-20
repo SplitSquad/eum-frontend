@@ -39,6 +39,15 @@ import CalendarService, {
   GoogleCalendarEventRequest,
 } from '../../services/calendar/calendarService';
 
+// ISO 문자열을 한국 시간대로 변환하는 유틸리티 함수
+const formatToKoreanTimezone = (date: Date): string => {
+  // 한국 시간대(UTC+9)로 변환해서 ISO 문자열 반환
+  const offset = 9 * 60; // 한국 시간대 오프셋 (분 단위)
+  const utc = date.getTime() + (date.getTimezoneOffset() * 60000); // UTC 시간 (밀리초)
+  const koreanTime = new Date(utc + (offset * 60000)); // 한국 시간
+  return koreanTime.toISOString();
+};
+
 const CalendarWidget: React.FC = () => {
   const [hoveredDate, setHoveredDate] = useState<number | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -50,12 +59,17 @@ const CalendarWidget: React.FC = () => {
   const [isGoogleConnected, setIsGoogleConnected] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  
+  // 초기값 설정 시 한국 시간대로 변환
+  const startDate = new Date();
+  const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
+  
   const [newEvent, setNewEvent] = useState<GoogleCalendarEventRequest>({
     summary: '',
     location: '',
     description: '',
-    startDateTime: new Date().toISOString(),
-    endDateTime: new Date(new Date().getTime() + 60 * 60 * 1000).toISOString(),
+    startDateTime: formatToKoreanTimezone(startDate),
+    endDateTime: formatToKoreanTimezone(endDate),
   });
 
   // 오늘 날짜
@@ -130,12 +144,15 @@ const CalendarWidget: React.FC = () => {
 
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
+    
+    // 현지 시간으로 날짜 생성
     const date = new Date(year, month, day);
-
+    
     // 유효한 날짜인지 확인
     if (isNaN(date.getTime())) return [];
 
-    const dateString = date.toISOString().split('T')[0]; // YYYY-MM-DD 형식
+    // 현지 시간 기준 날짜 문자열 생성 (YYYY-MM-DD)
+    const localDateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
     return events.filter(event => {
       // 이벤트의 시작 날짜가 해당 날짜인 경우만 필터링
@@ -145,8 +162,11 @@ const CalendarWidget: React.FC = () => {
         const eventDate = new Date(event.start.dateTime);
         // 유효한 날짜인지 확인
         if (isNaN(eventDate.getTime())) return false;
-
-        return eventDate.toISOString().split('T')[0] === dateString;
+        
+        // 이벤트 날짜를 현지 시간 기준 문자열로 변환
+        const eventDateString = `${eventDate.getFullYear()}-${String(eventDate.getMonth() + 1).padStart(2, '0')}-${String(eventDate.getDate()).padStart(2, '0')}`;
+        
+        return eventDateString === localDateString;
       } catch (error) {
         console.error('Invalid date in event:', event);
         return false;
@@ -159,7 +179,8 @@ const CalendarWidget: React.FC = () => {
     if (!isGoogleConnected || events.length === 0) return [];
 
     const now = new Date();
-    const utcNow = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+    // 현재 시간을 자정으로 설정 (현지 시간 기준)
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
     return events
       .filter(event => {
@@ -170,7 +191,7 @@ const CalendarWidget: React.FC = () => {
           // 유효한 날짜인지 확인
           if (isNaN(eventDate.getTime())) return false;
 
-          return eventDate >= utcNow;
+          return eventDate >= todayStart;
         } catch (error) {
           console.error('Invalid date in event:', event);
           return false;
@@ -192,7 +213,6 @@ const CalendarWidget: React.FC = () => {
         }
       })
       .slice(0, 5); // 최대 5개만 표시
-    // TODO : 3개로 줄이기?
   };
 
   // 이벤트 생성 또는 수정 열기
@@ -212,13 +232,12 @@ const CalendarWidget: React.FC = () => {
       setSelectedEvent(null);
       const startDate = new Date();
       const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
-      // TODO: 달력이 이상하게 뜨는 원인 후보1
       setNewEvent({
         summary: '',
         location: '',
         description: '',
-        startDateTime: startDate.toISOString(),
-        endDateTime: endDate.toISOString(),
+        startDateTime: formatToKoreanTimezone(startDate),
+        endDateTime: formatToKoreanTimezone(endDate),
       });
     }
     setIsDialogOpen(true);
@@ -1125,7 +1144,7 @@ const CalendarWidget: React.FC = () => {
                   date &&
                   setNewEvent({
                     ...newEvent,
-                    startDateTime: date.toISOString(),
+                    startDateTime: formatToKoreanTimezone(date),
                   })
                 }
               />
@@ -1137,7 +1156,7 @@ const CalendarWidget: React.FC = () => {
                   date &&
                   setNewEvent({
                     ...newEvent,
-                    endDateTime: date.toISOString(),
+                    endDateTime: formatToKoreanTimezone(date),
                   })
                 }
               />

@@ -412,3 +412,9 @@ export interface ReplyType {
   disliked?: boolean;
   translating?: boolean; // 번역 중 상태를 표시
 }
+
+export interface ExtendedPostFilter extends PostFilter {
+  resetSearch?: boolean;
+  _forceRefresh?: number;
+  refresh?: number; // 새로고침을 위한 타임스탬프
+}

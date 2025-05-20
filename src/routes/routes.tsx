@@ -7,6 +7,8 @@ import Profile from '../pages/Profile';
 import { LanguageProvider } from '../features/theme';
 import AiAssistant from '@/tests/unit/componentPageTest/testPages/AiAssistant';
 
+import { AdminpageRoutes } from '../features/adminpage';
+
 // 커뮤니티 기능 임포트
 // import { PostListPage, PostDetailPage, PostCreatePage } from '../features/community/pages';
 import { CommunityRoutes } from '../features/community';
@@ -44,37 +46,36 @@ const Loading = lazy(() => import('../pages/Loading'));
 /**
  * 로딩 화면
  */
-const LoadingFallback = () => <Loading />;
+const LoadingFallback = () => <div>로딩 중...</div>;
 
 /**
  * 라우터 설정
  */
 const router = createBrowserRouter([
+  // 초기 로딩 화면을 메인 경로로 설정 - 이 로딩 화면에서 인증 상태를 확인하여 홈/로그인으로 리다이렉트
   {
     path: '/',
+    element: (
+      <Suspense fallback={<LoadingFallback />}>
+        <Loading />
+      </Suspense>
+    ),
+  },
+
+  // 앱 메인 레이아웃 - 로그인 후 여기로 오는 페이지들
+  {
+    path: '',
     element: <AppLayout />,
     children: [
       // 홈 (로그인 필요로 변경)
       {
-        path: '',
+        path: 'home',
         element: (
           <Suspense fallback={<LoadingFallback />}>
             <Home />
           </Suspense>
         ),
       },
-
-      // 임시 로그인 (비회원만 접근 가능)
-      // {
-      //   path: 'login',
-      //   element: (
-      //     <Suspense fallback={<LoadingFallback />}>
-      //       {/* <GuestGuard> */}
-      //       <TempAuthPage />
-      //       {/* </GuestGuard> */}
-      //     </Suspense>
-      //   ),
-      // },
 
       // 실제 구글 로그인 페이지
       {
@@ -140,6 +141,16 @@ const router = createBrowserRouter([
             <AuthGuard>
               <CommunityRoutes />
             </AuthGuard>
+          </Suspense>
+        ),
+      },
+
+      // 관리자 (로그인 필요 x)
+      {
+        path: 'adminpage/*',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <AdminpageRoutes />
           </Suspense>
         ),
       },

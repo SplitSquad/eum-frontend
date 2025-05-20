@@ -39,6 +39,7 @@ import {
   createKakaoMap,
 } from '../../config/kakaoMap';
 import { env } from '../../config/env';
+import { widgetPaperBase, widgetGradients } from './theme/dashboardWidgetTheme';
 
 declare global {
   interface Window {
@@ -1057,8 +1058,10 @@ const KakaoMapWidget: React.FC = () => {
 
   return (
     <Paper
-      elevation={1}
+      elevation={0}
       sx={{
+        ...widgetPaperBase,
+        background: widgetGradients.green,
         p: 2,
         height: '100%',
         borderRadius: 2,

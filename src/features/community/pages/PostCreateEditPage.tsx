@@ -38,9 +38,11 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import useCommunityStore from '../store/communityStore';
+import useAuthStore from '../../auth/store/authStore';
 import { useSnackbar } from 'notistack';
 import { Post } from '../types';
 import RegionSelector from '../components/shared/RegionSelector';
+import * as api from '../api/communityApi';
 
 // 스프링 배경 컴포넌트 임포트
 import SpringBackground from '../components/shared/SpringBackground';
@@ -242,6 +244,11 @@ const PostCreateEditPage: React.FC = () => {
   const isEditMode = !!postId;
   const { enqueueSnackbar } = useSnackbar();
 
+  // 인증 스토어에서 현재 사용자 정보 가져오기
+  const authStore = useAuthStore();
+  const currentUser = authStore.user;
+  const isAuthenticated = !!currentUser;
+
   // 커뮤니티 스토어에서 필요한 상태와 액션 가져오기
   const communityStore = useCommunityStore();
   const { createPost, updatePost, fetchPostById } = communityStore;
@@ -264,6 +271,7 @@ const PostCreateEditPage: React.FC = () => {
   });
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isPermissionChecking, setIsPermissionChecking] = useState(isEditMode); // 권한 체크 중 상태 추가
   const [isSaving, setIsSaving] = useState(false);
 
   // 파일 업로드 관련 상태
@@ -277,6 +285,57 @@ const PostCreateEditPage: React.FC = () => {
 
   // 세부 지역 선택을 처리하기 위한 상태 추가
   const [selectedSubRegion, setSelectedSubRegion] = useState<string>('');
+
+  // 인증 여부 확인 및 로그인 필요시 리디렉션
+  useEffect(() => {
+    if (!isAuthenticated) {
+      enqueueSnackbar('로그인이 필요한 서비스입니다.', { variant: 'warning' });
+      navigate('/login');
+    }
+  }, [isAuthenticated, navigate, enqueueSnackbar]);
+  
+  // 수정 권한 확인 - 게시글 작성자 또는 관리자만 수정 가능
+  useEffect(() => {
+    const checkEditPermission = async () => {
+      // 새 게시글 작성 시에는 권한 검사 불필요
+      if (!isEditMode || !postId || !currentUser) {
+        setIsPermissionChecking(false);
+        return;
+      }
+      
+      // 권한 체크 시작 전 로딩 상태 설정
+      setIsPermissionChecking(true);
+      
+      try {
+        // 1. 관리자 여부 확인
+        const isAdmin = currentUser.role === 'ROLE_ADMIN';
+        
+        // 2. 작성자 여부 확인 - 사용자가 작성한 게시글 목록 조회
+        const userId = currentUser.userId;
+        const response = await api.getUserPosts(userId, 0, 100);
+        
+        // API 응답에서 postList 추출 및 게시글 ID 목록 생성
+        const userPostIds = response?.postList?.map((post: any) => post.postId) || [];
+        
+        // 현재 게시글이 사용자의 게시글 목록에 없고, 관리자도 아니면 권한 없음
+        if (!userPostIds.includes(Number(postId)) && !isAdmin) {
+          enqueueSnackbar('게시글 수정 권한이 없습니다.', { variant: 'error' });
+          navigate('/community');
+          return;
+        }
+        
+        // 권한 체크 완료
+        setIsPermissionChecking(false);
+      } catch (error) {
+        console.error('[ERROR] 게시글 수정 권한 확인 실패:', error);
+        // 권한 확인 실패 시 안전하게 목록으로 리디렉션
+        enqueueSnackbar('권한 확인 중 오류가 발생했습니다.', { variant: 'error' });
+        navigate('/community');
+      }
+    };
+    
+    checkEditPermission();
+  }, [postId, currentUser, isEditMode, navigate, enqueueSnackbar]);
 
   // 편집 모드일 경우 기존 게시글 데이터 불러오기
   useEffect(() => {
@@ -379,14 +438,6 @@ const PostCreateEditPage: React.FC = () => {
     }));
   };
 
-  // 익명 체크박스 핸들러
-  const handleAnonymousChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      isAnonymous: e.target.checked,
-    }));
-  };
-
   // 파일 선택 핸들러
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -485,13 +536,31 @@ const PostCreateEditPage: React.FC = () => {
           selectedFiles
         );
         enqueueSnackbar('게시글이 성공적으로 수정되었습니다.', { variant: 'success' });
+        
+        // 수정된 게시글로 바로 이동
+        navigate(`/community/${postId}`);
       } else {
-        await createPost(postData, selectedFiles);
-        enqueueSnackbar('게시글이 성공적으로 작성되었습니다.', { variant: 'success' });
+        try {
+          // 게시글 생성 시도
+          const result = await createPost(postData, selectedFiles);
+          enqueueSnackbar('게시글이 성공적으로 작성되었습니다.', { variant: 'success' });
+          
+          // 생성 결과 확인
+          console.log('게시글 생성 결과:', result);
+          
+          // 약간의 지연 후 목록 페이지로 이동
+          // 이렇게 하면 서버에서 데이터가 완전히 처리될 시간을 확보함
+          setTimeout(() => {
+            // 강제로 게시판 목록 페이지를 새로고침하여 최신 게시글이 표시되도록 함
+            window.location.href = '/community';
+          }, 500);
+        } catch (error) {
+          console.error('게시글 생성 오류:', error);
+          enqueueSnackbar('게시글 작성에 실패했습니다.', { variant: 'error' });
+          // 에러 발생 시 목록으로 이동
+          navigate('/community');
+        }
       }
-
-      // 게시글 목록 페이지로 이동
-      navigate('/community');
     } catch (error) {
       console.error('게시글 저장 오류:', error);
       enqueueSnackbar('게시글 저장 중 오류가 발생했습니다.', { variant: 'error' });
@@ -507,13 +576,16 @@ const PostCreateEditPage: React.FC = () => {
     }
   };
 
-  // 로딩 중일 때 로딩 표시
-  if (isLoading) {
+  // 로딩 중 또는 권한 체크 중일 때 로딩 표시
+  if (isLoading || isPermissionChecking) {
     return (
       <SpringBackground>
         <Container maxWidth="md" sx={{ py: 4 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-            <CircularProgress sx={{ color: 'rgba(255, 107, 107, 0.7)' }} />
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 8 }}>
+            <CircularProgress sx={{ color: 'rgba(255, 107, 107, 0.7)', mb: 2 }} />
+            <Typography variant="body2" color="text.secondary">
+              {isPermissionChecking ? '권한 확인 중...' : '게시글 로딩 중...'}
+            </Typography>
           </Box>
         </Container>
       </SpringBackground>
@@ -697,7 +769,7 @@ const PostCreateEditPage: React.FC = () => {
                         </MenuItem>
                       ))}
                   </Select>
-                  <FormHelperText>관련된 세부 태그를 선택하세요 (최대 3개)</FormHelperText>
+                  <FormHelperText>관련된 세부 태그를 선택하세요 (최대 1개)</FormHelperText>
                 </FormControl>
               )}
 
@@ -837,26 +909,6 @@ const PostCreateEditPage: React.FC = () => {
                   </Box>
                 )}
               </Box>
-
-              {/* 익명 체크박스 */}
-              <FormControl>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <Checkbox
-                    checked={formData.isAnonymous}
-                    onChange={handleAnonymousChange}
-                    id="anonymous-checkbox"
-                    sx={{
-                      color: 'rgba(255, 170, 165, 0.7)',
-                      '&.Mui-checked': {
-                        color: 'rgba(255, 107, 107, 0.7)',
-                      },
-                    }}
-                  />
-                  <Typography component="label" htmlFor="anonymous-checkbox">
-                    익명으로 게시하기
-                  </Typography>
-                </Box>
-              </FormControl>
 
               {/* 제출 및 취소 버튼 */}
               <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 2 }}>

@@ -286,7 +286,7 @@ function loadMapsModule(onSuccess: (maps: any) => void, onError: (error: Error) 
       return;
     }
 
-    // 8초 타임아웃 설정
+    // 3초 타임아웃 설정
     const timeout = setTimeout(() => {
       onError(new Error('카카오맵: maps 모듈 로드 타임아웃 (3초)'));
     }, 3000);

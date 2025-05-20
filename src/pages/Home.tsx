@@ -19,10 +19,10 @@ import { SeasonalBackground } from '../features/theme';
 const Home: React.FC = () => {
   const { isAuthenticated } = useAuthStore();
   const { season } = useThemeStore();
-  
+
   return (
     <SeasonalBackground noPadding={true}>
-      <Box 
+      <Box
         sx={{
           minHeight: '100vh',
           width: '100%',
@@ -34,23 +34,25 @@ const Home: React.FC = () => {
           zIndex: 10,
         }}
       >
-        <Container 
-          maxWidth="xl" 
-          sx={{ 
-            py: 2, 
-            display: 'flex', 
-            flexDirection: 'column', 
-            flexGrow: 1
+        <Container
+          maxWidth="xl"
+          sx={{
+            py: 2,
+            display: 'flex',
+            flexDirection: 'column',
+            flexGrow: 1,
           }}
         >
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flexGrow: 1 }}>
             {/* 첫 번째 행: 2개 위젯 (UserStatusWidget, UserPreferenceWidget) */}
-            <Box sx={{ 
-              display: 'flex', 
-              flexDirection: { xs: 'column', md: 'row' }, 
-              gap: 2,
-              height: { md: '450px' } // 높이 더 증가
-            }}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: { xs: 'column', md: 'row' },
+                gap: 2,
+                height: { md: '450px' }, // 높이 더 증가
+              }}
+            >
               <Box sx={{ width: { xs: '100%', md: '60%' }, height: '100%' }}>
                 <UserStatusWidget />
               </Box>
@@ -58,19 +60,22 @@ const Home: React.FC = () => {
                 <UserPreferenceWidget />
               </Box>
             </Box>
-            
+
             {/* 두 번째 행: 1개 위젯 (CalendarWidget) - 높이 증가 */}
-            <Box sx={{ width: '100%', height: { md: '450px' }}}>
+            <Box sx={{ width: '100%', height: { md: '450px' } }}>
               <CalendarWidget />
             </Box>
-            
+
             {/* 세 번째 행: 2개 위젯 (DynamicFeedWidget, KakaoMapWidget) */}
-            <Box sx={{ 
-              display: 'flex', 
-              flexDirection: { xs: 'column', md: 'row' }, 
-              gap: 2,
-              height: { md: '500px' } // 높이 증가
-            }}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: { xs: 'column', md: 'row' },
+                gap: 2,
+                height: { md: '500px' }, // 높이 증가
+                mb: 3, // 3,4번째 행 사이에만 24px 여백 추가
+              }}
+            >
               <Box sx={{ width: { xs: '100%', md: '55%' }, height: '100%' }}>
                 <DynamicFeedWidget />
               </Box>
@@ -78,14 +83,16 @@ const Home: React.FC = () => {
                 <KakaoMapWidget />
               </Box>
             </Box>
-            
+
             {/* 네 번째 행: 2개 위젯 (PexelsGalleryWidget, YoutubeGalleryWidget) */}
-            <Box sx={{ 
-              display: 'flex', 
-              flexDirection: { xs: 'column', md: 'row' }, 
-              gap: 2,
-              height: { md: '360px' } // 높이 조금 증가
-            }}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: { xs: 'column', md: 'row' },
+                gap: 2,
+                height: { md: '360px' }, // 높이 조금 증가
+              }}
+            >
               <Box sx={{ width: { xs: '100%', md: '50%' }, height: '100%' }}>
                 <PexelsGalleryWidget />
               </Box>
@@ -95,7 +102,7 @@ const Home: React.FC = () => {
             </Box>
           </Box>
         </Container>
-          </Box>
+      </Box>
     </SeasonalBackground>
   );
 };

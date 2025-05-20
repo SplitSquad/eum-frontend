@@ -18,6 +18,7 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ImageIcon from '@mui/icons-material/Image';
 import DownloadIcon from '@mui/icons-material/Download';
+import { widgetPaperBase, widgetGradients } from './theme/dashboardWidgetTheme';
 
 interface ImageItem {
   id: string;
@@ -172,8 +173,10 @@ const UnsplashGalleryWidget: React.FC = () => {
 
   return (
     <Paper
-      elevation={1}
+      elevation={0}
       sx={{
+        ...widgetPaperBase,
+        background: widgetGradients.pink,
         p: 2,
         height: '100%',
         borderRadius: 2,

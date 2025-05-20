@@ -16,6 +16,7 @@ import {
   ListItemAvatar,
   ListItemText,
   Grid,
+  IconButton,
 } from '@mui/material';
 import FlagIcon from '@mui/icons-material/Flag';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
@@ -25,15 +26,18 @@ import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAlt
 import SentimentVeryDissatisfiedIcon from '@mui/icons-material/SentimentVeryDissatisfied';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { styled } from '@mui/material/styles';
-
+import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import { formatDate, formatRelativeTime } from '../utils/dateUtils';
 import DebateLayout from '../components/common/DebateLayout';
 import CommentSection from '../components/comment/CommentSection';
 import DebateApi, { getVotesByDebateId } from '../api/debateApi';
-
-// Import the recharts library for pie charts
-// The recharts package should be installed with: npm install recharts
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+
+import { useSnackbar } from 'notistack';
+import useAuthStore from '../../auth/store/authStore';
+
+// ServiceType 정의
+
 
 // Styled components
 const DebateCard = styled(Paper)(({ theme }) => ({
@@ -264,6 +268,9 @@ type EmotionType = 'like' | 'dislike' | 'sad' | 'angry' | 'confused';
 const DebateDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { enqueueSnackbar } = useSnackbar();
+  const authStore = useAuthStore();
+  const currentUser = authStore.user;
   const {
     currentDebate: debate,
     isLoading: loading,
@@ -279,6 +286,8 @@ const DebateDetailPage: React.FC = () => {
   const [userEmotion, setUserEmotion] = useState<EmotionType | null>(null);
   const [comment, setComment] = useState<string>('');
   const [stance, setStance] = useState<VoteType | null>(null);
+  
+  // 상태 관리
 
   // 직접 API 접근을 위한 함수들
   const directVoteOnDebate = async (debateId: number, stance: 'pro' | 'con'): Promise<any> => {
@@ -721,6 +730,8 @@ const DebateDetailPage: React.FC = () => {
   const handleGoBack = () => {
     navigate(-1);
   };
+  
+
 
   // Category colors for styling
   const categoryColors = {
@@ -813,9 +824,10 @@ const DebateDetailPage: React.FC = () => {
               뒤로 가기
             </Button>
           </Box>
-        </Container>
-      </DebateLayout>
-    );
+              </Container>
+
+    </DebateLayout>
+  );
   }
 
   const enhancedDebate = debate as EnhancedDebate;
@@ -838,6 +850,8 @@ const DebateDetailPage: React.FC = () => {
       }}
     >
       <Container maxWidth="md" sx={{ py: 4 }}>
+
+        
         {/* 개발용 디버그 버튼 */}
         {import.meta.env.DEV && (
           <Button variant="outlined" color="info" onClick={handleReloadDebateData} sx={{ mb: 2 }}>

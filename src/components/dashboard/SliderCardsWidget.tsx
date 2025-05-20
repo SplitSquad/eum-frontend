@@ -5,6 +5,7 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import { widgetPaperBase, widgetGradients } from './theme/dashboardWidgetTheme';
 
 interface CardItem {
   id: string;
@@ -73,8 +74,10 @@ const SliderCardsWidget: React.FC = () => {
 
   return (
     <Paper 
-      elevation={1} 
+      elevation={0}
       sx={{ 
+        ...widgetPaperBase,
+        background: widgetGradients.pink,
         p: 2, 
         height: '100%',
         borderRadius: 2,

@@ -15,6 +15,9 @@ import PostApi, {
 // 댓글 관련 API - 임시로 CommentApi.ts에서 가져옴
 import CommentApi from './commentApi';
 
+// API 클라이언트
+import apiClient from './apiClient';
+
 // 게시글 관련 API 함수들
 export const getPosts = PostApi.getPosts;
 export const getTopPosts = PostApi.getTopPosts;
@@ -26,6 +29,19 @@ export const createPost = PostApi.createPost;
 export const updatePost = PostApi.updatePost;
 export const deletePost = PostApi.deletePost;
 export const reactToPost = PostApi.reactToPost;
+
+// 사용자 작성 게시글 목록 조회 함수 추가
+export const getUserPosts = async (userId: number, page = 0, size = 100) => {
+  try {
+    const response = await apiClient.get(`/community/post/written`, {
+      params: { userId, page, size }
+    });
+    return response;
+  } catch (error) {
+    console.error('[ERROR] 사용자 작성 게시글 로드 실패:', error);
+    throw error;
+  }
+};
 
 // 댓글 관련 API 함수들
 export const getComments = CommentApi.getComments;

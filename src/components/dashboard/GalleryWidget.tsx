@@ -2,6 +2,7 @@ import React from 'react';
 import { Paper, Box, Typography, Grid, IconButton, Card, CardMedia, Chip } from '@mui/material';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import { widgetPaperBase, widgetGradients } from './theme/dashboardWidgetTheme';
 
 interface GalleryItem {
   id: string;
@@ -64,8 +65,10 @@ const GalleryWidget: React.FC = () => {
 
   return (
     <Paper 
-      elevation={1} 
+      elevation={0}
       sx={{ 
+        ...widgetPaperBase,
+        background: widgetGradients.pink,
         p: 2, 
         height: '100%',
         borderRadius: 2,

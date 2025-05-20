@@ -202,7 +202,12 @@ export const useCommunityStore = create<CommunityStore>((set, get) => {
     },
     
     createPost: async (postDto: any, files?: File[]) => {
-      await usePostStore.getState().createPost(postDto, files);
+      try {
+        return await usePostStore.getState().createPost(postDto, files);
+      } catch (error) {
+        console.error('게시글 생성 실패:', error);
+        throw error;
+      }
     },
     
     updatePost: async (postId: number, postDto: any, files?: File[], removeFileIds?: number[]) => {

@@ -12,37 +12,33 @@ interface OAuthResponse {
   [key: string]: any; // 기타 속성을 위한 인덱스 시그니처
 }
 
-// 사용자 정보 응답 타입 정의
-interface UserProfileResponse {
-  data: {
-    userId: number;
-    email: string;
-    name: string;
-    role: string;
-    phoneNumber?: string;
-    birthday?: string;
-    profileImagePath?: string;
-    address?: string;
-    signedAt?: string;
-    isDeactivate?: boolean;
-  }
+// 사용자 프로필 데이터 타입 정의
+interface UserProfileData {
+  userId: number;
+  email: string;
+  name: string;
+  role: string;
+  phoneNumber?: string;
+  birthday?: string;
+  profileImagePath?: string;
+  address?: string;
+  signedAt?: string;
+  isDeactivate?: boolean;
 }
 
-// 사용자 선호도 응답 타입 정의
-interface UserPreferenceResponse {
-  data: {
-    preferenceId: number;
-    userId: number;
-    nation: string;
-    language: string;
-    gender: string;
-    visitPurpose: string;
-    period: string;
-    onBoardingPreference: string;
-    isOnBoardDone: boolean;
-    createdAt: string;
-    updatedAt: string;
-  }
+// 사용자 선호도 데이터 타입 정의
+interface UserPreferenceData {
+  preferenceId: number;
+  userId: number;
+  nation: string;
+  language: string;
+  gender: string;
+  visitPurpose: string;
+  period: string;
+  onBoardingPreference: string;
+  isOnBoardDone: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // JWT 토큰에서 userId 추출하는 유틸리티 함수
@@ -99,6 +95,7 @@ export const handleOAuthCallback = async (code: string) => {
     // 토큰 소스 결정 (헤더 우선, 없으면 응답 본문)
     const token = authHeader || data.token || '';
     const email = data.email || '';
+    const name = data.name || '';
     const role = data.role || '';
     
     if (!token) {
@@ -123,14 +120,28 @@ export const handleOAuthCallback = async (code: string) => {
       localStorage.setItem('userEmail', email);
       console.log('사용자 이메일 저장됨:', email);
     }
+    
+    // 사용자 이름 저장 (댓글/답글 작성 시 사용)
+    if (name) {
+      localStorage.setItem('userName', name);
+      console.log('사용자 이름 저장됨:', name);
+    }
+    
     console.log('토큰 저장됨, localStorage 확인:', localStorage.getItem('auth_token') ? '토큰 저장 성공' : '토큰 저장 실패');
     
     // 사용자 정보 구성 (서버에서 받은 email과 role을 직접 사용)
     const user: User = {
       userId: getUserIdFromToken(token),
       role: role || 'ROLE_USER',
-      email: email || ''
+      email: email || '',
+      name: name || '',
+      isOnBoardDone: data.isOnBoardDone !== undefined ? data.isOnBoardDone : false
     };
+    
+    // isOnBoardDone 값도 따로 저장 (폴백 시 사용)
+    if (data.isOnBoardDone !== undefined) {
+      localStorage.setItem('isOnBoardDone', String(data.isOnBoardDone));
+    }
     
     return { token, user };
   } catch (error) {
@@ -151,27 +162,42 @@ export const checkAuthStatus = async (): Promise<User> => {
 
     try {
       // 프로필 정보 가져오기
-      const profileResponse = await axiosInstance.get<UserProfileResponse>('/users/profile', {
+      const profileResponse = await axiosInstance.get('/users/profile', {
         headers: {
           'Authorization': token
         }
-      });
+      }) as any;
 
       // 선호도 정보 가져오기
-      const preferenceResponse = await axiosInstance.get<UserPreferenceResponse>('/users/preference', {
+      const preferenceResponse = await axiosInstance.get('/users/preference', {
         headers: {
           'Authorization': token
         }
-      });
+      }) as any;
+      
+      // 디버깅 로그: 실제 응답 구조 확인
+      console.log('프로필 응답:', profileResponse);
+      console.log('선호도 응답:', preferenceResponse);
+      
+      // 응답에서 데이터 추출 (axios 응답 구조)
+      const profileData = profileResponse.data as UserProfileData; 
+      const preferenceData = preferenceResponse.data as UserPreferenceData;
+      
+      // isOnBoardDone 값 로컬 스토리지에 저장 (폴백 로직에서 사용)
+      localStorage.setItem('isOnBoardDone', String(preferenceData.isOnBoardDone));
       
       // 사용자 정보 반환 (백엔드 응답 구조에 맞게 매핑)
-      return {
-        userId: profileResponse.data.userId,
-        email: profileResponse.data.email,
-        role: profileResponse.data.role,
-        name: profileResponse.data.name,
-        isOnBoardDone: preferenceResponse.data.isOnBoardDone || false
+      const userData: User = {
+        userId: profileData.userId,
+        email: profileData.email,
+        role: profileData.role,
+        name: profileData.name,
+        isOnBoardDone: preferenceData.isOnBoardDone
       };
+      
+      console.log('API에서 가져온 사용자 정보:', userData);
+      return userData;
+      
     } catch (apiError) {
       console.warn('API에서 사용자 정보 가져오기 실패, 토큰에서 정보 추출 시도:', apiError);
       
@@ -180,16 +206,20 @@ export const checkAuthStatus = async (): Promise<User> => {
       const userId = payload.userId || 0;
       const role = payload.role || 'ROLE_USER';
       const email = localStorage.getItem('userEmail') || '';
+      const name = localStorage.getItem('userName') || '';
       
-      console.log('토큰에서 추출한 사용자 정보:', { userId, role, email });
+      // localStorage에서 이전에 저장된 isOnBoardDone 값 확인
+      const isOnBoardDone = localStorage.getItem('isOnBoardDone') === 'true';
+      
+      console.log('토큰에서 추출한 사용자 정보:', { userId, role, email, name, isOnBoardDone });
       
       // 사용자 정보 반환
       return {
         userId,
         role,
         email,
-        // isOnBoardDone 정보는 토큰에서 추출할 수 없으므로 기본값으로 설정
-        isOnBoardDone: true // 온보딩을 강제로 완료로 설정
+        name,
+        isOnBoardDone
       };
     }
   } catch (error) {
@@ -217,6 +247,8 @@ export const logout = async () => {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('userRole');
     localStorage.removeItem('userEmail');
+    localStorage.removeItem('userName');
+    localStorage.removeItem('isOnBoardDone');
     removeToken();
   }
 };

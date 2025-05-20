@@ -188,6 +188,10 @@ export const useCommentStore = create<CommentState & CommentActions>()(
             postId: newComment.postId,
           });
 
+          // 현재 로그인한 사용자 정보 가져오기
+          const authStore = (window as any).__AUTH_STORE__;
+          const currentUser = authStore ? authStore.getState().user : null;
+          
           // 즉시 UI에 새 댓글 반영 - 누락된 필드 추가해서 정확하게 표시
           if (newComment) {
             const enhancedComment = {
@@ -198,9 +202,9 @@ export const useCommentStore = create<CommentState & CommentActions>()(
               replyCount: newComment.reply || 0,
               content: newComment.content || content.trim(), // 실패하면 원본 사용
               writer: {
-                userId: newComment.userId || 0,
-                nickname: newComment.userName || '익명',
-                profileImage: newComment.userProfileImage || '',
+                userId: newComment.userId || currentUser?.userId || 0,
+                nickname: newComment.userName || currentUser?.name || '사용자',
+                profileImage: newComment.userProfileImage || currentUser?.profileImage || '',
                 role: 'USER'
               },
               isLocked: false,

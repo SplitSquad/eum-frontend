@@ -24,6 +24,7 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import CloseIcon from '@mui/icons-material/Close';
 import { env } from '../../config/env';
 import axios from 'axios';
+import { widgetPaperBase, widgetGradients } from './theme/dashboardWidgetTheme';
 
 interface VideoItem {
   id: string;
@@ -236,8 +237,10 @@ const YoutubeGalleryWidget: React.FC = () => {
 
   return (
     <Paper
-      elevation={1}
+      elevation={0}
       sx={{
+        ...widgetPaperBase,
+        background: widgetGradients.purple,
         p: 2,
         height: '100%',
         borderRadius: 2,

@@ -2,6 +2,7 @@ import React from 'react';
 import { Paper, Box, Typography, List, ListItem, ListItemText, Chip, Divider } from '@mui/material';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
+import { widgetPaperBase, widgetGradients } from './theme/dashboardWidgetTheme';
 
 interface NotificationItem {
   id: string;
@@ -39,8 +40,10 @@ const NotificationWidget: React.FC = () => {
 
   return (
     <Paper 
-      elevation={1} 
+      elevation={0}
       sx={{ 
+        ...widgetPaperBase,
+        background: widgetGradients.blue,
         p: 2, 
         height: '100%',
         borderRadius: 2,

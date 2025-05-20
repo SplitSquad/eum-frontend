@@ -627,6 +627,76 @@ const DebateApi = {
       console.error('토론 주제 작성 실패:', error);
       return null;
     }
+  },
+
+  /**
+   * 추천 토론 주제 목록 조회 (사용자 관심사 기반)
+   */
+  getRecommendedDebates: async (): Promise<{debates: Debate[], analysis: Record<string, number>}> => {
+    try {
+      console.log('추천 토론 주제 목록 조회 시작');
+      
+      // 추천 API 호출
+      const response = await apiClient.get<any>('/debate/recommendation');
+      console.log('추천 토론 응답 데이터:', response);
+      
+      if (!response) {
+        console.error('추천 토론 API 응답이 없습니다.');
+        return { debates: [], analysis: {} };
+      }
+      
+      const data = response.data || response;
+      
+      // 기본 결과 객체
+      const result: {debates: Debate[], analysis: Record<string, number>} = {
+        debates: [],
+        analysis: {}
+      };
+      
+      // 추천 토론 목록 처리
+      if (data.debateList && Array.isArray(data.debateList)) {
+        // 백엔드에서 2차원 배열 형태로 반환하는 경우 처리
+        const allDebates: Debate[] = [];
+        
+        data.debateList.forEach((debateGroup: any[]) => {
+          if (Array.isArray(debateGroup)) {
+            // 각 그룹의 토론 처리
+            const debates = debateGroup.map((item: DebateResDto) => {
+              const debate = mapDebateResToFrontend(item);
+              
+              // 카테고리 정보 유지
+              if (item.category) {
+                debate.category = item.category;
+              }
+              
+              // 매치 점수 추가 (사용자 관심사와의 일치도)
+              if (data.analysis && typeof data.analysis === 'object') {
+                const category = item.category || '';
+                const matchScore = data.analysis[category] || 0;
+                debate.matchScore = Math.round(matchScore * 100); // 0~1 값을 0~100으로 변환
+              }
+              
+              return debate;
+            });
+            
+            allDebates.push(...debates);
+          }
+        });
+        
+        result.debates = allDebates;
+      }
+      
+      // 분석 정보 처리
+      if (data.analysis && typeof data.analysis === 'object') {
+        result.analysis = data.analysis;
+      }
+      
+      console.log('처리된 추천 토론 목록:', result.debates.length, '개');
+      return result;
+    } catch (error) {
+      console.error('추천 토론 목록 조회 실패:', error);
+      return { debates: [], analysis: {} };
+    }
   }
 };
 
