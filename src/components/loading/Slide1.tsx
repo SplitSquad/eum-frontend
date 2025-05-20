@@ -8,12 +8,12 @@ import { motion } from 'framer-motion';
 const Slide1 = () => {
   return (
     <motion.div
-      className="flex flex-col items-center justify-center w-full text-center px-6 space-y-6 min-h-screen"
-      style={{ minHeight: 'calc(var(--vh, 1vh) * 100)' }}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.8 }}
+      className="flex flex-col items-center justify-center w-full text-center px-6 space-y-6 mt-16"
+      style={{ minHeight: '100%' }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.6 }}
     >
       <h2 className="text-4xl font-bold bg-gradient-to-r from-pink-300 to-pink-500 bg-clip-text text-transparent">
         이음이와 함께 시작해요!

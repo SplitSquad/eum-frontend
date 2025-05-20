@@ -198,7 +198,7 @@ export const usePostStore = create<PostState & PostActions>()(
       postError: null,
       postFilter: {
         sortBy: 'latest',
-        category: '전체',
+        category: '자유',
         location: '전체',
         page: 0,
         size: 6,

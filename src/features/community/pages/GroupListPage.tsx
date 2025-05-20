@@ -50,6 +50,7 @@ import { Post } from '../types';
 import useAuthStore from '../../../features/auth/store/authStore';
 import { usePostStore } from '../store/postStore';
 import { PostApi } from '../api/postApi';
+import { PostType } from '../types-folder';
 
 /**
  * 게시글 목록 페이지 컴포넌트
@@ -85,9 +86,6 @@ const PostTypeLabel = styled(Typography)(({ theme }) => ({
   color: '#666',
 }));
 
-// 게시글 타입 정의
-type PostType = '자유' | '모임' | '전체' | '';
-
 // 선택 가능한 게시글 타입 (UI 표시용)
 type SelectablePostType = 'ALL' | '자유' | '모임';
 
@@ -104,7 +102,7 @@ interface LocalPostFilter {
   searchActive?: boolean; // 검색 활성화 여부
 }
 
-const PostListPage: React.FC = () => {
+const GroupListPage: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
@@ -117,7 +115,6 @@ const PostListPage: React.FC = () => {
   const [selectedRegion, setSelectedRegion] = useState<string>('전체');
   const [searchType, setSearchType] = useState<string>('제목_내용');
   const [isSearchMode, setIsSearchMode] = useState<boolean>(false);
-  const [selectedPostType, setSelectedPostType] = useState<SelectablePostType>('ALL');
 
   // 카테고리별 태그 매핑
   const categoryTags = {
@@ -154,7 +151,7 @@ const PostListPage: React.FC = () => {
     sortBy: (queryParams.get('sortBy') as 'latest' | 'popular') || 'latest',
     page: queryParams.get('page') ? parseInt(queryParams.get('page') as string) - 1 : 0,
     size: 6,
-    postType: (queryParams.get('postType') as PostType) || '',
+    postType: (queryParams.get('postType') as PostType) || '모임',
   });
 
   // 컴포넌트 마운트 시 게시글 목록 조회를 위한 트래킹
@@ -185,8 +182,8 @@ const PostListPage: React.FC = () => {
     // 초기 로드 시 명시적으로 기본 필터 설정 (자유 게시글, 자유 지역)
     const initialFilter = {
       ...filter,
-      postType: '자유' as PostType,
-      location: '자유',
+      postType: '모임' as PostType,
+      location: '전체',
       page: 0,
       size: 6,
     };
@@ -271,16 +268,6 @@ const PostListPage: React.FC = () => {
         검색타입: searchType,
       });
 
-      // postType 처리
-      let postTypeValue = updatedFilter.postType || '자유';
-      if (selectedPostType === 'ALL') {
-        postTypeValue = '자유';
-      } else if (selectedPostType === '모임') {
-        postTypeValue = '모임';
-      } else {
-        postTypeValue = selectedPostType;
-      }
-
       // UI용 필터 상태 먼저 업데이트 (로딩 상태 표시용)
       setFilter(updatedFilter);
 
@@ -288,7 +275,7 @@ const PostListPage: React.FC = () => {
       const searchOptions = {
         page: updatedFilter.page !== undefined ? updatedFilter.page : 0,
         size: updatedFilter.size || 6,
-        postType: postTypeValue,
+        postType: '모임',
         region: updatedFilter.location,
         category: updatedFilter.category,
         tag: updatedFilter.tag,
@@ -393,14 +380,11 @@ const PostListPage: React.FC = () => {
     // 검색 모드 활성화
     setIsSearchMode(true);
 
-    // 검색용 postType 설정
-    let postTypeForSearch = selectedPostType === 'ALL' ? '자유' : (selectedPostType as PostType);
-
     // 검색 시 필터 상태 업데이트
     const searchFilter = {
       ...filter,
       page: 0,
-      postType: postTypeForSearch,
+      postType: '모임' as PostType,
     };
     setFilter(searchFilter);
 
@@ -408,7 +392,7 @@ const PostListPage: React.FC = () => {
     const searchOptions = {
       page: 0,
       size: 6,
-      postType: postTypeForSearch,
+      postType: '모임' as PostType,
       region: selectedRegion,
       category: selectedCategory,
       tag: filter.tag,
@@ -474,59 +458,59 @@ const PostListPage: React.FC = () => {
   };
 
   // 게시글 타입(자유/모임) 변경 핸들러
-  const handlePostTypeChange = (newPostType: 'ALL' | '자유' | '모임') => {
-    if (!newPostType) return; // 값이 null이면 무시
-
-    console.log('[DEBUG] 게시글 타입 변경 시작:', newPostType);
-
-    // 이전 타입과 같으면 변경 없음
-    if (
-      (newPostType === 'ALL' && selectedPostType === 'ALL') ||
-      (newPostType === '자유' && selectedPostType === '자유') ||
-      (newPostType === '모임' && selectedPostType === '모임')
-    ) {
-      console.log('[DEBUG] 같은 게시글 타입 선택, 변경 없음');
-      return;
-    }
-
-    // 상태 업데이트
-    setSelectedPostType(newPostType);
-
-    // 필터 업데이트
-    const newFilter = { ...filter };
-
-    if (newPostType === 'ALL') {
-      // 전체 선택 시 자유 게시글로 기본 설정 (백엔드 요구사항)
-      newFilter.postType = '자유' as PostType;
-      // 자유 게시글에는 자유 지역 설정
-      newFilter.location = '자유';
-      console.log('[DEBUG] 전체 게시글 선택: postType을 "자유"로 설정, location을 "자유"로 설정');
-    } else if (newPostType === '자유') {
-      newFilter.postType = '자유' as PostType; // 명시적으로 타입 설정
-      // 자유 게시글에는 무조건 자유 지역
-      newFilter.location = '자유';
-      console.log(`[DEBUG] 자유 게시글 선택: postType을 '자유'로 설정, location을 "자유"로 설정`);
-    } else {
-      // 모임 게시글
-      newFilter.postType = '모임' as PostType; // 명시적으로 타입 설정
-      // 모임 게시글은 기존 지역 유지하거나 새로 설정
-      if (newFilter.location === '자유') {
-        newFilter.location = '전체'; // 기존에 자유였으면 전체로 변경
-      }
-      console.log(
-        `[DEBUG] 모임 게시글 선택: postType을 '모임'로 설정, location: ${newFilter.location}`
-      );
-    }
-
-    // 지역 선택기 업데이트
-    setSelectedRegion(newFilter.location);
-
-    // 페이지 초기화
-    newFilter.page = 0;
-
-    // 필터 적용 (검색 상태 유지하면서)
-    applyFilterWithSearchState(newFilter);
-  };
+  // const handlePostTypeChange = (newPostType: 'ALL' | '자유' | '모임') => {
+  //   if (!newPostType) return; // 값이 null이면 무시
+  //
+  //   console.log('[DEBUG] 게시글 타입 변경 시작:', newPostType);
+  //
+  //   // 이전 타입과 같으면 변경 없음
+  //   if (
+  //     (newPostType === 'ALL' && selectedPostType === 'ALL') ||
+  //     (newPostType === '자유' && selectedPostType === '자유') ||
+  //     (newPostType === '모임' && selectedPostType === '모임')
+  //   ) {
+  //     console.log('[DEBUG] 같은 게시글 타입 선택, 변경 없음');
+  //     return;
+  //   }
+  //
+  //   // 상태 업데이트
+  //   setSelectedPostType(newPostType);
+  //
+  //   // 필터 업데이트
+  //   const newFilter = { ...filter };
+  //
+  //   if (newPostType === 'ALL') {
+  //     // 전체 선택 시 자유 게시글로 기본 설정 (백엔드 요구사항)
+  //     newFilter.postType = '자유' as PostType;
+  //     // 자유 게시글에는 자유 지역 설정
+  //     newFilter.location = '자유';
+  //     console.log('[DEBUG] 전체 게시글 선택: postType을 "자유"로 설정, location을 "자유"로 설정');
+  //   } else if (newPostType === '자유') {
+  //     newFilter.postType = '자유' as PostType; // 명시적으로 타입 설정
+  //     // 자유 게시글에는 무조건 자유 지역
+  //     newFilter.location = '자유';
+  //     console.log(`[DEBUG] 자유 게시글 선택: postType을 '자유'로 설정, location을 "자유"로 설정`);
+  //   } else {
+  //     // 모임 게시글
+  //     newFilter.postType = '모임' as PostType; // 명시적으로 타입 설정
+  //     // 모임 게시글은 기존 지역 유지하거나 새로 설정
+  //     if (newFilter.location === '자유') {
+  //       newFilter.location = '전체'; // 기존에 자유였으면 전체로 변경
+  //     }
+  //     console.log(
+  //       `[DEBUG] 모임 게시글 선택: postType을 '모임'로 설정, location: ${newFilter.location}`
+  //     );
+  //   }
+  //
+  //   // 지역 선택기 업데이트
+  //   setSelectedRegion(newFilter.location);
+  //
+  //   // 페이지 초기화
+  //   newFilter.page = 0;
+  //
+  //   // 필터 적용 (검색 상태 유지하면서)
+  //   applyFilterWithSearchState(newFilter);
+  // };
 
   // 지역 변경 핸들러
   const handleRegionChange = (region: string) => {
@@ -599,12 +583,12 @@ const PostListPage: React.FC = () => {
           variant={isMobile ? 'h5' : 'h4'}
           component="h1"
           sx={{
-            fontWeight: 600,
+            fontWeight: 700,
             color: '#555',
             fontFamily: '"Noto Sans KR", sans-serif',
           }}
         >
-          커뮤니티 게시판
+          모임 게시판
         </Typography>
 
         {/* 글쓰기 버튼 */}
@@ -797,6 +781,7 @@ const PostListPage: React.FC = () => {
             }}
           >
             {/* 게시글 타입(자유/모임) 선택 */}
+            {/* 게시글 타입(자유/모임) 선택 UI 주석 처리
             <Box>
               <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600, color: '#555' }}>
                 게시글 타입
@@ -838,20 +823,15 @@ const PostListPage: React.FC = () => {
                 </ToggleButton>
               </ToggleButtonGroup>
             </Box>
+            */}
 
-            {/* 지역 선택 (모임 게시글일 경우에만 표시) */}
-            {selectedPostType === '모임' && (
-              <Box>
-                <Typography
-                  variant="subtitle2"
-                  gutterBottom
-                  sx={{ fontWeight: 600, color: '#555' }}
-                >
-                  지역 선택
-                </Typography>
-                <RegionSelector selectedRegion={selectedRegion} onChange={handleRegionChange} />
-              </Box>
-            )}
+            {/* 지역 선택  */}
+            <Box>
+              <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600, color: '#555' }}>
+                지역 선택
+              </Typography>
+              <RegionSelector selectedRegion={selectedRegion} onChange={handleRegionChange} />
+            </Box>
 
             {/* 카테고리와 태그 영역(통합) */}
             <Box sx={{ gridColumn: isMobile ? 'auto' : '1 / -1' }}>
@@ -1070,4 +1050,4 @@ const PostListPage: React.FC = () => {
   );
 };
 
-export default PostListPage;
+export default GroupListPage;

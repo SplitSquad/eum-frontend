@@ -13,7 +13,7 @@
     'Helvetica Neue',
     Arial,
     sans-serif;
-  overflow-y: auto;
+  /*overflow-y: auto;*/
   position: relative;
 }
 

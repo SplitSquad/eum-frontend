@@ -84,13 +84,10 @@ const seasonalColors: Record<string, SeasonColors> = {
 
 // 스타일드 컴포넌트
 const StyledAppBar = styled(AppBar)<{ season: string }>`
-  background: linear-gradient(
-    to bottom,
-    rgba(230, 245, 255, 0.95) 0%,
-    rgba(255, 255, 255, 0.95) 100%
+  background: linear-gradient(to bottom, rgba(235, 245, 255, 0.95), rgba(255, 255, 255, 0.98));
   );
   box-shadow: none;
-  border-bottom: 0.5px solid rgba(0, 0, 0, 0.03);
+  border-bottom: 0px solid rgba(0, 0, 0, 0);
   backdrop-filter: blur(10px);
   color: ${props => seasonalColors[props.season]?.text || '#333333'};
 
@@ -487,7 +484,8 @@ function Header({
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) =>
+    location.pathname === path || location.pathname.startsWith(path + '/');
 
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -577,8 +575,8 @@ function Header({
 
   return (
     <header>
-      <StyledAppBar season={season}>
-        <Toolbar sx={{ minHeight: '72px' }}>
+      <StyledAppBar season={season} position="sticky">
+        <Toolbar sx={{ minHeight: '72px', position: 'sticky' }}>
           {/* 로고 - Always visible */}
           <Box
             sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
@@ -617,15 +615,30 @@ function Header({
                               transform: isDropdownOpen ? 'translateY(0)' : 'translateY(-10px)',
                             }}
                           >
-                            {item.dropdown.map(subItem => (
-                              <CommunityDropdownItem
-                                key={subItem.path}
-                                season={season}
-                                onClick={() => handleNavigation(subItem.path)}
-                              >
-                                {subItem.name}
-                              </CommunityDropdownItem>
-                            ))}
+                            {item.dropdown.map(subItem => {
+                              const isSubActive =
+                                (subItem.path === '/community/groups' &&
+                                  (location.pathname === '/community' ||
+                                    location.pathname.startsWith('/community/groups'))) ||
+                                location.pathname === subItem.path;
+                              return (
+                                <CommunityDropdownItem
+                                  key={subItem.path}
+                                  season={season}
+                                  onClick={
+                                    isSubActive ? undefined : () => handleNavigation(subItem.path)
+                                  }
+                                  style={{
+                                    background: undefined,
+                                    color: isSubActive ? '#e91e63' : undefined,
+                                    pointerEvents: isSubActive ? 'none' : undefined,
+                                    opacity: isSubActive ? 0.7 : 1,
+                                  }}
+                                >
+                                  {subItem.name}
+                                </CommunityDropdownItem>
+                              );
+                            })}
                           </DropdownMenu>
                         </DropdownContainer>
                       ) : (

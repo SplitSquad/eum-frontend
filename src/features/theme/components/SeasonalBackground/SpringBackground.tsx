@@ -56,8 +56,7 @@ const SpringContainer = styled(Box, {
   background: linear-gradient(
     to bottom,
     rgba(255, 255, 255, 1) 0%,
-    rgba(255, 255, 255, 1) 20%,
-    rgba(255, 250, 250, 1) 40%,
+    rgba(255, 250, 250, 1) 60%,
     rgba(255, 240, 240, 1) 100%
   );
   padding: ${p => (p.noPadding ? '0' : '2rem 0')};
@@ -67,7 +66,7 @@ const SpringContainer = styled(Box, {
   animation: ${fadeIn} 0.6s ease-in-out;
   display: flex;
   flex-direction: column;
-  margin-top: 72px;
+  margin-top: 0;
 
   &::before,
   &::after {

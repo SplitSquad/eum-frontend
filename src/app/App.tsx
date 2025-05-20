@@ -11,7 +11,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import useAuthStore from '../features/auth/store/authStore';
 import { SeasonalBackground } from '../features/theme';
+import FloatingNavigator from '@/components/layout/FloatingNavigator';
 import './App.css';
+import eum2Image from '@/assets/images/characters/이음이.png';
 
 /**
  * 애플리케이션 레이아웃 컴포넌트
@@ -135,7 +137,9 @@ const App: React.FC = () => {
           <Header isVisible={isHeaderVisible} />
           <SeasonalBackground>
             <main className="main-content">
-              <Outlet />
+              <div style={{ paddingTop: '2.5rem', height: '100%' }}>
+                <Outlet />
+              </div>
             </main>
             {isModalVisible && (
               <div className="fixed bottom-[170px] right-8 z-[1001]">
@@ -152,17 +156,24 @@ const App: React.FC = () => {
                     boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                   }}
                 >
-                  {isModalOpen ? (
-                    <CloseIcon sx={{ color: 'white', fontSize: '24px' }} />
-                  ) : (
-                    <ChatIcon sx={{ color: 'white', fontSize: '24px' }} />
-                  )}
+                  <img
+                    src={eum2Image}
+                    alt="이음이"
+                    style={{
+                      width: 32,
+                      height: 32,
+                      objectFit: 'contain',
+                      transition: 'transform 0.3s',
+                      transform: isModalOpen ? 'rotate(90deg)' : 'none',
+                    }}
+                  />
                 </IconButton>
               </div>
             )}
           </SeasonalBackground>
           <Footer />
         </div>
+        <FloatingNavigator isHeaderVisible={isHeaderVisible} />
       </div>
     </SnackbarProvider>
   );
