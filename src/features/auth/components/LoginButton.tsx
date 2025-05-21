@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, CircularProgress, Box } from '@mui/material';
 import styled from '@emotion/styled';
-import GoogleIcon from '@mui/icons-material/Google';
-import { getGoogleAuthUrl } from '../api/authApi'; // 실제 구글 로그인 API
+import { useNavigate } from 'react-router-dom';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
 // 봄 테마 스타일 컴포넌트
 const SpringThemedButton = styled(Button)(({ theme }) => ({
@@ -66,51 +66,39 @@ const BlossomWrapper = styled.div`
   }
 `;
 
-interface GoogleLoginButtonProps {
-  onSuccess?: (response: any) => void;
-  onError?: (error: any) => void;
+interface LoginButtonProps {
   buttonText?: string;
 }
 
-const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
-  onSuccess,
-  onError,
-  buttonText = '구글로 계속하기',
-}) => {
+const LoginButton: React.FC<LoginButtonProps> = ({ buttonText = '일반 계정으로 로그인' }) => {
   const [loading, setLoading] = useState<boolean>(false);
-
-  // 실제 구글 로그인 처리 함수
-  const handleGoogleLogin = async () => {
-    try {
+  const navigate = useNavigate();
+  // 로그인 페이지 호출 함수
+  const handleLogin = async () => {
+    /*try {
       setLoading(true);
-      // 백엔드 API에서 구글 인증 URL 가져오기
-      const authUrl = await getGoogleAuthUrl();
-
-      // 성공 콜백 호출 (선택적)
-      if (onSuccess) {
-        onSuccess({ status: 'redirecting' });
-      }
-
-      // 구글 로그인 페이지로 리디렉션
-      window.location.href = authUrl;
+      // TODO: 실제 로그인 로직 구현
+      // 예시: const response = await loginApi(id, password);
+      const response = { token: 'dummy', user: { name: '홍길동' } };
+      setTimeout(() => {
+        setLoading(false);
+        if (onSuccess) onSuccess(response);
+      }, 1000);
     } catch (error) {
       setLoading(false);
-      console.error('구글 로그인 URL 가져오기 실패:', error);
-
-      if (onError) {
-        onError(error);
-      }
-    }
+      if (onError) onError(error);
+    }*/
+    navigate('/login');
   };
 
   return (
     <BlossomWrapper>
       <SpringThemedButton
         variant="contained"
-        startIcon={!loading && <GoogleIcon />}
-        onClick={handleGoogleLogin}
+        onClick={handleLogin}
         disabled={loading}
         fullWidth
+        startIcon={!loading && <AccountCircleIcon />}
       >
         {loading ? <CircularProgress size={24} color="inherit" /> : buttonText}
       </SpringThemedButton>
@@ -118,4 +106,4 @@ const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
   );
 };
 
-export default GoogleLoginButton;
+export default LoginButton;

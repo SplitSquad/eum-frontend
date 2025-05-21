@@ -25,8 +25,6 @@ import { useLanguageStore } from '@/features/theme/store/languageStore';
 import useAuthStore from '@/features/auth/store/authStore';
 import { useTranslation } from '@/shared/i18n';
 import { useLanguageContext } from '@/features/theme/components/LanguageProvider';
-import Notification from '@/components/feedback/Notification';
-import { mockNotifications } from '@/tests/mocks';
 import MenuIcon from '@mui/icons-material/Menu';
 import HomeIcon from '@mui/icons-material/Home';
 import ForumIcon from '@mui/icons-material/Forum';
@@ -39,8 +37,6 @@ import LanguageIcon from '@mui/icons-material/Language';
 import { SUPPORTED_LANGUAGES } from '@/features/onboarding/components/common/LanguageSelector';
 import { getGoogleAuthUrl } from '@/features/auth/api/authApi';
 import { AlarmCenter } from '@/components/notification/AlarmCenter';
-
-// import Cloud from '@/components/animations/Cloud';
 
 /**-----------------------------------웹로그 관련------------------------------------ **/
 // userId 꺼내오는 헬퍼
@@ -69,7 +65,7 @@ export function sendWebLog(log: WebLog) {
   // jwt token 가져오기
   const token = localStorage.getItem('auth_token');
   if (!token) {
-    throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
+    return; // 비로그인 상태면 로그 전송하지 않고 그냥 넘어감
   }
   fetch(`${BASE}/logs`, {
     method: 'POST',
@@ -615,12 +611,13 @@ function Header({
   const navItems = getNavItems(t);
 
   const handleGoogleLogin = async () => {
-    try {
+    /*try {
       const authUrl = await getGoogleAuthUrl();
       window.location.href = authUrl;
     } catch (error) {
       console.error('Google login error:', error);
-    }
+    }*/
+    navigate('/google-login');
   };
 
   // 프로필 메뉴 외부 클릭 시 닫기
