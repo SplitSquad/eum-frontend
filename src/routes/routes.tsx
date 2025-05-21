@@ -7,7 +7,7 @@ import LoginPage from '../pages/LoginPage';
 import Profile from '../pages/Profile';
 import { LanguageProvider } from '../features/theme';
 import AiAssistant from '@/tests/unit/componentPageTest/testPages/AiAssistant';
-
+import SignUpPage from '@/features/auth/pages/SignUpPage';
 // 커뮤니티 기능 임포트
 // import { PostListPage, PostDetailPage, PostCreatePage } from '../features/community/pages';
 import { CommunityRoutes } from '../features/community';
@@ -17,6 +17,7 @@ import { DebateRoutes } from '../features/debate';
 
 // 마이페이지 기능 임포트
 import { MypageRoutes } from '../features/mypage';
+import NormalLogin from '@/features/auth/pages/NormalLogin';
 
 // 온보딩 라우트 컴포넌트 임포트
 const OnboardingRoutes = lazy(() => import('../features/onboarding/routes/OnboardingRoutes'));
@@ -40,7 +41,7 @@ const Search = lazy(() => import('../pages/Search'));
 const Onboarding = lazy(() => import('../pages/Onboarding'));
 */
 const NotFound = lazy(() => import('../pages/NotFound'));
-const Init = lazy(() => import('../components/feedback/LoadingOverLay'));
+const Init = lazy(() => import('../pages/LoadingOverLay'));
 const Loading = lazy(() => import('../pages/Loading'));
 
 /**
@@ -78,6 +79,26 @@ const router = createBrowserRouter([
           <Suspense fallback={<LoadingFallback />}>
             <GuestGuard>
               <LoginPage />
+            </GuestGuard>
+          </Suspense>
+        ),
+      },
+      {
+        path: '/login',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <GuestGuard>
+              <NormalLogin />
+            </GuestGuard>
+          </Suspense>
+        ),
+      },
+      {
+        path: '/signup',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <GuestGuard>
+              <SignUpPage />
             </GuestGuard>
           </Suspense>
         ),

@@ -176,3 +176,11 @@
   z-index: 1002;
   position: relative;
 }
+
+/* Modal toggle image hover effect */
+.modal-toggle-img {
+  transition: transform 0.3s;
+}
+.modal-toggle-img:hover {
+  transform: scale(1.2);
+}

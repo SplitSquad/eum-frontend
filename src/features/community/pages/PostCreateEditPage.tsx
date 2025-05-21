@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, ChangeEvent } from 'react';
+import React, { useState, useEffect, useRef, ChangeEvent, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   Container,
@@ -41,6 +41,7 @@ import useCommunityStore from '../store/communityStore';
 import { useSnackbar } from 'notistack';
 import { Post } from '../types';
 import RegionSelector from '../components/shared/RegionSelector';
+import { useRegionStore } from '../store/regionStore';
 
 // 스프링 배경 컴포넌트 임포트
 import SpringBackground from '../components/shared/SpringBackground';
@@ -278,6 +279,8 @@ const PostCreateEditPage: React.FC = () => {
   // 세부 지역 선택을 처리하기 위한 상태 추가
   const [selectedSubRegion, setSelectedSubRegion] = useState<string>('');
 
+  const resetRegion = useRegionStore(state => state.resetRegion);
+
   // 편집 모드일 경우 기존 게시글 데이터 불러오기
   useEffect(() => {
     const fetchPostData = async () => {
@@ -422,16 +425,17 @@ const PostCreateEditPage: React.FC = () => {
   };
 
   // 지역 변경 핸들러 - RegionSelector 컴포넌트로 대체
-  const handleRegionChange = (region: string) => {
-    console.log('지역 변경:', region);
-    setFormData(prev => ({
-      ...prev,
-      address: region,
-    }));
-
-    // 시/도 선택 시 하위 지역 초기화
-    setSelectedSubRegion('');
-  };
+  const handleRegionChange = useCallback(
+    (city: string | null, district: string | null, neighborhood: string | null) => {
+      const region = [city, district, neighborhood].filter(Boolean).join(' ');
+      setFormData(prev => {
+        if (prev.address === region) return prev;
+        return { ...prev, address: region };
+      });
+      setSelectedSubRegion('');
+    },
+    [setFormData, setSelectedSubRegion]
+  );
 
   // 폼 제출 핸들러
   const handleSubmit = async (e: React.FormEvent) => {
@@ -503,6 +507,7 @@ const PostCreateEditPage: React.FC = () => {
   // 취소 버튼 핸들러
   const handleCancel = () => {
     if (window.confirm('작성 중인 내용이 저장되지 않습니다. 정말 취소하시겠습니까?')) {
+      resetRegion();
       navigate('/community');
     }
   };
@@ -604,8 +609,8 @@ const PostCreateEditPage: React.FC = () => {
               {/* 게시글 타입이 '모임'일 때만 지역 선택 표시 */}
               {formData.postType === '모임' && (
                 <FormControl fullWidth sx={{ mt: 2 }}>
-                  <InputLabel id="region-label">지역</InputLabel>
-                  <RegionSelector selectedRegion={formData.address} onChange={handleRegionChange} />
+                  <InputLabel>지역</InputLabel>
+                  <RegionSelector onChange={handleRegionChange} />
                   <FormHelperText>모임이 진행될 지역을 선택하세요</FormHelperText>
                 </FormControl>
               )}

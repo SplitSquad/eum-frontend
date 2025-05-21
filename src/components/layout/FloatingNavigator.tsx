@@ -82,8 +82,6 @@ const FloatingNavigator = ({ isHeaderVisible }: FloatingNavigatorProps) => {
   const { t } = useTranslation();
 
   useEffect(() => {
-    console.log('FloatingNavigator mounted');
-
     const handleScroll = () => {
       const threshold = 60;
       const scrollY = Math.max(
@@ -92,25 +90,15 @@ const FloatingNavigator = ({ isHeaderVisible }: FloatingNavigatorProps) => {
         document.body.scrollTop
       );
       setShow(scrollY > threshold);
-      console.log(
-        '[FloatingNavigator] scrollY:',
-        scrollY,
-        'show:',
-        scrollY > threshold,
-        'isHeaderVisible:',
-        isHeaderVisible
-      );
     };
 
     //window.addEventListener('scroll', handleScroll, { passive: true });
     document.body.addEventListener('scroll', handleScroll, { passive: true });
-    console.log('FloatingNavigator: scroll event registered');
     handleScroll();
     return () => {
       window.removeEventListener('scroll', handleScroll);
       document.body.removeEventListener('scroll', handleScroll);
       document.documentElement.removeEventListener('scroll', handleScroll);
-      console.log('FloatingNavigator: scroll event removed');
     };
   }, []);
 
@@ -123,13 +111,9 @@ const FloatingNavigator = ({ isHeaderVisible }: FloatingNavigatorProps) => {
     }
   }, [show]);
 
-  console.log('FloatingNavigator render, show:', show, 'isHeaderVisible:', isHeaderVisible);
-
   if (!shouldRender || isHeaderVisible === false) {
-    console.log('FloatingNavigator not shown');
     return null;
   }
-  console.log('FloatingNavigator shown');
 
   const navItems = [
     { label: t('common.home'), icon: <HomeIcon />, path: '/home' },

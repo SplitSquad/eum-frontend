@@ -20,9 +20,9 @@ import eum2Image from '@/assets/images/characters/이음이.png';
  * 모든 라우트의 부모 컴포넌트로 작동
  */
 const App: React.FC = () => {
-  const { loadUser } = useAuthStore();
+  const { loadUser, isAuthenticated } = useAuthStore();
   const { isModalOpen, content, position, openModal, closeModal } = useModalStore();
-  const btnRef = useRef<HTMLButtonElement>(null);
+  const btnRef = useRef<HTMLImageElement>(null);
   const location = useLocation();
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [isModalVisible, setIsModalVisible] = useState(true);
@@ -82,6 +82,7 @@ const App: React.FC = () => {
   }, []);
 
   const onButtonClick = () => {
+    console.log('onButtonClick');
     if (isModalOpen) {
       closeModal();
     } else if (btnRef.current) {
@@ -127,7 +128,7 @@ const App: React.FC = () => {
     >
       <div className={`app-container ${isModalOpen ? 'modal-open' : ''}`}>
         {/* 모달 */}
-        {isModalVisible && (
+        {isModalVisible && isAuthenticated && (
           <Modal isOpen={isModalOpen} onClose={closeModal} position={position}>
             {content ?? <ModalContent />}
           </Modal>
@@ -141,33 +142,23 @@ const App: React.FC = () => {
                 <Outlet />
               </div>
             </main>
-            {isModalVisible && (
+            {isModalVisible && isAuthenticated && (
               <div className="fixed bottom-[170px] right-8 z-[1001]">
-                <IconButton
+                <img
                   ref={btnRef}
+                  src={eum2Image}
+                  alt="이음이"
                   onClick={onButtonClick}
-                  className="modal-toggle-button"
-                  sx={{
-                    backgroundColor: 'rgba(255, 182, 193, 0.4)',
-                    '&:hover': {
-                      backgroundColor: 'rgba(255, 182, 193, 0.6)',
-                    },
-                    padding: '12px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                  style={{
+                    width: 48,
+                    height: 48,
+                    objectFit: 'contain',
+                    cursor: 'pointer',
+                    transition: 'transform 0.3s',
+                    transform: isModalOpen ? 'rotate(90deg)' : 'none',
                   }}
-                >
-                  <img
-                    src={eum2Image}
-                    alt="이음이"
-                    style={{
-                      width: 32,
-                      height: 32,
-                      objectFit: 'contain',
-                      transition: 'transform 0.3s',
-                      transform: isModalOpen ? 'rotate(90deg)' : 'none',
-                    }}
-                  />
-                </IconButton>
+                  className="modal-toggle-img"
+                />
               </div>
             )}
           </SeasonalBackground>

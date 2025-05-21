@@ -42,8 +42,6 @@ import { styled } from '@mui/system';
 import SpringBackground from '../components/shared/SpringBackground';
 import CategoryTabs from '../components/shared/CategoryTabs';
 import PostList from '../components/post/PostList';
-import RegionSelector from '../components/shared/RegionSelector';
-import PostTypeSelector from '../components/shared/PostTypeSelector';
 
 import useCommunityStore from '../store/communityStore';
 import { Post } from '../types';

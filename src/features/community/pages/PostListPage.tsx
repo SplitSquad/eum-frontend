@@ -529,10 +529,14 @@ const PostListPage: React.FC = () => {
   };
 
   // 지역 변경 핸들러
-  const handleRegionChange = (region: string) => {
+  const handleRegionChange = (
+    city: string | null,
+    district: string | null,
+    neighborhood: string | null
+  ) => {
+    const region = [city, district, neighborhood].filter(Boolean).join(' ');
     console.log('[DEBUG] 지역 변경:', region);
 
-    // 이전 지역과 같으면 변경 없음
     if (region === selectedRegion) {
       console.log('[DEBUG] 같은 지역 선택, 변경 없음');
       return;
@@ -849,7 +853,7 @@ const PostListPage: React.FC = () => {
                 >
                   지역 선택
                 </Typography>
-                <RegionSelector selectedRegion={selectedRegion} onChange={handleRegionChange} />
+                <RegionSelector onChange={handleRegionChange} />
               </Box>
             )}
 
