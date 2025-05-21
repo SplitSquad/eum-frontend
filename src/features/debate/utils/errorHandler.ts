@@ -1,4 +1,5 @@
 import { AxiosError } from 'axios';
+import { devLog } from '../../../config/env';
 
 /**
  * API 에러 처리 및 토스트 메시지 표시 유틸리티
@@ -42,7 +43,7 @@ export function handleApiError(error: unknown, defaultMessage = '요청 처리 �
   let errorMessage = defaultMessage;
   
   if (error instanceof Error) {
-    console.error(error.message);
+    devLog('API 에러:', error.message);
     errorMessage = error.message;
     
     // Axios 에러 처리

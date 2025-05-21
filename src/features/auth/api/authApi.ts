@@ -1,6 +1,6 @@
 import axiosInstance from '../../../config/axios';
 import { User } from '../store/authStore';
-import { setToken, removeToken, getToken } from '../tokenUtils';
+import { setToken, removeToken, getToken, decodeToken, getUserIdFromToken, getRoleFromToken } from '../tokenUtils';
 import { AxiosResponse } from 'axios';
 import { env } from '../../../config/env';
 
@@ -9,10 +9,13 @@ interface OAuthResponse {
   token?: string;
   email?: string;
   role?: string;
+  name?: string;
+  isOnBoardDone?: boolean;
+  loginType?: string;
   [key: string]: any; // 기타 속성을 위한 인덱스 시그니처
 }
 
-// 사용자 프로필 데이터 타입 정의
+// 사용자 프로필 응답 타입
 interface UserProfileData {
   userId: number;
   email: string;
@@ -26,7 +29,7 @@ interface UserProfileData {
   isDeactivate?: boolean;
 }
 
-// 사용자 선호도 데이터 타입 정의
+// 사용자 선호도 응답 타입
 interface UserPreferenceData {
   preferenceId: number;
   userId: number;
@@ -41,19 +44,8 @@ interface UserPreferenceData {
   updatedAt: string;
 }
 
-// JWT 토큰에서 userId 추출하는 유틸리티 함수
-const getUserIdFromToken = (token: string): number => {
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    return payload.userId || 0;
-  } catch (error) {
-    console.error('JWT 디코딩 실패:', error);
-    return 0;
-  }
-};
-
 /**
- * 구글 OAuth 로그인 URL 가져오기
+ * Google 인증 URL 가져오기
  */
 export const getGoogleAuthUrl = async () => {
   try {
@@ -106,36 +98,35 @@ export const handleOAuthCallback = async (code: string) => {
       throw new Error('토큰이 응답에 없습니다');
     }
 
-    console.log('OAuth 콜백: 토큰을 로컬 스토리지에 저장합니다.');
-    console.log('토큰 소스:', authHeader ? '헤더에서 가져옴' : '응답 본문에서 가져옴');
+    console.log('OAuth 콜백: 토큰을 저장합니다.');
     
-    // 토큰 저장
+    // 토큰 저장 - tokenUtils 사용
     setToken(token);
-    
-    // localStorage에도 토큰 저장 (axios 인터셉터가 사용하는 키)
-    localStorage.setItem('auth_token', token);
     
     // 사용자 이메일 저장 (X-User-Email 헤더에 사용)
     if (email) {
       localStorage.setItem('userEmail', email);
-      console.log('사용자 이메일 저장됨:', email);
     }
     
     // 사용자 이름 저장 (댓글/답글 작성 시 사용)
     if (name) {
       localStorage.setItem('userName', name);
-      console.log('사용자 이름 저장됨:', name);
     }
     
-    console.log('토큰 저장됨, localStorage 확인:', localStorage.getItem('auth_token') ? '토큰 저장 성공' : '토큰 저장 실패');
+    // 사용자 권한 저장 (인증 확인용)
+    if (role) {
+      localStorage.setItem('userRole', role);
+    }
     
-    // 사용자 정보 구성 (서버에서 받은 email과 role을 직접 사용)
+    // 사용자 정보 구성
+    const userId = getUserIdFromToken(token) || 0;
+    
     const user: User = {
-      userId: getUserIdFromToken(token),
-      role: role || 'ROLE_USER',
+      userId,
+      role: role || getRoleFromToken(token) || 'ROLE_USER',
       email: email || '',
       name: name || '',
-      isOnBoardDone: data.isOnBoardDone !== undefined ? data.isOnBoardDone : false
+      isOnBoardDone: data.isOnBoardDone !== undefined ? Boolean(data.isOnBoardDone) : false
     };
     
     // isOnBoardDone 값도 따로 저장 (폴백 시 사용)
@@ -155,7 +146,9 @@ export const handleOAuthCallback = async (code: string) => {
  */
 export const checkAuthStatus = async (): Promise<User> => {
   try {
-    const token = getToken() || localStorage.getItem('auth_token');
+    // tokenUtils의 getToken 함수 사용
+    const token = getToken();
+    
     if (!token) {
       throw new Error('토큰이 없습니다.');
     }
@@ -175,11 +168,7 @@ export const checkAuthStatus = async (): Promise<User> => {
         }
       }) as any;
       
-      // 디버깅 로그: 실제 응답 구조 확인
-      console.log('프로필 응답:', profileResponse);
-      console.log('선호도 응답:', preferenceResponse);
-      
-      // 응답에서 데이터 추출 (axios 응답 구조)
+      // 응답에서 데이터 추출
       const profileData = profileResponse.data as UserProfileData; 
       const preferenceData = preferenceResponse.data as UserPreferenceData;
       
@@ -192,26 +181,22 @@ export const checkAuthStatus = async (): Promise<User> => {
         email: profileData.email,
         role: profileData.role,
         name: profileData.name,
-        isOnBoardDone: preferenceData.isOnBoardDone
+        isOnBoardDone: Boolean(preferenceData.isOnBoardDone)
       };
       
-      console.log('API에서 가져온 사용자 정보:', userData);
       return userData;
       
     } catch (apiError) {
       console.warn('API에서 사용자 정보 가져오기 실패, 토큰에서 정보 추출 시도:', apiError);
       
       // API 호출 실패 시 토큰에서 직접 정보 추출 (백업 방법)
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const userId = payload.userId || 0;
-      const role = payload.role || 'ROLE_USER';
+      const userId = getUserIdFromToken(token) || 0;
+      const role = getRoleFromToken(token) || 'ROLE_USER';
       const email = localStorage.getItem('userEmail') || '';
       const name = localStorage.getItem('userName') || '';
       
       // localStorage에서 이전에 저장된 isOnBoardDone 값 확인
       const isOnBoardDone = localStorage.getItem('isOnBoardDone') === 'true';
-      
-      console.log('토큰에서 추출한 사용자 정보:', { userId, role, email, name, isOnBoardDone });
       
       // 사용자 정보 반환
       return {
@@ -233,7 +218,7 @@ export const checkAuthStatus = async (): Promise<User> => {
  */
 export const logout = async () => {
   try {
-    const token = getToken() || localStorage.getItem('auth_token');
+    const token = getToken();
     if (token) {
       // 백엔드 로그아웃 API 호출
       await axiosInstance.post('/auth/logout', {}, {
@@ -243,13 +228,12 @@ export const logout = async () => {
   } catch (error) {
     console.error('로그아웃 실패:', error);
   } finally {
-    // 로컬 스토리지에서 토큰 및 관련 정보 제거
-    localStorage.removeItem('auth_token');
+    // 토큰 및 관련 정보 제거
+    removeToken();
     localStorage.removeItem('userRole');
     localStorage.removeItem('userEmail');
     localStorage.removeItem('userName');
     localStorage.removeItem('isOnBoardDone');
-    removeToken();
   }
 };
 
@@ -257,7 +241,18 @@ export const logout = async () => {
  * JWT 토큰 직접 설정
  * 테스트나 외부에서 받은 토큰을 직접 설정할 때 사용
  */
-export const setJwtToken = (token: string) => {
+export const setDirectToken = (token: string, user?: Partial<User>) => {
+  if (!token) return;
+  
+  // tokenUtils를 통해 토큰 저장
   setToken(token);
-  return { success: true, message: 'JWT 토큰이 성공적으로 설정되었습니다.' };
+  
+  if (user) {
+    if (user.email) localStorage.setItem('userEmail', user.email);
+    if (user.name) localStorage.setItem('userName', user.name);
+    if (user.role) localStorage.setItem('userRole', user.role);
+    if (user.isOnBoardDone !== undefined) {
+      localStorage.setItem('isOnBoardDone', String(user.isOnBoardDone));
+    }
+  }
 };

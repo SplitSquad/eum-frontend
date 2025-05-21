@@ -24,10 +24,7 @@ interface PostListHeaderProps {
 /**
  * 게시글 목록 상단의 카테고리 탭 컴포넌트
  */
-const PostListHeader: React.FC<PostListHeaderProps> = ({ 
-  selectedCategory, 
-  onCategoryChange 
-}) => {
+const PostListHeader: React.FC<PostListHeaderProps> = ({ selectedCategory, onCategoryChange }) => {
   // 탭 변경 이벤트 핸들러
   const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
     onCategoryChange(newValue);
@@ -35,27 +32,23 @@ const PostListHeader: React.FC<PostListHeaderProps> = ({
 
   return (
     <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
-      <Tabs 
-        value={selectedCategory} 
+      <Tabs
+        value={selectedCategory}
         onChange={handleTabChange}
         variant="scrollable"
         scrollButtons="auto"
         TabIndicatorProps={{
           style: {
             backgroundColor: '#FF6B6B',
-          }
+          },
         }}
       >
-        {categories.map((category) => (
-          <StyledTab 
-            key={category} 
-            label={category} 
-            value={category} 
-          />
+        {categories.map(category => (
+          <StyledTab key={category} label={category} value={category} />
         ))}
       </Tabs>
     </Box>
   );
 };
 
-export default PostListHeader; 
+export default PostListHeader;

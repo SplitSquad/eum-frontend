@@ -1,10 +1,6 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { setToken, getToken } from '../features/auth/tokenUtils';
-import { checkDomainOfScale } from 'recharts/types/util/ChartUtils';
+import { setToken, getToken, removeToken } from '../features/auth/tokenUtils';
 import { env, isDevelopment } from './env';
-
-// 환경 변수 타입 확인이 필요하면 env.ts에서 import
-// import { ENV } from './env';
 
 /**
  * API 요청의 기본 URL과 타임아웃 설정
@@ -34,7 +30,10 @@ let isRefreshing = false;
 // 토큰 갱신을 대기하는 요청 큐
 let refreshSubscribers: Array<(token: string) => void> = [];
 
-// 토큰 갱신 함수
+/**
+ * 토큰 갱신 함수
+ * 쿠키에 저장된 리프레시 토큰을 사용하여 새 액세스 토큰을 요청
+ */
 const refreshAuthToken = async (): Promise<string | null> => {
   try {
     console.log('토큰 갱신 시도');
@@ -54,9 +53,8 @@ const refreshAuthToken = async (): Promise<string | null> => {
 
     if (newToken) {
       console.log('토큰 갱신 성공: 헤더에서 토큰 추출');
-      // 새 토큰 저장
+      // 새 토큰 저장 - tokenUtils를 통해 일관되게 관리
       setToken(newToken);
-      localStorage.setItem('auth_token', newToken);
       return newToken;
     }
 
@@ -65,7 +63,6 @@ const refreshAuthToken = async (): Promise<string | null> => {
       console.log('토큰 갱신 성공: 응답 본문에서 토큰 추출');
       const tokenFromBody = response.data.token;
       setToken(tokenFromBody);
-      localStorage.setItem('auth_token', tokenFromBody);
       return tokenFromBody;
     }
 
@@ -96,6 +93,14 @@ const onRefreshed = (token: string) => {
 // 요청이 완료될 때까지 대기하는 함수
 const addSubscriber = (callback: (token: string) => void) => {
   refreshSubscribers.push(callback);
+};
+
+// 인증 관련 정보 초기화 함수
+const clearAuthData = () => {
+  removeToken(); // tokenUtils를 사용하여 일관된 방식으로 토큰 제거
+  localStorage.removeItem('userEmail');
+  localStorage.removeItem('userName');
+  localStorage.removeItem('userRole');
 };
 
 /**
@@ -148,8 +153,8 @@ axiosInstance.interceptors.response.use(
       // 401 Unauthorized - 인증 실패/토큰 만료 처리
       if (status === 401 && originalRequest) {
         // 토큰 갱신 API가 아닌 경우에만 갱신 시도
-        console.log('토큰 갱신 시도2');
         if (requestUrl !== '/auth/refresh' && !isRefreshing) {
+          // 토큰 갱신 중 플래그 설정
           isRefreshing = true;
 
           try {
@@ -175,26 +180,23 @@ axiosInstance.interceptors.response.use(
             } else {
               // 갱신 실패: 로그인 페이지로 이동
               console.error('토큰 갱신 실패, 로그인 필요');
-              // 토큰 및 관련 정보 정리
-              localStorage.removeItem('auth_token');
-              sessionStorage.removeItem('auth_token');
-              localStorage.removeItem('userEmail');
+              // 인증 관련 데이터 정리
+              clearAuthData();
 
               // 로그인 페이지로 이동 전에 플래그 리셋
               isRefreshing = false;
               window.location.href = '/google-login';
+              return Promise.reject(error);
             }
           } catch (refreshError) {
             console.error('토큰 갱신 중 오류:', refreshError);
-            localStorage.removeItem('auth_token');
-            sessionStorage.removeItem('auth_token');
-            localStorage.removeItem('userEmail');
+            clearAuthData();
 
             isRefreshing = false;
             window.location.href = '/google-login';
+            return Promise.reject(error);
           }
         } else if (requestUrl !== '/auth/refresh' && isRefreshing) {
-          console.log('토큰 갱신 시도3');
           // 이미 토큰 갱신 중이면 갱신 완료 후 요청 재시도를 위해 큐에 추가
           return new Promise(resolve => {
             addSubscriber((token: string) => {
@@ -210,11 +212,9 @@ axiosInstance.interceptors.response.use(
         } else {
           // 토큰 갱신 API 자체가 401 반환 시
           console.error('인증 오류 (401): 토큰 갱신 불가, 로그인 필요');
-          localStorage.removeItem('auth_token');
-          sessionStorage.removeItem('auth_token');
-          localStorage.removeItem('userEmail');
-
+          clearAuthData();
           window.location.href = '/google-login';
+          return Promise.reject(error);
         }
       }
 

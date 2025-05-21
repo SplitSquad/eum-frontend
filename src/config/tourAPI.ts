@@ -65,7 +65,7 @@ export const getAreaBasedList = async (params: {
       throw new Error(`지역 기반 관광정보 조회 실패: ${errorMsg}`);
     }
   } catch (error) {
-    console.error('지역 기반 관광정보 조회 실패:', error);
+    devLog('지역 기반 관광정보 조회 실패', { error });
     throw error;
   }
 };
@@ -107,7 +107,7 @@ export const getLocationBasedList = async (params: {
       throw new Error(`위치 기반 관광정보 조회 실패: ${errorMsg}`);
     }
   } catch (error) {
-    console.error('위치 기반 관광정보 조회 실패:', error);
+    devLog('위치 기반 관광정보 조회 실패', { error });
     throw error;
   }
 };
@@ -149,7 +149,7 @@ export const getSearchKeyword = async (params: {
       throw new Error(`키워드 검색 조회 실패: ${errorMsg}`);
     }
   } catch (error) {
-    console.error('키워드 검색 조회 실패:', error);
+    devLog('키워드 검색 조회 실패', { error });
     throw error;
   }
 };
@@ -197,7 +197,7 @@ export const getDetailCommon = async (params: {
       throw new Error(`컨텐츠 상세정보 조회 실패: ${errorMsg}`);
     }
   } catch (error) {
-    console.error('컨텐츠 상세정보 조회 실패:', error);
+    devLog('컨텐츠 상세정보 조회 실패', { error });
     throw error;
   }
 };
