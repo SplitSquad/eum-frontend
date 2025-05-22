@@ -11,6 +11,8 @@ const en = {
     settings: 'Settings',
     languageSettings: 'Language Settings',
     selectLanguage: 'Select Language',
+    AiAssistant: 'AI Assistant',
+    information: 'Information',
   },
   nav: {
     accountSettings: 'Account Settings',
@@ -28,4 +30,4 @@ const en = {
   },
 };
 
-export default en; 
+export default en;

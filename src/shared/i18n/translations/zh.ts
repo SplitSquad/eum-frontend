@@ -1,3 +1,5 @@
+import AiAssistant from '@/tests/unit/componentPageTest/testPages/AiAssistant';
+
 const zh = {
   common: {
     home: '首页',
@@ -11,6 +13,8 @@ const zh = {
     settings: '设置',
     languageSettings: '语言设置',
     selectLanguage: '选择语言',
+    AiAssistant: 'AI助手',
+    information: '信息',
   },
   nav: {
     accountSettings: '账号设置',
@@ -28,4 +32,4 @@ const zh = {
   },
 };
 
-export default zh; 
+export default zh;

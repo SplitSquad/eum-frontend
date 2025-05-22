@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { PageLayout, InfoCard } from '../components';
 import styled from '@emotion/styled';
 import { useMypageStore } from '../store/mypageStore';
-import { useDebateStore } from '../../debate/store';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../auth/store/authStore';
 import { CircularProgress } from '@mui/material';
@@ -353,7 +352,7 @@ const ActivitiesPage: React.FC = () => {
       const bookmarkActivities = bookmarks.content.map(bookmark => ({
         id: bookmark.id || 0,
         type: 'bookmark',
-        title: '북마크 추가',
+        title: '북마크 보관',
         description: bookmark.title || '',
         date: bookmark.createdAt || '',
         onClick: () => handleActivityClick('bookmark', bookmark.id || 0),

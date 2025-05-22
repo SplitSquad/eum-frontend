@@ -1,46 +1,82 @@
-// src/hooks/useSse.ts
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { EventSourcePolyfill } from 'event-source-polyfill';
 import type { AlarmDetail } from '@/services/notification/alarmService';
+import { fetchUnreadAlarms } from '@/services/notification/alarmService';
 
-export function useSse(userId: number, onAlarm: (a: AlarmDetail) => void) {
+type OnAlarm = (a: AlarmDetail) => void;
+type OnFullList = (list: AlarmDetail[]) => void;
+
+export function getUserId(): number | null {
+  try {
+    const raw = localStorage.getItem('auth-storage');
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed?.state?.user?.userId ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export function useSseWithPolling(
+  userId: number,
+  onAlarm: OnAlarm,
+  onFullList: OnFullList,
+  pollInterval = 2_000
+) {
+  const poller = useRef<number>();
+
   useEffect(() => {
     if (!userId) return;
     const token = localStorage.getItem('auth_token')!;
     const lastIdKey = `sse-last-event-id-${userId}`;
-    const lastEventId = localStorage.getItem(lastIdKey) || '';
+
     const url = `${import.meta.env.VITE_API_BASE_URL}/sse/subscribe/${userId}`;
-
+    const lastEventId = localStorage.getItem(lastIdKey) ?? undefined;
     const es = new EventSourcePolyfill(url, {
-      headers: {
-        Authorization: token,
-        'Last-Event-ID': lastEventId,
-      },
-      // 24시간 동안 타임아웃 없이 연결 유지
-      heartbeatTimeout: 24 * 60 * 60 * 1000, // 86,400,000 ms (24h)
-      // 끊길 경우 5초 후 재연결
-      reconnectInterval: 5 * 1000, // 5,000 ms (5s)
-      // transport 옵션을 XHR로 바꾸면 chunked 이슈도 완화됩니다.
-      transport: 'xhr',
+      headers: { Authorization: token },
+      lastEventId,
     });
 
-    // 'alarm' 이벤트만 처리 (INIT 등은 무시)
-    es.addEventListener('alarm', (e: MessageEvent) => {
-      try {
-        const alarm = JSON.parse(e.data) as AlarmDetail;
-        onAlarm(alarm);
-        if (e.lastEventId) {
-          localStorage.setItem(lastIdKey, e.lastEventId);
+    // 메시지 이벤트만 처리 (이미 'data'만 전달됨)
+    es.onmessage = evt => {
+      const text = evt.data?.trim();
+      if (text?.startsWith('{')) {
+        try {
+          const alarm = JSON.parse(text) as AlarmDetail;
+          onAlarm(alarm);
+          if (evt.lastEventId) {
+            localStorage.setItem(lastIdKey, evt.lastEventId);
+          }
+        } catch {
+          console.warn('SSE JSON 파싱 실패, 무시합니다:', text);
         }
-      } catch (err) {
-        console.error('SSE 알람 파싱 실패', err);
       }
-    });
-
-    es.onerror = err => {
-      console.error('SSE 연결 에러', err);
     };
 
-    return () => es.close();
-  }, [userId, onAlarm]);
+    es.onopen = () => {
+      // 연결 성공 시, 폴링 중단
+      if (poller.current) {
+        clearInterval(poller.current);
+        poller.current = undefined;
+      }
+    };
+
+    es.onerror = () => {
+      console.error('SSE 에러 발생, 폴링 모드로 전환');
+      es.close();
+      // 전체 알람 조회
+      fetchUnreadAlarms(userId).then(onFullList);
+      // 폴링 시작
+      poller.current = window.setInterval(() => {
+        fetchUnreadAlarms(userId).then(onFullList);
+      }, pollInterval);
+    };
+
+    return () => {
+      es.close();
+      if (poller.current) {
+        clearInterval(poller.current);
+      }
+    };
+  }, [userId, onAlarm, onFullList, pollInterval]);
 }

@@ -3,9 +3,9 @@ import React, { lazy, Suspense } from 'react';
 import { AuthGuard, GuestGuard, RoleGuard } from './guards';
 // import TempAuthPage from '../features/auth/pages/TempAuthPage'; // 임시 로그인 제거
 import { LoginPage, OAuthCallbackPage, AccessDeniedPage } from '../features/auth';
-import Profile from '../pages/Profile';
 import { LanguageProvider } from '../features/theme';
 import AiAssistant from '@/tests/unit/componentPageTest/testPages/AiAssistant';
+import { InfoRoutes } from '@/features/info/utils/InfoRoutes';
 
 // 커뮤니티 기능 임포트
 // import { PostListPage, PostDetailPage, PostCreatePage } from '../features/community/pages';
@@ -156,30 +156,25 @@ const router = createBrowserRouter([
         ),
       },
 
-      /* 아직 구현되지 않은 페이지 주석 처리
-      // 정보 (누구나 접근 가능)
+      // // 정보 (누구나 접근 가능)
       {
-        path: 'info',
-        children: [
-          {
-            path: '',
-            element: (
-              <Suspense fallback={<LoadingFallback />}>
-                <Info />
-              </Suspense>
-            ),
-          },
-          {
-            path: ':id',
-            element: (
-              <Suspense fallback={<LoadingFallback />}>
-                <InfoDetail />
-              </Suspense>
-            ),
-          },
-        ],
-      },*/
-
+        path: 'info/*',
+        element: (
+          <AuthGuard>
+            <InfoRoutes />
+          </AuthGuard>
+        ),
+      },
+      {
+        path: 'information/*',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <AuthGuard>
+              <InfoRoutes />
+            </AuthGuard>
+          </Suspense>
+        ),
+      },
       // AI 비서 (로그인 필요)
       {
         path: 'assistant',

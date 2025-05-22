@@ -1,3 +1,5 @@
+import AiAssistant from '@/tests/unit/componentPageTest/testPages/AiAssistant';
+
 const ja = {
   common: {
     home: 'ホーム',
@@ -11,6 +13,8 @@ const ja = {
     settings: '設定',
     languageSettings: '言語設定',
     selectLanguage: '言語を選択',
+    AiAssistant: 'AIアシスタント',
+    information: 'お知らせ',
   },
   nav: {
     accountSettings: 'アカウント設定',
@@ -28,4 +32,4 @@ const ja = {
   },
 };
 
-export default ja; 
+export default ja;

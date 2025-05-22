@@ -36,7 +36,7 @@ import LoginIcon from '@mui/icons-material/Login';
 import LanguageIcon from '@mui/icons-material/Language';
 import { SUPPORTED_LANGUAGES } from '../../features/onboarding/components/common/LanguageSelector';
 import { useLanguageContext } from '../../features/theme/components/LanguageProvider';
-import { AlarmCenter } from '@/components/notification/alarmCenter';
+import { AlarmCenter } from '@/components/notification/AlarmCenter';
 
 /**-----------------------------------웹로그 관련------------------------------------ **/
 // userId 꺼내오는 헬퍼
@@ -239,9 +239,10 @@ const DrawerItem = styled(ListItem)<{ season: string; active: boolean }>`
 // 네비게이션 항목 정의
 const getNavItems = (t: (key: string) => string) => [
   { name: t('common.home'), path: '/', icon: <HomeIcon /> },
+  { name: t('common.information'), path: '/info', icon: <ForumIcon /> },
   { name: t('common.community'), path: '/community', icon: <ForumIcon /> },
   { name: t('common.debate'), path: '/debate', icon: <ChatIcon /> },
-  { name: t('AIAssistant'), path: '/assistant', icon: <ChatIcon /> },
+  { name: t('common.AiAssistant'), path: '/assistant', icon: <ChatIcon /> },
   { name: t('common.mypage'), path: '/mypage', icon: <AccountCircleIcon />, requireAuth: true },
 ];
 
@@ -317,7 +318,6 @@ const NavBar: React.FC = () => {
     changeLanguage(languageCode);
     handleLanguageMenuClose();
   };
-
   const trackedNavigate = useTrackedNavigation();
   return (
     <>
@@ -370,7 +370,11 @@ const NavBar: React.FC = () => {
                 ))}
             </Box>
           )}
-          {/* 알림 센터 */}/{/* 언어 선택 메뉴 */}
+          {/* 알림 센터 */}
+          <Box sx={{ ml: 2, mr: 1 }}>
+            <AlarmCenter />
+          </Box>
+          {/* 언어 선택 메뉴 */}
           <Box sx={{ mr: 2 }}>
             <Tooltip title={t('common.selectLanguage')}>
               <IconButton
@@ -541,7 +545,6 @@ const NavBar: React.FC = () => {
               <ListItemText primary={lang.name} />
             </DrawerItem>
           ))}
-
           <Divider sx={{ my: 2 }} />
           {isAuthenticated ? (
             <DrawerItem onClick={handleLogoutClick} season={season} active={false}>

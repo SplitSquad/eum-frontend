@@ -70,7 +70,7 @@ const PostBodyField = () => {
   }, [editor, content]);
 
   if (!editor) {
-    return null; // editor 초기화 전
+    return null;
   }
 
   return (
