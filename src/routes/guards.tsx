@@ -45,7 +45,7 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
 
   if (!isAuthenticated) {
     // 비로그인 상태면 로그인 페이지로 리다이렉트 (현재 위치 정보 저장)
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/google-login" state={{ from: location }} replace />;
   }
 
   // 인증된 사용자는 자식 컴포넌트 렌더링
@@ -90,7 +90,7 @@ export const RoleGuard = ({ children, requiredRole }: RoleGuardProps) => {
 
   // 비로그인 상태면 로그인 페이지로 리다이렉트
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/google-login" state={{ from: location }} replace />;
   }
 
   // 필요한 역할이 없으면 접근 거부 페이지로 리다이렉트

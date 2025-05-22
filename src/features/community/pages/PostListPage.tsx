@@ -146,14 +146,6 @@ const PostListPage: React.FC = () => {
   // 현재 URL에서 쿼리 파라미터 가져오기
   const queryParams = new URLSearchParams(location.search);
 
-  // 초기 포스트 타입 결정
-  const initialPostType = (() => {
-    const postTypeParam = queryParams.get('postType');
-    if (postTypeParam === '자유') return '자유';
-    if (postTypeParam === '모임') return '모임';
-    return 'ALL';
-  })();
-
   // URL 쿼리 파라미터에서 필터 상태 초기화
   const [filter, setFilter] = useState<LocalPostFilter>({
     category: queryParams.get('category') || '전체',
@@ -167,11 +159,6 @@ const PostListPage: React.FC = () => {
 
   // 컴포넌트 마운트 시 게시글 목록 조회를 위한 트래킹
   const initialDataLoadedRef = useRef(false);
-
-  // 초기 상태 설정
-  useEffect(() => {
-    setSelectedPostType(initialPostType);
-  }, [initialPostType]);
 
   // 컴포넌트 마운트 시 게시글 목록 조회
   useEffect(() => {
@@ -219,7 +206,7 @@ const PostListPage: React.FC = () => {
     if (!isSearchMode || !searchTerm) return null;
 
     // 현재 적용된 필터 정보 표시
-    const filterInfo = [];
+    const filterInfo: string[] = [];
     if (filter.category && filter.category !== '전체') {
       filterInfo.push(`카테고리: ${filter.category}`);
     }
@@ -542,10 +529,14 @@ const PostListPage: React.FC = () => {
   };
 
   // 지역 변경 핸들러
-  const handleRegionChange = (region: string) => {
+  const handleRegionChange = (
+    city: string | null,
+    district: string | null,
+    neighborhood: string | null
+  ) => {
+    const region = [city, district, neighborhood].filter(Boolean).join(' ');
     console.log('[DEBUG] 지역 변경:', region);
 
-    // 이전 지역과 같으면 변경 없음
     if (region === selectedRegion) {
       console.log('[DEBUG] 같은 지역 선택, 변경 없음');
       return;
@@ -565,552 +556,521 @@ const PostListPage: React.FC = () => {
   };
 
   return (
-    <SpringBackground>
-      <Container
-        maxWidth="lg"
+    <Container
+      maxWidth="lg"
+      sx={{
+        py: 3,
+        display: 'flex',
+        flexDirection: 'column',
+        flexGrow: 1,
+        position: 'relative',
+        zIndex: 5,
+      }}
+    >
+      {/* 디버깅 정보 패널 
+      <Paper
+        elevation={1}
         sx={{
-          py: 3,
-          display: 'flex',
-          flexDirection: 'column',
-          flexGrow: 1,
-          position: 'relative',
-          zIndex: 5,
+          p: 2,
+          mb: 3,
+          bgcolor: 'rgba(255, 255, 255, 0.8)',
+          border: '1px solid #FF9999',
         }}
       >
-        {/* 디버깅 정보 패널 */}
-        <Paper
-          elevation={1}
+        <Typography variant="h6" gutterBottom>
+          DEBUG: 페이지 상태
+        </Typography>
+        <Typography variant="body2">
+          선택 카테고리: {selectedCategory} | 카테고리 타입: {typeof selectedCategory} | 게시글 수:{' '}
+          {posts.length} <br />
+          선택 게시글 타입: {selectedPostType} | 필터 게시글 타입: {filter.postType || 'ALL'} <br />
+          로딩 상태: {postLoading ? 'LOADING...' : 'READY'} | 오류: {postError || 'NONE'}
+        </Typography>
+      </Paper>*/}
+
+      {/* 페이지 헤더 */}
+      <Box
+        sx={{
+          mb: 3,
+          display: 'flex',
+          flexDirection: isMobile ? 'column' : 'row',
+          justifyContent: 'space-between',
+          alignItems: isMobile ? 'flex-start' : 'center',
+          gap: 2,
+        }}
+      >
+        <Typography
+          variant={isMobile ? 'h5' : 'h4'}
+          component="h1"
           sx={{
-            p: 2,
-            mb: 3,
-            bgcolor: 'rgba(255, 255, 255, 0.8)',
-            border: '1px solid #FF9999',
+            fontWeight: 600,
+            color: '#555',
+            fontFamily: '"Noto Sans KR", sans-serif',
           }}
         >
-          <Typography variant="h6" gutterBottom>
-            DEBUG: 페이지 상태
-          </Typography>
-          <Typography variant="body2">
-            선택 카테고리: {selectedCategory} | 카테고리 타입: {typeof selectedCategory} | 게시글
-            수: {posts.length} <br />
-            선택 게시글 타입: {selectedPostType} | 필터 게시글 타입: {filter.postType || 'ALL'}{' '}
-            <br />
-            로딩 상태: {postLoading ? 'LOADING...' : 'READY'} | 오류: {postError || 'NONE'}
-          </Typography>
-        </Paper>
+          커뮤니티 게시판
+        </Typography>
 
-        {/* 페이지 헤더 */}
+        {/* 글쓰기 버튼 */}
+        <Button
+          variant="contained"
+          startIcon={<CreateIcon />}
+          onClick={handleCreatePost}
+          sx={{
+            bgcolor: '#FFAAA5',
+            '&:hover': {
+              bgcolor: '#FF8B8B',
+            },
+            borderRadius: '24px',
+            boxShadow: '0 2px 8px rgba(255, 170, 165, 0.5)',
+            color: 'white',
+            fontWeight: 600,
+          }}
+        >
+          글쓰기
+        </Button>
+      </Box>
+
+      {/* 상단 필터링 및 검색 영역 */}
+      <Paper
+        elevation={0}
+        sx={{
+          mb: 3,
+          p: 2,
+          bgcolor: 'rgba(255, 255, 255, 0.85)',
+          borderRadius: '16px',
+          border: '1px solid rgba(255, 170, 165, 0.3)',
+          boxShadow: '0 8px 20px rgba(255, 170, 165, 0.15)',
+          backdropFilter: 'blur(8px)',
+        }}
+      >
+        {/* 필터 토글 버튼과 정렬 버튼 */}
         <Box
           sx={{
-            mb: 3,
+            mb: 2,
             display: 'flex',
-            flexDirection: isMobile ? 'column' : 'row',
             justifyContent: 'space-between',
-            alignItems: isMobile ? 'flex-start' : 'center',
-            gap: 2,
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 1,
           }}
         >
-          <Typography
-            variant={isMobile ? 'h5' : 'h4'}
-            component="h1"
-            sx={{
-              fontWeight: 600,
-              color: '#555',
-              fontFamily: '"Noto Sans KR", sans-serif',
-            }}
-          >
-            커뮤니티 게시판
-          </Typography>
-
-          {/* 글쓰기 버튼 */}
+          {/* 필터 토글 버튼 */}
           <Button
-            variant="contained"
-            startIcon={<CreateIcon />}
-            onClick={handleCreatePost}
+            variant="outlined"
+            onClick={toggleFilters}
+            startIcon={showFilters ? <ExpandLessIcon /> : <TuneIcon />}
+            size="small"
             sx={{
-              bgcolor: '#FFAAA5',
+              textTransform: 'none',
+              borderColor: '#FFD7D7',
+              color: '#666',
+              fontWeight: 500,
               '&:hover': {
-                bgcolor: '#FF8B8B',
+                borderColor: '#FFAAA5',
+                bgcolor: 'rgba(255, 235, 235, 0.2)',
               },
-              borderRadius: '24px',
-              boxShadow: '0 2px 8px rgba(255, 170, 165, 0.5)',
-              color: 'white',
-              fontWeight: 600,
+              borderRadius: '20px',
+              px: 2,
             }}
           >
-            글쓰기
+            {showFilters ? '필터 접기' : '필터 열기'}
           </Button>
-        </Box>
 
-        {/* 상단 필터링 및 검색 영역 */}
-        <Paper
-          elevation={0}
-          sx={{
-            mb: 3,
-            p: 2,
-            bgcolor: 'rgba(255, 255, 255, 0.85)',
-            borderRadius: '16px',
-            border: '1px solid rgba(255, 170, 165, 0.3)',
-            boxShadow: '0 8px 20px rgba(255, 170, 165, 0.15)',
-            backdropFilter: 'blur(8px)',
-          }}
-        >
-          {/* 필터 토글 버튼과 정렬 버튼 */}
-          <Box
+          {/* 정렬 버튼 */}
+          <ButtonGroup
+            variant="outlined"
+            size="small"
+            aria-label="게시글 정렬 방식"
             sx={{
-              mb: 2,
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              gap: 1,
-            }}
-          >
-            {/* 필터 토글 버튼 */}
-            <Button
-              variant="outlined"
-              onClick={toggleFilters}
-              startIcon={showFilters ? <ExpandLessIcon /> : <TuneIcon />}
-              size="small"
-              sx={{
-                textTransform: 'none',
+              '& .MuiButton-outlined': {
                 borderColor: '#FFD7D7',
                 color: '#666',
-                fontWeight: 500,
                 '&:hover': {
                   borderColor: '#FFAAA5',
                   bgcolor: 'rgba(255, 235, 235, 0.2)',
                 },
                 borderRadius: '20px',
-                px: 2,
-              }}
-            >
-              {showFilters ? '필터 접기' : '필터 열기'}
-            </Button>
-
-            {/* 정렬 버튼 */}
-            <ButtonGroup
-              variant="outlined"
-              size="small"
-              aria-label="게시글 정렬 방식"
-              sx={{
-                '& .MuiButton-outlined': {
-                  borderColor: '#FFD7D7',
-                  color: '#666',
-                  '&:hover': {
-                    borderColor: '#FFAAA5',
-                    bgcolor: 'rgba(255, 235, 235, 0.2)',
-                  },
-                  borderRadius: '20px',
-                },
-                '& .MuiButtonGroup-grouped:not(:last-of-type)': {
-                  borderColor: '#FFD7D7',
-                },
-              }}
-            >
-              <Button
-                onClick={() => handleSortChange('latest')}
-                sx={{
-                  fontWeight: filter.sortBy === 'latest' ? 'bold' : 'normal',
-                  bgcolor: filter.sortBy === 'latest' ? 'rgba(255, 235, 235, 0.4)' : 'transparent',
-                }}
-              >
-                최신순
-              </Button>
-              <Button
-                onClick={() => handleSortChange('popular')}
-                sx={{
-                  fontWeight: filter.sortBy === 'popular' ? 'bold' : 'normal',
-                  bgcolor: filter.sortBy === 'popular' ? 'rgba(255, 235, 235, 0.4)' : 'transparent',
-                }}
-              >
-                인기순
-              </Button>
-            </ButtonGroup>
-          </Box>
-
-          {/* 검색 필드 */}
-          <Box
-            sx={{
-              mb: 2,
-              display: 'flex',
-              gap: 1,
-              flexWrap: 'wrap',
+              },
+              '& .MuiButtonGroup-grouped:not(:last-of-type)': {
+                borderColor: '#FFD7D7',
+              },
             }}
           >
-            {/* 검색 타입 선택 */}
-            <FormControl variant="outlined" size="small" sx={{ minWidth: 120 }}>
-              <InputLabel id="search-type-label">검색 유형</InputLabel>
-              <Select
-                labelId="search-type-label"
-                id="search-type"
-                value={searchType}
-                onChange={handleSearchTypeChange}
-                label="검색 유형"
-                sx={{
-                  bgcolor: 'rgba(255, 255, 255, 0.5)',
-                  '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#FFD7D7',
-                  },
-                  '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#FFAAA5',
-                  },
-                  borderRadius: '8px',
-                }}
-              >
-                <MenuItem value="제목_내용">제목+내용</MenuItem>
-                <MenuItem value="제목">제목만</MenuItem>
-                <MenuItem value="내용">내용만</MenuItem>
-                <MenuItem value="작성자">작성자</MenuItem>
-              </Select>
-            </FormControl>
-
-            {/* 검색창 */}
-            <TextField
-              placeholder="게시글 검색..."
-              variant="outlined"
-              size="small"
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              onKeyPress={handleKeyPress}
+            <Button
+              onClick={() => handleSortChange('latest')}
               sx={{
-                flexGrow: 1,
-                '& .MuiOutlinedInput-root': {
-                  bgcolor: 'rgba(255, 255, 255, 0.5)',
-                  borderRadius: '8px',
-                  '& fieldset': {
-                    borderColor: '#FFD7D7',
-                  },
-                  '&:hover fieldset': {
-                    borderColor: '#FFAAA5',
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: '#FF9999',
-                  },
-                },
-              }}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton size="small" onClick={handleSearch} title="검색">
-                      <SearchIcon fontSize="small" sx={{ color: '#FF9999' }} />
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </Box>
-
-          {/* 필터 영역 */}
-          <Collapse in={showFilters}>
-            <Divider sx={{ mb: 2, borderColor: 'rgba(255, 170, 165, 0.2)' }} />
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(200px, 1fr))',
-                gap: 2,
+                fontWeight: filter.sortBy === 'latest' ? 'bold' : 'normal',
+                bgcolor: filter.sortBy === 'latest' ? 'rgba(255, 235, 235, 0.4)' : 'transparent',
               }}
             >
-              {/* 게시글 타입(자유/모임) 선택 */}
+              최신순
+            </Button>
+            <Button
+              onClick={() => handleSortChange('popular')}
+              sx={{
+                fontWeight: filter.sortBy === 'popular' ? 'bold' : 'normal',
+                bgcolor: filter.sortBy === 'popular' ? 'rgba(255, 235, 235, 0.4)' : 'transparent',
+              }}
+            >
+              인기순
+            </Button>
+          </ButtonGroup>
+        </Box>
+
+        {/* 검색 필드 */}
+        <Box
+          sx={{
+            mb: 2,
+            display: 'flex',
+            gap: 1,
+            flexWrap: 'wrap',
+          }}
+        >
+          {/* 검색 타입 선택 */}
+          <FormControl variant="outlined" size="small" sx={{ minWidth: 120 }}>
+            <InputLabel id="search-type-label">검색 유형</InputLabel>
+            <Select
+              labelId="search-type-label"
+              id="search-type"
+              value={searchType}
+              onChange={handleSearchTypeChange}
+              label="검색 유형"
+              sx={{
+                bgcolor: 'rgba(255, 255, 255, 0.5)',
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#FFD7D7',
+                },
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#FFAAA5',
+                },
+                borderRadius: '8px',
+              }}
+            >
+              <MenuItem value="제목_내용">제목+내용</MenuItem>
+              <MenuItem value="제목">제목만</MenuItem>
+              <MenuItem value="내용">내용만</MenuItem>
+              <MenuItem value="작성자">작성자</MenuItem>
+            </Select>
+          </FormControl>
+
+          {/* 검색창 */}
+          <TextField
+            placeholder="게시글 검색..."
+            variant="outlined"
+            size="small"
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            onKeyPress={handleKeyPress}
+            sx={{
+              flexGrow: 1,
+              '& .MuiOutlinedInput-root': {
+                bgcolor: 'rgba(255, 255, 255, 0.5)',
+                borderRadius: '8px',
+                '& fieldset': {
+                  borderColor: '#FFD7D7',
+                },
+                '&:hover fieldset': {
+                  borderColor: '#FFAAA5',
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: '#FF9999',
+                },
+              },
+            }}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton size="small" onClick={handleSearch} title="검색">
+                    <SearchIcon fontSize="small" sx={{ color: '#FF9999' }} />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Box>
+
+        {/* 필터 영역 */}
+        <Collapse in={showFilters}>
+          <Divider sx={{ mb: 2, borderColor: 'rgba(255, 170, 165, 0.2)' }} />
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: 2,
+            }}
+          >
+            {/* 게시글 타입(자유/모임) 선택 */}
+            <Box>
+              <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600, color: '#555' }}>
+                게시글 타입
+              </Typography>
+              <ToggleButtonGroup
+                color="primary"
+                value={selectedPostType}
+                exclusive
+                onChange={(e, newPostType) => newPostType && handlePostTypeChange(newPostType)}
+                size="small"
+                sx={{
+                  width: '100%',
+                  '& .MuiToggleButton-root': {
+                    borderRadius: '8px',
+                    border: '1px solid #FFD7D7',
+                    '&.Mui-selected': {
+                      bgcolor: 'rgba(255, 170, 165, 0.2)',
+                      color: '#FF6B6B',
+                      fontWeight: 'bold',
+                    },
+                    '&:hover': {
+                      bgcolor: 'rgba(255, 235, 235, 0.4)',
+                    },
+                  },
+                  '& .MuiToggleButtonGroup-grouped': {
+                    borderRadius: '8px !important',
+                    mx: 0.5,
+                  },
+                }}
+              >
+                <ToggleButton value="ALL" sx={{ width: '33%' }}>
+                  전체
+                </ToggleButton>
+                <ToggleButton value="자유" sx={{ width: '33%' }}>
+                  자유 게시글
+                </ToggleButton>
+                <ToggleButton value="모임" sx={{ width: '33%' }}>
+                  모임 게시글
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </Box>
+
+            {/* 지역 선택 (모임 게시글일 경우에만 표시) */}
+            {selectedPostType === '모임' && (
               <Box>
                 <Typography
                   variant="subtitle2"
                   gutterBottom
                   sx={{ fontWeight: 600, color: '#555' }}
                 >
-                  게시글 타입
+                  지역 선택
                 </Typography>
-                <ToggleButtonGroup
-                  color="primary"
-                  value={selectedPostType}
-                  exclusive
-                  onChange={(e, newPostType) => newPostType && handlePostTypeChange(newPostType)}
-                  size="small"
-                  sx={{
-                    width: '100%',
-                    '& .MuiToggleButton-root': {
-                      borderRadius: '8px',
-                      border: '1px solid #FFD7D7',
-                      '&.Mui-selected': {
-                        bgcolor: 'rgba(255, 170, 165, 0.2)',
-                        color: '#FF6B6B',
-                        fontWeight: 'bold',
-                      },
-                      '&:hover': {
-                        bgcolor: 'rgba(255, 235, 235, 0.4)',
-                      },
-                    },
-                    '& .MuiToggleButtonGroup-grouped': {
-                      borderRadius: '8px !important',
-                      mx: 0.5,
-                    },
-                  }}
-                >
-                  <ToggleButton value="ALL" sx={{ width: '33%' }}>
-                    전체
-                  </ToggleButton>
-                  <ToggleButton value="자유" sx={{ width: '33%' }}>
-                    자유 게시글
-                  </ToggleButton>
-                  <ToggleButton value="모임" sx={{ width: '33%' }}>
-                    모임 게시글
-                  </ToggleButton>
-                </ToggleButtonGroup>
+                <RegionSelector onChange={handleRegionChange} />
               </Box>
+            )}
 
-              {/* 지역 선택 (모임 게시글일 경우에만 표시) */}
-              {selectedPostType === '모임' && (
-                <Box>
-                  <Typography
-                    variant="subtitle2"
-                    gutterBottom
-                    sx={{ fontWeight: 600, color: '#555' }}
-                  >
-                    지역 선택
-                  </Typography>
-                  <RegionSelector selectedRegion={selectedRegion} onChange={handleRegionChange} />
-                </Box>
-              )}
+            {/* 카테고리와 태그 영역(통합) */}
+            <Box sx={{ gridColumn: isMobile ? 'auto' : '1 / -1' }}>
+              <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600, color: '#555' }}>
+                카테고리 선택
+              </Typography>
 
-              {/* 카테고리와 태그 영역(통합) */}
-              <Box sx={{ gridColumn: isMobile ? 'auto' : '1 / -1' }}>
-                <Typography
-                  variant="subtitle2"
-                  gutterBottom
-                  sx={{ fontWeight: 600, color: '#555' }}
-                >
-                  카테고리 선택
-                </Typography>
+              {/* 카테고리 선택 버튼 */}
+              <ToggleButtonGroup
+                color="primary"
+                value={selectedCategory}
+                exclusive
+                onChange={(e, newValue) => newValue && handleCategoryChange(newValue)}
+                size="small"
+                sx={{
+                  width: '100%',
+                  flexWrap: 'wrap',
+                  mb: 2,
+                  '& .MuiToggleButton-root': {
+                    borderRadius: '8px',
+                    border: '1px solid #FFD7D7',
+                    mb: 1,
+                    '&.Mui-selected': {
+                      bgcolor: 'rgba(255, 170, 165, 0.2)',
+                      color: '#FF6B6B',
+                      fontWeight: 'bold',
+                    },
+                    '&:hover': {
+                      bgcolor: 'rgba(255, 235, 235, 0.4)',
+                    },
+                  },
+                  '& .MuiToggleButtonGroup-grouped': {
+                    borderRadius: '8px !important',
+                    mx: 0.5,
+                  },
+                }}
+              >
+                <ToggleButton value="전체" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
+                  전체
+                </ToggleButton>
+                <ToggleButton value="travel" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
+                  travel
+                </ToggleButton>
+                <ToggleButton value="living" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
+                  living
+                </ToggleButton>
+                <ToggleButton value="study" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
+                  study
+                </ToggleButton>
+                <ToggleButton value="job" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
+                  job
+                </ToggleButton>
+              </ToggleButtonGroup>
 
-                {/* 카테고리 선택 버튼 */}
-                <ToggleButtonGroup
-                  color="primary"
-                  value={selectedCategory}
-                  exclusive
-                  onChange={(e, newValue) => newValue && handleCategoryChange(newValue)}
-                  size="small"
-                  sx={{
-                    width: '100%',
-                    flexWrap: 'wrap',
-                    mb: 2,
-                    '& .MuiToggleButton-root': {
-                      borderRadius: '8px',
-                      border: '1px solid #FFD7D7',
-                      mb: 1,
-                      '&.Mui-selected': {
-                        bgcolor: 'rgba(255, 170, 165, 0.2)',
-                        color: '#FF6B6B',
-                        fontWeight: 'bold',
-                      },
+              {/* 카테고리에 따른 태그 선택 */}
+              <Typography
+                variant="subtitle2"
+                gutterBottom
+                sx={{ fontWeight: 600, color: '#555', mt: 2 }}
+              >
+                세부 태그 선택
+              </Typography>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: 1,
+                  mt: 1,
+                }}
+              >
+                {availableTags.map(tag => (
+                  <Chip
+                    key={tag}
+                    label={tag}
+                    onClick={() => handleTagSelect(tag)}
+                    color={selectedTags.includes(tag) ? 'primary' : 'default'}
+                    variant={selectedTags.includes(tag) ? 'filled' : 'outlined'}
+                    sx={{
+                      borderRadius: '16px',
+                      borderColor: selectedTags.includes(tag) ? '#FF6B6B' : '#FFD7D7',
+                      backgroundColor: selectedTags.includes(tag)
+                        ? 'rgba(255, 170, 165, 0.2)'
+                        : 'transparent',
+                      color: selectedTags.includes(tag) ? '#FF6B6B' : '#666',
                       '&:hover': {
-                        bgcolor: 'rgba(255, 235, 235, 0.4)',
-                      },
-                    },
-                    '& .MuiToggleButtonGroup-grouped': {
-                      borderRadius: '8px !important',
-                      mx: 0.5,
-                    },
-                  }}
-                >
-                  <ToggleButton value="전체" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
-                    전체
-                  </ToggleButton>
-                  <ToggleButton value="travel" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
-                    travel
-                  </ToggleButton>
-                  <ToggleButton value="living" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
-                    living
-                  </ToggleButton>
-                  <ToggleButton value="study" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
-                    study
-                  </ToggleButton>
-                  <ToggleButton value="job" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
-                    job
-                  </ToggleButton>
-                </ToggleButtonGroup>
-
-                {/* 카테고리에 따른 태그 선택 */}
-                <Typography
-                  variant="subtitle2"
-                  gutterBottom
-                  sx={{ fontWeight: 600, color: '#555', mt: 2 }}
-                >
-                  세부 태그 선택
-                </Typography>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: 1,
-                    mt: 1,
-                  }}
-                >
-                  {availableTags.map(tag => (
-                    <Chip
-                      key={tag}
-                      label={tag}
-                      onClick={() => handleTagSelect(tag)}
-                      color={selectedTags.includes(tag) ? 'primary' : 'default'}
-                      variant={selectedTags.includes(tag) ? 'filled' : 'outlined'}
-                      sx={{
-                        borderRadius: '16px',
-                        borderColor: selectedTags.includes(tag) ? '#FF6B6B' : '#FFD7D7',
                         backgroundColor: selectedTags.includes(tag)
-                          ? 'rgba(255, 170, 165, 0.2)'
-                          : 'transparent',
-                        color: selectedTags.includes(tag) ? '#FF6B6B' : '#666',
-                        '&:hover': {
-                          backgroundColor: selectedTags.includes(tag)
-                            ? 'rgba(255, 170, 165, 0.3)'
-                            : 'rgba(255, 235, 235, 0.2)',
-                        },
-                      }}
-                    />
-                  ))}
-                </Box>
+                          ? 'rgba(255, 170, 165, 0.3)'
+                          : 'rgba(255, 235, 235, 0.2)',
+                      },
+                    }}
+                  />
+                ))}
               </Box>
             </Box>
-          </Collapse>
-        </Paper>
+          </Box>
+        </Collapse>
+      </Paper>
 
-        {/* 검색 상태 표시기 */}
-        <SearchStatusIndicator />
+      {/* 검색 상태 표시기 */}
+      <SearchStatusIndicator />
 
-        {/* 로딩 상태 표시 */}
-        {postLoading ? (
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              p: 6,
-              my: 4,
-              flexGrow: 1,
-              backgroundColor: 'rgba(255,255,255,0.7)',
-              borderRadius: '16px',
-              border: '1px solid rgba(255, 170, 165, 0.2)',
-              boxShadow: '0 8px 20px rgba(255, 170, 165, 0.1)',
-            }}
-          >
-            <CircularProgress size={60} sx={{ color: '#FFAAA5', mb: 3 }} />
-            <Typography variant="h6" color="textSecondary">
-              게시글을 불러오는 중...
+      {/* 로딩 상태 표시 */}
+      {postLoading ? (
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            p: 6,
+            my: 4,
+            flexGrow: 1,
+            backgroundColor: 'rgba(255,255,255,0.7)',
+            borderRadius: '16px',
+            border: '1px solid rgba(255, 170, 165, 0.2)',
+            boxShadow: '0 8px 20px rgba(255, 170, 165, 0.1)',
+          }}
+        >
+          <CircularProgress size={60} sx={{ color: '#FFAAA5', mb: 3 }} />
+          <Typography variant="h6" color="textSecondary">
+            게시글을 불러오는 중...
+          </Typography>
+        </Box>
+      ) : postError ? (
+        // 오류 발생 시 메시지 표시
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            p: 6,
+            my: 4,
+            flexGrow: 1,
+            backgroundColor: 'rgba(255,255,255,0.7)',
+            borderRadius: '16px',
+            border: '1px solid rgba(255, 170, 165, 0.2)',
+            boxShadow: '0 8px 20px rgba(255, 170, 165, 0.1)',
+          }}
+        >
+          <Box sx={{ mb: 3, textAlign: 'center' }}>
+            <Typography variant="h5" color="error" gutterBottom>
+              오류가 발생했습니다
+            </Typography>
+            <Typography variant="body1" color="textSecondary">
+              {typeof postError === 'string'
+                ? postError
+                : '게시글을 불러오는 중 문제가 발생했습니다.'}
             </Typography>
           </Box>
-        ) : postError ? (
-          // 오류 발생 시 메시지 표시
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              p: 6,
-              my: 4,
-              flexGrow: 1,
-              backgroundColor: 'rgba(255,255,255,0.7)',
-              borderRadius: '16px',
-              border: '1px solid rgba(255, 170, 165, 0.2)',
-              boxShadow: '0 8px 20px rgba(255, 170, 165, 0.1)',
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={() => {
+              setIsSearchMode(false);
+              setSearchTerm('');
+              fetchPosts({
+                ...filter,
+                page: 0,
+                resetSearch: true,
+              });
             }}
           >
-            <Box sx={{ mb: 3, textAlign: 'center' }}>
-              <Typography variant="h5" color="error" gutterBottom>
-                오류가 발생했습니다
-              </Typography>
-              <Typography variant="body1" color="textSecondary">
-                {typeof postError === 'string'
-                  ? postError
-                  : '게시글을 불러오는 중 문제가 발생했습니다.'}
-              </Typography>
-            </Box>
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={() => {
-                setIsSearchMode(false);
-                setSearchTerm('');
-                fetchPosts({
-                  ...filter,
-                  page: 0,
-                  resetSearch: true,
-                });
-              }}
-            >
-              다시 시도하기
-            </Button>
+            다시 시도하기
+          </Button>
+        </Box>
+      ) : posts.length === 0 && isSearchMode ? (
+        // 검색 결과가 없을 때 메시지 표시
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            p: 6,
+            my: 4,
+            flexGrow: 1,
+            backgroundColor: 'rgba(255,255,255,0.7)',
+            borderRadius: '16px',
+            border: '1px solid rgba(255, 170, 165, 0.2)',
+            boxShadow: '0 8px 20px rgba(255, 170, 165, 0.1)',
+          }}
+        >
+          <Box sx={{ mb: 3, textAlign: 'center' }}>
+            <SearchIcon sx={{ fontSize: '3rem', color: '#FFAAA5', mb: 2 }} />
+            <Typography variant="h5" color="textSecondary" gutterBottom>
+              검색 결과가 없습니다
+            </Typography>
+            <Typography variant="body1" color="textSecondary">
+              다른 검색어로 다시 시도해보세요.
+            </Typography>
           </Box>
-        ) : posts.length === 0 && isSearchMode ? (
-          // 검색 결과가 없을 때 메시지 표시
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              p: 6,
-              my: 4,
-              flexGrow: 1,
-              backgroundColor: 'rgba(255,255,255,0.7)',
-              borderRadius: '16px',
-              border: '1px solid rgba(255, 170, 165, 0.2)',
-              boxShadow: '0 8px 20px rgba(255, 170, 165, 0.1)',
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={() => {
+              setIsSearchMode(false);
+              setSearchTerm('');
+              fetchPosts({
+                ...filter,
+                page: 0,
+                resetSearch: true,
+              });
             }}
           >
-            <Box sx={{ mb: 3, textAlign: 'center' }}>
-              <SearchIcon sx={{ fontSize: '3rem', color: '#FFAAA5', mb: 2 }} />
-              <Typography variant="h5" color="textSecondary" gutterBottom>
-                검색 결과가 없습니다
-              </Typography>
-              <Typography variant="body1" color="textSecondary">
-                다른 검색어로 다시 시도해보세요.
-              </Typography>
-            </Box>
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={() => {
-                setIsSearchMode(false);
-                setSearchTerm('');
-                fetchPosts({
-                  ...filter,
-                  page: 0,
-                  resetSearch: true,
-                });
-              }}
-            >
-              전체 게시글 보기
-            </Button>
-          </Box>
-        ) : (
-          /* 게시글 목록 */
-          <Box sx={{ flex: 1, minHeight: '400px' }}>
-            <PostList />
-          </Box>
-        )}
-      </Container>
-
-      {/* 맨 위로 이동 버튼
-      <IconButton
-        size="large"
-        onClick={scrollToTop}
-        sx={{
-          position: 'fixed',
-          bottom: 32,
-          right: 32,
-          backgroundColor: 'rgba(255, 170, 165, 0.9)',
-          color: 'white',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-          '&:hover': {
-            backgroundColor: '#FF9999',
-          },
-          zIndex: 10,
-        }}
-      >
-        <ArrowUpwardIcon />
-      </IconButton> */}
-    </SpringBackground>
+            전체 게시글 보기
+          </Button>
+        </Box>
+      ) : (
+        /* 게시글 목록 */
+        <Box sx={{ flex: 1, minHeight: '400px' }}>
+          <PostList />
+        </Box>
+      )}
+    </Container>
   );
 };
 

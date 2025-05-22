@@ -3,9 +3,7 @@ import { Link } from 'react-router-dom';
 import { TableCell, TableRow, Chip, Box, Typography } from '@mui/material';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import { PostSummary } from '../../types/index';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { on } from 'events';
+import { PostSummary } from '../../types-folder/index';
 
 interface PostListItemProps {
   post: PostSummary;

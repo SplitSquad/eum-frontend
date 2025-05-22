@@ -2,11 +2,12 @@ import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
 import React, { lazy, Suspense } from 'react';
 import { AuthGuard, GuestGuard, RoleGuard } from './guards';
 // import TempAuthPage from '../features/auth/pages/TempAuthPage'; // 임시 로그인 제거
-import { LoginPage, OAuthCallbackPage, AccessDeniedPage } from '../features/auth';
+import { OAuthCallbackPage, AccessDeniedPage } from '../features/auth';
+import LoginPage from '../pages/LoginPage';
+import Profile from '../pages/Profile';
 import { LanguageProvider } from '../features/theme';
 import AiAssistant from '@/tests/unit/componentPageTest/testPages/AiAssistant';
-import { InfoRoutes } from '@/features/info/utils/InfoRoutes';
-
+import SignUpPage from '@/features/auth/pages/SignUpPage';
 // 커뮤니티 기능 임포트
 // import { PostListPage, PostDetailPage, PostCreatePage } from '../features/community/pages';
 import { CommunityRoutes } from '../features/community';
@@ -16,11 +17,13 @@ import { DebateRoutes } from '../features/debate';
 
 // 마이페이지 기능 임포트
 import { MypageRoutes } from '../features/mypage';
+import NormalLogin from '@/features/auth/pages/NormalLogin';
+import { InfoRoutes } from '@/features/info/utils';
 
 // 온보딩 라우트 컴포넌트 임포트
 const OnboardingRoutes = lazy(() => import('../features/onboarding/routes/OnboardingRoutes'));
 
-// 레이아웃
+//레이아웃
 const AppLayout = lazy(() => import('../app/App'));
 
 // 페이지 컴포넌트 지연 로딩
@@ -39,6 +42,7 @@ const Search = lazy(() => import('../pages/Search'));
 const Onboarding = lazy(() => import('../pages/Onboarding'));
 */
 const NotFound = lazy(() => import('../pages/NotFound'));
+const Init = lazy(() => import('../pages/LoadingOverLay'));
 const Loading = lazy(() => import('../pages/Loading'));
 
 /**
@@ -54,31 +58,24 @@ const router = createBrowserRouter([
     path: '/',
     element: <AppLayout />,
     children: [
-      // 홈 (로그인 필요로 변경)
       {
         path: '',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <Init isLoaded={false} />
+          </Suspense>
+        ),
+      },
+      {
+        path: '/home',
         element: (
           <Suspense fallback={<LoadingFallback />}>
             <Home />
           </Suspense>
         ),
       },
-
-      // 임시 로그인 (비회원만 접근 가능)
-      // {
-      //   path: 'login',
-      //   element: (
-      //     <Suspense fallback={<LoadingFallback />}>
-      //       {/* <GuestGuard> */}
-      //       <TempAuthPage />
-      //       {/* </GuestGuard> */}
-      //     </Suspense>
-      //   ),
-      // },
-
-      // 실제 구글 로그인 페이지
       {
-        path: 'google-login',
+        path: '/google-login',
         element: (
           <Suspense fallback={<LoadingFallback />}>
             <GuestGuard>
@@ -87,54 +84,52 @@ const router = createBrowserRouter([
           </Suspense>
         ),
       },
-
-      // OAuth 콜백 처리
       {
-        path: 'auth/callback',
+        path: '/login',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <GuestGuard>
+              <NormalLogin />
+            </GuestGuard>
+          </Suspense>
+        ),
+      },
+      {
+        path: '/signup',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <GuestGuard>
+              <SignUpPage />
+            </GuestGuard>
+          </Suspense>
+        ),
+      },
+      {
+        path: '/auth/callback',
         element: (
           <Suspense fallback={<LoadingFallback />}>
             <OAuthCallbackPage />
           </Suspense>
         ),
       },
-
-      // 접근 거부 페이지
       {
-        path: 'access-denied',
+        path: '/access-denied',
         element: (
           <Suspense fallback={<LoadingFallback />}>
             <AccessDeniedPage />
           </Suspense>
         ),
       },
-
-      /* 아직 구현되지 않은 페이지 주석 처리
-      // 온보딩 (비회원만 접근 가능)
       {
-        path: 'onboarding',
-        element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <GuestGuard>
-              <Onboarding />
-            </GuestGuard>
-          </Suspense>
-        ),
-      },
-      */
-
-      // 온보딩 (로그인 필요)
-      {
-        path: 'onboarding/*',
+        path: '/onboarding/*',
         element: (
           <Suspense fallback={<LoadingFallback />}>
             <OnboardingRoutes />
           </Suspense>
         ),
       },
-
-      // 커뮤니티 (로그인 필요)
       {
-        path: 'community/*',
+        path: '/community/*',
         element: (
           <Suspense fallback={<LoadingFallback />}>
             <AuthGuard>
@@ -143,10 +138,8 @@ const router = createBrowserRouter([
           </Suspense>
         ),
       },
-
-      // 토론 (로그인 필요)
       {
-        path: 'debate/*',
+        path: '/debate/*',
         element: (
           <Suspense fallback={<LoadingFallback />}>
             <AuthGuard>
@@ -155,8 +148,6 @@ const router = createBrowserRouter([
           </Suspense>
         ),
       },
-
-      // // 정보 (누구나 접근 가능)
       {
         path: 'info/*',
         element: (
@@ -175,9 +166,8 @@ const router = createBrowserRouter([
           </Suspense>
         ),
       },
-      // AI 비서 (로그인 필요)
       {
-        path: 'assistant',
+        path: '/assistant',
         element: (
           <Suspense fallback={<LoadingFallback />}>
             <AuthGuard>
@@ -186,10 +176,8 @@ const router = createBrowserRouter([
           </Suspense>
         ),
       },
-
-      // 마이페이지 (로그인 필요)
       {
-        path: 'mypage/*',
+        path: '/mypage/*',
         element: (
           <Suspense fallback={<LoadingFallback />}>
             <AuthGuard>
@@ -198,48 +186,18 @@ const router = createBrowserRouter([
           </Suspense>
         ),
       },
-
-      /* 아직 구현되지 않은 페이지 주석 처리
-      // 검색 (누구나 접근 가능)
       {
-        path: 'search',
-        element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <Search />
-          </Suspense>
-        ),
-      },
-
-      // 관리자 페이지 (관리자 역할 필요)
-      {
-        path: 'admin',
-        element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <RoleGuard requiredRole="admin">
-              <div>관리자 페이지</div>
-            </RoleGuard>
-          </Suspense>
-        ),
-      },
-      */
-
-      // 404 페이지
-      {
-        path: '404',
+        path: '/404',
         element: (
           <Suspense fallback={<LoadingFallback />}>
             <NotFound />
           </Suspense>
         ),
       },
-
-      // 403 페이지 (접근 거부 - 기존 URL 패턴 지원)
       {
-        path: '403',
+        path: '/403',
         element: <Navigate to="/access-denied" replace />,
       },
-
-      // 알 수 없는 경로는 404로 리다이렉트
       {
         path: '*',
         element: <Navigate to="/404" replace />,

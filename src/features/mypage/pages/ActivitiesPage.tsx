@@ -7,6 +7,15 @@ import { useAuthStore } from '../../auth/store/authStore';
 import { CircularProgress } from '@mui/material';
 import DebateApi from '../../debate/api/debateApi';
 
+//리스폰스 타입 정의
+interface Activity {
+  id: number;
+  type: string;
+  title: string;
+  description: string;
+  date: string;
+  onClick: () => void;
+}
 // 스타일 컴포넌트
 const PageContainer = styled.div`
   padding: 20px 0;
@@ -302,7 +311,7 @@ const ActivitiesPage: React.FC = () => {
 
   // 활동 목록 생성
   const getActivities = () => {
-    const allActivities = [];
+    const allActivities: Activity[] = [];
 
     // 게시글 활동
     if ((activeTab === 'all' || activeTab === 'posts') && posts?.content) {

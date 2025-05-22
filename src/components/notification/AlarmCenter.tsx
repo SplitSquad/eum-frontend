@@ -5,6 +5,7 @@ import {
   AlarmDetail,
 } from '@/services/notification/alarmService';
 import { useSseWithPolling } from '@/shared/hooks/UseSse';
+import Bell from '@/components/animations/Bell';
 
 export function getUserId(): number | null {
   try {
@@ -22,6 +23,7 @@ export function AlarmCenter() {
   const [alarms, setAlarms] = useState<AlarmDetail[]>([]);
   const [loading, setLoading] = useState(true);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [isBellPlaying, setIsBellPlaying] = useState(false);
 
   // 초기 로딩
   useEffect(() => {
@@ -95,28 +97,45 @@ export function AlarmCenter() {
     <div ref={wrapperRef} style={{ position: 'relative', display: 'inline-block' }}>
       <button
         onClick={() => setDropdownOpen(o => !o)}
+        onMouseEnter={() => setIsBellPlaying(true)}
+        onMouseLeave={() => setIsBellPlaying(false)}
         style={{
           fontSize: '1.4rem',
           background: 'none',
           border: 'none',
           position: 'relative',
           cursor: 'pointer',
+          padding: 0,
+          width: 48,
+          height: 48,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          outline: 'none',
+          boxShadow: 'none',
         }}
         aria-label="알림 센터 토글"
+        tabIndex={0}
+        onFocus={e => (e.currentTarget.style.outline = 'none')}
+        onBlur={e => (e.currentTarget.style.outline = 'none')}
       >
-        🔔
+        <Bell isPlaying={isBellPlaying || dropdownOpen || alarms.length > 0} />
         {alarms.length > 0 && (
           <span
             style={{
               position: 'absolute',
-              top: 0,
-              right: 0,
-              transform: 'translate(50%, -50%)',
+              top: -2,
+              right: 3,
               background: 'red',
               color: 'white',
               borderRadius: '50%',
-              padding: '2px 6px',
-              fontSize: '0.75rem',
+              width: 18,
+              height: 18,
+              padding: 0,
+              fontSize: '0.68rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
             {alarms.length}
@@ -133,7 +152,7 @@ export function AlarmCenter() {
             width: 300,
             maxHeight: 350,
             overflowY: 'auto',
-            background: '#fff',
+            background: 'rgba(255,255,255,0.85)',
             boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
             borderRadius: 4,
             zIndex: 1000,

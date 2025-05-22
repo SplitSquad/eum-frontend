@@ -44,10 +44,11 @@ export default function Modal({ isOpen, onClose, children, position }: ModalProp
         <>
           {/* 백드롭 */}
           <motion.div
-            className="fixed inset-0 bg-black/50 z-40 pointer-events-none"
+            className="fixed inset-0 bg-black/50 z-40"
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.5 }}
             exit={{ opacity: 0 }}
+            onClick={onClose}
           />
 
           {/* 모달 래퍼 */}

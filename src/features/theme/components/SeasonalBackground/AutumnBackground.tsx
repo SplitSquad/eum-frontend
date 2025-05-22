@@ -13,6 +13,11 @@ const fadeIn = keyframes`
   }
 `;
 
+const fadeInOpacity = keyframes`
+  from { opacity: 0; }
+  to { opacity: 1; }
+`;
+
 const fireflyMove = keyframes`
   0% {
     transform: translate(0, 0);
@@ -70,8 +75,8 @@ const AutumnContainer = styled(Box, {
   background: linear-gradient(135deg, #2a1b3d 0%, #44336a 100%);
   padding: ${p => (p.noPadding ? '0' : '2rem 0')};
   position: relative;
-  overflow: hidden;
-  animation: ${fadeIn} 0.6s ease-in-out;
+  overflow: visible;
+  animation: ${fadeInOpacity} 0.6s ease-in-out;
   display: flex;
   flex-direction: column;
 `;
@@ -91,7 +96,13 @@ const Moon = styled.div`
 `;
 
 // 별 요소
-const Star = styled.div<{ size: number; top: string; left: string; opacity: number; twinkle: number }>`
+const Star = styled.div<{
+  size: number;
+  top: string;
+  left: string;
+  opacity: number;
+  twinkle: number;
+}>`
   position: absolute;
   width: ${props => props.size}px;
   height: ${props => props.size}px;
@@ -105,7 +116,14 @@ const Star = styled.div<{ size: number; top: string; left: string; opacity: numb
 `;
 
 // 반딧불이 효과
-const Firefly = styled.div<{ size: number; top: string; left: string; duration: number; delay: number; color: string }>`
+const Firefly = styled.div<{
+  size: number;
+  top: string;
+  left: string;
+  duration: number;
+  delay: number;
+  color: string;
+}>`
   position: absolute;
   width: ${props => props.size}px;
   height: ${props => props.size}px;
@@ -126,11 +144,12 @@ const GalaxyMist = styled.div<{ top: string; opacity: number; size: number }>`
   left: 0;
   width: 100%;
   height: ${props => props.size}vh;
-  background: linear-gradient(90deg, 
-    rgba(255, 255, 255, 0) 0%, 
-    rgba(255, 255, 255, ${props => props.opacity * 0.1}) 25%, 
-    rgba(255, 255, 255, ${props => props.opacity}) 50%, 
-    rgba(255, 255, 255, ${props => props.opacity * 0.1}) 75%, 
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, ${props => props.opacity * 0.1}) 25%,
+    rgba(255, 255, 255, ${props => props.opacity}) 50%,
+    rgba(255, 255, 255, ${props => props.opacity * 0.1}) 75%,
     rgba(255, 255, 255, 0) 100%
   );
   z-index: 0;
@@ -157,9 +176,9 @@ const createFireflies = (count: number) => {
     'rgba(255, 255, 150, 0.8)',
     'rgba(255, 255, 180, 0.8)',
     'rgba(255, 230, 150, 0.8)',
-    'rgba(230, 255, 150, 0.8)'
+    'rgba(230, 255, 150, 0.8)',
   ];
-  
+
   return Array.from({ length: count }).map((_, index) => ({
     id: index,
     size: Math.random() * 5 + 3, // 3-8px 크기
@@ -189,13 +208,13 @@ interface AutumnBackgroundProps {
 const AutumnBackground: React.FC<AutumnBackgroundProps> = ({ children, noPadding = false }) => {
   // 별 생성
   const stars = createStars(80);
-  
+
   // 반딧불이 생성
   const fireflies = createFireflies(20);
-  
+
   // 은하수 레이어 생성
   const galaxyLayers = createGalaxyLayers(3);
-  
+
   return (
     <AutumnContainer noPadding={noPadding}>
       {/* 별 */}
@@ -209,20 +228,15 @@ const AutumnBackground: React.FC<AutumnBackgroundProps> = ({ children, noPadding
           twinkle={star.twinkle}
         />
       ))}
-      
+
       {/* 은하수 효과 */}
       {galaxyLayers.map(layer => (
-        <GalaxyMist
-          key={layer.id}
-          top={layer.top}
-          opacity={layer.opacity}
-          size={layer.size}
-        />
+        <GalaxyMist key={layer.id} top={layer.top} opacity={layer.opacity} size={layer.size} />
       ))}
-      
+
       {/* 달 */}
       <Moon />
-      
+
       {/* 반딧불이 */}
       {fireflies.map(firefly => (
         <Firefly
@@ -235,7 +249,7 @@ const AutumnBackground: React.FC<AutumnBackgroundProps> = ({ children, noPadding
           color={firefly.color}
         />
       ))}
-      
+
       <Box
         sx={{
           position: 'relative',
@@ -252,4 +266,4 @@ const AutumnBackground: React.FC<AutumnBackgroundProps> = ({ children, noPadding
   );
 };
 
-export default AutumnBackground; 
+export default AutumnBackground;

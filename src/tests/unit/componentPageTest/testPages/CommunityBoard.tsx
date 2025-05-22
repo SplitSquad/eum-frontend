@@ -1,4 +1,4 @@
-import AppLayout from '@/components/layout/AppLayout';
+import AppLayout from '@/components/layout/LegacyAppLayout';
 import PageWrapper from '@/components/layout/PageWrapper';
 import Container from '@/components/layout/Contianer';
 import CategoryFilterSidebar from '@/features/community/components/CategoryFilterSidebar';

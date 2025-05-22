@@ -21,14 +21,14 @@ import { handleImageUpload, MAX_FILE_SIZE } from '@tiptap-editor/lib/tiptap-util
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 const categoryOptions = [
-  '전체',
-  '교육',
-  '금융/세금',
+  '관광/체험',
+  '교통/이동',
+  '부동산/계약',
+  '문화/생활',
+  '학사/캠퍼스',
   '비자/법률',
-  '쇼핑',
-  '의료/건강',
-  '주거/부동산',
-  '취업/직장',
+  '잡페어',
+  '숙소/지역정보',
 ];
 
 export default function InfoCreatePage() {

@@ -49,9 +49,10 @@ const springBookStyle = `
 // 레이아웃 기본 구조
 const AppRoot = styled.div`
   width: 100%;
-  min-height: 100vh;
+  min-height: 60vh;
   position: relative;
   overflow-x: hidden;
+  padding: 0 0 0 0;
 `;
 
 // 고정된 배경 레이어
@@ -68,20 +69,20 @@ const BackgroundLayer = styled.div`
 const ContentLayer = styled.div`
   position: relative;
   width: 100%;
-  min-height: 100vh;
+  height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 2rem 0;
+  padding: 0 0 0 0;
   z-index: 1;
 `;
 
 // 책 컨테이너 스타일
 const BookContainer = styled.div`
   max-width: 1200px;
-  width: 90%;
+  width: 100%;
   height: 85vh;
-  margin: 0 auto;
+  margin: 0 0 0 0;
   perspective: 1000px;
   display: flex;
   align-items: center;
@@ -103,6 +104,7 @@ const Book = styled.div`
   position: relative;
   border-radius: 10px;
   overflow: hidden;
+  padding: 0 0 0 0;
 
   &:before {
     content: '';
@@ -482,9 +484,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({ children, title }) => {
   return (
     <AppRoot>
       {/* 고정된 배경 레이어 - 항상 유지됨 */}
-      <BackgroundLayer>
-        <SpringBackground intensity={0.5} isFixed={true} />
-      </BackgroundLayer>
+      {/* BackgroundLayer는 제거, App.tsx의 SeasonalBackground만 사용 */}
 
       {/* 콘텐츠 레이어 - 페이지 전환 시 내용만 변경됨 */}
       <ContentLayer>

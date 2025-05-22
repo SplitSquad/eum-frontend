@@ -1,5 +1,26 @@
 import { useState, useCallback } from 'react';
-import { Comment } from '../types';
+// import { Comment } from '../types'; // 타입 import 불가로 임시 주석 처리
+
+// 임시 타입 선언 (실제 타입 정의에 맞게 수정 필요)
+// type Comment = {
+//   commentId: number;
+//   content: string;
+//   writerNickname?: string;
+//   createdAt?: string;
+//   likeCount?: number;
+//   dislikeCount?: number;
+//   replyCount?: number;
+// };
+type Comment = {
+  commentId: number;
+  content: string;
+  writerNickname?: string;
+  createdAt?: string;
+  likeCount?: number;
+  dislikeCount?: number;
+  replyCount?: number;
+  children?: Comment[];
+};
 
 interface ReplyInfo {
   replyId: number;

@@ -1,5 +1,11 @@
 import apiClient from './apiClient';
-import { Post } from '../types';
+import {
+  Post,
+  PostSummary,
+  ReactionType,
+  User,
+  CommentType as Comment,
+} from '../types-folder/index';
 import axios, { AxiosResponse } from 'axios';
 
 // 로컬에서 필요한 타입 정의
@@ -31,7 +37,7 @@ export interface ApiUpdatePostRequest {
 
 // PostListResponse 타입 정의
 export interface PostListResponse {
-  postList: Post[];
+  postList: PostSummary[];
   total: number;
   totalPages: number;
 }
@@ -91,6 +97,12 @@ interface SearchResponseData {
  */
 const BASE_URL = '/community/post';
 
+// PostType 변환 유틸리티
+function toPostType(value: any): '모임' | '자유' | '전체' {
+  if (value === '모임' || value === '자유' || value === '전체') return value;
+  return '자유';
+}
+
 /**
  * 게시글 관련 API
  */
@@ -109,41 +121,42 @@ export const PostApi = {
   }): Promise<PostListResponse> => {
     try {
       console.log('[DEBUG] getPosts 요청 시작, 원본 파라미터:', params);
-      
+
       // API 파라미터 변환 (백엔드 파라미터명에 맞게 변환)
       const apiParams: Record<string, any> = {
         page: params.page !== undefined ? params.page : 0,
         size: params.size || 6,
         category: params.category === '전체' ? '전체' : params.category || '전체',
-        sort: params.sortBy === 'popular' ? 'views' : params.sortBy === 'oldest' ? 'oldest' : 'latest',
+        sort:
+          params.sortBy === 'popular' ? 'views' : params.sortBy === 'oldest' ? 'oldest' : 'latest',
       };
-      
+
       // postType 처리 - 백엔드는 빈 문자열을 허용하지 않음, 항상 값이 있어야 함
       apiParams.postType = params.postType || '자유';
-      
+
       // region(지역) 처리 - 자유 게시글이면 무조건 '자유'로, 그렇지 않으면 location 값 사용
       if (apiParams.postType === '자유') {
         apiParams.region = '자유';
       } else {
         apiParams.region = params.location === '전체' ? '전체' : params.location || '전체';
       }
-      
+
       // 태그 처리
       if (params.tag && params.tag !== '전체') {
         // 콤마로 분리된 태그 문자열을 배열로 변환
         const tagsArray = params.tag.split(',').map(tag => tag.trim());
         // 태그 배열을 직접 할당
         apiParams.tags = tagsArray;
-        
-        // 로그에 태그 정보 명확하게 표시 
+
+        // 로그에 태그 정보 명확하게 표시
         console.log('[DEBUG] 태그 필터링 적용:', { tag: params.tag, tagsArray });
       }
-      
+
       // 실제 API 요청 로그
       console.log('[DEBUG] 서버로 전송되는 최종 파라미터:', apiParams);
 
       // 실제 API 호출
-      const response = await apiClient.get<any>(BASE_URL, { 
+      const response = await apiClient.get<any>(BASE_URL, {
         params: apiParams,
         paramsSerializer: params => {
           // URLSearchParams를 사용하여 직접 쿼리 문자열 생성
@@ -157,13 +170,13 @@ export const PostApi = {
             }
           });
           return searchParams.toString();
-        }
+        },
       });
 
       console.log('[DEBUG] 게시글 목록 원본 응답 데이터:', response);
 
       // 안전하게 데이터 추출 및 변환
-      let posts = [];
+      let posts: PostSummary[] = [];
       let total = 0;
 
       // 백엔드 응답 구조에 따라 적절히 처리
@@ -179,7 +192,7 @@ export const PostApi = {
         }
         // Spring Data 표준 페이징 응답 형식인 경우
         else if (Array.isArray(response.content)) {
-          posts = response.content;
+          posts = response.content as PostSummary[];
           total =
             typeof response.totalElements === 'number' ? response.totalElements : posts.length;
           console.log('[DEBUG] 백엔드 응답에서 content 배열 추출:', {
@@ -189,7 +202,7 @@ export const PostApi = {
         }
         // 응답 자체가 배열인 경우
         else if (Array.isArray(response)) {
-          posts = response;
+          posts = response as PostSummary[];
           total = response.length;
           console.log('[DEBUG] 백엔드 응답이 직접 배열 형태:', {
             postsLength: posts.length,
@@ -199,7 +212,6 @@ export const PostApi = {
 
       // 각 게시물에 대해 필드 확인 및 결측치 처리
       posts = posts.map((post: any) => {
-        // 게시물이 null이면 빈 객체로 대체
         if (!post)
           return {
             postId: 0,
@@ -213,17 +225,15 @@ export const PostApi = {
             commentCount: 0,
             category: '전체',
             tags: [],
-            status: 'ACTIVE',
-            postType: '자유',
+            status: 'ACTIVE' as const,
+            postType: '자유' as const,
             address: '자유',
           };
-
         return {
           ...post,
           title: post.title || '[제목 없음]',
           content: post.content || '',
           dislikeCount: post.dislikeCount || 0,
-          // 백엔드 응답 필드와 프론트엔드 필드 맵핑
           postId: post.postId,
           writer: {
             userId: post.userId || 0,
@@ -234,11 +244,12 @@ export const PostApi = {
           viewCount: post.views || 0,
           category: post.category || '전체',
           createdAt: post.createdAt || new Date().toISOString(),
-          postType: post.postType || '자유',
+          postType: typeof post.postType === 'string' ? toPostType(post.postType) : post.postType,
           address: post.address || '자유',
           thumbnail: post.files && post.files.length > 0 ? post.files[0] : null,
+          status: (post.status as 'ACTIVE' | 'INACTIVE' | 'DELETED') || 'ACTIVE',
         };
-      });
+      }) as PostSummary[];
 
       // 페이징 계산 - 페이지당 6개 기준으로 총 페이지 수 계산
       const totalPages = Math.ceil(total / 6);
@@ -339,13 +350,13 @@ export const PostApi = {
   ): Promise<PostListResponse> => {
     try {
       console.log('[API 요청] searchPosts:', { keyword, searchBy, ...options });
-      
+
       // 검색 요청을 위한 기본 URL 경로 설정
       const endpoint = `${BASE_URL}/search`;
-      
+
       // 검색 요청 파라미터 설정 - URLSearchParams 사용하여 파라미터 직접 구성
       const searchParams = new URLSearchParams();
-      
+
       // 영어로 된 searchBy를 백엔드에서 기대하는 한글로 변환
       let searchByValue: string;
       switch (searchBy) {
@@ -371,15 +382,15 @@ export const PostApi = {
       }
 
       console.log('[DEBUG] 변환된 searchBy 값:', { 원래값: searchBy, 변환값: searchByValue });
-      
+
       // 페이지네이션 파라미터
       searchParams.append('page', String(options.page || 0));
       searchParams.append('size', String(options.size || 10));
-      
+
       // 검색 필수 파라미터 - keyword와 searchBy 필드
       searchParams.append('keyword', keyword);
       searchParams.append('searchBy', searchByValue);
-      
+
       // 정렬 파라미터 (backend format: "latest", "oldest", "views")
       const sortValue = options.sort || 'createdAt,desc';
       // SpringBoot 형식의 sort를 backend 형식으로 변환
@@ -394,37 +405,42 @@ export const PostApi = {
         backendSort = 'latest'; // 기본값
       }
       searchParams.append('sort', backendSort);
-      
+
       // 카테고리 (전체인 경우 '전체' 값으로 명시적 전달)
       searchParams.append('category', options.category || '전체');
-      
+
       // 지역 파라미터 (빈 값이면 '전체'로 설정)
       searchParams.append('region', options.region || '전체');
-      
+
       // 게시글 타입 (없으면 '자유'로 설정)
       searchParams.append('postType', options.postType || '자유');
-      
+
       // URL 생성 (파라미터가 직접 포함된 URL)
       const requestUrl = `${endpoint}?${searchParams.toString()}`;
-      
+
       console.log('[DEBUG] 최종 요청 URL:', requestUrl);
-      
+
       // API 요청 (직접 URL 사용)
       const response = await apiClient.get<any>(requestUrl);
-      
+
       console.log('[API 응답] searchPosts 원본 응답:', response);
-      
+
       // 게시글 목록과 페이징 정보 추출
       let posts: any[] = [];
       let total = 0;
       let totalPages = 0;
-      
+
       // Spring Data Page 객체 처리를 위한 응답 데이터 정규화
       // 백엔드 응답이 "Page X of Y containing Z instances" 형식으로 출력되는 경우를 처리
       const data = response;
-      
-      console.log('[API 응답 파싱] 데이터 타입:', typeof data, '자바스크립트 객체 여부:', data !== null && typeof data === 'object');
-      
+
+      console.log(
+        '[API 응답 파싱] 데이터 타입:',
+        typeof data,
+        '자바스크립트 객체 여부:',
+        data !== null && typeof data === 'object'
+      );
+
       // 응답 형식에 따른 처리 (더 상세한 로깅 추가)
       if (data) {
         // Spring Data Page 객체인 경우 (toString() 메서드로 인해 출력은 "Page X of Y" 형식)
@@ -432,19 +448,25 @@ export const PostApi = {
           hasPostList: !!data.postList,
           hasContent: !!data.content,
           hasTotal: !!data.total,
-          hasTotalElements: !!data.totalElements
+          hasTotalElements: !!data.totalElements,
         });
-        
+
         // 백엔드 맵핑 응답 구조: { postList: [...], total: n } 형식
         if (data.postList) {
-          console.log('[DEBUG] postList 배열 발견:', Array.isArray(data.postList) ? data.postList.length : 'not array');
+          console.log(
+            '[DEBUG] postList 배열 발견:',
+            Array.isArray(data.postList) ? data.postList.length : 'not array'
+          );
           posts = Array.isArray(data.postList) ? data.postList : [];
           total = data.total || 0;
           totalPages = data.totalPages || Math.ceil(total / (options.size || 10));
-        } 
-        // Spring Data JPA Page 객체 형식: { content: [...], totalElements: n, totalPages: n } 형식 
+        }
+        // Spring Data JPA Page 객체 형식: { content: [...], totalElements: n, totalPages: n } 형식
         else if (data.content) {
-          console.log('[DEBUG] content 배열 발견:', Array.isArray(data.content) ? data.content.length : 'not array');
+          console.log(
+            '[DEBUG] content 배열 발견:',
+            Array.isArray(data.content) ? data.content.length : 'not array'
+          );
           posts = Array.isArray(data.content) ? data.content : [];
           total = data.totalElements || 0;
           totalPages = data.totalPages || Math.ceil(total / (options.size || 10));
@@ -459,7 +481,7 @@ export const PostApi = {
         // 형식을 파악할 수 없는 경우 (객체이지만 예상 필드가 없음)
         else if (typeof data === 'object') {
           console.warn('[WARN] 예상하지 못한 응답 형식. 각 필드를 검사합니다:', Object.keys(data));
-          
+
           // 객체의 각 최상위 속성을 검사하여 배열 찾기
           let arrayFound = false;
           for (const key in data) {
@@ -467,7 +489,7 @@ export const PostApi = {
               console.log(`[DEBUG] 배열 필드 발견: ${key}, 길이: ${data[key].length}`);
               posts = data[key];
               arrayFound = true;
-              
+
               // total 값도 같이 찾기
               if (typeof data['total'] === 'number') {
                 total = data['total'];
@@ -476,15 +498,15 @@ export const PostApi = {
               } else {
                 total = posts.length;
               }
-              
+
               break;
             }
           }
-          
+
           // 배열을 찾지 못한 경우, 객체 자체가 단일 게시글일 수 있음
           if (!arrayFound) {
             console.warn('[WARN] 응답에서 배열을 찾을 수 없습니다. 단일 객체 응답으로 처리합니다.');
-            
+
             // 객체에 postId 같은 핵심 필드가 있는지 확인
             if (data.postId || data.id) {
               posts = [data];
@@ -494,18 +516,18 @@ export const PostApi = {
               total = 0;
             }
           }
-          
+
           totalPages = Math.ceil(total / (options.size || 10));
         }
       }
-      
-      console.log('[DEBUG] 파싱된 데이터:', { 
-        postsLength: posts.length, 
-        total, 
+
+      console.log('[DEBUG] 파싱된 데이터:', {
+        postsLength: posts.length,
+        total,
         totalPages,
-        firstItem: posts.length > 0 ? {...posts[0]} : 'no items'
+        firstItem: posts.length > 0 ? { ...posts[0] } : 'no items',
       });
-      
+
       // 게시글 데이터 정규화
       const normalizedPosts = posts.map((post: any) => {
         if (!post) {
@@ -522,12 +544,12 @@ export const PostApi = {
             commentCount: 0,
             category: '전체',
             tags: [],
-            status: 'ACTIVE',
-            postType: '자유',
+            status: 'ACTIVE' as const,
+            postType: '자유' as const,
             address: '자유',
           };
         }
-        
+
         return {
           postId: post.postId || post.id || 0,
           writerId: post.userId || post.writerId || post.writer?.userId || 0,
@@ -542,36 +564,36 @@ export const PostApi = {
           createdAt: post.createdAt || new Date().toISOString(),
           viewCount: post.views || post.viewCount || 0,
           likeCount: post.like || post.likeCount || 0,
-          dislikeCount: post.dislike || post.dislikeCount || 0, 
+          dislikeCount: post.dislike || post.dislikeCount || 0,
           commentCount: post.commentCnt || post.commentCount || 0,
           category: post.category || '전체',
           tags: post.tags || [],
-          status: post.status || 'ACTIVE',
-          postType: post.postType || '자유',
+          status: (post.status as 'ACTIVE' | 'INACTIVE' | 'DELETED') || 'ACTIVE',
+          postType: typeof post.postType === 'string' ? toPostType(post.postType) : post.postType,
           address: post.address || post.location || '자유',
           thumbnail: post.files && post.files.length > 0 ? post.files[0] : null,
         };
       });
-      
+
       const result = {
         postList: normalizedPosts,
         total,
-        totalPages
+        totalPages,
       };
-      
-      console.log('[DEBUG] 최종 결과:', { 
-        postsCount: normalizedPosts.length, 
-        total, 
-        totalPages 
+
+      console.log('[DEBUG] 최종 결과:', {
+        postsCount: normalizedPosts.length,
+        total,
+        totalPages,
       });
-      
+
       return result;
     } catch (error) {
       console.error('게시글 검색 실패:', error);
       return {
         postList: [],
         total: 0,
-        totalPages: 0
+        totalPages: 0,
       };
     }
   },
@@ -599,7 +621,8 @@ export const PostApi = {
         commentCount: response.commentCnt || 0,
         myReaction: response.isState || null, // isState를 myReaction으로 변환
         // 추가된 필드
-        postType: response.postType || '자유',
+        postType:
+          typeof response.postType === 'string' ? toPostType(response.postType) : response.postType,
         address: response.address || '자유',
         // 썸네일 처리
         thumbnail: response.files && response.files.length > 0 ? response.files[0] : null,
@@ -794,7 +817,7 @@ export const PostApi = {
           tags: post.tags,
           createdAt: post.createdAt || new Date().toISOString(),
           // 추가된 필드
-          postType: post.postType || '자유',
+          postType: typeof post.postType === 'string' ? toPostType(post.postType) : post.postType,
           address: post.address || '자유',
           // 썸네일 처리
           thumbnail: post.files && post.files.length > 0 ? post.files[0] : null,

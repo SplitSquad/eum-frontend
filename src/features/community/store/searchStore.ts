@@ -2,7 +2,7 @@
 
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import { Post, PageResponse, SearchOptions } from '../types';
+import { Post, PageResponse, SearchOptions } from '../types-folder/index';
 import * as api from '../api/communityApi';
 
 // 검색 관련 상태 타입
@@ -62,14 +62,9 @@ export const useSearchStore = create<SearchState & SearchActions>()(
           // const data = await response.json();
 
           // 임시 구현 - api 호출
-          const response = await api.searchPosts({
-            keyword,
-            searchType,
-            page,
-            size,
-          });
+          const response = await api.searchPosts(keyword, searchType, { page, size });
 
-          const pageData = response as PageResponse<Post>;
+          const pageData = response as unknown as PageResponse<Post>;
 
           set({
             results: pageData.content,

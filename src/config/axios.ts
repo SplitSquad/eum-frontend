@@ -211,7 +211,7 @@ axiosInstance.interceptors.response.use(
 
               // 로그인 페이지로 이동 전에 플래그 리셋
               isRefreshing = false;
-              window.location.href = '/login';
+              window.location.href = '/google-login';
             }
           } catch (refreshError) {
             console.error('토큰 갱신 중 오류:', refreshError);
@@ -220,7 +220,7 @@ axiosInstance.interceptors.response.use(
             localStorage.removeItem('userEmail');
 
             isRefreshing = false;
-            window.location.href = '/login';
+            window.location.href = '/google-login';
           }
         } else if (requestUrl !== '/auth/refresh' && isRefreshing) {
           console.log('토큰 갱신 시도3');
@@ -243,7 +243,7 @@ axiosInstance.interceptors.response.use(
           sessionStorage.removeItem('auth_token');
           localStorage.removeItem('userEmail');
 
-          window.location.href = '/login';
+          window.location.href = '/google-login';
         }
       }
 

@@ -310,7 +310,7 @@ const DebateListPage: React.FC = () => {
   }, [selectedCategory, debates]);
 
   // 특별 라벨 할당 (예시용)
-  const getSpecialLabel = (debate: any) => {
+  const getSpecialLabel = (debate: any): { text: string; color: string } | null => {
     // 카테고리 뷰에서는 특별 라벨을 표시하지 않음
     return null;
   };

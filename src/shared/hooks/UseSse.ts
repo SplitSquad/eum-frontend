@@ -35,8 +35,8 @@ export function useSseWithPolling(
     const es = new EventSourcePolyfill(url, {
       headers: { Authorization: token },
       lastEventId,
-    });
-
+    } as any);
+    /*#TODO 애니타입 고치지*/
     // 메시지 이벤트만 처리 (이미 'data'만 전달됨)
     es.onmessage = evt => {
       const text = evt.data?.trim();

@@ -17,7 +17,7 @@ import {
   ApiUpdatePostRequest,
   PostSummary,
   PageResponse,
-} from '../types/index';
+} from '../types-folder/index';
 import { Category } from '@mui/icons-material';
 
 // 확장된 PostFilter 타입 - 검색 초기화 플래그 추가
@@ -77,12 +77,7 @@ interface PostActions {
   fetchRecentPosts: (count?: number) => Promise<void>;
   fetchPostById: (postId: number) => Promise<Post | null>;
   createPost: (postDto: ApiCreatePostRequest, files?: File[]) => Promise<void>;
-  updatePost: (
-    postId: number,
-    postDto: ApiUpdatePostRequest,
-    files?: File[],
-    removeFileIds?: number[]
-  ) => Promise<void>;
+  updatePost: (postId: number, postDto: ApiUpdatePostRequest, files?: File[]) => Promise<void>;
   deletePost: (postId: number) => Promise<void>;
   reactToPost: (postId: number, option: string) => Promise<void>;
 
@@ -203,7 +198,7 @@ export const usePostStore = create<PostState & PostActions>()(
       postError: null,
       postFilter: {
         sortBy: 'latest',
-        category: '전체',
+        category: '자유',
         location: '전체',
         page: 0,
         size: 6,
@@ -449,7 +444,8 @@ export const usePostStore = create<PostState & PostActions>()(
               let response;
 
               try {
-                response = await postApi.PostApi.getPosts(apiParams);
+                if (apiParams.postType === '전체') apiParams.postType = undefined as any;
+                response = await postApi.PostApi.getPosts(apiParams as any);
                 console.log('[DEBUG] API 응답 받음:', response);
               } catch (apiError) {
                 console.error('[ERROR] API 호출 실패:', apiError);
@@ -675,7 +671,8 @@ export const usePostStore = create<PostState & PostActions>()(
       createPost: async (postDto, files) => {
         set({ isLoading: true, error: null });
         try {
-          const createdPost = await postApi.PostApi.createPost(postDto, files);
+          if (postDto.postType === '전체') postDto.postType = undefined as any;
+          const createdPost = await postApi.PostApi.createPost(postDto as any, files);
           set(state => ({
             posts: [createdPost, ...state.posts],
             isLoading: false,
@@ -686,7 +683,7 @@ export const usePostStore = create<PostState & PostActions>()(
         }
       },
 
-      updatePost: async (postId, postDto, files, removeFileIds) => {
+      updatePost: async (postId, postDto, files) => {
         set({ isLoading: true, error: null });
         try {
           console.log('[DEBUG] 게시글 수정 시작:', {
@@ -696,15 +693,10 @@ export const usePostStore = create<PostState & PostActions>()(
               content: postDto.content ? postDto.content.substring(0, 50) + '...' : '',
             },
             filesCount: files?.length || 0,
-            removeFileIds,
           });
 
-          const updatedPost = await postApi.PostApi.updatePost(
-            postId,
-            postDto,
-            files,
-            removeFileIds
-          );
+          if (postDto.postType === '전체') postDto.postType = undefined as any;
+          const updatedPost = await postApi.PostApi.updatePost(postId, postDto as any, files);
 
           console.log('[DEBUG] 게시글 수정 성공:', {
             updatedPost: {
@@ -712,7 +704,7 @@ export const usePostStore = create<PostState & PostActions>()(
               content: updatedPost.content ? updatedPost.content.substring(0, 50) + '...' : '',
               category: updatedPost.category,
               postType: updatedPost.postType,
-              address: updatedPost.address || updatedPost.location,
+              address: updatedPost.address,
               tags: updatedPost.tags,
             },
           });
@@ -728,8 +720,8 @@ export const usePostStore = create<PostState & PostActions>()(
                     category: updatedPost.category,
                     tags: updatedPost.tags,
                     postType: updatedPost.postType as PostType,
-                    address: updatedPost.address || updatedPost.location,
-                    location: updatedPost.address || updatedPost.location,
+                    address: updatedPost.address,
+                    location: updatedPost.address,
                   }
                 : post
             );
@@ -744,8 +736,8 @@ export const usePostStore = create<PostState & PostActions>()(
                     category: updatedPost.category,
                     tags: updatedPost.tags,
                     postType: updatedPost.postType as PostType,
-                    address: updatedPost.address || updatedPost.location,
-                    location: updatedPost.address || updatedPost.location,
+                    address: updatedPost.address,
+                    location: updatedPost.address,
                     // 파일 업데이트
                     files: updatedPost.files || state.currentPost.files,
                   }

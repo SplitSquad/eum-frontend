@@ -24,10 +24,7 @@ interface LogoutButtonProps {
  * 로그아웃 버튼 컴포넌트
  * 아이콘 형태 또는 버튼 형태로 표시 가능
  */
-const LogoutButton: React.FC<LogoutButtonProps> = ({
-  variant = 'icon',
-  size = 'medium',
-}) => {
+const LogoutButton: React.FC<LogoutButtonProps> = ({ variant = 'icon', size = 'medium' }) => {
   const navigate = useNavigate();
   const { handleLogout } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
@@ -38,10 +35,10 @@ const LogoutButton: React.FC<LogoutButtonProps> = ({
       setIsLoading(true);
       await handleLogout();
       setShowSuccess(true);
-      
+
       // 짧은 딜레이 후 로그인 페이지로 이동
       setTimeout(() => {
-        navigate('/login');
+        navigate('/google-login');
       }, 1500);
     } catch (error) {
       console.error('로그아웃 실패:', error);
@@ -53,16 +50,16 @@ const LogoutButton: React.FC<LogoutButtonProps> = ({
     return (
       <>
         <Tooltip title="로그아웃">
-          <IconButton 
-            onClick={onLogout} 
-            size={size} 
+          <IconButton
+            onClick={onLogout}
+            size={size}
             disabled={isLoading}
             sx={{ color: 'rgba(233, 30, 99, 0.7)' }}
           >
             <LogoutIcon />
           </IconButton>
         </Tooltip>
-        
+
         <Snackbar
           open={showSuccess}
           autoHideDuration={1500}
@@ -88,7 +85,7 @@ const LogoutButton: React.FC<LogoutButtonProps> = ({
       >
         {isLoading ? '로그아웃 중...' : '로그아웃'}
       </StyledLogoutButton>
-      
+
       <Snackbar
         open={showSuccess}
         autoHideDuration={1500}

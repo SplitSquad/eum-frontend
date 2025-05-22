@@ -29,13 +29,15 @@ import { useComments } from '../../hooks/useComments';
 import useAuthStore from '../../../auth/store/authStore';
 import { useCommentForm, useCommentControls } from '../../hooks';
 import CommentForm from './CommentForm';
-import { CommentType, ReplyType, ReactionType } from '../../types';
-import { CommentApi } from '../../api/CommentApi';
+// import { CommentType, ReplyType, ReactionType } from '../../types'; // 존재하지 않아 임시 주석 처리
+// enum ReactionType으로 변경
+// type ReactionType = 'LIKE' | 'DISLIKE';
+enum ReactionType {
+  LIKE = 'LIKE',
+  DISLIKE = 'DISLIKE',
+}
+import { CommentApi } from '../../api/commentApi';
 import { useSnackbar } from 'notistack';
-
-// 인터페이스 정의 - 백엔드 응답 형태에 맞게 수정
-type Comment = CommentType;
-type Reply = ReplyType;
 
 const CommentCardWrapper = styled(Box)(({ theme }) => ({
   padding: theme.spacing(2),
@@ -89,6 +91,47 @@ interface CommentSectionProps {
   onDeleteComment?: (commentId: number) => Promise<void>;
 }
 
+// 실제 코드에서 사용하는 속성만 포함
+// type ReactionType = ... (enum은 이미 선언됨)
+type User = {
+  id?: number | string;
+  userId?: number | string;
+  nickname?: string;
+  name?: string;
+  profileImage?: string;
+};
+
+type Reply = {
+  replyId: number;
+  commentId: number;
+  content: string;
+  createdAt: string;
+  likeCount: number;
+  dislikeCount: number;
+  myReaction?: ReactionType;
+  liked?: boolean;
+  disliked?: boolean;
+  writer: User;
+  translating?: boolean;
+};
+
+type Comment = {
+  commentId: number;
+  postId?: number;
+  content: string;
+  createdAt: string;
+  likeCount: number;
+  dislikeCount: number;
+  myReaction?: ReactionType;
+  liked?: boolean;
+  disliked?: boolean;
+  writer: User;
+  replies?: Reply[];
+  replyCount?: number;
+  reply?: number;
+  translating?: boolean;
+};
+
 const CommentSection: React.FC<CommentSectionProps> = ({
   postId,
   comments: propComments,
@@ -110,7 +153,10 @@ const CommentSection: React.FC<CommentSectionProps> = ({
 
   // Auth
   const { user } = useAuthStore();
-  const currentUserId = user?.id ? Number(user.id) : undefined;
+  const currentUserId =
+    ((user as any)?.id ?? (user as any)?.userId)
+      ? Number((user as any)?.id ?? (user as any)?.userId)
+      : undefined;
 
   // Comment form controls
   const controls = useCommentControls(comments);
@@ -152,134 +198,143 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   const [loadingReplies, setLoadingReplies] = useState<Record<number, boolean>>({});
   const [replies, setReplies] = useState<Record<number, Reply[]>>({});
 
-  const loadReplies = useCallback(async (commentId: number) => {
-    // 이미 로딩 중이거나 이미 로드된 경우 중복 요청 방지
-    if (loadingReplies[commentId]) {
-      console.log(`[DEBUG] 대댓글 로드 건너뜀 - commentId: ${commentId} (이미 로딩 중)`);
-      return;
-    }
-
-    setLoadingReplies(prev => ({ ...prev, [commentId]: true }));
-
-    try {
-      console.log('[DEBUG] 대댓글 로드 시작 - commentId:', commentId);
-      const response = await CommentApi.getReplies(commentId);
-      console.log('[DEBUG] 대댓글 응답:', response);
-
-      // replyList 배열이 있으면 그대로 사용
-      if (Array.isArray(response)) {
-        // 백엔드가 배열을 직접 반환하는 경우
-        console.log('[DEBUG] 응답이 배열 형태:', response.length);
-        
-        // myReaction 필드를 liked/disliked 불리언으로 변환
-        const processedReplies = response.map(reply => ({
-          ...reply,
-          liked: reply.isState === '좋아요',
-          disliked: reply.isState === '싫어요',
-          myReaction: 
-            reply.isState === '좋아요' 
-              ? ReactionType.LIKE 
-              : reply.isState === '싫어요' 
-                ? ReactionType.DISLIKE 
-                : undefined
-        }));
-        
-        setReplies(prev => ({
-          ...prev,
-          [commentId]: processedReplies,
-        }));
-        
-        console.log(`[DEBUG] 댓글 ${commentId}의 대댓글 ${processedReplies.length}개 로드 완료`);
-        
-        // 댓글 객체의 replyCount 업데이트 - 전체 댓글을 다시 불러오지 않고 해당 댓글만 업데이트
-        setComments(prevComments => 
-          prevComments.map(comment => 
-            comment.commentId === commentId
-              ? { ...comment, replyCount: processedReplies.length }
-              : comment
-          )
-        );
-        
+  const loadReplies = useCallback(
+    async (commentId: number) => {
+      // 이미 로딩 중이거나 이미 로드된 경우 중복 요청 방지
+      if (loadingReplies[commentId]) {
+        console.log(`[DEBUG] 대댓글 로드 건너뜀 - commentId: ${commentId} (이미 로딩 중)`);
         return;
       }
-      
-      // 응답 구조 분석 및 대댓글 배열 추출
-      const replyArray: Reply[] = [];
 
-      // 숫자 키로 된 객체에서 대댓글 추출 (0, 1, 2, ...)
-      if (response && typeof response === 'object') {
-        for (const key in response) {
-          if (
-            !isNaN(Number(key)) &&
-            response[key as keyof typeof response] &&
-            typeof response[key as keyof typeof response] === 'object'
-          ) {
-            const replyData = response[key as keyof typeof response] as any;
-            // 백엔드 응답 -> 프론트엔드 타입 변환
-            if (replyData.replyId || replyData.commentId) {
-              const reply: Reply = {
-                replyId: replyData.replyId || replyData.commentId,
-                commentId: commentId,
-                content: replyData.content || '',
-                createdAt: replyData.createdAt || new Date().toISOString(),
-                likeCount: replyData.like || 0,
-                dislikeCount: replyData.dislike || 0,
-                myReaction:
-                  replyData.isState === '좋아요'
-                    ? ReactionType.LIKE
-                    : replyData.isState === '싫어요'
-                      ? ReactionType.DISLIKE
-                      : undefined,
-                liked: replyData.isState === '좋아요',
-                disliked: replyData.isState === '싫어요',
-                writer: replyData.writer || {
-                  userId: replyData.userId,
-                  nickname: replyData.userName || '익명',
-                  profileImage: replyData.userPicture || '',
-                },
-              };
-              replyArray.push(reply);
+      setLoadingReplies(prev => ({ ...prev, [commentId]: true }));
+
+      try {
+        console.log('[DEBUG] 대댓글 로드 시작 - commentId:', commentId);
+        const response = await CommentApi.getReplies(commentId);
+        console.log('[DEBUG] 대댓글 응답:', response);
+
+        // replyList 배열이 있으면 그대로 사용
+        if (Array.isArray(response)) {
+          // 백엔드가 배열을 직접 반환하는 경우
+          console.log('[DEBUG] 응답이 배열 형태:', response.length);
+
+          // myReaction 필드를 liked/disliked 불리언으로 변환
+          const processedReplies = response.map(reply => ({
+            ...reply,
+            liked: reply.isState === '좋아요',
+            disliked: reply.isState === '싫어요',
+            myReaction:
+              reply.isState === '좋아요'
+                ? ReactionType.LIKE
+                : reply.isState === '싫어요'
+                  ? ReactionType.DISLIKE
+                  : undefined,
+          }));
+
+          setReplies(prev => ({
+            ...prev,
+            [commentId]: processedReplies,
+          }));
+
+          console.log(`[DEBUG] 댓글 ${commentId}의 대댓글 ${processedReplies.length}개 로드 완료`);
+
+          // 댓글 객체의 replyCount 업데이트 - 전체 댓글을 다시 불러오지 않고 해당 댓글만 업데이트
+          setComments(prevComments =>
+            prevComments.map(comment =>
+              comment.commentId === commentId
+                ? { ...comment, replyCount: processedReplies.length }
+                : comment
+            )
+          );
+
+          return;
+        }
+
+        // 응답 구조 분석 및 대댓글 배열 추출
+        const replyArray: Reply[] = [];
+
+        // 숫자 키로 된 객체에서 대댓글 추출 (0, 1, 2, ...)
+        if (response && typeof response === 'object') {
+          for (const key in response) {
+            if (
+              !isNaN(Number(key)) &&
+              response[key as keyof typeof response] &&
+              typeof response[key as keyof typeof response] === 'object'
+            ) {
+              const replyData = response[key as keyof typeof response] as any;
+              // 백엔드 응답 -> 프론트엔드 타입 변환
+              if (replyData.replyId || replyData.commentId) {
+                const reply: Reply = {
+                  replyId: replyData.replyId || replyData.commentId,
+                  commentId: commentId,
+                  content: replyData.content || '',
+                  createdAt: replyData.createdAt || new Date().toISOString(),
+                  likeCount: replyData.like || 0,
+                  dislikeCount: replyData.dislike || 0,
+                  myReaction:
+                    replyData.isState === '좋아요'
+                      ? ReactionType.LIKE
+                      : replyData.isState === '싫어요'
+                        ? ReactionType.DISLIKE
+                        : undefined,
+                  liked: replyData.isState === '좋아요',
+                  disliked: replyData.isState === '싫어요',
+                  writer: replyData.writer || {
+                    userId: (replyData as any)?.id ?? (replyData as any)?.userId,
+                    nickname: replyData.userName || '익명',
+                    profileImage: replyData.userPicture || '',
+                  },
+                };
+                replyArray.push(reply);
+              }
             }
           }
         }
+
+        console.log('[DEBUG] 추출된 대댓글 배열:', replyArray);
+
+        setReplies(prev => ({
+          ...prev,
+          [commentId]: replyArray,
+        }));
+
+        // 댓글 객체의 replyCount 업데이트
+        setComments(prevComments =>
+          prevComments.map(comment =>
+            comment.commentId === commentId
+              ? { ...comment, replyCount: replyArray.length }
+              : comment
+          )
+        );
+
+        console.log(`[DEBUG] 댓글 ${commentId}의 대댓글 ${replyArray.length}개 로드 완료`);
+      } catch (error) {
+        console.error('[ERROR] 대댓글 로드 실패:', error);
+        enqueueSnackbar('답글을 불러오는 중 오류가 발생했습니다.', { variant: 'error' });
+      } finally {
+        setLoadingReplies(prev => ({ ...prev, [commentId]: false }));
       }
-
-      console.log('[DEBUG] 추출된 대댓글 배열:', replyArray);
-
-      setReplies(prev => ({
-        ...prev,
-        [commentId]: replyArray,
-      }));
-      
-      // 댓글 객체의 replyCount 업데이트
-      setComments(prevComments => 
-        prevComments.map(comment => 
-          comment.commentId === commentId
-            ? { ...comment, replyCount: replyArray.length }
-            : comment
-        )
-      );
-
-      console.log(`[DEBUG] 댓글 ${commentId}의 대댓글 ${replyArray.length}개 로드 완료`);
-    } catch (error) {
-      console.error('[ERROR] 대댓글 로드 실패:', error);
-      enqueueSnackbar('답글을 불러오는 중 오류가 발생했습니다.', { variant: 'error' });
-    } finally {
-      setLoadingReplies(prev => ({ ...prev, [commentId]: false }));
-    }
-  }, [loadingReplies, enqueueSnackbar]);
+    },
+    [loadingReplies, enqueueSnackbar]
+  );
 
   // 답글 토글 핸들러 확장
-  const handleReplyToggle = useCallback(async (commentId: number) => {
-    // 기존 토글 함수 호출
-    controls.handleReplyToggle(commentId);
+  const handleReplyToggle = useCallback(
+    async (commentId: number) => {
+      // 기존 토글 함수 호출
+      controls.handleReplyToggle(commentId);
 
-    // 토글 상태가 true로 변경될 때(펼쳐질 때) 대댓글 로드
-    // 이미 로드된 경우에는 다시 로드하지 않음
-    if (!controls.replyToggles[commentId] && (!replies[commentId] || replies[commentId].length === 0)) {
-      await loadReplies(commentId);
-    }
-  }, [controls, loadReplies, replies]);
+      // 토글 상태가 true로 변경될 때(펼쳐질 때) 대댓글 로드
+      // 이미 로드된 경우에는 다시 로드하지 않음
+      if (
+        !controls.replyToggles[commentId] &&
+        (!replies[commentId] || replies[commentId].length === 0)
+      ) {
+        await loadReplies(commentId);
+      }
+    },
+    [controls, loadReplies, replies]
+  );
 
   // 초기 마운트 시 댓글 가져오기
   useEffect(() => {
@@ -292,27 +347,28 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   useEffect(() => {
     const loadRepliesForCommentsWithReplies = async () => {
       // reply 개수가 있는 댓글만 필터링
-      const commentsWithReplies = comments.filter(comment => 
-        (comment.reply && comment.reply > 0) || (comment.replyCount && comment.replyCount > 0));
-      
-      if (commentsWithReplies.length === 0) return;
-      
-      // 이미 로드된 댓글 및 로딩 중인 댓글 필터링
-      const commentsToLoad = commentsWithReplies.filter(comment => 
-        !replies[comment.commentId] && 
-        !loadingReplies[comment.commentId]
+      const commentsWithReplies = comments.filter(
+        comment =>
+          (comment.reply && comment.reply > 0) || (comment.replyCount && comment.replyCount > 0)
       );
-      
+
+      if (commentsWithReplies.length === 0) return;
+
+      // 이미 로드된 댓글 및 로딩 중인 댓글 필터링
+      const commentsToLoad = commentsWithReplies.filter(
+        comment => !replies[comment.commentId] && !loadingReplies[comment.commentId]
+      );
+
       console.log('[DEBUG] 대댓글 자동 로드 - 대댓글 있는 댓글:', commentsWithReplies.length);
       console.log('[DEBUG] 대댓글 자동 로드 - 로드할 댓글:', commentsToLoad.length);
-      
+
       // 한 번에 하나씩만 로드해서 서버 부하 방지
       if (commentsToLoad.length > 0) {
         const commentToLoad = commentsToLoad[0];
         await loadReplies(commentToLoad.commentId);
       }
     };
-    
+
     // 댓글이 있고 자동 로드가 필요한 경우에만 실행
     if (comments.length > 0) {
       loadRepliesForCommentsWithReplies();
@@ -334,7 +390,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
     setSubmittingComment(true);
     try {
       console.log('[DEBUG] 댓글 작성 시작:', newCommentText.substring(0, 20) + '...');
-      
+
       // 먼저 UI에 임시 댓글 추가 (사용자가 작성한 원문 그대로 표시)
       const tempComment: Comment = {
         commentId: -Date.now(), // 임시 고유 ID (음수로 설정하여 실제 ID와 충돌 방지)
@@ -345,44 +401,44 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         dislikeCount: 0,
         replyCount: 0,
         writer: {
-          userId: user.id,
+          userId: (user as any)?.id ?? (user as any)?.userId,
           nickname: user.name || '사용자',
           profileImage: '',
         },
         translating: true, // 번역 중임을 표시하는 플래그
       };
-      
+
       // 먼저 UI에 댓글 추가
       setComments(prev => [tempComment, ...prev]);
       setTotal(prev => prev + 1);
-      
+
       // 입력 필드 초기화
       setNewCommentText('');
-      
+
       // 백엔드 API 호출
       const response = await CommentApi.createComment(postId, 'post', newCommentText);
       console.log('[DEBUG] 댓글 생성 응답:', response);
-      
+
       // 임시 댓글을 실제 댓글로 대체
-      setComments(prev => 
-        prev.map(comment => 
+      setComments(prev =>
+        prev.map(comment =>
           comment.commentId === tempComment.commentId
             ? {
                 ...response,
-                translating: false // 번역 완료
+                translating: false, // 번역 완료
               }
             : comment
         )
       );
-      
+
       enqueueSnackbar('댓글이 등록되었습니다.', { variant: 'success' });
     } catch (error) {
       console.error('[ERROR] 댓글 작성 실패:', error);
-      
+
       // 에러 발생 시 임시 댓글 제거
       setComments(prev => prev.filter(comment => comment.commentId > 0));
       setTotal(prev => Math.max(0, prev - 1));
-      
+
       enqueueSnackbar('댓글 작성에 실패했습니다.', { variant: 'error' });
     } finally {
       setSubmittingComment(false);
@@ -393,16 +449,14 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   const handleEditComment = async (commentId: number, content: string) => {
     try {
       const response = await CommentApi.updateComment(commentId, content);
-      
+
       // 전체 댓글 목록을 다시 불러오지 않고 해당 댓글만 업데이트
-      setComments(prevComments => 
-        prevComments.map(comment => 
-          comment.commentId === commentId
-            ? { ...comment, content }
-            : comment
+      setComments(prevComments =>
+        prevComments.map(comment =>
+          comment.commentId === commentId ? { ...comment, content } : comment
         )
       );
-      
+
       enqueueSnackbar('댓글이 수정되었습니다.', { variant: 'success' });
     } catch (error) {
       console.error('[ERROR] 댓글 수정 실패:', error);
@@ -414,13 +468,11 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   const handleDeleteComment = async (commentId: number) => {
     try {
       await CommentApi.deleteComment(commentId);
-      
+
       // 삭제된 댓글을 목록에서 제거하고 총 개수 감소
-      setComments(prevComments => 
-        prevComments.filter(comment => comment.commentId !== commentId)
-      );
+      setComments(prevComments => prevComments.filter(comment => comment.commentId !== commentId));
       setTotal(prev => Math.max(0, prev - 1));
-      
+
       enqueueSnackbar('댓글이 삭제되었습니다.', { variant: 'success' });
     } catch (error) {
       console.error('[ERROR] 댓글 삭제 실패:', error);
@@ -436,18 +488,21 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   }, []);
 
   // 댓글 목록에서 특정 댓글 업데이트 헬퍼 함수 (수정)
-  const updateCommentInList = useCallback((
-    commentsList: Comment[], 
-    commentId: number, 
-    updateFn: Comment | ((comment: Comment) => Comment)
-  ): Comment[] => {
-    return commentsList.map(comment => {
-      if (comment.commentId === commentId) {
-        return typeof updateFn === 'function' ? updateFn(comment) : { ...comment, ...updateFn };
-      }
-      return comment;
-    });
-  }, []);
+  const updateCommentInList = useCallback(
+    (
+      commentsList: Comment[],
+      commentId: number,
+      updateFn: Comment | ((comment: Comment) => Comment)
+    ): Comment[] => {
+      return commentsList.map(comment => {
+        if (comment.commentId === commentId) {
+          return typeof updateFn === 'function' ? updateFn(comment) : { ...comment, ...updateFn };
+        }
+        return comment;
+      });
+    },
+    []
+  );
 
   // 댓글 반응 함수 - 서버 응답이 불완전해도 UI 상태가 유지되도록 개선
   const handleReactionComment = async (commentId: number, type: 'like' | 'dislike') => {
@@ -455,42 +510,47 @@ const CommentSection: React.FC<CommentSectionProps> = ({
       enqueueSnackbar('로그인이 필요합니다.', { variant: 'warning' });
       return;
     }
-    
+
     try {
       const comment = comments.find(c => c.commentId === commentId);
       if (!comment) return;
-      
+
       // 현재 반응 상태 확인
       const currentReaction = comment.myReaction;
-      console.log(`[DEBUG] 댓글 반응 처리 시작 - 댓글ID: ${commentId}, 타입: ${type}, 현재상태: ${currentReaction}`);
-      
+      console.log(
+        `[DEBUG] 댓글 반응 처리 시작 - 댓글ID: ${commentId}, 타입: ${type}, 현재상태: ${currentReaction}`
+      );
+
       // 새 반응 타입 결정
       const newReactionType = type === 'like' ? ReactionType.LIKE : ReactionType.DISLIKE;
-      
+
       // 취소 여부 결정 (같은 버튼 다시 클릭)
-      const isCancelling = (type === 'like' && currentReaction === ReactionType.LIKE) || 
-                           (type === 'dislike' && currentReaction === ReactionType.DISLIKE);
-      
+      const isCancelling =
+        (type === 'like' && currentReaction === ReactionType.LIKE) ||
+        (type === 'dislike' && currentReaction === ReactionType.DISLIKE);
+
       // 최종 설정될 반응 타입
       const finalReaction = isCancelling ? undefined : newReactionType;
-      
-      console.log(`[DEBUG] 낙관적 UI 업데이트 - isCancelling: ${isCancelling}, finalReaction: ${finalReaction}`);
-      
+
+      console.log(
+        `[DEBUG] 낙관적 UI 업데이트 - isCancelling: ${isCancelling}, finalReaction: ${finalReaction}`
+      );
+
       // UI 즉시 업데이트 (낙관적 UI 업데이트)
       setComments(prevComments => {
         const updatedComments = prevComments.map(c => {
           if (c.commentId !== commentId) return c;
-          
+
           let updatedLikeCount = c.likeCount || 0;
           let updatedDislikeCount = c.dislikeCount || 0;
-          
+
           // 기존 반응 취소
           if (currentReaction === ReactionType.LIKE) {
             updatedLikeCount = Math.max(0, updatedLikeCount - 1);
           } else if (currentReaction === ReactionType.DISLIKE) {
             updatedDislikeCount = Math.max(0, updatedDislikeCount - 1);
           }
-          
+
           // 새 반응 추가 (취소가 아닌 경우에만)
           if (!isCancelling) {
             if (type === 'like') {
@@ -499,45 +559,49 @@ const CommentSection: React.FC<CommentSectionProps> = ({
               updatedDislikeCount += 1;
             }
           }
-          
+
           const updatedComment = {
             ...c,
             likeCount: updatedLikeCount,
             dislikeCount: updatedDislikeCount,
             myReaction: finalReaction,
             liked: finalReaction === ReactionType.LIKE,
-            disliked: finalReaction === ReactionType.DISLIKE
+            disliked: finalReaction === ReactionType.DISLIKE,
           };
-          
-          console.log(`[DEBUG] 업데이트된 댓글 상태 - commentId: ${commentId}, myReaction: ${updatedComment.myReaction}`);
+
+          console.log(
+            `[DEBUG] 업데이트된 댓글 상태 - commentId: ${commentId}, myReaction: ${updatedComment.myReaction}`
+          );
           return updatedComment;
         });
-        
+
         return updatedComments;
       });
-      
+
       // 현재 UI 상태 저장 (서버 응답이 불완전할 경우 사용)
       const requestedState = {
         type,
         isCancelling,
-        finalReaction
+        finalReaction,
       };
-      
-      console.log(`[DEBUG] API 호출 전 - commentId: ${commentId}, newReactionType: ${newReactionType}`);
-      
+
+      console.log(
+        `[DEBUG] API 호출 전 - commentId: ${commentId}, newReactionType: ${newReactionType}`
+      );
+
       // API 호출 - 낙관적 UI 이후
       const response = await CommentApi.reactToComment(commentId, newReactionType);
       console.log(`[DEBUG] 댓글 반응 API 응답:`, response);
-      
+
       // 서버 응답이 null, undefined 또는 에러인 경우
-      if (!response || response === 'error') {
+      if (!response || (typeof response === 'string' && response === 'error')) {
         console.log('[WARN] 서버 응답이 유효하지 않아 클라이언트 상태 유지');
         return; // 현재 UI 상태 유지
       }
-      
+
       // 서버 응답으로 UI 상태 확인 및 조정
       let serverReaction: ReactionType | undefined;
-      
+
       // 서버 응답에서 isState가 있는 경우
       if (response.isState) {
         if (response.isState === '좋아요') {
@@ -547,7 +611,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         } else {
           serverReaction = undefined;
         }
-      } 
+      }
       // 서버 응답에서 isState가 없는 경우 (API 응답 불완전)
       else {
         // like, dislike 값을 확인하여 상태 추론
@@ -563,30 +627,35 @@ const CommentSection: React.FC<CommentSectionProps> = ({
           serverReaction = finalReaction;
         }
       }
-      
-      console.log(`[DEBUG] 서버 응답 반영 - commentId: ${commentId}, serverReaction: ${serverReaction}`);
-      
+
+      console.log(
+        `[DEBUG] 서버 응답 반영 - commentId: ${commentId}, serverReaction: ${serverReaction}`
+      );
+
       // 최종 UI 업데이트 - 서버 응답 기반이지만 필요시 클라이언트 상태 유지
       setComments(prevComments => {
         const updatedComments = prevComments.map(c => {
           if (c.commentId !== commentId) return c;
-          
+
           // 현재 UI에 표시된 상태 확인
           const currentUiReaction = c.myReaction;
-          
+
           // 서버 응답이 있으면 서버 응답 사용, 없으면 현재 UI 상태 유지
-          const finalServerReaction = serverReaction !== undefined ? serverReaction : currentUiReaction;
-          
+          const finalServerReaction =
+            serverReaction !== undefined ? serverReaction : currentUiReaction;
+
           const updatedComment = {
             ...c,
             likeCount: response.like !== undefined ? response.like : c.likeCount,
             dislikeCount: response.dislike !== undefined ? response.dislike : c.dislikeCount,
             myReaction: finalServerReaction,
             liked: finalServerReaction === ReactionType.LIKE,
-            disliked: finalServerReaction === ReactionType.DISLIKE
+            disliked: finalServerReaction === ReactionType.DISLIKE,
           };
-          
-          console.log(`[DEBUG] 서버 응답 후 최종 댓글 상태 - commentId: ${commentId}, myReaction: ${updatedComment.myReaction}`);
+
+          console.log(
+            `[DEBUG] 서버 응답 후 최종 댓글 상태 - commentId: ${commentId}, myReaction: ${updatedComment.myReaction}`
+          );
           return updatedComment;
         });
         return updatedComments;
@@ -609,46 +678,51 @@ const CommentSection: React.FC<CommentSectionProps> = ({
       enqueueSnackbar('로그인이 필요합니다.', { variant: 'warning' });
       return;
     }
-    
+
     try {
       const replyList = replies[commentId] || [];
       const reply = replyList.find(r => r.replyId === replyId);
       if (!reply) return;
-      
+
       // 현재 반응 상태 확인
       const currentReaction = reply.myReaction;
-      console.log(`[DEBUG] 답글 반응 처리 시작 - 답글ID: ${replyId}, 타입: ${type}, 현재상태: ${currentReaction}`);
-      
+      console.log(
+        `[DEBUG] 답글 반응 처리 시작 - 답글ID: ${replyId}, 타입: ${type}, 현재상태: ${currentReaction}`
+      );
+
       // 새 반응 타입 결정
       const newReactionType = type === 'like' ? ReactionType.LIKE : ReactionType.DISLIKE;
-      
+
       // 취소 여부 결정 (같은 버튼 다시 클릭)
-      const isCancelling = (type === 'like' && currentReaction === ReactionType.LIKE) || 
-                           (type === 'dislike' && currentReaction === ReactionType.DISLIKE);
-      
+      const isCancelling =
+        (type === 'like' && currentReaction === ReactionType.LIKE) ||
+        (type === 'dislike' && currentReaction === ReactionType.DISLIKE);
+
       // 최종 설정될 반응 타입
       const finalReaction = isCancelling ? undefined : newReactionType;
-      
-      console.log(`[DEBUG] 낙관적 UI 업데이트 - isCancelling: ${isCancelling}, finalReaction: ${finalReaction}`);
-      
+
+      console.log(
+        `[DEBUG] 낙관적 UI 업데이트 - isCancelling: ${isCancelling}, finalReaction: ${finalReaction}`
+      );
+
       // UI 즉시 업데이트 (낙관적 UI 업데이트)
       setReplies(prev => {
         const updatedReplies = { ...prev };
-        
+
         // 이 부분에서 원본 배열을 새로운 배열로 대체
         updatedReplies[commentId] = replyList.map(r => {
           if (r.replyId !== replyId) return r;
-          
+
           let updatedLikeCount = r.likeCount || 0;
           let updatedDislikeCount = r.dislikeCount || 0;
-          
+
           // 기존 반응 취소
           if (currentReaction === ReactionType.LIKE) {
             updatedLikeCount = Math.max(0, updatedLikeCount - 1);
           } else if (currentReaction === ReactionType.DISLIKE) {
             updatedDislikeCount = Math.max(0, updatedDislikeCount - 1);
           }
-          
+
           // 새 반응 추가 (취소가 아닌 경우에만)
           if (!isCancelling) {
             if (type === 'like') {
@@ -657,45 +731,47 @@ const CommentSection: React.FC<CommentSectionProps> = ({
               updatedDislikeCount += 1;
             }
           }
-          
+
           const updatedReply = {
             ...r,
             likeCount: updatedLikeCount,
             dislikeCount: updatedDislikeCount,
             myReaction: finalReaction,
             liked: finalReaction === ReactionType.LIKE,
-            disliked: finalReaction === ReactionType.DISLIKE
+            disliked: finalReaction === ReactionType.DISLIKE,
           };
-          
-          console.log(`[DEBUG] 업데이트된 답글 상태 - replyId: ${replyId}, myReaction: ${updatedReply.myReaction}`);
+
+          console.log(
+            `[DEBUG] 업데이트된 답글 상태 - replyId: ${replyId}, myReaction: ${updatedReply.myReaction}`
+          );
           return updatedReply;
         });
-        
+
         return updatedReplies;
       });
-      
+
       // 현재 UI 상태 저장 (서버 응답이 불완전할 경우 사용)
       const requestedState = {
         type,
         isCancelling,
-        finalReaction
+        finalReaction,
       };
-      
+
       console.log(`[DEBUG] API 호출 전 - replyId: ${replyId}, newReactionType: ${newReactionType}`);
-      
+
       // API 호출 - 낙관적 UI 이후
       const response = await CommentApi.reactToReply(replyId, newReactionType);
       console.log(`[DEBUG] 답글 반응 API 응답:`, response);
-      
+
       // 서버 응답이 null, undefined 또는 에러인 경우
-      if (!response || response === 'error') {
+      if (!response || (typeof response === 'string' && response === 'error')) {
         console.log('[WARN] 서버 응답이 유효하지 않아 클라이언트 상태 유지');
         return; // 현재 UI 상태 유지
       }
-      
+
       // 서버 응답으로 UI 상태 확인 및 조정
       let serverReaction: ReactionType | undefined;
-      
+
       // 서버 응답에서 isState가 있는 경우
       if (response.isState) {
         if (response.isState === '좋아요') {
@@ -705,7 +781,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         } else {
           serverReaction = undefined;
         }
-      } 
+      }
       // 서버 응답에서 isState가 없는 경우 (API 응답 불완전)
       else {
         // like, dislike 값을 확인하여 상태 추론
@@ -721,38 +797,43 @@ const CommentSection: React.FC<CommentSectionProps> = ({
           serverReaction = finalReaction;
         }
       }
-      
-      console.log(`[DEBUG] 서버 응답 반영 - replyId: ${replyId}, serverReaction: ${serverReaction}`);
-      
+
+      console.log(
+        `[DEBUG] 서버 응답 반영 - replyId: ${replyId}, serverReaction: ${serverReaction}`
+      );
+
       // 최종 UI 업데이트 - 서버 응답 기반이지만 필요시 클라이언트 상태 유지
       setReplies(prev => {
         const updatedReplies = { ...prev };
-        
+
         // commentId에 해당하는 배열이 있는지 확인
         if (updatedReplies[commentId]) {
           updatedReplies[commentId] = updatedReplies[commentId].map(r => {
             if (r.replyId !== replyId) return r;
-            
+
             // 현재 UI에 표시된 상태 확인
             const currentUiReaction = r.myReaction;
-            
+
             // 서버 응답이 있으면 서버 응답 사용, 없으면 현재 UI 상태 유지
-            const finalServerReaction = serverReaction !== undefined ? serverReaction : currentUiReaction;
-            
+            const finalServerReaction =
+              serverReaction !== undefined ? serverReaction : currentUiReaction;
+
             const updatedReply = {
               ...r,
               likeCount: response.like !== undefined ? response.like : r.likeCount,
               dislikeCount: response.dislike !== undefined ? response.dislike : r.dislikeCount,
               myReaction: finalServerReaction,
               liked: finalServerReaction === ReactionType.LIKE,
-              disliked: finalServerReaction === ReactionType.DISLIKE
+              disliked: finalServerReaction === ReactionType.DISLIKE,
             };
-            
-            console.log(`[DEBUG] 서버 응답 후 최종 답글 상태 - replyId: ${replyId}, myReaction: ${updatedReply.myReaction}`);
+
+            console.log(
+              `[DEBUG] 서버 응답 후 최종 답글 상태 - replyId: ${replyId}, myReaction: ${updatedReply.myReaction}`
+            );
             return updatedReply;
           });
         }
-        
+
         return updatedReplies;
       });
     } catch (error) {
@@ -777,20 +858,20 @@ const CommentSection: React.FC<CommentSectionProps> = ({
 
     try {
       console.log(`[DEBUG] 댓글 ${commentId}에 대댓글 작성 시작:`, content);
-      
+
       // 반드시 숫자형으로 변환하여 전달
       const numericCommentId = Number(commentId);
-      
+
       // 유효성 검사 추가: 숫자가 아니면 에러 처리
       if (isNaN(numericCommentId)) {
         throw new Error('유효하지 않은 댓글 ID입니다.');
       }
-      
+
       // 댓글 내용 유효성 검사 추가
       if (!content || content.trim() === '') {
         throw new Error('답글 내용이 비어있습니다.');
       }
-      
+
       // 임시 답글 객체 생성
       const tempReply: Reply = {
         replyId: -Date.now(), // 임시 ID (음수)
@@ -800,35 +881,35 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         likeCount: 0,
         dislikeCount: 0,
         writer: {
-          userId: user.id,
+          userId: (user as any)?.id ?? (user as any)?.userId,
           nickname: user.name || '사용자',
           profileImage: '',
         },
         translating: true, // 번역 중임을 표시
       };
-      
+
       // 사용자 입력 초기화
       controls.handleReplyChange(commentId, '');
-      
+
       // 먼저 UI에 임시 답글 추가
       setReplies(prev => ({
         ...prev,
-        [numericCommentId]: [...(prev[numericCommentId] || []), tempReply]
+        [numericCommentId]: [...(prev[numericCommentId] || []), tempReply],
       }));
-      
+
       // 댓글의 대댓글 카운트 증가
-      setComments(prevComments => 
-        prevComments.map(comment => 
+      setComments(prevComments =>
+        prevComments.map(comment =>
           comment.commentId === commentId
-            ? { 
-                ...comment, 
+            ? {
+                ...comment,
                 replyCount: (comment.replyCount || 0) + 1,
-                reply: (comment.reply || 0) + 1 
+                reply: (comment.reply || 0) + 1,
               }
             : comment
         )
       );
-      
+
       // 백엔드 API 호출
       const response = await CommentApi.createReply(postId, numericCommentId, content);
       console.log('[DEBUG] 대댓글 작성 응답:', response);
@@ -837,11 +918,11 @@ const CommentSection: React.FC<CommentSectionProps> = ({
       setReplies(prev => {
         const updatedReplies = { ...prev };
         if (updatedReplies[numericCommentId]) {
-          updatedReplies[numericCommentId] = updatedReplies[numericCommentId].map(reply => 
+          updatedReplies[numericCommentId] = updatedReplies[numericCommentId].map(reply =>
             reply.replyId === tempReply.replyId
               ? {
                   ...response,
-                  translating: false // 번역 완료
+                  translating: false, // 번역 완료
                 }
               : reply
           );
@@ -852,7 +933,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
       enqueueSnackbar('답글이 등록되었습니다.', { variant: 'success' });
     } catch (error) {
       console.error('[ERROR] 답글 작성 실패:', error);
-      
+
       // 에러 발생 시 임시 답글 제거 및 카운트 복구
       setReplies(prev => {
         const updatedReplies = { ...prev };
@@ -861,20 +942,20 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         }
         return updatedReplies;
       });
-      
+
       // 댓글의 대댓글 카운트 복구
-      setComments(prevComments => 
-        prevComments.map(comment => 
+      setComments(prevComments =>
+        prevComments.map(comment =>
           comment.commentId === commentId
-            ? { 
-                ...comment, 
+            ? {
+                ...comment,
                 replyCount: Math.max(0, (comment.replyCount || 0) - 1),
-                reply: Math.max(0, (comment.reply || 0) - 1)
+                reply: Math.max(0, (comment.reply || 0) - 1),
               }
             : comment
         )
       );
-      
+
       enqueueSnackbar('답글 작성에 실패했습니다.', { variant: 'error' });
     }
   };
@@ -883,7 +964,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   const handleEditReply = async (replyId: number, content: string) => {
     // 상위 댓글 ID 찾기 - try 블록 외부로 이동
     let parentCommentId: number | null = null;
-    
+
     try {
       console.log(`[DEBUG] 대댓글 ${replyId} 수정 시작:`, content);
       await CommentApi.updateReply(replyId, content);
@@ -900,21 +981,19 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         setReplies(prev => {
           const updatedReplies = { ...prev };
           if (updatedReplies[parentCommentId as number]) {
-            updatedReplies[parentCommentId as number] = updatedReplies[parentCommentId as number].map((reply: Reply) => 
-              reply.replyId === replyId
-                ? { ...reply, content }
-                : reply
-            );
+            updatedReplies[parentCommentId as number] = updatedReplies[
+              parentCommentId as number
+            ].map((reply: Reply) => (reply.replyId === replyId ? { ...reply, content } : reply));
           }
           return updatedReplies;
         });
-        
+
         enqueueSnackbar('답글이 수정되었습니다.', { variant: 'success' });
       }
     } catch (error) {
       console.error('[ERROR] 대댓글 수정 실패:', error);
       enqueueSnackbar('답글 수정에 실패했습니다.', { variant: 'error' });
-      
+
       // 에러 발생 시 해당 댓글의 대댓글만 다시 로드
       if (parentCommentId !== null) {
         loadReplies(parentCommentId);
@@ -926,50 +1005,50 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   const handleDeleteReply = async (replyId: number) => {
     // 상위 댓글 ID 찾기 - try 블록 외부로 이동
     let parentCommentId: number | null = null;
-    
+
     try {
       console.log(`[DEBUG] 대댓글 ${replyId} 삭제 시작`);
-      
+
       // 상위 댓글 ID 검색
       Object.entries(replies).forEach(([commentId, replyList]) => {
         if (replyList.some(r => r.replyId === replyId)) {
           parentCommentId = Number(commentId);
         }
       });
-      
+
       if (parentCommentId === null) return;
-      
+
       await CommentApi.deleteReply(replyId);
 
       // 삭제된 대댓글을 목록에서 제거 (전체 새로고침 없이)
       setReplies(prev => {
         const updatedReplies = { ...prev };
         if (updatedReplies[parentCommentId as number]) {
-          updatedReplies[parentCommentId as number] = updatedReplies[parentCommentId as number].filter(
-            (reply: Reply) => reply.replyId !== replyId
-          );
+          updatedReplies[parentCommentId as number] = updatedReplies[
+            parentCommentId as number
+          ].filter((reply: Reply) => reply.replyId !== replyId);
         }
         return updatedReplies;
       });
-      
+
       // 댓글의 대댓글 카운트 감소 (전체 새로고침 없이)
-      setComments(prevComments => 
-        prevComments.map(comment => 
+      setComments(prevComments =>
+        prevComments.map(comment =>
           comment.commentId === parentCommentId
-            ? { 
-                ...comment, 
+            ? {
+                ...comment,
                 replyCount: Math.max(0, (comment.replyCount || 0) - 1),
-                reply: Math.max(0, (comment.reply || 0) - 1) 
+                reply: Math.max(0, (comment.reply || 0) - 1),
               }
             : comment
         )
       );
-      
+
       enqueueSnackbar('답글이 삭제되었습니다.', { variant: 'success' });
     } catch (error) {
       console.error('[ERROR] 대댓글 삭제 실패:', error);
       enqueueSnackbar('답글 삭제에 실패했습니다.', { variant: 'error' });
-      
+
       // 에러 발생 시 대댓글만 다시 로드
       if (parentCommentId !== null) {
         loadReplies(parentCommentId);
@@ -1005,10 +1084,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
     >
       {/* 댓글 작성자 정보 및 작성 시간 */}
       <Box display="flex" alignItems="center" mb={1}>
-        <Avatar
-          src={comment.writer?.profileImage || ''}
-          sx={{ width: 40, height: 40, mr: 1 }}
-        >
+        <Avatar src={comment.writer?.profileImage || ''} sx={{ width: 40, height: 40, mr: 1 }}>
           {comment.writer?.nickname?.charAt(0) || '?'}
         </Avatar>
         <Box>
@@ -1016,9 +1092,9 @@ const CommentSection: React.FC<CommentSectionProps> = ({
           <Typography variant="caption" color="text.secondary">
             {format(new Date(comment.createdAt), 'yyyy년 MM월 dd일 HH:mm', { locale: ko })}
             {comment.translating && (
-              <Typography 
-                component="span" 
-                variant="caption" 
+              <Typography
+                component="span"
+                variant="caption"
                 sx={{ ml: 1, color: 'info.main', fontStyle: 'italic' }}
               >
                 (번역 중...)
@@ -1150,7 +1226,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                               </Box>
 
                               {/* 대댓글 수정/삭제 메뉴 */}
-                              {currentUserId === reply.writer?.userId && (
+                              {(currentUserId ?? user?.userId) === reply.writer?.userId && (
                                 <IconButton
                                   onClick={e => {
                                     controls.handleCommentMenuOpen(e, reply.replyId);
@@ -1174,26 +1250,34 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                             {/* 대댓글 좋아요/싫어요 */}
                             <Box display="flex" gap={1}>
                               <ReactionButton
-                                variant={reply.myReaction === ReactionType.LIKE ? 'contained' : 'text'}
+                                variant={
+                                  reply.myReaction === ReactionType.LIKE ? 'contained' : 'text'
+                                }
                                 startIcon={<ThumbUpIcon fontSize="small" />}
                                 size="small"
                                 onClick={() =>
                                   handleReactionReply(reply.replyId, 'like', comment.commentId)
                                 }
-                                color={reply.myReaction === ReactionType.LIKE ? 'primary' : 'inherit'}
+                                color={
+                                  reply.myReaction === ReactionType.LIKE ? 'primary' : 'inherit'
+                                }
                                 sx={{ minWidth: '60px', py: 0.5 }}
                                 disabled={reply.myReaction === ReactionType.DISLIKE}
                               >
                                 {reply.likeCount || 0}
                               </ReactionButton>
                               <ReactionButton
-                                variant={reply.myReaction === ReactionType.DISLIKE ? 'contained' : 'text'}
+                                variant={
+                                  reply.myReaction === ReactionType.DISLIKE ? 'contained' : 'text'
+                                }
                                 startIcon={<ThumbDownIcon fontSize="small" />}
                                 size="small"
                                 onClick={() =>
                                   handleReactionReply(reply.replyId, 'dislike', comment.commentId)
                                 }
-                                color={reply.myReaction === ReactionType.DISLIKE ? 'error' : 'inherit'}
+                                color={
+                                  reply.myReaction === ReactionType.DISLIKE ? 'error' : 'inherit'
+                                }
                                 sx={{ minWidth: '60px', py: 0.5 }}
                                 disabled={reply.myReaction === ReactionType.LIKE}
                               >

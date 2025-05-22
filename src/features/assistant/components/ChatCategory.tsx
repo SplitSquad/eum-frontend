@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { Box } from '@mui/material';
 
 // Category 타입 정의: key는 내부 식별자, label은 화면 표시명
 export interface Category {
@@ -22,7 +23,7 @@ interface CategorySidebarProps {
  */
 export default function CategorySidebar({ categories, selectedKey }: CategorySidebarProps) {
   return (
-    <div className="w-64 bg-white rounded-lg shadow p-4 space-y-2">
+    <Box className="w-64 bg-white rounded-lg shadow p-4 space-y-2" height="auto">
       {/* 카테고리 리스트 (버튼 대신 div로 변경하여 클릭 비활성화) */}
       {categories.map(cat => {
         const isSelected = cat.key === selectedKey;
@@ -38,6 +39,6 @@ export default function CategorySidebar({ categories, selectedKey }: CategorySid
           </div>
         );
       })}
-    </div>
+    </Box>
   );
 }

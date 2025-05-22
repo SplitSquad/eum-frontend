@@ -13,6 +13,11 @@ const fadeIn = keyframes`
   }
 `;
 
+const fadeInOpacity = keyframes`
+  from { opacity: 0; }
+  to { opacity: 1; }
+`;
+
 // 레인드롭 애니메이션 - 더 자연스럽고 천천히
 const rainDrop = keyframes`
   0% {
@@ -52,20 +57,30 @@ const SummerContainer = styled(Box, {
   background: linear-gradient(135deg, #67b4de 0%, #c2e3ff 100%);
   padding: ${p => (p.noPadding ? '0' : '2rem 0')};
   position: relative;
-  overflow: hidden;
-  animation: ${fadeIn} 0.6s ease-in-out;
+  overflow: visible;
+  animation: ${fadeInOpacity} 0.6s ease-in-out;
   display: flex;
   flex-direction: column;
 `;
 
 // 빗방울 컴포넌트 - 더 사실적이고 섬세하게
-const Raindrop = styled.div<{ speed: number; delay: number; left: string; height: number; opacity: number }>`
+const Raindrop = styled.div<{
+  speed: number;
+  delay: number;
+  left: string;
+  height: number;
+  opacity: number;
+}>`
   position: absolute;
   top: -10vh;
   width: 1px;
   height: ${props => props.height}px;
   left: ${props => props.left};
-  background: linear-gradient(to bottom, rgba(200, 220, 255, 0), rgba(200, 220, 255, ${props => props.opacity}));
+  background: linear-gradient(
+    to bottom,
+    rgba(200, 220, 255, 0),
+    rgba(200, 220, 255, ${props => props.opacity})
+  );
   transform-origin: center top;
   animation: ${rainDrop} ${props => props.speed}s linear infinite;
   animation-delay: ${props => props.delay}s;
@@ -103,7 +118,13 @@ const Ripple = styled.div<{ size: number; left: string; delay: number }>`
 `;
 
 // 구름 요소 (실루엣만 보이는 형태)
-const CloudSilhouette = styled.div<{ width: number; height: number; top: string; left: string; opacity: number }>`
+const CloudSilhouette = styled.div<{
+  width: number;
+  height: number;
+  top: string;
+  left: string;
+  opacity: number;
+}>`
   position: absolute;
   width: ${props => props.width}px;
   height: ${props => props.height}px;
@@ -111,10 +132,13 @@ const CloudSilhouette = styled.div<{ width: number; height: number; top: string;
   left: ${props => props.left};
   background-color: rgba(255, 255, 255, ${props => props.opacity});
   border-radius: 50%;
-  box-shadow: 
-    ${props => props.width * 0.4}px ${props => -props.height * 0.1}px ${props => props.width * 0.4}px rgba(255, 255, 255, ${props => props.opacity}),
-    ${props => -props.width * 0.4}px ${props => -props.height * 0.1}px ${props => props.width * 0.4}px rgba(255, 255, 255, ${props => props.opacity}),
-    ${props => props.width * 0.2}px ${props => -props.height * 0.3}px ${props => props.width * 0.4}px rgba(255, 255, 255, ${props => props.opacity});
+  box-shadow:
+    ${props => props.width * 0.4}px ${props => -props.height * 0.1}px
+      ${props => props.width * 0.4}px rgba(255, 255, 255, ${props => props.opacity}),
+    ${props => -props.width * 0.4}px ${props => -props.height * 0.1}px
+      ${props => props.width * 0.4}px rgba(255, 255, 255, ${props => props.opacity}),
+    ${props => props.width * 0.2}px ${props => -props.height * 0.3}px
+      ${props => props.width * 0.4}px rgba(255, 255, 255, ${props => props.opacity});
   filter: blur(5px);
   z-index: 0;
 `;
@@ -161,13 +185,13 @@ interface SummerBackgroundProps {
 const SummerBackground: React.FC<SummerBackgroundProps> = ({ children, noPadding = false }) => {
   // 빗방울 생성 (양 감소)
   const raindrops = createRaindrops(50);
-  
+
   // 파문 효과 생성
   const ripples = createRipples(10);
-  
+
   // 구름 효과 생성
   const clouds = createClouds(5);
-  
+
   return (
     <SummerContainer noPadding={noPadding}>
       {/* 하늘에 떠다니는 구름 */}
@@ -181,7 +205,7 @@ const SummerBackground: React.FC<SummerBackgroundProps> = ({ children, noPadding
           opacity={cloud.opacity}
         />
       ))}
-      
+
       {/* 빗방울 */}
       {raindrops.map(drop => (
         <Raindrop
@@ -193,20 +217,15 @@ const SummerBackground: React.FC<SummerBackgroundProps> = ({ children, noPadding
           opacity={drop.opacity}
         />
       ))}
-      
+
       {/* 빗물 웅덩이 영역 */}
       <RainpuddleContainer>
         {/* 파문 효과 */}
         {ripples.map(ripple => (
-          <Ripple
-            key={ripple.id}
-            size={ripple.size}
-            left={ripple.left}
-            delay={ripple.delay}
-          />
+          <Ripple key={ripple.id} size={ripple.size} left={ripple.left} delay={ripple.delay} />
         ))}
       </RainpuddleContainer>
-      
+
       <Box
         sx={{
           position: 'relative',
@@ -223,4 +242,4 @@ const SummerBackground: React.FC<SummerBackgroundProps> = ({ children, noPadding
   );
 };
 
-export default SummerBackground; 
+export default SummerBackground;

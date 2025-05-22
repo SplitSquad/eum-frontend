@@ -3,8 +3,10 @@ import AiAssistant from '@/tests/unit/componentPageTest/testPages/AiAssistant';
 const ko = {
   common: {
     home: '홈',
-    community: '모임과이야기',
-    debate: '핫이슈토론',
+    community: '모임과 이야기',
+    debate: '핫 이슈 토론',
+    aiassistant: 'AI 전문가',
+    info: '한국생활 가이드',
     mypage: '마이페이지',
     login: '로그인',
     logout: '로그아웃',
@@ -13,8 +15,8 @@ const ko = {
     settings: '설정',
     languageSettings: '언어 설정',
     selectLanguage: '언어 선택',
-    AiAssistant: 'AI 전문가',
-    information: '한국생활가이드',
+    smallGroups: '소그룹 모임',
+    communicationBoard: '자유 게시판',
   },
   nav: {
     accountSettings: '계정 설정',

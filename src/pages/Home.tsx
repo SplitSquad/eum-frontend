@@ -1,5 +1,7 @@
 import React from 'react';
-import { Box, Typography, Container, Paper, Button, Grid } from '@mui/material';
+import { Box, Typography, Container, Paper, Button } from '@mui/material';
+import Grid from '@mui/material/Grid';
+
 import { Link as RouterLink } from 'react-router-dom';
 import useAuthStore from '../features/auth/store/authStore';
 import SchoolIcon from '@mui/icons-material/School';
@@ -12,24 +14,51 @@ import { useThemeStore } from '../features/theme/store/themeStore';
  * 홈 페이지 컴포넌트
  */
 const Home: React.FC = () => {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
+  const isOnBoardDone = user?.isOnBoardDone;
   const { season } = useThemeStore();
-  
+
   // 계절에 따른 색상 가져오기
   const getColorByTheme = () => {
     switch (season) {
-      case 'spring': return '#FFAAA5';
-      case 'summer': return '#77AADD';
-      case 'autumn': return '#E8846B';
-      case 'winter': return '#8795B5';
-      default: return '#FFAAA5';
+      case 'spring':
+        return '#FFAAA5';
+      case 'summer':
+        return '#77AADD';
+      case 'autumn':
+        return '#E8846B';
+      case 'winter':
+        return '#8795B5';
+      default:
+        return '#FFAAA5';
     }
   };
 
   const primaryColor = getColorByTheme();
-  
+  console.log('isOnBoardDone:', isOnBoardDone);
+  // 온보딩 완료된 사용자를 위한 메시지
+  if (isAuthenticated && isOnBoardDone) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 8 }}>
+        <Typography variant="h5" align="center" sx={{ color: primaryColor }}>
+          홈페이지 연결 예정입니다.
+        </Typography>
+      </Container>
+    );
+  }
+
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container
+      maxWidth="lg"
+      sx={{
+        py: 3,
+        display: 'flex',
+        flexDirection: 'column',
+        flexGrow: 1,
+        position: 'relative',
+        zIndex: 5,
+      }}
+    >
       <Paper
         elevation={3}
         sx={{
@@ -51,7 +80,7 @@ const Home: React.FC = () => {
         <Typography variant="body1" paragraph align="center">
           한국 방문 목적에 맞게 프로필을 설정하고 맞춤형 정보를 받아보세요.
         </Typography>
-        
+
         {isAuthenticated && (
           <Box sx={{ mt: 4 }}>
             <Typography variant="h6" gutterBottom align="center">
@@ -65,14 +94,14 @@ const Home: React.FC = () => {
                   variant="outlined"
                   fullWidth
                   startIcon={<SchoolIcon />}
-                  sx={{ 
-                    py: 1.5, 
+                  sx={{
+                    py: 1.5,
                     borderColor: primaryColor,
                     color: primaryColor,
                     '&:hover': {
                       borderColor: primaryColor,
                       backgroundColor: `${primaryColor}10`,
-                    }
+                    },
                   }}
                 >
                   유학
@@ -85,14 +114,14 @@ const Home: React.FC = () => {
                   variant="outlined"
                   fullWidth
                   startIcon={<FlightIcon />}
-                  sx={{ 
+                  sx={{
                     py: 1.5,
                     borderColor: primaryColor,
                     color: primaryColor,
                     '&:hover': {
                       borderColor: primaryColor,
                       backgroundColor: `${primaryColor}10`,
-                    }
+                    },
                   }}
                 >
                   여행
@@ -105,14 +134,14 @@ const Home: React.FC = () => {
                   variant="outlined"
                   fullWidth
                   startIcon={<HomeIcon />}
-                  sx={{ 
+                  sx={{
                     py: 1.5,
                     borderColor: primaryColor,
                     color: primaryColor,
                     '&:hover': {
                       borderColor: primaryColor,
                       backgroundColor: `${primaryColor}10`,
-                    }
+                    },
                   }}
                 >
                   거주
@@ -125,14 +154,14 @@ const Home: React.FC = () => {
                   variant="outlined"
                   fullWidth
                   startIcon={<WorkIcon />}
-                  sx={{ 
+                  sx={{
                     py: 1.5,
                     borderColor: primaryColor,
                     color: primaryColor,
                     '&:hover': {
                       borderColor: primaryColor,
                       backgroundColor: `${primaryColor}10`,
-                    }
+                    },
                   }}
                 >
                   취업
@@ -144,11 +173,11 @@ const Home: React.FC = () => {
                 component={RouterLink}
                 to="/onboarding"
                 variant="contained"
-                sx={{ 
+                sx={{
                   bgcolor: primaryColor,
                   '&:hover': {
                     bgcolor: `${primaryColor}dd`,
-                  }
+                  },
                 }}
               >
                 목적 선택 페이지로 이동
@@ -156,14 +185,14 @@ const Home: React.FC = () => {
             </Box>
           </Box>
         )}
-        
+
         {!isAuthenticated && (
           <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
             <Button
               component={RouterLink}
               to="/google-login"
               variant="contained"
-              sx={{ 
+              sx={{
                 bgcolor: primaryColor,
                 '&:hover': {
                   bgcolor: `${primaryColor}dd`,

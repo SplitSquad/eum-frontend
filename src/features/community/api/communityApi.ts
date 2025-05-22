@@ -5,14 +5,14 @@
  */
 
 // 게시글 관련 API
-import PostApi, { 
-  PostListResponse, 
-  PageResponse, 
-  ApiCreatePostRequest, 
-  ApiUpdatePostRequest 
+import PostApi, {
+  PostListResponse,
+  PageResponse,
+  ApiCreatePostRequest,
+  ApiUpdatePostRequest,
 } from './postApi';
 
-// 댓글 관련 API - 임시로 CommentApi.ts에서 가져옴
+// 댓글 관련 API - 임시로 commentApi에서 가져옴
 import CommentApi from './commentApi';
 
 // 게시글 관련 API 함수들
