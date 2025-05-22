@@ -242,6 +242,8 @@ export const PostApi = {
             role: 'USER',
           },
           viewCount: post.views || 0,
+          likeCount: post.like || 0,
+          commentCount: post.commentCnt || 0,
           category: post.category || '전체',
           createdAt: post.createdAt || new Date().toISOString(),
           postType: typeof post.postType === 'string' ? toPostType(post.postType) : post.postType,
@@ -601,9 +603,14 @@ export const PostApi = {
   /**
    * 게시글 상세 조회
    */
-  getPostById: async (postId: number): Promise<Post> => {
+  getPostById: async (postId: number, signal?: AbortSignal, noViewCount: boolean = false): Promise<Post> => {
     try {
-      const response = await apiClient.get<any>(`${BASE_URL}/${postId}`);
+      // 조회수를 증가시키지 않는 옵션 추가 (언어 변경 시 사용)
+      const url = noViewCount 
+        ? `${BASE_URL}/${postId}?noViewCount=true` 
+        : `${BASE_URL}/${postId}`;
+        
+      const response = await apiClient.get<any>(url, { signal });
 
       // 백엔드 응답 구조와 일치하도록 데이터 변환
       return {
@@ -635,18 +642,14 @@ export const PostApi = {
 
   /**
    * 게시글 조회수 증가
+   * 참고: 현재 getPostById API 호출 시 백엔드에서 자동으로 조회수가 증가하므로 
+   * 이 메서드는 실제로 호출하지 않아야 합니다. noViewCount=true 파라미터를 사용하여
+   * 필요한 경우 조회수 증가를 방지할 수 있습니다.
    */
   increaseViewCount: async (postId: number): Promise<void> => {
-    try {
-      // 조회수 증가 API가 아직 구현되지 않았지만, 추후 구현 시 활성화
-      console.log('조회수 증가 API가 아직 구현되지 않았습니다:', postId);
-      // 실제 API 구현 시 아래 주석을 해제하세요
-      // await apiClient.post(`${BASE_URL}/${postId}/view`);
-      return;
-    } catch (error) {
-      console.error('게시글 조회수 증가 실패:', error);
-      // 핵심 기능에 영향을 주지 않으므로 에러를 throw하지 않음
-    }
+    // 사용하지 않는 함수이지만 호환성을 위해 유지
+    console.log('게시글 조회수는 백엔드에서 자동 증가됩니다. (ID:', postId, ')');
+    return;
   },
 
   /**

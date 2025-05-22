@@ -75,6 +75,16 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: '/dashboard',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <AuthGuard>
+              <Home />
+            </AuthGuard>
+          </Suspense>
+        ),
+      },
+      {
         path: '/google-login',
         element: (
           <Suspense fallback={<LoadingFallback />}>

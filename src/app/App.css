@@ -1,3 +1,11 @@
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+}
+
 /* 전체 앱 컨테이너 스타일 */
 .app-container {
   min-height: 100vh;

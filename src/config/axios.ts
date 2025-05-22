@@ -1,15 +1,12 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { setToken, getToken } from '../features/auth/tokenUtils';
-import { checkDomainOfScale } from 'recharts/types/util/ChartUtils';
-
-// 환경 변수 타입 확인이 필요하면 env.ts에서 import
-// import { ENV } from './env';
+import { setToken, getToken, removeToken } from '../features/auth/tokenUtils';
+import { env, isDevelopment } from './env';
 
 /**
  * API 요청의 기본 URL과 타임아웃 설정
  */
 const config: AxiosRequestConfig = {
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
+  baseURL: env.API_BASE_URL,
   timeout: 30000, // 30초
   headers: {
     'Content-Type': 'application/json',
@@ -33,7 +30,10 @@ let isRefreshing = false;
 // 토큰 갱신을 대기하는 요청 큐
 let refreshSubscribers: Array<(token: string) => void> = [];
 
-// 토큰 갱신 함수
+/**
+ * 토큰 갱신 함수
+ * 쿠키에 저장된 리프레시 토큰을 사용하여 새 액세스 토큰을 요청
+ */
 const refreshAuthToken = async (): Promise<string | null> => {
   try {
     console.log('토큰 갱신 시도');
@@ -53,9 +53,8 @@ const refreshAuthToken = async (): Promise<string | null> => {
 
     if (newToken) {
       console.log('토큰 갱신 성공: 헤더에서 토큰 추출');
-      // 새 토큰 저장
+      // 새 토큰 저장 - tokenUtils를 통해 일관되게 관리
       setToken(newToken);
-      localStorage.setItem('auth_token', newToken);
       return newToken;
     }
 
@@ -64,7 +63,6 @@ const refreshAuthToken = async (): Promise<string | null> => {
       console.log('토큰 갱신 성공: 응답 본문에서 토큰 추출');
       const tokenFromBody = response.data.token;
       setToken(tokenFromBody);
-      localStorage.setItem('auth_token', tokenFromBody);
       return tokenFromBody;
     }
 
@@ -97,59 +95,37 @@ const addSubscriber = (callback: (token: string) => void) => {
   refreshSubscribers.push(callback);
 };
 
+// 인증 관련 정보 초기화 함수
+const clearAuthData = () => {
+  removeToken(); // tokenUtils를 사용하여 일관된 방식으로 토큰 제거
+  localStorage.removeItem('userEmail');
+  localStorage.removeItem('userName');
+  localStorage.removeItem('userRole');
+};
+
 /**
  * 요청 인터셉터 - 모든 요청에 토큰 추가 및 요청 로깅
  */
 axiosInstance.interceptors.request.use(
   config => {
-    // 로컬 스토리지에서 토큰 가져오기
-    const token = getToken() || localStorage.getItem('auth_token');
+    const token = getToken();
+    const userEmail = localStorage.getItem('userEmail');
 
-    // 개발 환경에서만 로깅
-    if (import.meta.env.DEV) {
-      console.log('인터셉터 실행: 토큰 확인', token ? '토큰 있음' : '토큰 없음');
-      if (token) {
-        console.log('토큰 첫 부분:', token.substring(0, 15) + '...');
-        try {
-          // JWT 디코딩 시도 (디버깅용)
-          const parts = token.split('.');
-          if (parts.length === 3) {
-            const payload = JSON.parse(atob(parts[1]));
-            console.log('토큰 페이로드:', payload);
-          }
-        } catch (e) {
-          console.error('토큰 디코딩 실패:', e);
-        }
-      }
+    if (token) {
+      config.headers['Authorization'] = token;
     }
 
-    // 요청 헤더에 인증 토큰 추가
-    if (token && config.headers) {
-      // Authorization 헤더에 토큰 설정 (Bearer 접두사 없이 토큰만 전달)
-      config.headers.Authorization = token;
-
-      // 헤더 설정 메서드가 있는 경우 사용 (Axios v1.x 이상의 형식)
-      if (typeof config.headers.set === 'function') {
-        config.headers.set('Authorization', token);
-      }
-
-      if (import.meta.env.DEV) {
-        console.log('토큰 헤더 추가됨:', `${token.substring(0, 10)}...`);
-      }
-    } else if (config.headers) {
-      // 토큰이 없는 경우 로깅만 수행
-      console.log('토큰 없음, 인증 헤더 추가되지 않음');
+    if (userEmail) {
+      config.headers['X-User-Email'] = userEmail;
     }
 
-    // 개발 환경에서 요청 로깅
-    if (import.meta.env.DEV) {
-      console.log('API 요청:', config.url, config.method, config.data);
-      console.log('요청 헤더:', config.headers);
+    if (isDevelopment) {
+      console.log('Request:', config.method?.toUpperCase(), config.url);
     }
 
     return config;
   },
-  (error: AxiosError) => {
+  error => {
     return Promise.reject(error);
   }
 );
@@ -160,7 +136,7 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response: AxiosResponse) => {
     // 개발 환경에서 응답 로깅
-    if (import.meta.env.DEV) {
+    if (isDevelopment) {
       console.log('API 응답:', response.config.url, response.status, response.data);
     }
 
@@ -177,8 +153,8 @@ axiosInstance.interceptors.response.use(
       // 401 Unauthorized - 인증 실패/토큰 만료 처리
       if (status === 401 && originalRequest) {
         // 토큰 갱신 API가 아닌 경우에만 갱신 시도
-        console.log('토큰 갱신 시도2');
         if (requestUrl !== '/auth/refresh' && !isRefreshing) {
+          // 토큰 갱신 중 플래그 설정
           isRefreshing = true;
 
           try {
@@ -204,26 +180,23 @@ axiosInstance.interceptors.response.use(
             } else {
               // 갱신 실패: 로그인 페이지로 이동
               console.error('토큰 갱신 실패, 로그인 필요');
-              // 토큰 및 관련 정보 정리
-              localStorage.removeItem('auth_token');
-              sessionStorage.removeItem('auth_token');
-              localStorage.removeItem('userEmail');
+              // 인증 관련 데이터 정리
+              clearAuthData();
 
               // 로그인 페이지로 이동 전에 플래그 리셋
               isRefreshing = false;
               window.location.href = '/google-login';
+              return Promise.reject(error);
             }
           } catch (refreshError) {
             console.error('토큰 갱신 중 오류:', refreshError);
-            localStorage.removeItem('auth_token');
-            sessionStorage.removeItem('auth_token');
-            localStorage.removeItem('userEmail');
+            clearAuthData();
 
             isRefreshing = false;
             window.location.href = '/google-login';
+            return Promise.reject(error);
           }
         } else if (requestUrl !== '/auth/refresh' && isRefreshing) {
-          console.log('토큰 갱신 시도3');
           // 이미 토큰 갱신 중이면 갱신 완료 후 요청 재시도를 위해 큐에 추가
           return new Promise(resolve => {
             addSubscriber((token: string) => {
@@ -239,11 +212,9 @@ axiosInstance.interceptors.response.use(
         } else {
           // 토큰 갱신 API 자체가 401 반환 시
           console.error('인증 오류 (401): 토큰 갱신 불가, 로그인 필요');
-          localStorage.removeItem('auth_token');
-          sessionStorage.removeItem('auth_token');
-          localStorage.removeItem('userEmail');
-
+          clearAuthData();
           window.location.href = '/google-login';
+          return Promise.reject(error);
         }
       }
 

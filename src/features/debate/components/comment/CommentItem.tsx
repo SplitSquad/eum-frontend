@@ -42,6 +42,10 @@ import ThumbDownIcon from '@mui/icons-material/ThumbDown';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { format } from 'date-fns';
 import { useAuthStore } from '../../../auth';
+import ReportDialog, {
+  ReportTargetType,
+  ServiceType,
+} from '../../../common/components/ReportDialog';
 
 interface CommentItemProps {
   comment: DebateComment;
@@ -90,18 +94,26 @@ const DateText = styled(Typography)(({ theme }) => ({
 const StanceChip = styled(Chip, {
   shouldForwardProp: prop => prop !== 'stance',
 })<{ stance?: 'pro' | 'con' }>(({ theme, stance }) => ({
-  borderRadius: 12,
-  height: 24,
+  borderRadius: 16,
+  height: 26,
   fontSize: '0.75rem',
-  fontWeight: 600,
+  fontWeight: 700,
+  boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    transform: 'translateY(-2px)',
+    boxShadow: '0 3px 8px rgba(0,0,0,0.15)',
+  },
   ...(stance === 'pro'
     ? {
-        backgroundColor: 'rgba(76, 175, 80, 0.12)',
-        color: '#4caf50',
+        backgroundColor: 'rgba(76, 175, 80, 0.15)',
+        color: '#2e7d32',
+        border: '1px solid rgba(76, 175, 80, 0.5)',
       }
     : {
-        backgroundColor: 'rgba(244, 67, 54, 0.12)',
-        color: '#f44336',
+        backgroundColor: 'rgba(244, 67, 54, 0.15)',
+        color: '#d32f2f',
+        border: '1px solid rgba(244, 67, 54, 0.5)',
       }),
 }));
 
@@ -156,6 +168,26 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
     isState,
   } = comment || {};
 
+  // content에서 stance 정보 추출
+  let extractedStance: 'pro' | 'con' = stance || 'pro';
+  let displayContent = content || '';
+
+  // 댓글 내용에서 stance 프리픽스 확인 및 추출
+  if (displayContent.startsWith('【반대】')) {
+    extractedStance = 'con';
+    displayContent = displayContent.replace('【반대】 ', '');
+  } else if (displayContent.startsWith('【찬성】')) {
+    extractedStance = 'pro';
+    displayContent = displayContent.replace('【찬성】 ', '');
+  }
+
+  // localContent는 이미 초기값으로 설정되었으므로 추가 작업 필요 없음
+
+  // 추가 디버그 로그
+  console.log(
+    `[DEBUG] 토론 댓글 ID: ${id}, 작성자 ID: ${userId}, 작성자 이름: ${userName}, 찬반 입장: ${extractedStance}, 원본: ${content}, 표시: ${displayContent}`
+  );
+
   // Store access
   const {
     getReplies = () => Promise.resolve(),
@@ -167,13 +199,20 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
   // API 직접 호출
   const { updateComment } = CommentApi;
 
+  // Auth store
+  const { user } = useAuthStore();
+
   // 로컬 상태
   const [isEditing, setIsEditing] = useState(false);
-  const [editText, setEditText] = useState(content);
+  const [editText, setEditText] = useState(displayContent);
   const [showReplies, setShowReplies] = useState(false);
   const [showReplyForm, setShowReplyForm] = useState(false);
-  const [localContent, setLocalContent] = useState(content);
+  const [localContent, setLocalContent] = useState(displayContent);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+  // Report dialog states
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
 
   const navigate = useNavigate();
   const [isReplyLoading, setIsReplyLoading] = useState(false);
@@ -198,13 +237,72 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
   // 좋아요/싫어요 수 상태 관리
   const [likeCount, setLikeCount] = useState(reactions?.like || 0);
   const [dislikeCount, setDislikeCount] = useState(reactions?.dislike || 0);
-
-  // 현재 사용자의 반응 상태
   const [currentReaction, setCurrentReaction] = useState<ReactionType | undefined>(myReaction);
 
-  // 메뉴 상태 관리
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const isMenuOpen = Boolean(anchorEl);
+  // 내가 작성한 댓글인지 확인
+  const isMyComment = (authorId?: number) => {
+    if (!authorId || !((user as any)?.id ?? (user as any)?.userId)) return false;
+    return (
+      authorId ===
+      (typeof ((user as any)?.id ?? (user as any)?.userId) === 'string'
+        ? parseInt(((user as any)?.id ?? (user as any)?.userId) as string, 10)
+        : ((user as any)?.id ?? (user as any)?.userId))
+    );
+  };
+
+  // 내가 작성한 답글인지 확인
+  const isMyReply = (replyAuthorId?: number) => {
+    if (!replyAuthorId || !((user as any)?.id ?? (user as any)?.userId)) return false;
+    return (
+      replyAuthorId ===
+      (typeof ((user as any)?.id ?? (user as any)?.userId) === 'string'
+        ? parseInt(((user as any)?.id ?? (user as any)?.userId) as string, 10)
+        : ((user as any)?.id ?? (user as any)?.userId))
+    );
+  };
+
+  // 메뉴 관련 핸들러
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  // 신고 대화상자 핸들러
+  const handleOpenReportDialog = () => {
+    if (!user) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+
+    // 신고 전 userId 확인
+    console.log(`[DEBUG] 신고 대상 작성자 정보:`, {
+      userId,
+      id,
+      userName,
+      commentUserId: comment.userId,
+    });
+
+    // API에서 직접 받은 댓글 작성자 ID 사용 (없으면 0으로 대체)
+    const reportedUserId = comment.userId || userId || 0;
+    console.log(`[DEBUG] 신고에 사용될 작성자 ID: ${reportedUserId}`);
+
+    setReportDialogOpen(true);
+    handleMenuClose();
+  };
+
+  const handleCloseReportDialog = () => {
+    setReportDialogOpen(false);
+  };
+
+  // 현재 사용자가 작성자이거나 관리자인지 확인
+  const isMyCommentOrAdmin =
+    userId &&
+    ((user && ((user as any)?.id ?? (user as any)?.userId) === userId) || // 작성자인 경우
+      (user && user.role === 'ROLE_ADMIN')); // 관리자인 경우
 
   // 댓글 수정 핸들러 - 낙관적 UI 업데이트 적용
   const handleEdit = async (e?: React.MouseEvent) => {
@@ -213,9 +311,9 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
       e.stopPropagation();
     }
 
-    if (!editText.trim() || editText === content) {
+    if (!editText.trim() || editText === displayContent) {
       setIsEditing(false);
-      setEditText(content);
+      setEditText(displayContent);
       return;
     }
 
@@ -226,8 +324,12 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
     setIsEditing(false);
 
     try {
+      // 댓글 수정 시 stance 정보 유지하기
+      const stancePrefix = extractedStance === 'con' ? '【반대】 ' : '【찬성】 ';
+      const updatedContent = stancePrefix + editText;
+
       // 백엔드 API 호출
-      const success = await updateComment(id, editText);
+      const success = await updateComment(id, updatedContent);
 
       if (success) {
         // 성공 시 부모 컴포넌트에 알림 - 리다이렉션 방지를 위해 제거
@@ -235,12 +337,12 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
         // onUpdate();
       } else {
         // 실패 시 원래 내용으로 복원
-        setLocalContent(content);
+        setLocalContent(displayContent);
         alert('댓글 수정에 실패했습니다.');
       }
     } catch (error) {
       console.error('댓글 수정 실패:', error);
-      setLocalContent(content);
+      setLocalContent(displayContent);
       alert('댓글 수정 중 오류가 발생했습니다.');
     } finally {
       setIsSubmitting(false);
@@ -362,135 +464,8 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
     e.stopPropagation();
   };
 
-  // 사용자 정보
-  const { user } = useAuthStore();
-
   // 안전하게 댓글 목록 가져오기
   const commentReplies = replies && id && replies[id] ? replies[id] : [];
-
-  // 메뉴 열기
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  // 메뉴 닫기
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
-  // 댓글 좋아요/싫어요 처리
-  const handleReaction = async (type: 'like' | 'dislike') => {
-    if (!user) {
-      alert('로그인이 필요합니다.');
-      return;
-    }
-
-    try {
-      if (!id) return;
-
-      // 백엔드 API 호출
-      const reactionType = type === 'like' ? ReactionType.LIKE : ReactionType.DISLIKE;
-
-      // 먼저 UI 상태 업데이트 (낙관적 UI 업데이트)
-      // 이미 같은 상태면 취소
-      if (currentReaction === reactionType) {
-        setCurrentReaction(undefined);
-        if (type === 'like') {
-          setLikeCount(prevCount => Math.max(0, prevCount - 1));
-          setLikeButtonState('default');
-        } else {
-          setDislikeCount(prevCount => Math.max(0, prevCount - 1));
-          setDislikeButtonState('default');
-        }
-      }
-      // 다른 상태로 변경
-      else {
-        // 이전에 다른 버튼이 활성화되어 있었다면 취소
-        if (currentReaction === ReactionType.LIKE && type === 'dislike') {
-          setLikeCount(prevCount => Math.max(0, prevCount - 1));
-          setLikeButtonState('default');
-          setDislikeCount(prevCount => prevCount + 1);
-          setDislikeButtonState('error');
-        } else if (currentReaction === ReactionType.DISLIKE && type === 'like') {
-          setDislikeCount(prevCount => Math.max(0, prevCount - 1));
-          setDislikeButtonState('default');
-          setLikeCount(prevCount => prevCount + 1);
-          setLikeButtonState('primary');
-        } else {
-          // 기존 상태가 없는 경우
-          if (type === 'like') {
-            setLikeCount(prevCount => prevCount + 1);
-            setLikeButtonState('primary');
-          } else {
-            setDislikeCount(prevCount => prevCount + 1);
-            setDislikeButtonState('error');
-          }
-        }
-        setCurrentReaction(reactionType);
-      }
-
-      // 서버 API 호출
-      const response = await reactToComment(id, reactionType);
-
-      // 서버 응답 처리
-      if (response) {
-        const { like = 0, dislike = 0 } = response;
-
-        // UI 상태 업데이트
-        setLikeCount(like);
-        setDislikeCount(dislike);
-
-        // API 응답 구조에 따라 isState가 존재하는지 확인
-        if ('isState' in response) {
-          const newState = response.isState
-            ? response.isState === '좋아요'
-              ? ReactionType.LIKE
-              : response.isState === '싫어요'
-                ? ReactionType.DISLIKE
-                : undefined
-            : undefined;
-
-          setCurrentReaction(newState);
-
-          // 버튼 상태 업데이트
-          setLikeButtonState(newState === ReactionType.LIKE ? 'primary' : 'default');
-          setDislikeButtonState(newState === ReactionType.DISLIKE ? 'error' : 'default');
-        }
-      }
-    } catch (error) {
-      console.error('댓글 반응 처리 실패:', error);
-      // 에러 발생 시 UI 상태 복원 로직 구현 가능
-    }
-  };
-
-  // 내가 작성한 댓글인지 확인
-  const isMyComment = (authorId?: number) => {
-    if (!authorId || !((user as any)?.id ?? (user as any)?.userId)) return false;
-    return (
-      authorId ===
-      (typeof ((user as any)?.id ?? (user as any)?.userId) === 'string'
-        ? parseInt(((user as any)?.id ?? (user as any)?.userId) as string, 10)
-        : ((user as any)?.id ?? (user as any)?.userId))
-    );
-  };
-
-  // 내가 작성한 답글인지 확인
-  const isMyReply = (replyAuthorId?: number) => {
-    if (!replyAuthorId || !((user as any)?.id ?? (user as any)?.userId)) return false;
-    return (
-      replyAuthorId ===
-      (typeof ((user as any)?.id ?? (user as any)?.userId) === 'string'
-        ? parseInt(((user as any)?.id ?? (user as any)?.userId) as string, 10)
-        : ((user as any)?.id ?? (user as any)?.userId))
-    );
-  };
-
-  // 메뉴 아이콘 표시 여부 - 사용자 확인 로직 간소화
-  const isAuthor =
-    user &&
-    userId !== undefined &&
-    ((user as any)?.id ?? (user as any)?.userId) !== undefined &&
-    String((user as any)?.id ?? (user as any)?.userId) === String(userId);
 
   return (
     <StyledCard variant="outlined" onClick={handleCardClick}>
@@ -512,9 +487,12 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
             {countryName && (
               <CountryChip icon={<FlagIcon fontSize="small" />} label={countryName} size="small" />
             )}
-            {stance && (
-              <StanceChip label={stance === 'pro' ? '찬성' : '반대'} stance={stance} size="small" />
-            )}
+            {/* 입장 표시 - 댓글 내용에서 추출한 stance 사용 */}
+            <StanceChip
+              label={extractedStance === 'con' ? '반대' : '찬성'}
+              stance={extractedStance}
+              size="small"
+            />
           </Box>
         }
         subheader={
@@ -525,26 +503,51 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
         }
         action={
           <Box>
-            <IconButton
-              size="small"
-              onClick={e => {
-                e.stopPropagation();
-                e.preventDefault();
-                setIsEditing(true);
-              }}
+            {user &&
+              (isMyCommentOrAdmin ? (
+                <IconButton size="small" onClick={handleMenuOpen} aria-label="더 보기">
+                  <MoreVertIcon fontSize="small" />
+                </IconButton>
+              ) : (
+                <IconButton
+                  size="small"
+                  onClick={e => {
+                    e.stopPropagation();
+                    handleOpenReportDialog();
+                  }}
+                  aria-label="신고"
+                  sx={{ '&:hover': { color: 'error.main' } }}
+                >
+                  <FlagIcon fontSize="small" />
+                </IconButton>
+              ))}
+
+            {/* 댓글 메뉴 */}
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleMenuClose}
+              onClick={e => e.stopPropagation()}
             >
-              <EditIcon fontSize="small" />
-            </IconButton>
-            <IconButton
-              size="small"
-              onClick={e => {
-                e.stopPropagation();
-                e.preventDefault();
-                handleDelete();
-              }}
-            >
-              <DeleteIcon fontSize="small" />
-            </IconButton>
+              <MenuItem
+                onClick={e => {
+                  e.stopPropagation();
+                  handleMenuClose();
+                  setIsEditing(true);
+                }}
+              >
+                수정
+              </MenuItem>
+              <MenuItem
+                onClick={e => {
+                  e.stopPropagation();
+                  handleMenuClose();
+                  handleDelete();
+                }}
+              >
+                삭제
+              </MenuItem>
+            </Menu>
           </Box>
         }
       />
@@ -720,6 +723,16 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
           )}
         </ReplyListContainer>
       </Collapse>
+
+      {/* 신고 다이얼로그 */}
+      <ReportDialog
+        open={reportDialogOpen}
+        onClose={handleCloseReportDialog}
+        targetId={id}
+        targetType={'COMMENT'}
+        serviceType={'DEBATE'}
+        reportedUserId={comment.userId || userId || 0}
+      />
     </StyledCard>
   );
 };

@@ -14,11 +14,10 @@ import YoutubeGalleryWidget from '../components/dashboard/YoutubeGalleryWidget';
 import { SeasonalBackground } from '../features/theme';
 
 /**
- * 홈 페이지 컴포넌트
+ * 대시보드 페이지 컴포넌트
  */
-const Home: React.FC = () => {
-  const { isAuthenticated, user } = useAuthStore();
-  const isOnBoardDone = user?.isOnBoardDone;
+const Dashboard: React.FC = () => {
+  const { isAuthenticated } = useAuthStore();
   const { season } = useThemeStore();
 
   return (
@@ -108,4 +107,4 @@ const Home: React.FC = () => {
   );
 };
 
-export default Home;
+export default Dashboard; 

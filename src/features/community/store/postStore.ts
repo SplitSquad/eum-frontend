@@ -652,12 +652,8 @@ export const usePostStore = create<PostState & PostActions>()(
           } else {
             set({ currentPost: post, postLoading: false });
 
-            // 조회수 증가 API 호출 (오류가 발생해도 무시)
-            try {
-              await postApi.PostApi.increaseViewCount(postId);
-            } catch (error) {
-              console.error('조회수 증가 실패 (무시됨):', error);
-            }
+            // 조회수는 getPostById API에서 이미 증가되었으므로 별도 호출하지 않음
+            // 백엔드에서 자동으로 처리하는 것으로 변경
           }
 
           return get().currentPost;

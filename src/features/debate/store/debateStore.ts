@@ -271,9 +271,16 @@ export const useDebateStore = create<DebateState>()(
               language: userLanguage, // 사용자 언어 설정 추가
             });
 
+            // 댓글 수와 답글 수를 합산하여 총 댓글 수 계산
+            const totalReplies = response.comments.reduce(
+              (sum, comment) => sum + (comment.replyCount || 0),
+              0
+            );
+            const totalCommentsWithReplies = response.total + totalReplies;
+
             set({
               comments: response.comments,
-              totalComments: response.total,
+              totalComments: totalCommentsWithReplies, // 답글 수를 포함한 총 댓글 수
               commentPages: response.totalPages,
               currentCommentPage: page,
               isLoading: false,
@@ -379,11 +386,36 @@ export const useDebateStore = create<DebateState>()(
               stance,
             });
 
+            // stance 값 디버깅 (실제 받아온 값과 요청했던 값 비교)
+            console.log('[DEBUG] 생성된 댓글 stance:', comment?.stance);
+            console.log('[DEBUG] 요청한 댓글 stance:', stance);
+
             if (comment) {
+              // 백엔드에 stance 필드가 없으므로, 로컬 스토리지의 값 사용
+              let savedStance = stance || 'pro'; // 기본값
+
+              // 로컬 스토리지에서 이 댓글의 stance 값 가져오기
+              try {
+                if (comment && comment.id) {
+                  const savedStances = JSON.parse(localStorage.getItem('commentStances') || '{}');
+                  if (savedStances[comment.id]) {
+                    savedStance = savedStances[comment.id];
+                    console.log(`[DEBUG] 댓글 ID ${comment.id}의 저장된 stance 값: ${savedStance}`);
+                  }
+                }
+              } catch (error) {
+                console.error('로컬 스토리지에서 stance 정보 가져오기 실패:', error);
+              }
+
+              const commentWithCorrectStance = {
+                ...comment,
+                stance: savedStance, // 로컬 스토리지에 저장된 값 사용
+              };
+
               // 임시 댓글을 실제 댓글로 교체
               set(state => {
                 const updatedComments = state.comments.map(c =>
-                  c.id === tempComment.id ? comment : c
+                  c.id === tempComment.id ? commentWithCorrectStance : c
                 );
 
                 // 임시 댓글이 목록에 없으면 추가
@@ -496,7 +528,7 @@ export const useDebateStore = create<DebateState>()(
               commentId,
               userId: 0, // 실제 userId는 백엔드에서 설정됨
               userName: localStorage.getItem('userName') || '사용자',
-              content, // 사용자가 작성한 원문 그대로 표시
+              content, // 답글에는 stance 정보가 필요 없음
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString(),
               reactions: {
@@ -522,6 +554,15 @@ export const useDebateStore = create<DebateState>()(
                 : comment
             );
 
+            // 현재 토론에 댓글 수 업데이트
+            const currentDebate = get().currentDebate;
+            const updatedCurrentDebate = currentDebate
+              ? {
+                  ...currentDebate,
+                  commentCount: currentDebate.commentCount + 1, // 답글도 전체 댓글 수에 포함
+                }
+              : null;
+
             // 즉시 UI에 임시 대댓글 추가
             set({
               replies: {
@@ -529,6 +570,8 @@ export const useDebateStore = create<DebateState>()(
                 [commentId]: [tempReply, ...existingReplies],
               },
               comments: updatedComments,
+              totalComments: get().totalComments + 1, // 총 댓글 수에 1 추가
+              currentDebate: updatedCurrentDebate,
               isLoading: false,
             });
 
@@ -684,10 +727,21 @@ export const useDebateStore = create<DebateState>()(
                   };
                   comments[commentIndex] = updatedComment;
 
+                  // 현재 토론에 댓글 수 업데이트
+                  const currentDebate = get().currentDebate;
+                  const updatedCurrentDebate = currentDebate
+                    ? {
+                        ...currentDebate,
+                        commentCount: Math.max(0, currentDebate.commentCount - 1), // 답글도 전체 댓글 수에 포함
+                      }
+                    : null;
+
                   // 한 번에 모든 상태 업데이트
                   set({
                     replies: updatedReplies,
                     comments,
+                    totalComments: Math.max(0, get().totalComments - 1), // 총 댓글 수 감소
+                    currentDebate: updatedCurrentDebate,
                     // isLoading: false - 불필요한 상태 업데이트 제거
                   });
                 } else {

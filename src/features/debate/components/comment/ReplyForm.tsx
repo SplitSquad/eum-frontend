@@ -4,7 +4,7 @@ import { Box, TextField, Button, Typography, Paper } from '@mui/material';
 
 interface ReplyFormProps {
   commentId: number;
-  onSuccess?: () => void;
+  onSuccess?: (newReply?: any) => void;
 }
 
 const ReplyForm: React.FC<ReplyFormProps> = ({ commentId, onSuccess }) => {
@@ -18,7 +18,7 @@ const ReplyForm: React.FC<ReplyFormProps> = ({ commentId, onSuccess }) => {
   const submitReply = async (e?: React.MouseEvent | React.KeyboardEvent): Promise<void> => {
     // 이벤트 차단 강화 - 리다이렉션 방지
     if (e) {
-    e.preventDefault();
+      e.preventDefault();
       e.stopPropagation();
       if (e.nativeEvent) {
         e.nativeEvent.preventDefault();
@@ -37,8 +37,8 @@ const ReplyForm: React.FC<ReplyFormProps> = ({ commentId, onSuccess }) => {
       return;
     }
     
-      setIsSubmitting(true);
-      setError('');
+    setIsSubmitting(true);
+    setError('');
       
     try {
       // 비동기 요청 실행 및 await로 완료 대기
@@ -51,7 +51,7 @@ const ReplyForm: React.FC<ReplyFormProps> = ({ commentId, onSuccess }) => {
       // 성공 콜백 호출
       if (onSuccess) {
         console.log('ReplyForm: 성공 콜백 호출 전');
-        onSuccess();
+        onSuccess(result);
         console.log('ReplyForm: 성공 콜백 호출 후');
       }
     } catch (err) {
@@ -153,7 +153,7 @@ const ReplyForm: React.FC<ReplyFormProps> = ({ commentId, onSuccess }) => {
               size="small"
               onClick={handleCancel}
               disabled={isSubmitting}
-          type="button"
+              type="button"
             >
               취소
             </Button>
@@ -164,8 +164,8 @@ const ReplyForm: React.FC<ReplyFormProps> = ({ commentId, onSuccess }) => {
               onClick={(e) => submitReply(e)}
               disabled={isSubmitting || !content.trim()}
               type="button"
-        >
-          {isSubmitting ? '저장 중...' : '답글 작성'}
+            >
+              {isSubmitting ? '저장 중...' : '답글 작성'}
             </Button>
           </Box>
         </Box>
