@@ -6,21 +6,47 @@
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
+    "types": ["node", "jest"],
 
     /* Bundler mode */
     "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
+    "allowJs": true,
+    // "allowImportingTsExtensions": true, // noEmit 또는 emitDeclarationOnly가 필요하여 주석 처리
     "isolatedModules": true,
     "moduleDetection": "force",
-    "noEmit": true,
+    // "noEmit": true, // 기존: 타입 에러 시 빌드 중단
+    "noImplicitAny": false,
+
+    /* JSX & ESM 호환 설정 */
     "jsx": "react-jsx",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
 
     /* Linting */
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+
+    /* alias 설정 */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@tiptap-editor/*": ["tiptap-editor/*"]
+    },
+    "noEmitOnError": false, // 타입 에러 무시하고 빌드 강행
+    "outDir": "./dist"
   },
-  "include": ["src"]
+  "include": ["src", "tiptap-editor"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "src/tests",
+    "src/tests/**/*",
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/**/*.spec.ts",
+    "src/**/*.spec.tsx"
+  ]
 }

@@ -1,18 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 글로벌 폰트, 텍스트 렌더링, Tailwind 변수 등만 유지 */
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
+  color: rgba(0, 0, 0, 0.87);
+  background-color: #ffffff;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* 봄 테마 색상 변수는 app.css에서 관리 */
 }
 
+/* 스크롤바, ::selection, .app-container, .main-content, html, body 등은 app.css에서 관리 */
+
+/* a, button, h1 등 기본 엘리먼트 스타일만 유지 */
 a {
   font-weight: 500;
   color: #646cff;
@@ -20,14 +27,6 @@ a {
 }
 a:hover {
   color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
 }
 
 h1 {
@@ -42,7 +41,7 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: #f9f9f9;
   cursor: pointer;
   transition: border-color 0.25s;
 }
@@ -53,6 +52,16 @@ button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
+
+#root {
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 앱 컨테이너, 메인 콘텐츠, 스크롤바, ::selection 등은 app.css에서 관리 */
 
 @media (prefers-color-scheme: light) {
   :root {

@@ -1,0 +1,264 @@
+'use client';
+
+import React, { useState, useRef, useEffect } from 'react';
+import { fetchChatbotResponse } from '@/features/assistant/api/ChatApi';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { Box, Typography } from '@mui/material';
+
+/**-----------------------------------웹로그 관련------------------------------------ **/
+// userId 꺼내오는 헬퍼
+export function getUserId(): number | null {
+  try {
+    const raw = localStorage.getItem('auth-storage');
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed?.state?.user?.userId ?? null;
+  } catch {
+    return null;
+  }
+}
+
+// 로그 전송 타입 정의
+interface WebLog {
+  userId: number;
+  content: string;
+}
+
+// BASE URL에 엔드포인트 설정
+const BASE = import.meta.env.VITE_API_BASE_URL;
+
+// 로그 전송 함수
+export function sendWebLog(log: WebLog) {
+  // jwt token 가져오기
+  const token = localStorage.getItem('auth_token');
+  if (!token) {
+    throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
+  }
+  fetch(`${BASE}/logs`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: token },
+    body: JSON.stringify(log),
+  }).catch(err => {
+    console.error('WebLog 전송 실패:', err);
+  });
+  // 전송 완료
+  console.log('WebLog 전송 성공:', log);
+}
+/**------------------------------------------------------------------------------------**/
+
+// 채팅 메시지 객체 형태 정의
+interface Message {
+  id: number;
+  sender: 'user' | 'bot';
+  text: string;
+  displayText?: string;
+  isTyping?: boolean;
+}
+
+// ChatContent 컴포넌트 props 타입 정의
+interface ChatContentProps {
+  categoryLabel?: string;
+  onCategoryChange?: (newKey: string) => void;
+}
+
+/**
+ * ChatContent 컴포넌트
+ * - AI 챗봇과의 상호작용 UI를 렌더링하고,
+ *   타자기 효과로 메시지를 한 글자씩 표시
+ */
+export default function ChatContent({
+  categoryLabel = '전체',
+  onCategoryChange,
+}: ChatContentProps) {
+  // 메시지 목록, 초기 봇 메시지 포함
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: Date.now(),
+      sender: 'bot',
+      text: '무엇을 도와드릴까요?',
+      displayText: '무엇을 도와드릴까요?',
+      isTyping: false,
+    },
+  ]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const listRef = useRef<HTMLDivElement>(null);
+
+  /**
+   * 메시지 전송 핸들러
+   */
+  const sendMessage = async (query?: string) => {
+    const text = query ?? input.trim();
+    if (!text) return;
+
+    // 사용자 메시지 추가
+    setMessages(prev => [...prev, { id: Date.now(), sender: 'user', text }]);
+
+    // 웹로그 전송
+    const userId = getUserId() ?? 0;
+    const chatLogPayload = {
+      UID: userId,
+      ClickPath: location.pathname,
+      TAG: categoryLabel,
+      CurrentPath: location.pathname,
+      Event: 'chat',
+      Content: text,
+      Timestamp: new Date().toISOString(),
+    };
+    sendWebLog({ userId, content: JSON.stringify(chatLogPayload) });
+
+    // 입력창 초기화 및 로딩 상태 설정
+    setInput('');
+    setLoading(true);
+
+    try {
+      const data = await fetchChatbotResponse(text, '1');
+      // 봇 메시지 placeholder 추가
+      setMessages(prev => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          sender: 'bot',
+          text: data.response,
+          displayText: '',
+          isTyping: true,
+        },
+      ]);
+
+      // 봇 웹로그 전송
+      const userId = getUserId() ?? 0;
+      const chatLogPayload = {
+        UID: userId,
+        ClickPath: location.pathname,
+        TAG: categoryLabel,
+        CurrentPath: location.pathname,
+        Event: 'chat',
+        Content: text,
+        Timestamp: new Date().toISOString(),
+      };
+      sendWebLog({ userId, content: JSON.stringify(chatLogPayload) });
+
+      // 예시: 카테고리 매핑 로직
+      const map: Record<string, string> = {
+        visa_law: 'visa',
+        social_security: 'social',
+        tax_finance: 'tax',
+        medical_health: 'health',
+        employment: 'employment',
+        daily_life: 'life',
+        all: 'all',
+      };
+
+      const rag = data.metadata?.rag_type;
+      const newKey = rag && map[rag] ? map[rag] : undefined;
+      if (newKey && onCategoryChange) onCategoryChange(newKey);
+    } catch (error) {
+      // 오류 메시지
+      setMessages(prev => [
+        ...prev,
+        {
+          id: Date.now() + 2,
+          sender: 'bot',
+          text: '응답 중 오류가 발생했습니다.',
+          displayText: '응답 중 오류가 발생했습니다.',
+          isTyping: false,
+        },
+      ]);
+    } finally {
+      setLoading(false);
+      // 웹로그
+    }
+  };
+
+  /**
+   * 타자기(타이핑) 효과: 마지막 봇 메시지를 한 글자씩 표시
+   */
+  useEffect(() => {
+    const last = messages[messages.length - 1];
+    if (last?.sender === 'bot' && last.isTyping) {
+      let idx = 0;
+      const { text, id: msgId } = last;
+      const interval = setInterval(() => {
+        idx += 1;
+        setMessages(prev => {
+          const copy = [...prev];
+          if (copy[copy.length - 1].id === msgId) {
+            copy[copy.length - 1] = {
+              ...copy[copy.length - 1],
+              displayText: text.slice(0, idx),
+              isTyping: idx < text.length,
+            };
+          }
+          return copy;
+        });
+        if (idx >= text.length) clearInterval(interval);
+      }, 30);
+      return () => clearInterval(interval);
+    }
+    // 마지막 메시지 id 변경 시에만 effect 실행
+  }, [messages[messages.length - 1]?.id]);
+
+  /**
+   * 메시지 추가 시 자동으로 스크롤 하단으로 이동
+   */
+  useEffect(() => {
+    if (listRef.current) {
+      listRef.current.scrollTop = listRef.current.scrollHeight;
+    }
+  }, [messages, loading]);
+
+  return (
+    <div className="h-full">
+      {/* 카테고리 + 메인 flex (아래에 배치) */}
+      <div className="flex h-[calc(100%-120px)]">
+        {/* 오른쪽: 메인(채팅) */}
+        <main className="flex-1 flex flex-col pl-8">
+          {/* 메시지 리스트 영역 */}
+          <div ref={listRef} className="overflow-auto p-2 space-y-3 bg-gray-50 h-[50vh]">
+            {messages.map(m => (
+              <div
+                key={m.id}
+                className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                {m.sender === 'user' ? (
+                  <span className="inline-block px-4 py-2 rounded-xl max-w-[70%] break-words bg-blue-500 text-white">
+                    {m.text}
+                  </span>
+                ) : (
+                  <span className="inline-block px-4 py-2 rounded-xl max-w-[70%] whitespace-pre-wrap break-words bg-gray-200 text-gray-800">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      components={{ p: ({ children }) => <>{children}</> }}
+                      children={m.displayText ?? m.text}
+                    />
+                  </span>
+                )}
+              </div>
+            ))}
+            {loading && <div className="text-center text-gray-500">답변 중...</div>}
+          </div>
+          {/* 입력창 영역 */}
+          <div className="px-6 py-4 bg-white border-t flex items-center">
+            <input
+              type="text"
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && !loading && sendMessage()}
+              disabled={loading}
+              className="flex-1 px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring disabled:opacity-50"
+              placeholder="질문을 입력하세요..."
+            />
+            <button
+              onClick={() => sendMessage()}
+              disabled={loading}
+              className="ml-4 px-6 py-2 bg-indigo-600 text-white rounded-full disabled:opacity-50"
+            >
+              전송
+            </button>
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}

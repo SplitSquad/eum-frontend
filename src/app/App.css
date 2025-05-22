@@ -1,0 +1,194 @@
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+}
+
+/* 전체 앱 컨테이너 스타일 */
+.app-container {
+  min-height: 100vh;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  font-family:
+    'Pretendard',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    'Helvetica Neue',
+    Arial,
+    sans-serif;
+  /*overflow-y: auto;*/
+  position: relative;
+}
+
+/* 메인 콘텐츠 영역 스타일 */
+.main-content {
+  flex: 1 1 auto;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem 0;
+  min-height: calc(100vh - 72px - 120px); /* 헤더 높이(72px)와 푸터 높이(120px)를 제외한 높이 */
+  /*margin-top: 64px;  헤더 높이만큼 여백 추가 */
+  /*margin-bottom: 120px; /* 푸터 높이만큼 여백 추가 */
+  z-index: 1;
+}
+
+/* 봄 테마 색상 변수 */
+:root {
+  --spring-pink-light: rgba(255, 235, 235, 1);
+  --spring-pink: rgba(255, 170, 165, 0.8);
+  --spring-pink-dark: rgba(255, 107, 107, 0.8);
+  --spring-purple: rgba(123, 31, 162, 0.8);
+  --spring-cream: rgba(255, 250, 240, 1);
+  --spring-shadow: rgba(255, 170, 165, 0.2);
+}
+
+/* 스크롤바 스타일링 */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--spring-pink);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--spring-pink-dark);
+}
+
+::-webkit-scrollbar-track {
+  background: var(--spring-pink-light);
+}
+
+/* 봄 테마 텍스트 선택 색상 */
+::selection {
+  background-color: var(--spring-pink);
+  color: white;
+}
+
+/* 글로벌 애니메이션 정의 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes floatIn {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* MUI 컴포넌트 스타일 오버라이드 */
+.MuiButton-root {
+  border-radius: 8px !important;
+  text-transform: none !important;
+  box-shadow: 0 4px 8px var(--spring-shadow) !important;
+  transition: all 0.3s ease !important;
+}
+
+.MuiButton-contained {
+  background-color: var(--spring-pink) !important;
+  color: white !important;
+}
+
+.MuiButton-contained:hover {
+  background-color: var(--spring-pink-dark) !important;
+  transform: translateY(-2px);
+}
+
+.MuiTextField-root .MuiOutlinedInput-root {
+  border-radius: 8px;
+}
+
+.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: var(--spring-pink) !important;
+}
+
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: var(--spring-pink-dark) !important;
+  border-width: 2px;
+}
+
+/* 카드 항목 애니메이션 */
+.card-animation-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.card-animation-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 500ms,
+    transform 500ms;
+}
+
+.card-animation-exit {
+  opacity: 1;
+}
+
+.card-animation-exit-active {
+  opacity: 0;
+  transform: translateY(-20px);
+  transition:
+    opacity 300ms,
+    transform 300ms;
+}
+
+.app-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  transition: filter 0.3s ease;
+}
+
+.app-content.dimmed {
+  filter: brightness(0.5);
+  pointer-events: none;
+}
+
+/* Modal styles */
+.modal-open {
+  overflow: hidden;
+}
+
+/* Modal toggle button styles */
+.modal-toggle-button {
+  transition: all 0.3s ease !important;
+  backdrop-filter: blur(4px);
+}
+
+.modal-toggle-button:hover {
+  transform: scale(1.05);
+}
+
+/* Ensure the modal button stays above the dimmed content */
+.modal-open .modal-toggle-button {
+  z-index: 1002;
+  position: relative;
+}
+
+/* Modal toggle image hover effect */
+.modal-toggle-img {
+  transition: transform 0.3s;
+}
+.modal-toggle-img:hover {
+  transform: scale(1.2);
+}
