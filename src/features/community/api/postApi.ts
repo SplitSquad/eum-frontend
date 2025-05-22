@@ -1,5 +1,11 @@
 import apiClient from './apiClient';
-import { Post } from '../types';
+import {
+  Post,
+  PostSummary,
+  ReactionType,
+  User,
+  CommentType as Comment,
+} from '../types-folder/index';
 import axios, { AxiosResponse } from 'axios';
 
 // 로컬에서 필요한 타입 정의
@@ -31,7 +37,7 @@ export interface ApiUpdatePostRequest {
 
 // PostListResponse 타입 정의
 export interface PostListResponse {
-  postList: Post[];
+  postList: PostSummary[];
   total: number;
   totalPages: number;
 }
@@ -90,6 +96,12 @@ interface SearchResponseData {
  * 게시글 API 관련 상수 및 유틸리티
  */
 const BASE_URL = '/community/post';
+
+// PostType 변환 유틸리티
+function toPostType(value: any): '모임' | '자유' | '전체' {
+  if (value === '모임' || value === '자유' || value === '전체') return value;
+  return '자유';
+}
 
 /**
  * 게시글 관련 API
@@ -164,7 +176,7 @@ export const PostApi = {
       console.log('[DEBUG] 게시글 목록 원본 응답 데이터:', response);
 
       // 안전하게 데이터 추출 및 변환
-      let posts = [];
+      let posts: PostSummary[] = [];
       let total = 0;
 
       // 백엔드 응답 구조에 따라 적절히 처리
@@ -180,7 +192,7 @@ export const PostApi = {
         }
         // Spring Data 표준 페이징 응답 형식인 경우
         else if (Array.isArray(response.content)) {
-          posts = response.content;
+          posts = response.content as PostSummary[];
           total =
             typeof response.totalElements === 'number' ? response.totalElements : posts.length;
           console.log('[DEBUG] 백엔드 응답에서 content 배열 추출:', {
@@ -190,7 +202,7 @@ export const PostApi = {
         }
         // 응답 자체가 배열인 경우
         else if (Array.isArray(response)) {
-          posts = response;
+          posts = response as PostSummary[];
           total = response.length;
           console.log('[DEBUG] 백엔드 응답이 직접 배열 형태:', {
             postsLength: posts.length,
@@ -200,7 +212,6 @@ export const PostApi = {
 
       // 각 게시물에 대해 필드 확인 및 결측치 처리
       posts = posts.map((post: any) => {
-        // 게시물이 null이면 빈 객체로 대체
         if (!post)
           return {
             postId: 0,
@@ -214,17 +225,15 @@ export const PostApi = {
             commentCount: 0,
             category: '전체',
             tags: [],
-            status: 'ACTIVE',
-            postType: '자유',
+            status: 'ACTIVE' as const,
+            postType: '자유' as const,
             address: '자유',
           };
-
         return {
           ...post,
           title: post.title || '[제목 없음]',
           content: post.content || '',
           dislikeCount: post.dislikeCount || 0,
-          // 백엔드 응답 필드와 프론트엔드 필드 맵핑
           postId: post.postId,
           writer: {
             userId: post.userId || 0,
@@ -233,13 +242,16 @@ export const PostApi = {
             role: 'USER',
           },
           viewCount: post.views || 0,
+          likeCount: post.like || 0,
+          commentCount: post.commentCnt || 0,
           category: post.category || '전체',
           createdAt: post.createdAt || new Date().toISOString(),
-          postType: post.postType || '자유',
+          postType: typeof post.postType === 'string' ? toPostType(post.postType) : post.postType,
           address: post.address || '자유',
           thumbnail: post.files && post.files.length > 0 ? post.files[0] : null,
+          status: (post.status as 'ACTIVE' | 'INACTIVE' | 'DELETED') || 'ACTIVE',
         };
-      });
+      }) as PostSummary[];
 
       // 페이징 계산 - 페이지당 6개 기준으로 총 페이지 수 계산
       const totalPages = Math.ceil(total / 6);
@@ -294,7 +306,7 @@ export const PostApi = {
         dislikeCount: post.dislike || 0,
         commentCount: post.commentCnt || 0,
         postType: post.postType || '자유',
-        address: post.address || '집 없음',
+        address: post.address || '자유',
         thumbnail: post.files && post.files.length > 0 ? post.files[0] : null,
       })) as Post[];
     } catch (error) {
@@ -534,8 +546,8 @@ export const PostApi = {
             commentCount: 0,
             category: '전체',
             tags: [],
-            status: 'ACTIVE',
-            postType: '자유',
+            status: 'ACTIVE' as const,
+            postType: '자유' as const,
             address: '자유',
           };
         }
@@ -558,8 +570,8 @@ export const PostApi = {
           commentCount: post.commentCnt || post.commentCount || 0,
           category: post.category || '전체',
           tags: post.tags || [],
-          status: post.status || 'ACTIVE',
-          postType: post.postType || '자유',
+          status: (post.status as 'ACTIVE' | 'INACTIVE' | 'DELETED') || 'ACTIVE',
+          postType: typeof post.postType === 'string' ? toPostType(post.postType) : post.postType,
           address: post.address || post.location || '자유',
           thumbnail: post.files && post.files.length > 0 ? post.files[0] : null,
         };
@@ -591,9 +603,14 @@ export const PostApi = {
   /**
    * 게시글 상세 조회
    */
-  getPostById: async (postId: number): Promise<Post> => {
+  getPostById: async (postId: number, signal?: AbortSignal, noViewCount: boolean = false): Promise<Post> => {
     try {
-      const response = await apiClient.get<any>(`${BASE_URL}/${postId}`);
+      // 조회수를 증가시키지 않는 옵션 추가 (언어 변경 시 사용)
+      const url = noViewCount 
+        ? `${BASE_URL}/${postId}?noViewCount=true` 
+        : `${BASE_URL}/${postId}`;
+        
+      const response = await apiClient.get<any>(url, { signal });
 
       // 백엔드 응답 구조와 일치하도록 데이터 변환
       return {
@@ -611,7 +628,8 @@ export const PostApi = {
         commentCount: response.commentCnt || 0,
         myReaction: response.isState || null, // isState를 myReaction으로 변환
         // 추가된 필드
-        postType: response.postType || '자유',
+        postType:
+          typeof response.postType === 'string' ? toPostType(response.postType) : response.postType,
         address: response.address || '자유',
         // 썸네일 처리
         thumbnail: response.files && response.files.length > 0 ? response.files[0] : null,
@@ -624,18 +642,14 @@ export const PostApi = {
 
   /**
    * 게시글 조회수 증가
+   * 참고: 현재 getPostById API 호출 시 백엔드에서 자동으로 조회수가 증가하므로 
+   * 이 메서드는 실제로 호출하지 않아야 합니다. noViewCount=true 파라미터를 사용하여
+   * 필요한 경우 조회수 증가를 방지할 수 있습니다.
    */
   increaseViewCount: async (postId: number): Promise<void> => {
-    try {
-      // 조회수 증가 API가 아직 구현되지 않았지만, 추후 구현 시 활성화
-      console.log('조회수 증가 API가 아직 구현되지 않았습니다:', postId);
-      // 실제 API 구현 시 아래 주석을 해제하세요
-      // await apiClient.post(`${BASE_URL}/${postId}/view`);
-      return;
-    } catch (error) {
-      console.error('게시글 조회수 증가 실패:', error);
-      // 핵심 기능에 영향을 주지 않으므로 에러를 throw하지 않음
-    }
+    // 사용하지 않는 함수이지만 호환성을 위해 유지
+    console.log('게시글 조회수는 백엔드에서 자동 증가됩니다. (ID:', postId, ')');
+    return;
   },
 
   /**
@@ -806,7 +820,7 @@ export const PostApi = {
           tags: post.tags,
           createdAt: post.createdAt || new Date().toISOString(),
           // 추가된 필드
-          postType: post.postType || '자유',
+          postType: typeof post.postType === 'string' ? toPostType(post.postType) : post.postType,
           address: post.address || '자유',
           // 썸네일 처리
           thumbnail: post.files && post.files.length > 0 ? post.files[0] : null,

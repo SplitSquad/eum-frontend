@@ -54,7 +54,13 @@ const SpringContainer = styled(Box, {
 })<SpringBackgroundProps>`
   width: 100%;
   min-height: ${p => (p.noPadding ? '100%' : '100vh')};
-  background: linear-gradient(135deg, rgba(255, 245, 245, 1) 0%, rgba(255, 235, 235, 1) 100%);
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 1) 0%,
+    rgba(255, 255, 255, 1) 20%,
+    rgba(255, 250, 250, 1) 40%,
+    rgba(255, 240, 240, 1) 100%
+  );
   padding: ${p => (p.noPadding ? '0' : '2rem 0')};
   position: relative;
   overflow: visible;

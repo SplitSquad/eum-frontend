@@ -115,6 +115,16 @@ const LoadingContainer = styled.div`
   padding: 40px 0;
 `;
 
+// ActivityItem 타입 선언 (실제 사용하는 속성만 포함)
+type ActivityItem = {
+  id: number;
+  type: string;
+  title: string;
+  description: string;
+  date: string;
+  onClick: () => void;
+};
+
 /**
  * 마이페이지 - 활동 내역 페이지
  * 사용자의 게시물, 댓글, 좋아요, 북마크 등의 활동을 표시합니다.
@@ -303,7 +313,7 @@ const ActivitiesPage: React.FC = () => {
 
   // 활동 목록 생성
   const getActivities = () => {
-    const allActivities = [];
+    const allActivities: ActivityItem[] = [];
 
     // 게시글 활동
     if ((activeTab === 'all' || activeTab === 'posts') && posts?.content) {

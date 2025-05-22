@@ -7,7 +7,7 @@ const API_BASE = '/analytics';
 // Zustand에서 꺼낸 JWT 토큰으로 Authorization 헤더를 구성
 function GetAuthHeader() {
   const token = useUserStore.getState().token;
-  return { Authorization: `${token}` };
+  return { Authorization: `Bearer ${token}` };
 }
 
 /**

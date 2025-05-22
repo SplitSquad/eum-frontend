@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import AppLayout from '@/components/layout/AppLayout';
-import Container from '@/components/layout/Contianer';
+import Container from '@mui/material/Container';
 import CategorySidebar, { Category } from '@/features/assistant/components/ChatCategory';
 import ChatContent from '@/features/assistant/components/ChatContent';
 
@@ -32,14 +31,20 @@ export default function AiAssistant() {
     // 공통 레이아웃 감싸기(AppLayout 내부에 헤더/푸터/모달 챗봇 포함)
     <>
       {/* 페이지 고정 너비 및 패딩을 주는 컨테이너 */}
-      <Container>
-        <div className="flex h-screen overflow-hidden space-x-6 py-8">
+      <Container
+        maxWidth="lg"
+        sx={{
+          py: 3,
+          display: 'flex',
+          flexDirection: 'column',
+          flexGrow: 1,
+          position: 'relative',
+          zIndex: 5,
+        }}
+      >
+        <div className="flex h-screen overflow-hidden space-x-6">
           {/* 사이드바: 카테고리 목록 전달, 선택 시 setSelectedKey 호출 (key는 챗봇 카테고리 변경에 사용) */}
-          <CategorySidebar
-            categories={categories}
-            selectedKey={selectedKey}
-            onSelect={setSelectedKey}
-          />
+          <CategorySidebar categories={categories} selectedKey={selectedKey} />
 
           {/* 메인 채팅 영역: 선택된 카테고리 라벨과 카테고리 변경 함수 전달 */}
           <div className="flex-1 flex flex-col overflow-hidden">

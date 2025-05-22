@@ -14,6 +14,7 @@ import {
   CircularProgress,
   styled,
   Divider,
+  Pagination,
 } from '@mui/material';
 import {
   ThumbUp as ThumbUpIcon,
@@ -30,14 +31,16 @@ import { useComments } from '../../hooks/useComments';
 import useAuthStore from '../../../auth/store/authStore';
 import { useCommentForm, useCommentControls } from '../../hooks';
 import CommentForm from './CommentForm';
-import { CommentType, ReplyType, ReactionType } from '../../types';
-import { CommentApi } from '../../api/CommentApi';
+// import { CommentType, ReplyType, ReactionType } from '../../types'; // 존재하지 않아 임시 주석 처리
+// enum ReactionType으로 변경
+// type ReactionType = 'LIKE' | 'DISLIKE';
+enum ReactionType {
+  LIKE = 'LIKE',
+  DISLIKE = 'DISLIKE',
+}
+import { CommentApi } from '../../api/commentApi';
 import { useSnackbar } from 'notistack';
-import ReportDialog, { ServiceType, ReportTargetType } from '../../../common/components/ReportDialog';
-
-// 인터페이스 정의 - 백엔드 응답 형태에 맞게 수정
-type Comment = CommentType;
-type Reply = ReplyType;
+import ReportDialog, { ReportTargetType, ServiceType } from '../../../common/components/ReportDialog';
 
 const CommentCardWrapper = styled(Box)(({ theme }) => ({
   padding: theme.spacing(2),
@@ -91,6 +94,47 @@ interface CommentSectionProps {
   onDeleteComment?: (commentId: number) => Promise<void>;
 }
 
+// 실제 코드에서 사용하는 속성만 포함
+// type ReactionType = ... (enum은 이미 선언됨)
+type User = {
+  id?: number | string;
+  userId?: number | string;
+  nickname?: string;
+  name?: string;
+  profileImage?: string;
+};
+
+type Reply = {
+  replyId: number;
+  commentId: number;
+  content: string;
+  createdAt: string;
+  likeCount: number;
+  dislikeCount: number;
+  myReaction?: ReactionType;
+  liked?: boolean;
+  disliked?: boolean;
+  writer: User;
+  translating?: boolean;
+};
+
+type Comment = {
+  commentId: number;
+  postId?: number;
+  content: string;
+  createdAt: string;
+  likeCount: number;
+  dislikeCount: number;
+  myReaction?: ReactionType;
+  liked?: boolean;
+  disliked?: boolean;
+  writer: User;
+  replies?: Reply[];
+  replyCount?: number;
+  reply?: number;
+  translating?: boolean;
+};
+
 const CommentSection: React.FC<CommentSectionProps> = ({
   postId,
   comments: propComments,
@@ -106,16 +150,19 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   const [total, setTotal] = useState<number>(0);
   const [submittingComment, setSubmittingComment] = useState(false);
   const [newCommentText, setNewCommentText] = useState('');
+  const [currentPage, setCurrentPage] = useState<number>(0);
+  const [pageSize, setPageSize] = useState<number>(5);
+  const [totalPages, setTotalPages] = useState<number>(0);
 
   // Snackbar notifications
   const { enqueueSnackbar } = useSnackbar();
 
   // Auth
   const { user } = useAuthStore();
-  const currentUserId = user?.userId || undefined;
-  
-  console.log('현재 사용자 정보:', user);
-  console.log('현재 사용자 ID:', currentUserId);
+  const currentUserId =
+    ((user as any)?.id ?? (user as any)?.userId)
+      ? Number((user as any)?.id ?? (user as any)?.userId)
+      : undefined;
 
   // Comment form controls
   const controls = useCommentControls(comments);
@@ -126,32 +173,64 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   }, [comments.length]);
 
   // 댓글 목록 불러오기 - useCallback으로 최적화
-  const fetchComments = useCallback(async () => {
+  const fetchComments = useCallback(async (page: number = currentPage) => {
     setIsLoading(true);
     try {
-      console.log('[DEBUG] 댓글 가져오기 시작 - postId:', postId);
-      const response = await CommentApi.getComments(postId);
+      console.log('[DEBUG] 댓글 가져오기 시작 - postId:', postId, 'page:', page);
+      const response = await CommentApi.getComments(postId, 'post', page, pageSize);
       console.log('[DEBUG] 댓글 응답 구조:', JSON.stringify(response, null, 2));
 
       if (response && response.commentList) {
         // commentApi 내부에서 각 댓글의 isState를 myReaction으로 이미 변환함
         setComments(response.commentList);
-        setTotal(response.total || 0);
-        console.log('[DEBUG] 받은 댓글 수:', response.commentList.length);
+        
+        // 댓글 총 개수 계산 (댓글 + 답글)
+        let totalComments = response.total || 0;
+        let totalReplies = 0;
+        
+        // 각 댓글의 답글 수를 합산하여 총 개수에 추가
+        response.commentList.forEach(comment => {
+          totalReplies += comment.replyCount || comment.reply || 0;
+        });
+        
+        // 총 댓글 수 = 댓글 수 + 답글 수
+        setTotal(totalComments + totalReplies);
+        
+        // 페이지네이션 정보 설정
+        if (response.pageInfo) {
+          setCurrentPage(response.pageInfo.page);
+          setPageSize(response.pageInfo.size);
+          setTotalPages(response.pageInfo.totalPages);
+        } else {
+          // 페이지네이션 정보가 없는 경우 계산
+          setTotalPages(Math.ceil(totalComments / pageSize));
+        }
+        
+        console.log('[DEBUG] 댓글 총 개수:', totalComments, '페이지:', page, '전체 페이지:', Math.ceil(totalComments / pageSize));
+        console.log('[DEBUG] 받은 댓글 수:', response.commentList.length, '답글 수:', totalReplies);
       } else {
         console.warn('[WARN] 댓글 응답 구조가 예상과 다름:', response);
         setComments([]);
         setTotal(0);
+        setTotalPages(0);
       }
     } catch (error) {
       console.error('[ERROR] 댓글 가져오기 실패:', error);
       setComments([]);
       setTotal(0);
+      setTotalPages(0);
       enqueueSnackbar('댓글을 불러오는 중 오류가 발생했습니다.', { variant: 'error' });
     } finally {
       setIsLoading(false);
     }
-  }, [postId, enqueueSnackbar]);
+  }, [postId, pageSize, enqueueSnackbar]);
+
+  // 페이지 변경 핸들러
+  const handlePageChange = (event: React.ChangeEvent<unknown>, page: number) => {
+    // API는 0부터 시작하는 페이지 인덱스 사용
+    const apiPageIndex = page - 1;
+    fetchComments(apiPageIndex);
+  };
 
   // 대댓글 로드 함수 - useCallback으로 최적화
   const [loadingReplies, setLoadingReplies] = useState<Record<number, boolean>>({});
@@ -172,101 +251,30 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         const response = await CommentApi.getReplies(commentId);
         console.log('[DEBUG] 대댓글 응답:', response);
 
-        // replyList 배열이 있으면 그대로 사용
-        if (Array.isArray(response)) {
-          // 백엔드가 배열을 직접 반환하는 경우
-          console.log('[DEBUG] 응답이 배열 형태:', response.length);
-
-          // myReaction 필드를 liked/disliked 불리언으로 변환
-          const processedReplies = response.map(reply => ({
-            ...reply,
-            liked: reply.isState === '좋아요',
-            disliked: reply.isState === '싫어요',
-            myReaction:
-              reply.isState === '좋아요'
-                ? ReactionType.LIKE
-                : reply.isState === '싫어요'
-                  ? ReactionType.DISLIKE
-                  : undefined,
-          }));
-
+        if (response && response.replyList) {
+          // API 응답에서 변환된 replyList 사용
           setReplies(prev => ({
             ...prev,
-            [commentId]: processedReplies,
+            [commentId]: response.replyList,
           }));
 
-          console.log(`[DEBUG] 댓글 ${commentId}의 대댓글 ${processedReplies.length}개 로드 완료`);
+          console.log(`[DEBUG] 댓글 ${commentId}의 대댓글 ${response.replyList.length}개 로드 완료`);
 
           // 댓글 객체의 replyCount 업데이트 - 전체 댓글을 다시 불러오지 않고 해당 댓글만 업데이트
           setComments(prevComments =>
             prevComments.map(comment =>
               comment.commentId === commentId
-                ? { ...comment, replyCount: processedReplies.length }
+                ? { ...comment, replyCount: response.replyList.length }
                 : comment
             )
           );
-
-          return;
+        } else {
+          console.warn('[WARN] 대댓글 응답 구조가 예상과 다름:', response);
+          setReplies(prev => ({
+            ...prev,
+            [commentId]: [],
+          }));
         }
-
-        // 응답 구조 분석 및 대댓글 배열 추출
-        const replyArray: Reply[] = [];
-
-        // 숫자 키로 된 객체에서 대댓글 추출 (0, 1, 2, ...)
-        if (response && typeof response === 'object') {
-          for (const key in response) {
-            if (
-              !isNaN(Number(key)) &&
-              response[key as keyof typeof response] &&
-              typeof response[key as keyof typeof response] === 'object'
-            ) {
-              const replyData = response[key as keyof typeof response] as any;
-              // 백엔드 응답 -> 프론트엔드 타입 변환
-              if (replyData.replyId || replyData.commentId) {
-                const reply: Reply = {
-                  replyId: replyData.replyId || replyData.commentId,
-                  commentId: commentId,
-                  content: replyData.content || '',
-                  createdAt: replyData.createdAt || new Date().toISOString(),
-                  likeCount: replyData.like || 0,
-                  dislikeCount: replyData.dislike || 0,
-                  myReaction:
-                    replyData.isState === '좋아요'
-                      ? ReactionType.LIKE
-                      : replyData.isState === '싫어요'
-                        ? ReactionType.DISLIKE
-                        : undefined,
-                  liked: replyData.isState === '좋아요',
-                  disliked: replyData.isState === '싫어요',
-                  writer: replyData.writer || {
-                    userId: replyData.userId,
-                    nickname: replyData.userName || user?.name,
-                    profileImage: replyData.userPicture || '',
-                  },
-                };
-                replyArray.push(reply);
-              }
-            }
-          }
-        }
-
-        console.log('[DEBUG] 추출된 대댓글 배열:', replyArray);
-
-        setReplies(prev => ({
-          ...prev,
-          [commentId]: replyArray,
-        }));
-
-        // 댓글 객체의 replyCount 업데이트
-        setComments(prevComments =>
-          prevComments.map(comment =>
-            comment.commentId === commentId
-              ? { ...comment, replyCount: replyArray.length }
-              : comment
-          )
-        );
-
-        console.log(`[DEBUG] 댓글 ${commentId}의 대댓글 ${replyArray.length}개 로드 완료`);
       } catch (error) {
         console.error('[ERROR] 대댓글 로드 실패:', error);
         enqueueSnackbar('답글을 불러오는 중 오류가 발생했습니다.', { variant: 'error' });
@@ -350,41 +358,9 @@ const CommentSection: React.FC<CommentSectionProps> = ({
     try {
       console.log('[DEBUG] 댓글 작성 시작:', newCommentText.substring(0, 20) + '...');
 
-      console.log('[DEBUG] 임시 댓글 생성 중, 현재 사용자 정보:', user);
-      
-      // 현재 사용자 정보를 더 확실하게 가져오기
-      // Auth store에서 직접 가져오기
-      const authStore = (window as any).__AUTH_STORE__;
-      const currentUser = authStore ? authStore.getState().user : user;
-      
-      const userName = currentUser?.name || (user?.name) || '번역 중...';
-      console.log('[DEBUG] 사용할 사용자 이름:', userName);
-      
-      // 먼저 UI에 임시 댓글 추가 (사용자가 작성한 원문 그대로 표시)
-      const tempComment: Comment = {
-        commentId: -Date.now(), // 임시 고유 ID (음수로 설정하여 실제 ID와 충돌 방지)
-        postId,
-        content: newCommentText,
-        createdAt: new Date().toISOString(),
-        likeCount: 0,
-        dislikeCount: 0,
-        replyCount: 0,
-        // 가능한 모든 형태로 사용자 정보 제공
-        writer: {
-          userId: currentUser?.userId || user?.userId || 0,
-          nickname: userName, // 명시적으로 사용자 실제 이름 사용 (익명 아님)
-          name: userName, // 중복 제공
-          profileImage: currentUser?.profileImage || user?.profileImage || '', // 사용자 프로필 이미지 사용
-        },
-        // 백엔드 응답 형식과 동일하게 추가 필드도 제공
-        userName: userName,
-        userId: currentUser?.userId || user?.userId || 0,
-        userProfileImage: currentUser?.profileImage || user?.profileImage || ''
-      };
-
-      // 먼저 UI에 댓글 추가
-      setComments(prev => [tempComment, ...prev]);
-      setTotal(prev => prev + 1);
+      // 사용자 이름 확실하게 가져오기
+      const userName = user.name || (user as any).nickname || '사용자';
+      console.log('[DEBUG] 댓글 작성에 사용할 사용자 이름:', userName);
 
       // 입력 필드 초기화
       setNewCommentText('');
@@ -393,33 +369,34 @@ const CommentSection: React.FC<CommentSectionProps> = ({
       const response = await CommentApi.createComment(postId, 'post', newCommentText);
       console.log('[DEBUG] 댓글 생성 응답:', response);
 
-      // 임시 댓글을 실제 댓글로 대체하되 사용자 정보는 병합
-      setComments(prev =>
-        prev.map(comment =>
-          comment.commentId === tempComment.commentId
-            ? {
-                ...response,
-                writer: {
-                  // 백엔드 응답의 writer와 임시 댓글의 writer 정보를 병합
-                  ...(response.writer || {}),
-                  userId: response.writer?.userId || tempComment.writer.userId,
-                  nickname: response.writer?.nickname || tempComment.writer.nickname,
-                  profileImage: response.writer?.profileImage || tempComment.writer.profileImage,
-                },
-                translating: false, // 번역 완료
-              }
-            : comment
-        )
-      );
-
-      enqueueSnackbar('댓글이 등록되었습니다.', { variant: 'success' });
+      if (response) {
+        // 새 댓글을 기존 댓글 목록의 맨 앞에 추가 (UI 즉시 업데이트)
+        const userProfileImage = (user as any).profileImage || '';
+        const userId = (user as any)?.id ?? (user as any)?.userId;
+        
+        const newComment = {
+          ...response,
+          writer: {
+            ...(response.writer || {}),
+            userId: userId,
+            nickname: userName,
+            profileImage: userProfileImage
+          }
+        };
+        
+        setComments(prevComments => [newComment, ...prevComments]);
+        
+        // 총 댓글 수 증가
+        setTotal(prev => prev + 1);
+        
+        enqueueSnackbar('댓글이 등록되었습니다.', { variant: 'success' });
+      } else {
+        // 응답이 없으면 전체 목록 새로고침
+        fetchComments(0);
+        enqueueSnackbar('댓글이 등록되었지만 새로고침이 필요합니다.', { variant: 'info' });
+      }
     } catch (error) {
       console.error('[ERROR] 댓글 작성 실패:', error);
-
-      // 에러 발생 시 임시 댓글 제거
-      setComments(prev => prev.filter(comment => comment.commentId > 0));
-      setTotal(prev => Math.max(0, prev - 1));
-
       enqueueSnackbar('댓글 작성에 실패했습니다.', { variant: 'error' });
     } finally {
       setSubmittingComment(false);
@@ -575,7 +552,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
       console.log(`[DEBUG] 댓글 반응 API 응답:`, response);
 
       // 서버 응답이 null, undefined 또는 에러인 경우
-      if (!response || response === 'error') {
+      if (!response || (typeof response === 'string' && response === 'error')) {
         console.log('[WARN] 서버 응답이 유효하지 않아 클라이언트 상태 유지');
         return; // 현재 UI 상태 유지
       }
@@ -745,7 +722,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
       console.log(`[DEBUG] 답글 반응 API 응답:`, response);
 
       // 서버 응답이 null, undefined 또는 에러인 경우
-      if (!response || response === 'error') {
+      if (!response || (typeof response === 'string' && response === 'error')) {
         console.log('[WARN] 서버 응답이 유효하지 않아 클라이언트 상태 유지');
         return; // 현재 UI 상태 유지
       }
@@ -853,11 +830,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         throw new Error('답글 내용이 비어있습니다.');
       }
 
-      // 현재 사용자 정보를 더 확실하게 가져오기
-      const authStore = (window as any).__AUTH_STORE__;
-      const currentUser = authStore ? authStore.getState().user : user;
-      
-      const userName = currentUser?.name || (user?.name) || '번역 중...';
+      // 사용자 이름 확실하게 가져오기
+      const userName = user.name || (user as any).nickname || '사용자';
       console.log('[DEBUG] 답글 작성에 사용할 사용자 이름:', userName);
       
       // 임시 답글 객체 생성
@@ -869,10 +843,11 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         likeCount: 0,
         dislikeCount: 0,
         writer: {
-          userId: currentUser?.userId || user?.userId || 0,
+          userId: (user as any)?.id ?? (user as any)?.userId,
           nickname: userName, // 사용자 실제 이름을 무조건 사용
-          profileImage: currentUser?.profileImage || user?.profileImage || '',
+          profileImage: '',
         },
+        translating: true, // 번역 중임을 표시
       };
 
       // 사용자 입력 초기화
@@ -901,7 +876,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
       const response = await CommentApi.createReply(postId, numericCommentId, content);
       console.log('[DEBUG] 대댓글 작성 응답:', response);
 
-      // 임시 답글을 실제 답글로 대체하되 사용자 정보는 병합
+      // 임시 답글을 실제 답글로 대체
       setReplies(prev => {
         const updatedReplies = { ...prev };
         if (updatedReplies[numericCommentId]) {
@@ -913,7 +888,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                     // 백엔드 응답의 writer와 임시 답글의 writer 정보를 병합
                     ...(response.writer || {}),
                     userId: response.writer?.userId || tempReply.writer.userId,
-                    nickname: response.writer?.nickname || tempReply.writer.nickname,
+                    nickname: response.writer?.nickname || userName, // 백엔드 응답에 이름이 없으면 원래 이름 유지
                     profileImage: response.writer?.profileImage || tempReply.writer.profileImage,
                   },
                   translating: false, // 번역 완료
@@ -1061,6 +1036,37 @@ const CommentSection: React.FC<CommentSectionProps> = ({
     return true;
   };
 
+  // Report dialog states
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const [reportTarget, setReportTarget] = useState<{
+    id: number;
+    type: ReportTargetType;
+    userId: number;
+  } | null>(null);
+
+  // Check if user is admin
+  const isAdmin = user?.role === 'ROLE_ADMIN';
+
+  // Handler for opening report dialog
+  const handleOpenReportDialog = (
+    targetId: number,
+    targetType: ReportTargetType,
+    userId: number
+  ) => {
+    if (!user) {
+      enqueueSnackbar('로그인이 필요합니다.', { variant: 'warning' });
+      return;
+    }
+    setReportTarget({ id: targetId, type: targetType, userId });
+    setReportDialogOpen(true);
+  };
+
+  // Handler for closing report dialog
+  const handleCloseReportDialog = () => {
+    setReportDialogOpen(false);
+    setReportTarget(null);
+  };
+
   // 개별 댓글 카드 렌더링
   const renderCommentCard = (comment: Comment) => (
     <Box
@@ -1083,51 +1089,67 @@ const CommentSection: React.FC<CommentSectionProps> = ({
             {comment.writer?.nickname?.charAt(0) || '?'}
           </Avatar>
           <Box>
-            <Typography variant="subtitle2">{comment.writer?.nickname || '사용자'}</Typography>
+            <Typography variant="subtitle2">{comment.writer?.nickname}</Typography>
             <Typography variant="caption" color="text.secondary">
               {format(new Date(comment.createdAt), 'yyyy년 MM월 dd일 HH:mm', { locale: ko })}
-              {/* 번역 상태 표시 (필요시) */}
+              {comment.translating && (
+                <Typography
+                  component="span"
+                  variant="caption"
+                  sx={{ ml: 1, color: 'info.main', fontStyle: 'italic' }}
+                >
+                  (번역 중...)
+                </Typography>
+              )}
             </Typography>
           </Box>
         </Box>
         
-        {/* 댓글 수정/삭제 메뉴 */}
-        {currentUserId === comment.writer?.userId && (
-          <IconButton 
-            onClick={e => {
-              controls.handleCommentMenuOpen(e, comment.commentId);
-              // 대댓글 정보 초기화
-              controls.setActiveReplyInfo(null);
-            }} 
-            size="small"
-          >
-            <MoreVertIcon fontSize="small" />
-          </IconButton>
+        {/* 댓글 액션 버튼 (수정/삭제 또는 신고) */}
+        {user && (
+          <>
+            {/* 작성자 본인이거나 관리자인 경우 수정/삭제 버튼 표시 */}
+            {((currentUserId ?? user?.userId) === comment.writer?.userId || isAdmin) ? (
+              <IconButton
+                onClick={e => {
+                  controls.handleCommentMenuOpen(e, comment.commentId);
+                }}
+                size="small"
+              >
+                <MoreVertIcon fontSize="small" />
+              </IconButton>
+            ) : (
+              /* 다른 사용자의 댓글인 경우 신고 버튼 표시 */
+              <IconButton
+                onClick={() => 
+                  handleOpenReportDialog(
+                    comment.commentId, 
+                    'COMMENT', 
+                    Number(comment.writer?.userId)
+                  )
+                }
+                size="small"
+                color="default"
+                sx={{ '&:hover': { color: 'error.main' } }}
+              >
+                <FlagIcon fontSize="small" />
+              </IconButton>
+            )}
+          </>
         )}
       </Box>
 
       {/* 댓글 내용 */}
-      {controls.editMode[comment.commentId] ? (
-        <CommentForm
-          initialValue={comment.content}
-          onSubmit={async content => {
-            return await handleCommentForm(comment.commentId, content, false);
-          }}
-          onCancel={() => controls.handleEditCancel(comment.commentId)}
-          buttonText="수정"
-        />
-      ) : (
-        <Typography
-          variant="body1"
-          sx={{
-            mb: 2,
-            whiteSpace: 'pre-wrap',
-            wordBreak: 'break-word',
-          }}
-        >
-          {comment.content}
-        </Typography>
-      )}
+      <Typography
+        variant="body1"
+        sx={{
+          mb: 2,
+          whiteSpace: 'pre-wrap',
+          wordBreak: 'break-word',
+        }}
+      >
+        {comment.content}
+      </Typography>
 
       <CommentFooter>
         <ReactionButton
@@ -1157,16 +1179,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         >
           답글 {replies[comment.commentId]?.length || 0}
         </Button>
-        <Button
-          startIcon={<FlagIcon fontSize="small" />}
-          size="small"
-          color="error"
-          onClick={() => handleOpenReportDialog(comment.commentId, 'COMMENT', comment.writer?.userId || 0)}
-        >
-          신고
-        </Button>
       </CommentFooter>
-
+      
       {/* 대댓글 부분 */}
       <Box ml={0} mt={1}>
         {controls.replyToggles[comment.commentId] && (
@@ -1238,29 +1252,50 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                                   alt={reply.writer?.nickname || ''}
                                   sx={{ width: 24, height: 24 }}
                                 />
-                                                                  <Typography variant="body2" fontWeight="bold">
-                                   {reply.writer?.nickname || '사용자'}
-                                  </Typography>
+                                <Typography variant="body2" fontWeight="bold">
+                                  {reply.writer?.nickname}
+                                </Typography>
                                 <Typography variant="caption" color="text.secondary">
                                   {formatDateToAbsolute(reply.createdAt)}
                                 </Typography>
                               </Box>
 
-                              {/* 대댓글 수정/삭제 메뉴 */}
-                              {currentUserId === reply.writer?.userId && (
-                                <IconButton
-                                  onClick={e => {
-                                    controls.handleCommentMenuOpen(e, reply.replyId);
-                                    // 대댓글 정보 설정
-                                    controls.setActiveReplyInfo({
-                                      replyId: reply.replyId,
-                                      commentId: comment.commentId,
-                                    });
-                                  }}
-                                  size="small"
-                                >
-                                  <MoreVertIcon fontSize="small" />
-                                </IconButton>
+                              {/* 대댓글 수정/삭제 또는 신고 버튼 */}
+                              {user && (
+                                <>
+                                  {/* 작성자 본인이거나 관리자인 경우 수정/삭제 버튼 표시 */}
+                                  {((currentUserId ?? user?.userId) === reply.writer?.userId || isAdmin) ? (
+                                    <IconButton
+                                      onClick={e => {
+                                        controls.handleCommentMenuOpen(e, reply.replyId);
+                                        // 대댓글 정보 설정
+                                        controls.setActiveReplyInfo({
+                                          replyId: reply.replyId,
+                                          commentId: comment.commentId,
+                                        });
+                                      }}
+                                      size="small"
+                                    >
+                                      <MoreVertIcon fontSize="small" />
+                                    </IconButton>
+                                  ) : (
+                                    /* 다른 사용자의 대댓글인 경우 신고 버튼 표시 */
+                                    <IconButton
+                                      onClick={() => 
+                                        handleOpenReportDialog(
+                                          reply.replyId, 
+                                          'REPLY', 
+                                          Number(reply.writer?.userId)
+                                        )
+                                      }
+                                      size="small"
+                                      color="default"
+                                      sx={{ '&:hover': { color: 'error.main' } }}
+                                    >
+                                      <FlagIcon fontSize="small" />
+                                    </IconButton>
+                                  )}
+                                </>
                               )}
                             </Box>
 
@@ -1304,14 +1339,6 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                               >
                                 {reply.dislikeCount || 0}
                               </ReactionButton>
-                              <Button
-                                startIcon={<FlagIcon fontSize="small" />}
-                                size="small"
-                                color="error"
-                                onClick={() => handleOpenReportDialog(reply.replyId, 'REPLY', reply.writer?.userId || 0)}
-                              >
-                                신고
-                              </Button>
                             </Box>
                           </>
                         )}
@@ -1373,106 +1400,34 @@ const CommentSection: React.FC<CommentSectionProps> = ({
     </Menu>
   );
 
-  // 신고 다이얼로그 관련 상태
-  const [reportDialogOpen, setReportDialogOpen] = useState(false);
-  const [reportTarget, setReportTarget] = useState<{
-    id: number;
-    type: ReportTargetType;
-    userId: number;
-  } | null>(null);
-
-  // 신고 다이얼로그 열기
-  const handleOpenReportDialog = (id: number, type: ReportTargetType, userId: number) => {
-    console.log('현재 사용자 객체:', user);
-    console.log('신고 다이얼로그 열기 시도 - 현재 사용자 ID:', currentUserId);
-    console.log('신고 대상:', { id, type, userId });
-    
-    // 댓글/답글 데이터 출력
-    if (type === 'COMMENT') {
-      const comment = comments.find(c => c.commentId === id);
-      console.log('신고 대상 댓글 정보:', {
-        commentId: id,
-        writer: comment?.writer,
-        userId: comment?.writer?.userId
-      });
-    } else if (type === 'REPLY') {
-      // 모든 답글 정보 확인
-      let foundReply = null;
-      Object.keys(replies).forEach(commentId => {
-        const reply = replies[Number(commentId)]?.find(r => r.replyId === id);
-        if (reply) {
-          foundReply = reply;
-          console.log('신고 대상 답글 정보:', {
-            replyId: id,
-            writer: reply.writer,
-            userId: reply.writer?.userId,
-            rawReply: reply
-          });
-        }
-      });
-      
-      if (!foundReply) {
-        console.error('해당 ID의 답글을 찾을 수 없음:', id);
-      }
-    }
-    
-    if (!currentUserId) {
-      console.error('사용자 ID가 없음, 로그인이 필요합니다.');
-      enqueueSnackbar('로그인이 필요한 기능입니다.', { variant: 'warning' });
-      return;
-    }
-    
-    // userId가 0인 경우 경고
-    if (userId === 0) {
-      console.warn('신고 대상 사용자 ID가 0입니다. 백엔드에서 이 신고를 처리할 수 없을 수 있습니다.');
-    }
-    
-    setReportTarget({ id, type, userId });
-    setReportDialogOpen(true);
-    console.log('신고 다이얼로그가 열렸습니다.');
-  };
-
-  // 신고 다이얼로그 닫기
-  const handleCloseReportDialog = () => {
-    setReportDialogOpen(false);
-    setReportTarget(null);
-  };
-
-  // 사용자 정보 변경 감지 및 로깅
-  useEffect(() => {
-    console.log('===== 사용자 인증 정보 변경 감지 =====');
-    console.log('authStore.user:', user);
-    console.log('로그인 상태:', user ? '로그인됨' : '로그인되지 않음');
-    console.log('currentUserId:', currentUserId);
-    console.log('===================================');
-  }, [user, currentUserId]);
-
-  // 총 댓글 및 답글 개수 계산
-  const [totalCommentsAndReplies, setTotalCommentsAndReplies] = useState<number>(0);
-  
-  // 댓글 및 답글 총 개수 계산 - 댓글이나 답글이 변경될 때마다 업데이트
-  useEffect(() => {
-    // 모든 댓글의 replyCount 합계 계산
-    const repliesCount = comments.reduce((total, comment) => total + (comment.replyCount || 0), 0);
-    // 댓글 수 + 답글 수 = 총 개수
-    const commentsAndRepliesCount = comments.length + repliesCount;
-    setTotalCommentsAndReplies(commentsAndRepliesCount);
-    
-    console.log('[DEBUG] 댓글 및 답글 개수 계산:', {
-      댓글수: comments.length,
-      답글수: repliesCount,
-      총개수: commentsAndRepliesCount
-    });
-  }, [comments, replies]);
-
   return (
-    <Box mt={4}>
-      <Typography variant="h6" gutterBottom>
-        댓글 {totalCommentsAndReplies}개
+    <Box>
+      <Typography
+        variant="h6"
+        fontWeight="bold"
+        gutterBottom
+        sx={{
+          position: 'relative',
+          display: 'inline-block',
+          paddingBottom: 1,
+          marginBottom: 3,
+          '&:after': {
+            content: '""',
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            width: '100%',
+            height: 2,
+            bgcolor: 'primary.light',
+            borderRadius: 1,
+          },
+        }}
+      >
+        댓글 {total}개
       </Typography>
 
       {/* 새 댓글 작성 폼 */}
-      <Box mb={3}>
+      <Box mb={4}>
         <TextField
           fullWidth
           multiline
@@ -1517,6 +1472,23 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         <List disablePadding>{comments.map(comment => renderCommentCard(comment))}</List>
       )}
 
+      {/* 페이지네이션 */}
+      {totalPages > 1 && (
+        <Box display="flex" justifyContent="center" mt={4}>
+          <Pagination 
+            count={totalPages} 
+            page={currentPage + 1} // API는 0부터 시작하지만 UI는 1부터 시작
+            onChange={handlePageChange}
+            color="primary"
+            showFirstButton
+            showLastButton
+          />
+        </Box>
+      )}
+
+      {/* 댓글 수정/삭제 메뉴 */}
+      {renderCommentMenu()}
+      
       {/* 신고 다이얼로그 */}
       {reportTarget && (
         <ReportDialog
@@ -1524,13 +1496,10 @@ const CommentSection: React.FC<CommentSectionProps> = ({
           onClose={handleCloseReportDialog}
           targetId={reportTarget.id}
           targetType={reportTarget.type}
-          serviceType="COMMUNITY"
+          serviceType={'COMMUNITY'}
           reportedUserId={reportTarget.userId}
         />
       )}
-
-      {/* 댓글 컨텍스트 메뉴 */}
-      {renderCommentMenu()}
     </Box>
   );
 };

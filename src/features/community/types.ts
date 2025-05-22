@@ -1,7 +1,6 @@
 export enum ReactionType {
   LIKE = 'LIKE',
   DISLIKE = 'DISLIKE',
-  NONE = 'NONE'
 }
 
 export interface Post {
@@ -26,6 +25,12 @@ export interface Post {
   commentCount?: number;
   myReaction?: ReactionType;
   isState?: '좋아요' | '싫어요' | null;
+  category?: string;
+  postType?: string;
+  address?: string;
+  location?: string;
+  files?: any[];
+  matchScore?: number; // 추천 시스템에서 사용하는 매칭 점수 (0-100)
 }
 
 export interface PostReactionResponse {
@@ -73,4 +78,31 @@ export interface ReplyType {
   myReaction?: ReactionType;
   liked?: boolean;
   disliked?: boolean;
-} 
+}
+
+// User 타입 확장 (실제 사용하는 모든 필드 포함)
+export interface User {
+  id?: number | string;
+  userId?: number | string;
+  nickname?: string;
+  name?: string;
+  profileImage?: string;
+}
+
+// Comment 타입 확장 (실제 사용하는 모든 필드 포함)
+export interface Comment {
+  commentId: number;
+  postId?: number;
+  content: string;
+  createdAt: string;
+  likeCount: number;
+  dislikeCount: number;
+  myReaction?: ReactionType;
+  liked?: boolean;
+  disliked?: boolean;
+  writer: User;
+  replies?: Comment[];
+  replyCount?: number;
+  reply?: number;
+  translating?: boolean;
+}

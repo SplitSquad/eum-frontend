@@ -1,6 +1,6 @@
 import PageWrapper from '@/components/layout/PageWrapper';
 import Button from '@/components/base/Button';
-import AppLayout from '@/components/layout/AppLayout';
+import AppLayout from '@/components/layout/LegacyAppLayout';
 import React from 'react';
 import PurposeSelect from '@/components/onboarding/PurposeSelect';
 

@@ -27,6 +27,7 @@ export interface Post {
   tags?: string[];
   source: 'community' | 'discussion' | 'information' | 'debate';
   matchScore?: number; // 추천 매칭 점수 (0-100)
+  address?: string; // 위치 정보 (모임/토론 게시글용)
   debateStats?: {
     agreePercent: number;
     disagreePercent: number;
@@ -69,7 +70,8 @@ const convertToWidgetPost = (post: any): Post => {
     images: post.thumbnail ? [post.thumbnail] : [],
     tags: post.tags || [],
     source: post.postType === '모임' ? 'discussion' : 'community',
-    matchScore: post.matchScore
+    matchScore: post.matchScore,
+    address: post.address || post.location || '' // 주소 정보 추가
   };
 };
 
@@ -237,15 +239,13 @@ const CommunityService = {
   },
 
   /**
-   * 추천 게시글 목록 조회 (사용자 관심사 기반)
-   * @param size 요청할 게시글 수
-   * @param address 위치 정보 (옵션)
+   * 사용자 위치 기반 추천 게시글 목록 조회
+   * @param userAddress 사용자 주소
+   * @param size 조회할 게시글 수
    * @returns 추천 게시글 목록
    */
-  getRecommendedPosts: async (size: number = 10, address?: string): Promise<Post[]> => {
+  getRecommendedPosts: async (userAddress?: string, size: number = 6): Promise<Post[]> => {
     try {
-      // 사용자 위치 정보가 없는 경우 현재 위치 정보 가져오기 시도
-      let userAddress = address;
       if (!userAddress) {
         try {
           // WeatherService에서 현재 위치 정보 가져오기
@@ -276,8 +276,12 @@ const CommunityService = {
               position.latitude,
               (result: any, status: any) => {
                 if (status === window.kakao.maps.services.Status.OK && result[0]) {
-                  // ~구 단위까지만 주소 추출 (예: '서울시 강남구')
-                  const address = result[0].region_1depth_name + ' ' + result[0].region_2depth_name;
+                  // 동까지 포함한 주소 추출 (예: '서울특별시 중구 장충동')
+                  const city = result[0].region_1depth_name; // 예: 서울특별시
+                  const district = result[0].region_2depth_name; // 예: 중구
+                  const dong = result[0].region_3depth_name || ''; // 예: 장충동
+                  
+                  const address = dong ? `${city} ${district} ${dong}` : `${city} ${district}`;
                   resolve(address);
                 } else {
                   resolve('자유'); // 변환 실패 시 기본값
@@ -291,48 +295,112 @@ const CommunityService = {
         }
       }
 
-      // 백엔드에서 추천 게시글 API 호출
-      const response = await apiClient.get<any>('/community/post/recommendation', {
-        params: { address: userAddress }
-      });
-
-      // 응답 구조를 확인하고 처리
-      const postList = Array.isArray(response) ? response : 
-                     (response.postList && Array.isArray(response.postList) ? response.postList : []);
-      const analysis = response.analysis || {};
-
-      // 게시글 목록 반환
-      return postList.flat().filter(Boolean).map(post => {
-        // 위젯용 포스트로 변환
-        const widgetPost = convertToWidgetPost(post);
+      // 주소 구성요소 추출
+      const addressParts = (userAddress || '').split(' ');
+      let city = '';
+      let district = '';
+      let dong = '';
+      let isDistrictOnly = false;
+      
+      if (addressParts.length >= 2) {
+        city = addressParts[0]; // 예: 서울특별시
+        district = addressParts[1]; // 예: 양천구
+        isDistrictOnly = addressParts.length === 2; // 구까지만 있는 경우 표시
         
-        // 응답에 tag 정보가 있으면 이를 활용하여 매칭 점수 계산
-        const matchTag = post.tags && post.tags.length > 0 ? post.tags[0] : '';
-        const matchScore = matchTag && analysis[matchTag] 
-          ? Math.round(analysis[matchTag] * 100) 
-          : Math.floor(Math.random() * 15) + 80; // 분석 정보가 없으면 임의의 점수
-          
-        return {
-          ...widgetPost,
-          matchScore
-        };
-      });
-    } catch (error) {
-      console.error('추천 게시글 조회 실패:', error);
-      // 에러 시 인기 게시글로 대체
+        if (addressParts.length >= 3) {
+          dong = addressParts[2]; // 예: 목동
+        }
+      }
+      
+      // 구 단위까지만 추출한 주소
+      const districtAddress = addressParts.length >= 2 ? `${city} ${district}` : userAddress;
+      console.log('API 요청 주소:', userAddress);
+      console.log('구 단위 주소:', districtAddress);
+      
       try {
-        const popularPosts = await CommunityApi.getTopPosts(size);
-        return popularPosts.map(post => {
+        let postList = [];
+        
+        // 동 단위 주소가 있으면 해당 요청
+        if (!isDistrictOnly && dong) {
+          console.log('동 단위까지 포함한 주소로 요청 시도');
+          // 백엔드에서 추천 게시글 API 호출 (동 단위)
+          const response = await apiClient.get<any>('/community/post/recommendation', {
+            params: { 
+              address: userAddress,
+              size: size 
+            }
+          });
+
+          // 응답 구조를 확인하고 처리
+          postList = Array.isArray(response) ? response : 
+                     (response.postList && Array.isArray(response.postList) ? response.postList : []);
+        }
+        
+        // 결과가 없거나 매우 적거나, 처음부터 구 단위 주소만 있으면 구 단위로 요청
+        if (postList.length < 2 || isDistrictOnly) {
+          console.log('구 단위로 요청 시도:', districtAddress);
+          
+          // 구 단위 주소로 요청
+          const districtResponse = await apiClient.get<any>('/community/post/recommendation', {
+            params: { 
+              address: districtAddress,
+              size: size 
+            }
+          });
+          
+          // 새로운 응답 처리
+          const districtPostList = Array.isArray(districtResponse) ? districtResponse : 
+                               (districtResponse.postList && Array.isArray(districtResponse.postList) ? districtResponse.postList : []);
+          
+          // 기존 결과와 새 결과 병합
+          if (districtPostList.length > 0) {
+            if (postList.length > 0) {
+              // 기존 결과가 있으면 중복 제거하며 병합
+              const existingIds = new Set(postList.map((p: any) => p.postId?.toString()));
+              const uniqueNewPosts = districtPostList.filter((p: any) => !existingIds.has(p.postId?.toString()));
+              Array.prototype.push.apply(postList, uniqueNewPosts);
+            } else {
+              // 기존 결과가 없으면 새 결과를 그대로 사용
+              postList = districtPostList;
+            }
+          }
+        }
+
+        // 게시글 목록 변환
+        const analysis = {}; // 분석 정보 객체
+        return postList.flat().filter(Boolean).map(post => {
+          // 위젯용 포스트로 변환
           const widgetPost = convertToWidgetPost(post);
+          
+          // 임의의 매칭 점수 부여 (실제로는 서버에서 제공받는 것이 좋음)
+          const matchScore = Math.floor(Math.random() * 15) + 80;
+            
           return {
             ...widgetPost,
-            matchScore: Math.floor(Math.random() * 15) + 80
+            matchScore
           };
         });
-      } catch (err) {
-        console.error('인기 게시글 조회도 실패:', err);
-        return [];
+      } catch (error) {
+        console.error('추천 게시글 조회 실패:', error);
+        
+        // 에러 시 인기 게시글로 대체
+        try {
+          const popularPosts = await CommunityApi.getTopPosts(size);
+          return popularPosts.map(post => {
+            const widgetPost = convertToWidgetPost(post);
+            return {
+              ...widgetPost,
+              matchScore: Math.floor(Math.random() * 15) + 80
+            };
+          });
+        } catch (err) {
+          console.error('인기 게시글 조회도 실패:', err);
+          return [];
+        }
       }
+    } catch (err) {
+      console.error('추천 게시글 최종 실패:', err);
+      return [];
     }
   },
 
@@ -430,6 +498,25 @@ const getCategoryColor = (category: string): string => {
   };
 
   return categoryColors[category] || '#757575'; // 매핑이 없으면 기본 색상 반환
+};
+
+/**
+ * 주소 정제 함수: '서울특별시 중구 장충동 2가' -> '서울특별시 중구'
+ * API 요청용으로 구/군 단위까지만 추출
+ */
+const formatAddress = (address: string): string => {
+  if (!address || address === '자유') return '자유';
+  
+  // 주소에서 구성 요소 추출
+  const parts = address.split(' ');
+  
+  // 시/도와 구/군만 반환 (구까지만 요청)
+  if (parts.length >= 2) {
+    // 시/도와 구/군만 포함
+    return `${parts[0]} ${parts[1]}`;
+  }
+  
+  return address;
 };
 
 export default CommunityService; 

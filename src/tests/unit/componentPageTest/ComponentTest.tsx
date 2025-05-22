@@ -11,16 +11,10 @@ import Select from '@/components/base/Select';
 import Tooltip from '@/components/base/Tooltip';
 import { useState } from 'react';
 import MenuItem from '@mui/material/MenuItem';
-import { ReactNode } from 'react';
-import { SelectChangeEvent } from '@mui/material/Select';
 
 function ComponentTest() {
   const [selected, setSelected] = useState('option1');
   const [checked, setChecked] = useState(false);
-
-  const handleSelectChange = (event: SelectChangeEvent<unknown>, child: ReactNode) => {
-    setSelected(event.target.value as string);
-  };
 
   return (
     <div className="flex flex-col gap-6 p-6 max-w-md mx-auto">
@@ -49,7 +43,7 @@ function ComponentTest() {
       <Input placeholder="비활성화된 입력창" disabled />
 
       <h2 className="text-lg font-semibold">Select</h2>
-      <Select value={selected} onChange={handleSelectChange}>
+      <Select value={selected} onChange={e => setSelected(e.target.value)}>
         <MenuItem value="option1">옵션 1</MenuItem>
         <MenuItem value="option2">옵션 2</MenuItem>
       </Select>

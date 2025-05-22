@@ -1,11 +1,9 @@
 import React from 'react';
-import {
-  Box,
-} from '@mui/material';
+import { Box } from '@mui/material';
 import LanguageLevelSelector from '../components/common/LanguageLevelSelector';
 import EmergencyInfoForm from '../components/common/EmergencyInfoForm';
 import OnboardingTagSelector from '../components/common/TagSelector';
-import { interestTags } from '../components/common/CommonTags';
+import { interestTags, debateCategories } from '../components/common/CommonTags';
 
 // 공통 스텝에서 사용할 언어 레벨 데이터
 export interface LanguageData {
@@ -55,7 +53,7 @@ const CommonStep: React.FC<CommonStepProps> = ({
       koreanLevel: level,
     });
   };
-  
+
   // 응급 연락처 변경 핸들러
   const handleEmergencyContactChange = (contact: string) => {
     onEmergencyChange({
@@ -63,7 +61,7 @@ const CommonStep: React.FC<CommonStepProps> = ({
       contact,
     });
   };
-  
+
   // 응급 의료 정보 변경 핸들러
   const handleMedicalConditionsChange = (medicalConditions: string) => {
     onEmergencyChange({
@@ -71,7 +69,7 @@ const CommonStep: React.FC<CommonStepProps> = ({
       medicalConditions,
     });
   };
-  
+
   // 음식 알레르기 변경 핸들러
   const handleFoodAllergiesChange = (foodAllergies: string) => {
     onEmergencyChange({
@@ -79,7 +77,7 @@ const CommonStep: React.FC<CommonStepProps> = ({
       foodAllergies,
     });
   };
-  
+
   // 알림 수신 여부 변경 핸들러
   const handleReceiveAlertsChange = (receiveEmergencyAlerts: boolean) => {
     onEmergencyChange({
@@ -87,7 +85,7 @@ const CommonStep: React.FC<CommonStepProps> = ({
       receiveEmergencyAlerts,
     });
   };
-  
+
   // 현재 스텝에 따라 다른 컴포넌트 렌더링
   const renderStepContent = () => {
     switch (stepType) {
@@ -100,7 +98,7 @@ const CommonStep: React.FC<CommonStepProps> = ({
             subtitle="본인의 한국어 능력 수준을 선택해주세요. 이 정보는 맞춤형 콘텐츠 추천에 활용됩니다."
           />
         );
-        
+
       case 'interests':
         // 관심사 태그 준비
         const interestCategories = [
@@ -108,7 +106,7 @@ const CommonStep: React.FC<CommonStepProps> = ({
           { id: 'community', name: '커뮤니티 주제' },
           { id: 'debate', name: '토론 주제' },
         ];
-        
+
         return (
           <OnboardingTagSelector
             categories={interestCategories}
@@ -126,7 +124,7 @@ const CommonStep: React.FC<CommonStepProps> = ({
             }}
           />
         );
-        
+
       case 'emergency':
         return (
           <EmergencyInfoForm
@@ -142,17 +140,13 @@ const CommonStep: React.FC<CommonStepProps> = ({
             subtitle="한국 체류 중 응급 상황에 대비하기 위한 정보를 입력해주세요. 이 정보는 응급 상황 발생 시 도움을 드리는 데 사용됩니다."
           />
         );
-        
+
       default:
         return null;
     }
   };
-  
-  return (
-    <Box>
-      {renderStepContent()}
-    </Box>
-  );
+
+  return <Box>{renderStepContent()}</Box>;
 };
 
-export default CommonStep; 
+export default CommonStep;

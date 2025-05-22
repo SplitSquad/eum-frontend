@@ -1,6 +1,7 @@
 /* 전체 앱 컨테이너 스타일 */
 .app-container {
   min-height: 100vh;
+  height: auto;
   display: flex;
   flex-direction: column;
   font-family:
@@ -12,12 +13,21 @@
     'Helvetica Neue',
     Arial,
     sans-serif;
+  /*overflow-y: auto;*/
+  position: relative;
 }
 
 /* 메인 콘텐츠 영역 스타일 */
 .main-content {
-  flex-grow: 1;
-  overflow-x: hidden;
+  flex: 1 1 auto;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem 0;
+  min-height: calc(100vh - 72px - 120px); /* 헤더 높이(72px)와 푸터 높이(120px)를 제외한 높이 */
+  /*margin-top: 64px;  헤더 높이만큼 여백 추가 */
+  /*margin-bottom: 120px; /* 푸터 높이만큼 여백 추가 */
+  z-index: 1;
 }
 
 /* 봄 테마 색상 변수 */
@@ -132,4 +142,45 @@
   transition:
     opacity 300ms,
     transform 300ms;
+}
+
+.app-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  transition: filter 0.3s ease;
+}
+
+.app-content.dimmed {
+  filter: brightness(0.5);
+  pointer-events: none;
+}
+
+/* Modal styles */
+.modal-open {
+  overflow: hidden;
+}
+
+/* Modal toggle button styles */
+.modal-toggle-button {
+  transition: all 0.3s ease !important;
+  backdrop-filter: blur(4px);
+}
+
+.modal-toggle-button:hover {
+  transform: scale(1.05);
+}
+
+/* Ensure the modal button stays above the dimmed content */
+.modal-open .modal-toggle-button {
+  z-index: 1002;
+  position: relative;
+}
+
+/* Modal toggle image hover effect */
+.modal-toggle-img {
+  transition: transform 0.3s;
+}
+.modal-toggle-img:hover {
+  transform: scale(1.2);
 }

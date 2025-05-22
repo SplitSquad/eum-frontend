@@ -19,12 +19,6 @@ import { styled } from '@mui/material/styles';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FlagIcon from '@mui/icons-material/Flag';
-import { useAuthStore } from '../../../auth';
-import { useSnackbar } from 'notistack';
-import ReportDialog, { ReportTargetType } from '../../../common/components/ReportDialog';
-
-// ServiceType 정의 추가
-type ServiceType = 'COMMUNITY' | 'DISCUSSION' | 'DEBATE';
 
 interface ReplyItemProps {
   reply: DebateReply;
@@ -69,12 +63,6 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
   const [editText, setEditText] = useState(initialContent);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [content, setContent] = useState(initialContent); // 로컬에서 관리할 내용 상태
-
-  // 신고 다이얼로그 관련 상태
-  const [reportDialogOpen, setReportDialogOpen] = useState(false);
-  const { enqueueSnackbar } = useSnackbar();
-  const authStore = useAuthStore();
-  const currentUser = authStore.user;
 
   // 대댓글 수정 핸들러
   const handleEdit = async (e?: React.MouseEvent) => {
@@ -165,24 +153,6 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
     }
   };
 
-  // 신고 버튼 클릭 핸들러
-  const handleReportClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (!currentUser) {
-      enqueueSnackbar('로그인이 필요한 기능입니다.', { variant: 'warning' });
-      return;
-    }
-
-    setReportDialogOpen(true);
-  };
-
-  // 신고 다이얼로그 닫기 핸들러
-  const handleCloseReportDialog = () => {
-    setReportDialogOpen(false);
-  };
-
   return (
     <StyledCard>
       <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
@@ -225,9 +195,6 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
                 </IconButton>
                 <IconButton size="small" onClick={handleDelete} sx={{ p: 0.5 }}>
                   <DeleteIcon fontSize="small" sx={{ fontSize: '0.9rem' }} />
-                </IconButton>
-                <IconButton size="small" onClick={handleReportClick} sx={{ p: 0.5 }}>
-                  <FlagIcon fontSize="small" sx={{ fontSize: '0.9rem', color: '#f44336' }} />
                 </IconButton>
               </Box>
             </Box>
@@ -295,16 +262,6 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
             </Box>
           </Box>
         </Box>
-        
-        {/* 신고 다이얼로그 추가 */}
-        <ReportDialog
-          open={reportDialogOpen}
-          onClose={handleCloseReportDialog}
-          targetId={id}
-          targetType="REPLY"
-          serviceType="DEBATE"
-          reportedUserId={userId || 0}
-        />
       </CardContent>
     </StyledCard>
   );

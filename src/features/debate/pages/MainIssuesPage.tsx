@@ -82,8 +82,8 @@ const DebateCard = styled(Card)(({ theme }) => ({
   overflow: 'hidden',
   boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
   transition: 'transform 0.2s, box-shadow 0.2s',
-  backgroundColor: 'rgba(255, 255, 255, 0.85)',
-  backdropFilter: 'blur(8px)',
+  backgroundColor: 'rgba(255, 255, 255, 0.5)',
+  backdropFilter: 'blur(4px)',
   marginBottom: theme.spacing(2),
   '&:hover': {
     transform: 'translateY(-2px)',
@@ -183,12 +183,18 @@ const FlagWrapper = styled('span')(({ theme }) => ({
 }));
 
 const SidebarContainer = styled(Paper)(({ theme }) => ({
-  backgroundColor: 'rgba(255, 255, 255, 0.85)',
+  backgroundColor: 'rgb(255, 255, 255)',
   backdropFilter: 'blur(8px)',
   borderRadius: 8,
-  overflow: 'hidden',
-  height: 'fit-content',
   boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+  position: 'sticky',
+  top: theme.spacing(2),
+  maxHeight: `calc(100vh - ${theme.spacing(4)})`,
+  overflowY: 'auto',
+  alignSelf: 'flex-start',
+  zIndex: 5,
+  width: '100%',
+  padding: 0,
 }));
 
 // Enhanced Debate type based on usage in this component
@@ -335,8 +341,31 @@ const MainIssuesPage: React.FC = () => {
     // content를 description으로 사용 (description이 없는 경우)
     const description = debate.description || debate.content || '';
 
+    let backgroundStyle = 'rgba(255, 255, 255, 0.5)'; // 기본 배경색
+    const agreePercent = voteRatio.agree;
+    const disagreePercent = voteRatio.disagree;
+    const difference = Math.abs(agreePercent - disagreePercent);
+
+    if (difference <= 5) {
+      // 차이가 5% 미만일 경우: 연한 주황색에서 흰색으로 그라데이션
+      backgroundStyle =
+        'linear-gradient(to bottom right, rgba(255, 218, 185, 0.4), rgba(255, 255, 255, 0.8))';
+    } else if (agreePercent > disagreePercent) {
+      // 찬성이 높을 경우: 연한 연두색에서 흰색으로 그라데이션
+      backgroundStyle =
+        'linear-gradient(to bottom right, rgba(144, 238, 144, 0.3), rgba(255, 255, 255, 0.8))';
+    } else {
+      // 반대가 높을 경우: 연한 빨간색에서 흰색으로 그라데이션
+      backgroundStyle =
+        'linear-gradient(to bottom right, rgba(255, 182, 193, 0.3), rgba(255, 255, 255, 0.8))';
+    }
+
     return (
-      <DebateCard key={debate.id} onClick={() => handleDebateClick(debate.id)}>
+      <DebateCard
+        key={debate.id}
+        onClick={() => handleDebateClick(debate.id)}
+        sx={{ background: backgroundStyle }}
+      >
         <CardActionArea>
           <DebateItemWrapper>
             <CategoryIndicator color={categoryColor} />
@@ -414,8 +443,8 @@ const MainIssuesPage: React.FC = () => {
             sx={{
               p: 3,
               textAlign: 'center',
-              backgroundColor: 'rgba(255, 255, 255, 0.85)',
-              backdropFilter: 'blur(8px)',
+              backgroundColor: 'rgba(255, 255, 255, 0.5)',
+              backdropFilter: 'blur(4px)',
             }}
           >
             <Typography color="error">{todayIssuesError}</Typography>
@@ -427,11 +456,15 @@ const MainIssuesPage: React.FC = () => {
             sx={{
               p: 3,
               textAlign: 'center',
-              backgroundColor: 'rgba(255, 255, 255, 0.85)',
-              backdropFilter: 'blur(8px)',
+              backgroundColor: 'rgba(253, 217, 217, 0.59)',
+              backdropFilter: 'blur(4px)',
+              border: 'none',
+              boxShadow: 'none',
             }}
           >
-            <Typography>등록된 토론이 없습니다.</Typography>
+            <Typography sx={{ fontWeight: 'bold', color: '#E91E63' }}>
+              등록된 토론이 없습니다.
+            </Typography>
           </Paper>
         )}
       </IssueSection>
@@ -457,8 +490,8 @@ const MainIssuesPage: React.FC = () => {
             sx={{
               p: 3,
               textAlign: 'center',
-              backgroundColor: 'rgba(255, 255, 255, 0.85)',
-              backdropFilter: 'blur(8px)',
+              backgroundColor: 'rgba(255, 255, 255, 0.5)',
+              backdropFilter: 'blur(4px)',
             }}
           >
             <Typography color="error">{hotIssueError}</Typography>
@@ -470,11 +503,15 @@ const MainIssuesPage: React.FC = () => {
             sx={{
               p: 3,
               textAlign: 'center',
-              backgroundColor: 'rgba(255, 255, 255, 0.85)',
-              backdropFilter: 'blur(8px)',
+              backgroundColor: 'rgba(253, 217, 217, 0.59)',
+              backdropFilter: 'blur(4px)',
+              boxShadow: 'none',
+              border: 'none',
             }}
           >
-            <Typography>등록된 토론이 없습니다.</Typography>
+            <Typography sx={{ fontWeight: 'bold', color: '#E91E63' }}>
+              등록된 토론이 없습니다.
+            </Typography>
           </Paper>
         )}
       </IssueSection>
@@ -500,8 +537,8 @@ const MainIssuesPage: React.FC = () => {
             sx={{
               p: 3,
               textAlign: 'center',
-              backgroundColor: 'rgba(255, 255, 255, 0.85)',
-              backdropFilter: 'blur(8px)',
+              backgroundColor: 'rgba(255, 255, 255, 0.5)',
+              backdropFilter: 'blur(4px)',
             }}
           >
             <Typography color="error">{balancedIssueError}</Typography>
@@ -513,11 +550,15 @@ const MainIssuesPage: React.FC = () => {
             sx={{
               p: 3,
               textAlign: 'center',
-              backgroundColor: 'rgba(255, 255, 255, 0.85)',
-              backdropFilter: 'blur(8px)',
+              backgroundColor: 'rgba(253, 217, 217, 0.59)',
+              backdropFilter: 'blur(4px)',
+              boxShadow: 'none',
+              border: 'none',
             }}
           >
-            <Typography>등록된 토론이 없습니다.</Typography>
+            <Typography sx={{ fontWeight: 'bold', color: '#E91E63' }}>
+              등록된 토론이 없습니다.
+            </Typography>
           </Paper>
         )}
       </IssueSection>

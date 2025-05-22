@@ -1,9 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Button,
-  CircularProgress,
-  Box,
-} from '@mui/material';
+import { Button, CircularProgress, Box } from '@mui/material';
 import styled from '@emotion/styled';
 import GoogleIcon from '@mui/icons-material/Google';
 import { getGoogleAuthUrl } from '../api/authApi'; // 실제 구글 로그인 API
@@ -108,17 +104,17 @@ const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
   };
 
   return (
-      <BlossomWrapper>
-        <SpringThemedButton
-          variant="contained"
-          startIcon={!loading && <GoogleIcon />}
+    <BlossomWrapper>
+      <SpringThemedButton
+        variant="contained"
+        startIcon={!loading && <GoogleIcon />}
         onClick={handleGoogleLogin}
-          disabled={loading}
-          fullWidth
-        >
-          {loading ? <CircularProgress size={24} color="inherit" /> : buttonText}
-        </SpringThemedButton>
-      </BlossomWrapper>
+        disabled={loading}
+        fullWidth
+      >
+        {loading ? <CircularProgress size={24} color="inherit" /> : buttonText}
+      </SpringThemedButton>
+    </BlossomWrapper>
   );
 };
 

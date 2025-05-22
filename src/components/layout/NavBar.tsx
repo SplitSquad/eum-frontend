@@ -36,6 +36,71 @@ import LoginIcon from '@mui/icons-material/Login';
 import LanguageIcon from '@mui/icons-material/Language';
 import { SUPPORTED_LANGUAGES } from '../../features/onboarding/components/common/LanguageSelector';
 import { useLanguageContext } from '../../features/theme/components/LanguageProvider';
+import { AlarmCenter } from '@/components/notification/AlarmCenter';
+
+/**-----------------------------------웹로그 관련------------------------------------ **/
+// userId 꺼내오는 헬퍼
+export function getUserId(): number | null {
+  try {
+    const raw = localStorage.getItem('auth-storage');
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed?.state?.user?.userId ?? null;
+  } catch {
+    return null;
+  }
+}
+
+// 로그 전송 타입 정의
+interface WebLog {
+  userId: number;
+  content: string;
+}
+
+// BASE URL에 엔드포인트 설정
+const BASE = import.meta.env.VITE_API_BASE_URL;
+
+// 로그 전송 함수
+export function sendWebLog(log: WebLog) {
+  // jwt token 가져오기
+  const token = localStorage.getItem('auth_token');
+  if (!token) {
+    throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
+  }
+  fetch(`${BASE}/logs`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: token },
+    body: JSON.stringify(log),
+  }).catch(err => {
+    console.error('WebLog 전송 실패:', err);
+  });
+  // 전송 완료
+  console.log('WebLog 전송 성공:', log);
+}
+
+// useTrackedNavigation 훅
+export function useTrackedNavigation() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // to는 현재 페이지, tag는 이동하려는 페이지
+  return (to: string, tag: string | null = null) => {
+    const userId = getUserId() || 0;
+    const navLogPayload = {
+      UID: userId,
+      ClickPath: location.pathname,
+      TAG: tag,
+      CurrentPath: location.pathname,
+      Event: 'click',
+      Content: `Navigated to ${to} from ${location.pathname}`,
+      Timestamp: new Date().toISOString(),
+    };
+    sendWebLog({ userId, content: JSON.stringify(navLogPayload) });
+    navigate(to);
+  };
+}
+
+/**------------------------------------------------------------------------------------**/
 
 // 계절별 스타일 적용을 위한 타입
 type SeasonColors = {
@@ -117,6 +182,14 @@ const NavButton = styled(Button)<{ season: string; active: boolean }>`
       opacity: ${props => (props.active ? '1' : '0.5')};
     }
   }
+
+  &:focus {
+    outline: none;
+  }
+
+  &:focus-visible {
+    outline: none;
+  }
 `;
 
 const LogoText = styled(Typography)<{ season: string }>`
@@ -173,10 +246,10 @@ const DrawerItem = styled(ListItem)<{ season: string; active: boolean }>`
 
 // 네비게이션 항목 정의
 const getNavItems = (t: (key: string) => string) => [
-  { name: t('common.home'), path: '/home', icon: <HomeIcon /> },
+  { name: t('common.home'), path: '/', icon: <HomeIcon /> },
   { name: t('common.community'), path: '/community', icon: <ForumIcon /> },
   { name: t('common.debate'), path: '/debate', icon: <ChatIcon /> },
-  { name: t('AIAssistant'), path: '/assistant', icon: <ChatIcon /> },
+  { name: t('common.aiassistant'), path: '/assistant', icon: <ChatIcon /> },
   { name: t('common.mypage'), path: '/mypage', icon: <AccountCircleIcon />, requireAuth: true },
 ];
 
@@ -202,8 +275,8 @@ const NavBar: React.FC = () => {
 
   // 현재 경로에 따라 활성화 여부 반환
   const isActive = (path: string) => {
-    if (path === '/home') {
-      return location.pathname === '/home' || location.pathname === '/';
+    if (path === '/') {
+      return location.pathname === '/';
     }
     return location.pathname.startsWith(path);
   };
@@ -220,7 +293,7 @@ const NavBar: React.FC = () => {
   const handleLogoutClick = () => {
     handleLogout();
     handleProfileMenuClose();
-    navigate('/google-login');
+    navigate('/');
   };
 
   const handleLogin = () => {
@@ -253,6 +326,7 @@ const NavBar: React.FC = () => {
     handleLanguageMenuClose();
   };
 
+  const trackedNavigate = useTrackedNavigation();
   return (
     <>
       <StyledAppBar position="sticky" season={season}>
@@ -268,7 +342,6 @@ const NavBar: React.FC = () => {
               <MenuIcon />
             </MobileMenuButton>
           ) : null}
-
           <Box
             sx={{
               flexGrow: 1,
@@ -276,13 +349,12 @@ const NavBar: React.FC = () => {
               alignItems: 'center',
               cursor: 'pointer',
             }}
-            onClick={() => navigate('/home')}
+            onClick={() => navigate('/')}
           >
             <LogoText variant="h6" season={season}>
               EUM
             </LogoText>
           </Box>
-
           {/* 데스크톱 네비게이션 링크 */}
           {!isMobile && (
             <Box sx={{ display: 'flex' }}>
@@ -293,15 +365,20 @@ const NavBar: React.FC = () => {
                     key={item.name}
                     season={season}
                     active={isActive(item.path)}
-                    onClick={() => handleNavigation(item.path)}
+                    onClick={() =>
+                      // 클릭 로그 + 네비게이션
+                      trackedNavigate(
+                        item.path, // ClickPath
+                        item.name.toLowerCase() // TAG (예: 'home', 'community' 등)
+                      )
+                    }
                   >
                     {item.name}
                   </NavButton>
                 ))}
             </Box>
           )}
-
-          {/* 언어 선택 메뉴 */}
+          {/* 알림 센터 */}/{/* 언어 선택 메뉴 */}
           <Box sx={{ mr: 2 }}>
             <Tooltip title={t('common.selectLanguage')}>
               <IconButton
@@ -352,7 +429,6 @@ const NavBar: React.FC = () => {
               ))}
             </Menu>
           </Box>
-
           {/* 사용자 프로필 또는 로그인 버튼 */}
           <Box sx={{ ml: 0 }}>
             {isAuthenticated ? (

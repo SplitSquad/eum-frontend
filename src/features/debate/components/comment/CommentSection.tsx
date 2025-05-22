@@ -171,6 +171,13 @@ const CommentSection: React.FC<CommentSectionProps> = ({ debateId }) => {
             variant="contained"
             color={showCommentForm ? "inherit" : "primary"}
             startIcon={<AddCommentIcon />}
+            sx={{ 
+              fontWeight: 'medium',
+              boxShadow: showCommentForm ? 'none' : 2,
+              '&:hover': {
+                boxShadow: showCommentForm ? 'none' : 3
+              }
+            }}
           >
             {showCommentForm ? '취소' : '댓글 작성'}
           </ActionButton>
@@ -232,7 +239,18 @@ const CommentSection: React.FC<CommentSectionProps> = ({ debateId }) => {
             currentPage={currentCommentPage}
             totalPages={commentPages}
             onPageChange={handlePageChange}
+            siblingCount={1} // 현재 페이지 양쪽의 페이지 번호 표시 개수
           />
+        </Box>
+      )}
+      
+      {/* 페이지 정보 표시 */}
+      {totalComments > 0 && (
+        <Box sx={{ mt: 2, textAlign: 'center' }}>
+          <Typography variant="body2" color="text.secondary">
+            총 {totalComments}개 댓글 중 {currentCommentPage === 1 ? 1 : (currentCommentPage - 1) * 10 + 1}-
+            {Math.min(currentCommentPage * 10, totalComments)}개 표시
+          </Typography>
         </Box>
       )}
     </CommentContainer>

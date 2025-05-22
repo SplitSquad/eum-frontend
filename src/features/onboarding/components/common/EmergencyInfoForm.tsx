@@ -1,30 +1,14 @@
-import React from 'react';
 import {
   Box,
-  Typography,
-  TextField,
   FormControlLabel,
   Switch,
+  TextField,
+  Typography,
+  useMediaQuery,
   useTheme,
 } from '@mui/material';
-import { styled } from '@mui/material/styles';
+import React from 'react';
 import { useThemeStore } from '../../../theme/store/themeStore';
-
-// Grid 컴포넌트 대체
-const GridContainer = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  flexWrap: 'wrap',
-  width: '100%',
-  margin: theme.spacing(-1),
-  '& > *': {
-    padding: theme.spacing(1),
-  },
-}));
-
-const GridItem = styled(Box)(({ theme }) => ({
-  width: '100%',
-  padding: theme.spacing(1),
-}));
 
 interface EmergencyInfoFormProps {
   emergencyContact: string;
@@ -55,21 +39,27 @@ const EmergencyInfoForm: React.FC<EmergencyInfoFormProps> = ({
   subtitle = '응급 상황 발생 시를 대비한 정보를 입력해주세요.',
 }) => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { season } = useThemeStore();
-  
+
   // 계절에 따른 색상 가져오기
   const getColorByTheme = () => {
     switch (season) {
-      case 'spring': return '#FFAAA5';
-      case 'summer': return '#77AADD';
-      case 'autumn': return '#E8846B';
-      case 'winter': return '#8795B5';
-      default: return '#FFAAA5';
+      case 'spring':
+        return '#FFAAA5';
+      case 'summer':
+        return '#77AADD';
+      case 'autumn':
+        return '#E8846B';
+      case 'winter':
+        return '#8795B5';
+      default:
+        return '#FFAAA5';
     }
   };
 
   const primaryColor = getColorByTheme();
-  
+
   return (
     <Box sx={{ mb: 4 }}>
       {title && (
@@ -77,21 +67,28 @@ const EmergencyInfoForm: React.FC<EmergencyInfoFormProps> = ({
           {title}
         </Typography>
       )}
-      
+
       {subtitle && (
         <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
           {subtitle}
         </Typography>
       )}
-      
-      <GridContainer sx={{ mt: -1 }}>
+
+      {/* CSS Grid로 1컬럼 / 2컬럼 레이아웃 */}
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+          gap: 2,
+        }}
+      >
         {/* 비상 연락처 */}
-        <GridItem>
+        <Box>
           <TextField
             label="비상 연락처"
             fullWidth
             value={emergencyContact}
-            onChange={(e) => onEmergencyContactChange(e.target.value)}
+            onChange={e => onEmergencyContactChange(e.target.value)}
             placeholder="연락 가능한 사람의 이름과 전화번호를 입력하세요"
             variant="outlined"
             margin="normal"
@@ -105,17 +102,17 @@ const EmergencyInfoForm: React.FC<EmergencyInfoFormProps> = ({
               },
             }}
           />
-        </GridItem>
-        
+        </Box>
+
         {/* 건강 상태 */}
-        <GridItem>
+        <Box>
           <TextField
             label="건강 상태 및 복용 중인 약물"
             fullWidth
             multiline
             rows={2}
             value={medicalConditions}
-            onChange={(e) => onMedicalConditionsChange(e.target.value)}
+            onChange={e => onMedicalConditionsChange(e.target.value)}
             placeholder="건강 상태, 질환, 복용 중인 약물 등을 입력하세요"
             variant="outlined"
             margin="normal"
@@ -129,17 +126,17 @@ const EmergencyInfoForm: React.FC<EmergencyInfoFormProps> = ({
               },
             }}
           />
-        </GridItem>
-        
+        </Box>
+
         {/* 음식 알레르기 */}
-        <GridItem>
+        <Box>
           <TextField
             label="음식 알레르기"
             fullWidth
             multiline
             rows={2}
             value={foodAllergies}
-            onChange={(e) => onFoodAllergiesChange(e.target.value)}
+            onChange={e => onFoodAllergiesChange(e.target.value)}
             placeholder="알레르기가 있는 음식을 입력하세요"
             variant="outlined"
             margin="normal"
@@ -153,15 +150,15 @@ const EmergencyInfoForm: React.FC<EmergencyInfoFormProps> = ({
               },
             }}
           />
-        </GridItem>
-        
+        </Box>
+
         {/* 응급 알림 수신 설정 */}
-        <GridItem>
+        <Box>
           <FormControlLabel
             control={
               <Switch
                 checked={receiveEmergencyAlerts}
-                onChange={(e) => onReceiveEmergencyAlertsChange(e.target.checked)}
+                onChange={e => onReceiveEmergencyAlertsChange(e.target.checked)}
                 sx={{
                   '& .MuiSwitch-switchBase.Mui-checked': {
                     color: primaryColor,
@@ -181,10 +178,10 @@ const EmergencyInfoForm: React.FC<EmergencyInfoFormProps> = ({
               </Box>
             }
           />
-        </GridItem>
-      </GridContainer>
+        </Box>
+      </Box>
     </Box>
   );
 };
 
-export default EmergencyInfoForm; 
+export default EmergencyInfoForm;

@@ -61,74 +61,16 @@ interface GuestGuardProps {
  * @param children 보호할 컴포넌트
  */
 export const GuestGuard = ({ children }: GuestGuardProps) => {
-  const { isAuthenticated, getOnBoardDone } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
   const location = useLocation();
 
-  // 이미 로그인했으면 홈 또는 온보딩 페이지로 리다이렉트
+  // 이미 로그인했으면 홈 또는 이전 페이지로 리다이렉트
   if (isAuthenticated) {
-    // 온보딩 완료 여부에 따라 적절한 페이지로 리다이렉트
-    const isOnBoardDone = getOnBoardDone();
-    const redirectPath = isOnBoardDone ? '/home' : '/onboarding';
-    return <Navigate to={redirectPath} replace />;
+    const from = (location.state as any)?.from?.pathname || '/';
+    return <Navigate to={from} replace />;
   }
 
   // 비로그인 사용자는 자식 컴포넌트 렌더링
-  return <>{children}</>;
-};
-
-interface OnboardingGuardProps {
-  children: ReactNode;
-}
-
-/**
- * 온보딩 가드 - 온보딩이 필요한 사용자만 접근 가능
- * - 로그인이 필요함
- * - 온보딩을 이미 완료한 사용자는 홈으로 리다이렉트
- * @param children 보호할 컴포넌트
- */
-export const OnboardingGuard = ({ children }: OnboardingGuardProps) => {
-  const { isAuthenticated, getOnBoardDone, isLoading, loadUser } = useAuthStore();
-  const location = useLocation();
-  const [isChecking, setIsChecking] = useState(true);
-
-  useEffect(() => {
-    // 인증 상태 확인
-    const checkAuthentication = async () => {
-      try {
-        // 인증 상태가 불확실한 경우 백엔드에서 사용자 정보 로드
-        if (!isAuthenticated && !isLoading) {
-          await loadUser();
-        }
-      } catch (error) {
-        console.error('인증 상태 확인 실패:', error);
-      } finally {
-        // 인증 체크가 완료되었음을 표시
-        setIsChecking(false);
-      }
-    };
-
-    checkAuthentication();
-  }, [isAuthenticated, isLoading, loadUser]);
-
-  if (isLoading || isChecking) {
-    // 인증 확인 중에는 로딩 상태 표시
-    return <div>인증 확인 중...</div>;
-  }
-
-  // 비로그인 상태면 로그인 페이지로 리다이렉트
-  if (!isAuthenticated) {
-    return <Navigate to="/google-login" state={{ from: location }} replace />;
-  }
-
-  // 온보딩 완료 여부 확인
-  const isOnBoardDone = getOnBoardDone();
-
-  // 온보딩을 이미 완료했으면 홈으로 리다이렉트
-  if (isOnBoardDone) {
-    return <Navigate to="/home" replace />;
-  }
-
-  // 로그인은 했지만 온보딩이 필요한 사용자는 자식 컴포넌트 렌더링
   return <>{children}</>;
 };
 

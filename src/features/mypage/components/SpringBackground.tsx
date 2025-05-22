@@ -61,13 +61,14 @@ const waveAnimation = keyframes`
 `;
 
 // 스타일 컴포넌트 정의
-const SpringContainer = styled.div<{ noPadding?: boolean; intensity?: number; isFixed?: boolean; }>`
-  position: ${props => props.isFixed ? 'fixed' : 'relative'};
+const SpringContainer = styled.div<{ noPadding?: boolean; intensity?: number; isFixed?: boolean }>`
+  position: ${props => (props.isFixed ? 'fixed' : 'relative')};
   overflow: hidden;
   min-height: 100%;
   width: 100%;
   padding: ${props => (props.noPadding ? '0' : '20px')};
-  background: ${props => `linear-gradient(135deg, rgba(255, 240, 245, ${Math.min(0.9, Math.max(0.4, props.intensity || 0.6))}) 0%, rgba(249, 250, 251, ${Math.min(0.9, Math.max(0.4, props.intensity || 0.6))}) 100%)`};
+  background: ${props =>
+    `linear-gradient(135deg, rgba(255, 240, 245, ${Math.min(0.9, Math.max(0.4, props.intensity || 0.6))}) 0%, rgba(249, 250, 251, ${Math.min(0.9, Math.max(0.4, props.intensity || 0.6))}) 100%)`};
   animation: ${fadeIn} 0.5s ease-in-out;
   z-index: 0;
   top: 0;
@@ -130,7 +131,12 @@ const Wave = styled.div<WaveEffectProps>`
   left: 0;
   width: 200%;
   height: 100px;
-  background: rgba(255, 240, 245, ${props => Math.min(0.7, Math.max(0.3, (props.intensity || 1) * 0.5))});
+  background: rgba(
+    255,
+    240,
+    245,
+    ${props => Math.min(0.7, Math.max(0.3, (props.intensity || 1) * 0.5))}
+  );
   border-radius: 50% 50% 0 0;
   animation: ${waveAnimation} 15s linear infinite;
   animation-delay: ${props => `${props.delay}s`};
@@ -145,28 +151,26 @@ interface WaveEffectProps {
 }
 
 // 벚꽃 SVG 컴포넌트
-const CherryBlossom: React.FC<{ size: number; rotation: number; intensity?: number }> = ({ 
-  size, 
+const CherryBlossom: React.FC<{ size: number; rotation: number; intensity?: number }> = ({
+  size,
   rotation,
-  intensity = 1.0 
+  intensity = 1.0,
 }) => {
   // 각 꽃잎의 핑크색 강도를 intensity에 비례하게 조정
   const petalColor = `rgba(255, ${Math.floor(182 - intensity * 30)}, ${Math.floor(193 - intensity * 30)}, ${Math.min(1.0, Math.max(0.7, intensity * 0.95))})`;
-  
+
   return (
-    <svg 
-      width={size} 
-      height={size} 
-      viewBox="0 0 24 24" 
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
       fill={petalColor}
-      style={{ 
+      style={{
         transform: `rotate(${rotation}deg)`,
-        filter: 'drop-shadow(0 2px 3px rgba(255, 182, 193, 0.3))'
+        filter: 'drop-shadow(0 2px 3px rgba(255, 182, 193, 0.3))',
       }}
     >
-      <path 
-        d="M12,2C9.5,2,7.26,3.23,6,5.14c-2.5,3.77-1.76,11.74,5.76,15.62h0.16c0.04,0,0.08,0,0.12,0 s0.08,0,0.12,0h0.16c7.53-3.87,8.26-11.84,5.76-15.62C16.74,3.23,14.5,2,12,2z"
-      />
+      <path d="M12,2C9.5,2,7.26,3.23,6,5.14c-2.5,3.77-1.76,11.74,5.76,15.62h0.16c0.04,0,0.08,0,0.12,0 s0.08,0,0.12,0h0.16c7.53-3.87,8.26-11.84,5.76-15.62C16.74,3.23,14.5,2,12,2z" />
     </svg>
   );
 };
@@ -177,13 +181,13 @@ const WaveEffect: React.FC<WaveEffectProps> = ({ delay, intensity }) => {
 };
 
 // 봄 테마 배경 컴포넌트
-const SpringBackground: React.FC<SpringBackgroundProps> = ({ 
-  children, 
+const SpringBackground: React.FC<SpringBackgroundProps> = ({
+  children,
   noPadding = false,
   intensity = 1.0,
   className,
   style,
-  isFixed = false
+  isFixed = false,
 }) => {
   const [petals, setPetals] = useState<React.ReactNode[]>([]);
 
@@ -203,35 +207,36 @@ const SpringBackground: React.FC<SpringBackgroundProps> = ({
 
     // intensity가 0.2 이상일 때만 새 꽃잎 추가 (낮은 값에서도 작동하도록)
     if (intensity >= 0.2) {
-      const interval = setInterval(() => {
-        setPetals(prev => [
-          ...prev.slice(-60), // 최대 60개로 증가
-          <CherryPetal
-            key={`petal-${Date.now()}`}
-            duration={10 + Math.random() * 15}
-            delay={0}
-            intensity={intensity}
-          />,
-        ]);
-      }, 800 / Math.max(0.5, intensity)); // 더 자주 꽃잎 생성
+      const interval = setInterval(
+        () => {
+          setPetals(prev => [
+            ...prev.slice(-60), // 최대 60개로 증가
+            <CherryPetal
+              key={`petal-${Date.now()}`}
+              duration={10 + Math.random() * 15}
+              delay={0}
+              intensity={intensity}
+            />,
+          ]);
+        },
+        800 / Math.max(0.5, intensity)
+      ); // 더 자주 꽃잎 생성
 
       return () => clearInterval(interval);
     }
-    
+
     return undefined;
   }, [intensity]);
 
   return (
-    <SpringContainer 
-      noPadding={noPadding} 
-      intensity={intensity} 
-      className={className} 
+    <SpringContainer
+      noPadding={noPadding}
+      intensity={intensity}
+      className={className}
       style={style}
       isFixed={isFixed}
     >
-      <PetalContainer>
-        {petals}
-      </PetalContainer>
+      <PetalContainer>{petals}</PetalContainer>
       <WaveEffect delay={0} intensity={intensity} />
       <WaveEffect delay={1.5} intensity={intensity} />
       {children}
@@ -239,4 +244,4 @@ const SpringBackground: React.FC<SpringBackgroundProps> = ({
   );
 };
 
-export default SpringBackground; 
+export default SpringBackground;

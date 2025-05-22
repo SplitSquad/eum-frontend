@@ -7,28 +7,43 @@ import { ReactionType } from '../types';
  * @param postId 포스트 ID
  */
 export const useComments = (postId: number | null = null) => {
-  // Zustand store에서 필요한 데이터만 개별적으로 선택
-  const comments = useCommunityStore(state => state.comments);
-  const commentsTotalCount = useCommunityStore(state => state.commentPageInfo.totalElements);
-  const commentsLoading = useCommunityStore(state => state.commentLoading);
-  const commentsError = useCommunityStore(state => state.commentError);
+  // Zustand store에서 필요한 데이터만 개별적으로 선택 (기존)
+  // const comments = useCommunityStore(state => state.comments);
+  // const commentsTotalCount = useCommunityStore(state => state.commentPageInfo.totalElements);
+  // const commentsLoading = useCommunityStore(state => state.commentLoading);
+  // const commentsError = useCommunityStore(state => state.commentError);
+  // const fetchComments = useCommunityStore(state => state.fetchComments);
+  // const createComment = useCommunityStore(state => state.createComment);
+  // const updateComment = useCommunityStore(state => state.updateComment);
+  // const deleteComment = useCommunityStore(state => state.deleteComment);
+  // const replyComment = useCommunityStore(state => state.addReply);
+  // const reactToComment = useCommunityStore(state => state.reactToComment);
+  // const cancelReactionToComment = useCommunityStore(state => state.cancelReactionToComment);
 
-  const fetchComments = useCommunityStore(state => state.fetchComments);
-  const createComment = useCommunityStore(state => state.createComment);
-  const updateComment = useCommunityStore(state => state.updateComment);
-  const deleteComment = useCommunityStore(state => state.deleteComment);
-  const replyComment = useCommunityStore(state => state.addReply);
-  const reactToComment = useCommunityStore(state => state.reactToComment);
-  const cancelReactionToComment = useCommunityStore(state => state.cancelReactionToComment);
+  // Zustand store 전체 객체에서 필요한 값 구조분해 할당 (수정)
+  const store = useCommunityStore();
+  const {
+    comments,
+    commentPageInfo,
+    commentLoading,
+    commentError,
+    fetchComments,
+    createComment,
+    updateComment,
+    deleteComment,
+    addReply: replyComment,
+    reactToComment,
+  } = store;
+  const commentsTotalCount = commentPageInfo.totalElements;
+  const commentsLoading = commentLoading;
+  const commentsError = commentError;
 
-  // 댓글 목록 불러오기 (postId 변경 시 or 처음 마운트)
   const fetch = useCallback(() => {
     if (postId !== null) {
       fetchComments(postId);
     }
   }, [fetchComments, postId]);
 
-  // 댓글 생성
   const create = useCallback(
     (content: string) =>
       postId !== null
@@ -37,19 +52,13 @@ export const useComments = (postId: number | null = null) => {
     [createComment, postId]
   );
 
-  // 댓글 수정
   const update = useCallback(
-    (commentId: number, content: string) => updateComment(commentId, content),
+    (commentId: number, content: string) => updateComment(commentId, { content, language: 'ko' }),
     [updateComment]
   );
 
-  // 댓글 삭제
-  const remove = useCallback(
-    (commentId: number) => deleteComment(commentId),
-    [deleteComment]
-  );
+  const remove = useCallback((commentId: number) => deleteComment(commentId), [deleteComment]);
 
-  // 답글 작성
   const reply = useCallback(
     (parentId: number, content: string) =>
       postId !== null
@@ -58,23 +67,14 @@ export const useComments = (postId: number | null = null) => {
     [replyComment, postId]
   );
 
-  // 댓글 반응 (좋아요/싫어요)
   const react = useCallback(
     (commentId: number, type: ReactionType) =>
       postId !== null
-        ? reactToComment(postId, commentId, type)
+        ? reactToComment(postId, commentId, type === 'LIKE' ? 'LIKE' : 'DISLIKE')
         : Promise.reject(new Error('Post ID is null')),
     [reactToComment, postId]
   );
 
-  // 반응 취소
-  const cancelReact = useCallback(
-    (commentId: number, type: ReactionType) =>
-      cancelReactionToComment(commentId, type),
-    [cancelReactionToComment]
-  );
-
-  // 마운트 또는 postId 변경 시 댓글 목록 한 번만 로드
   useEffect(() => {
     fetch();
   }, [fetch]);
@@ -90,6 +90,10 @@ export const useComments = (postId: number | null = null) => {
     remove,
     reply,
     react,
-    cancelReact,
+    // alias for compatibility
+    updateComment: update,
+    deleteComment: remove,
+    replyComment: reply,
+    reactToComment: react,
   };
 };

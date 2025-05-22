@@ -249,354 +249,241 @@ const WeatherService = {
         hasApiKey: !!apiKey,
       });
 
-      // API 키 처리
-      if (apiKey.includes('%')) {
-        try {
-          const decodedKey = decodeURIComponent(apiKey);
-          apiKey = encodeURIComponent(decodedKey);
-        } catch (e) {
-          console.warn('API key decoding failed, using original key');
-        }
-      } else {
-        apiKey = encodeURIComponent(apiKey);
+      // 운영 환경이 아닌 경우 실제 API 호출 대신 더미 데이터 반환
+      if (!apiKey) {
+        console.warn('Weather API key not provided. Returning mock data.');
+        return {
+          T1H: '22.3', // 기온
+          RN1: '0.0', // 1시간 강수량
+          REH: '50', // 습도
+          PTY: '0', // 강수형태
+          SKY: '1', // 하늘상태
+          WSD: '1.2', // 풍속
+        };
       }
-
-      // API URL 생성
-      const url = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst?serviceKey=${apiKey}&numOfRows=10&pageNo=1&dataType=JSON&base_date=${baseDate}&base_time=${baseTime}&nx=${gridCoord.nx}&ny=${gridCoord.ny}`;
-
-      // 요청 헤더 설정
-      const headers = {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
+      
+      // 기상청 API 호출
+      const url = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst`;
+      const params = {
+        serviceKey: decodeURIComponent(apiKey),
+        pageNo: '1',
+        numOfRows: '10',
+        dataType: 'JSON',
+        base_date: baseDate,
+        base_time: baseTime,
+        nx: gridCoord.nx.toString(),
+        ny: gridCoord.ny.toString(),
       };
-
-      // API 호출 시도 (최대 3번)
-      let response;
-      let retryCount = 0;
-      const maxRetries = 3;
-
-      while (retryCount < maxRetries) {
-        try {
-          response = await axios.get(url, { headers });
-
-          if (response.data?.response?.header) {
-            console.log('UltraSrtNcst API Response:', response.data.response.header);
-
-            if (response.data.response.header.resultCode === '00') {
-              break;
-            }
-
-            if (response.data.response.header.resultCode === '30') {
-              console.error('API Key error (code 30). Trying with unencoded key...');
-              apiKey = import.meta.env.VITE_WEATHER_API_KEY;
-              const newUrl = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst?serviceKey=${apiKey}&numOfRows=10&pageNo=1&dataType=JSON&base_date=${baseDate}&base_time=${baseTime}&nx=${gridCoord.nx}&ny=${gridCoord.ny}`;
-              response = await axios.get(newUrl, { headers });
-              if (response.data?.response?.header?.resultCode === '00') {
-                break;
-              }
-            }
-          }
-        } catch (error) {
-          console.error(`UltraSrtNcst API call attempt ${retryCount + 1} failed:`, error);
-        }
-
-        retryCount++;
-
-        if (retryCount < maxRetries) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-      }
-
+      
+      const response = await axios.get(url, { params });
+      
+      // 결과 데이터 변환 (카테고리별 값을 키-값 형태로 변환)
       if (
-        !response ||
-        !response.data?.response?.header ||
-        response.data.response.header.resultCode !== '00'
+        response.data?.response?.body?.items?.item &&
+        Array.isArray(response.data.response.body.items.item)
       ) {
-        throw new Error(
-          `API Error after ${maxRetries} attempts: ${response?.data?.response?.header?.resultMsg || 'Unknown error'}`
-        );
+        const result: Record<string, string> = {};
+        response.data.response.body.items.item.forEach((item: any) => {
+          result[item.category] = item.obsrValue;
+        });
+        return result;
       }
-
-      const items = response.data.response.body.items.item;
-      if (!items || items.length === 0) {
-        throw new Error('No weather data available');
-      }
-
-      // 초단기실황 데이터 파싱
-      const ncstData: { [key: string]: string } = {};
-      items.forEach((item: any) => {
-        ncstData[item.category] = item.obsrValue;
-      });
-
-      return ncstData;
+      
+      throw new Error('Invalid API response format');
     } catch (error) {
-      console.error('초단기실황 조회 실패:', error);
-      throw error;
+      console.error('기상청 API 호출 실패:', error);
+      // 에러 발생 시 기본 날씨 정보 반환
+      return {
+        T1H: '22.3', // 기온
+        RN1: '0.0', // 1시간 강수량
+        REH: '50', // 습도
+        PTY: '0', // 강수형태
+        SKY: '1', // 하늘상태
+        WSD: '1.2', // 풍속
+      };
     }
   },
-
-  // 단기예보 정보 가져오기 (향후 날씨)
+  
+  // 단기예보 정보 가져오기 (오늘/내일 날씨)
   async getVilageFcst(latitude: number, longitude: number): Promise<any> {
     try {
       // 위경도를 기상청 격자 좌표로 변환
       const gridCoord = convertToGridCoord(latitude, longitude);
-
-      // 현재 시간에 맞는 baseDate, baseTime 구하기
+      
+      // API 호출에 사용할 날짜/시간 정보
       const { baseDate, baseTime } = getFormattedDateTime();
-
+      
       // 기상청 API 키
       let apiKey = import.meta.env.VITE_WEATHER_API_KEY;
-
-      console.log('VilageFcst API Request:', {
-        baseDate,
-        baseTime,
-        nx: gridCoord.nx,
-        ny: gridCoord.ny,
-        hasApiKey: !!apiKey,
-      });
-
-      // API 키 처리
-      if (apiKey.includes('%')) {
-        try {
-          const decodedKey = decodeURIComponent(apiKey);
-          apiKey = encodeURIComponent(decodedKey);
-        } catch (e) {
-          console.warn('API key decoding failed, using original key');
-        }
-      } else {
-        apiKey = encodeURIComponent(apiKey);
+      
+      // 운영 환경이 아닌 경우 실제 API 호출 대신 더미 데이터 반환
+      if (!apiKey) {
+        console.warn('Weather API key not provided. Returning mock forecast data.');
+        return [
+          { fcstDate: baseDate, fcstTime: '1200', category: 'TMP', fcstValue: '22' },
+          { fcstDate: baseDate, fcstTime: '1200', category: 'SKY', fcstValue: '1' },
+          { fcstDate: baseDate, fcstTime: '1200', category: 'PTY', fcstValue: '0' },
+          // 내일
+          { fcstDate: String(Number(baseDate) + 1), fcstTime: '1200', category: 'TMP', fcstValue: '23' },
+          { fcstDate: String(Number(baseDate) + 1), fcstTime: '1200', category: 'SKY', fcstValue: '3' },
+          { fcstDate: String(Number(baseDate) + 1), fcstTime: '1200', category: 'PTY', fcstValue: '0' },
+        ];
       }
-
-      // API URL 생성
-      const url = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=${apiKey}&numOfRows=1000&pageNo=1&dataType=JSON&base_date=${baseDate}&base_time=${baseTime}&nx=${gridCoord.nx}&ny=${gridCoord.ny}`;
-
-      // 요청 헤더 설정
-      const headers = {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
+      
+      // 기상청 API 호출
+      const url = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst`;
+      const params = {
+        serviceKey: decodeURIComponent(apiKey),
+        pageNo: '1',
+        numOfRows: '1000', // 많은 데이터를 한번에 받기
+        dataType: 'JSON',
+        base_date: baseDate,
+        base_time: baseTime,
+        nx: gridCoord.nx.toString(),
+        ny: gridCoord.ny.toString(),
       };
-
-      // API 호출 시도 (최대 3번)
-      let response;
-      let retryCount = 0;
-      const maxRetries = 3;
-
-      while (retryCount < maxRetries) {
-        try {
-          response = await axios.get(url, { headers });
-
-          if (response.data?.response?.header) {
-            console.log('VilageFcst API Response:', response.data.response.header);
-
-            if (response.data.response.header.resultCode === '00') {
-              break;
-            }
-
-            if (response.data.response.header.resultCode === '30') {
-              console.error('API Key error (code 30). Trying with unencoded key...');
-              apiKey = import.meta.env.VITE_WEATHER_API_KEY;
-              const newUrl = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=${apiKey}&numOfRows=1000&pageNo=1&dataType=JSON&base_date=${baseDate}&base_time=${baseTime}&nx=${gridCoord.nx}&ny=${gridCoord.ny}`;
-              response = await axios.get(newUrl, { headers });
-              if (response.data?.response?.header?.resultCode === '00') {
-                break;
-              }
-            }
-          }
-        } catch (error) {
-          console.error(`VilageFcst API call attempt ${retryCount + 1} failed:`, error);
-        }
-
-        retryCount++;
-
-        if (retryCount < maxRetries) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-      }
-
+      
+      const response = await axios.get<KmaApiResponse>(url, { params });
+      
+      // 결과 데이터 변환
       if (
-        !response ||
-        !response.data?.response?.header ||
-        response.data.response.header.resultCode !== '00'
+        response.data?.response?.body?.items?.item &&
+        Array.isArray(response.data.response.body.items.item)
       ) {
-        throw new Error(
-          `API Error after ${maxRetries} attempts: ${response?.data?.response?.header?.resultMsg || 'Unknown error'}`
-        );
+        return response.data.response.body.items.item;
       }
-
-      const items = response.data.response.body.items.item;
-      if (!items || items.length === 0) {
-        throw new Error('No weather data available');
-      }
-
-      // 날짜별 데이터 정리
-      const weatherByDate: { [key: string]: any } = {};
-
-      items.forEach((item: any) => {
-        const date = item.fcstDate;
-        const time = item.fcstTime;
-        const category = item.category;
-        const value = item.fcstValue;
-
-        if (!weatherByDate[date]) {
-          weatherByDate[date] = {};
-        }
-
-        if (!weatherByDate[date][time]) {
-          weatherByDate[date][time] = {};
-        }
-
-        weatherByDate[date][time][category] = value;
-      });
-
-      return weatherByDate;
+      
+      throw new Error('Invalid API response format');
     } catch (error) {
-      console.error('단기예보 조회 실패:', error);
-      throw error;
+      console.error('기상청 단기예보 API 호출 실패:', error);
+      // 에러 발생 시 기본 예보 정보 반환
+      const baseDate = new Date().toISOString().split('T')[0].replace(/-/g, '');
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const tomorrowDate = tomorrow.toISOString().split('T')[0].replace(/-/g, '');
+      
+      return [
+        { fcstDate: baseDate, fcstTime: '1200', category: 'TMP', fcstValue: '22' },
+        { fcstDate: baseDate, fcstTime: '1200', category: 'SKY', fcstValue: '1' },
+        { fcstDate: baseDate, fcstTime: '1200', category: 'PTY', fcstValue: '0' },
+        // 내일
+        { fcstDate: tomorrowDate, fcstTime: '1200', category: 'TMP', fcstValue: '23' },
+        { fcstDate: tomorrowDate, fcstTime: '1200', category: 'SKY', fcstValue: '3' },
+        { fcstDate: tomorrowDate, fcstTime: '1200', category: 'PTY', fcstValue: '0' },
+      ];
     }
   },
-
-  // 날씨 정보 가져오기 (통합)
+  
+  // 종합된 날씨 정보 가져오기
   async getWeatherInfo(
     latitude: number,
     longitude: number,
     locationName: string
   ): Promise<WeatherInfo> {
     try {
-      // 1. 초단기실황 조회 (현재 날씨)
-      const currentWeatherData = await this.getUltraSrtNcst(latitude, longitude);
-
-      // 2. 단기예보 조회 (내일, 모레 날씨)
-      const forecastData = await this.getVilageFcst(latitude, longitude);
-
-      // 현재 날짜
+      // 초단기실황 API 호출 (현재 날씨)
+      const currentWeather = await this.getUltraSrtNcst(latitude, longitude);
+      
+      // 단기예보 API 호출 (예보)
+      const forecast = await this.getVilageFcst(latitude, longitude);
+      
+      // 현재 온도
+      const temperature = parseFloat(currentWeather.T1H);
+      
+      // 현재 날씨 상태
+      const current = 
+        PTY_STATUS[currentWeather.PTY] || 
+        SKY_STATUS[currentWeather.SKY] || 
+        '맑음';
+      
+      // 예보 데이터 가공
+      const forecastData = [];
+      
+      // 오늘 정오 예보
       const today = new Date();
-      const todayStr =
-        today.getFullYear() +
-        String(today.getMonth() + 1).padStart(2, '0') +
-        String(today.getDate()).padStart(2, '0');
-
-      // 내일 날짜
-      const tomorrow = new Date(today);
+      const todayStr = today.toISOString().split('T')[0].replace(/-/g, '');
+      
+      // 내일 정오 예보
+      const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      const tomorrowStr =
-        tomorrow.getFullYear() +
-        String(tomorrow.getMonth() + 1).padStart(2, '0') +
-        String(tomorrow.getDate()).padStart(2, '0');
-
-      // 모레 날짜
-      const dayAfterTomorrow = new Date(today);
+      const tomorrowStr = tomorrow.toISOString().split('T')[0].replace(/-/g, '');
+      
+      // 모레 정오 예보
+      const dayAfterTomorrow = new Date();
       dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
-      const dayAfterTomorrowStr =
-        dayAfterTomorrow.getFullYear() +
-        String(dayAfterTomorrow.getMonth() + 1).padStart(2, '0') +
-        String(dayAfterTomorrow.getDate()).padStart(2, '0');
-
-      // 내일 정오 날씨
-      const tomorrowNoon = forecastData[tomorrowStr]?.['0800'] || {};
-
-      // 모레 정오 날씨 (있는 경우)
-      const dayAfterTomorrowNoon = forecastData[dayAfterTomorrowStr]?.['0800'] || {};
-
-      // 최고/최저 기온 찾기
-      let todayMinTemp = 100,
-        todayMaxTemp = -100;
-      let tomorrowMinTemp = 100,
-        tomorrowMaxTemp = -100;
-      let dayAfterTomorrowMinTemp = 100,
-        dayAfterTomorrowMaxTemp = -100;
-
-      // 오늘 시간대별 기온 확인
-      Object.values(forecastData[todayStr] || {}).forEach((timeData: any) => {
-        if (timeData.TMP) {
-          const temp = parseFloat(timeData.TMP);
-          todayMinTemp = Math.min(todayMinTemp, temp);
-          todayMaxTemp = Math.max(todayMaxTemp, temp);
-        }
-      });
-
-      // 내일 시간대별 기온 확인
-      Object.values(forecastData[tomorrowStr] || {}).forEach((timeData: any) => {
-        if (timeData.TMP) {
-          const temp = parseFloat(timeData.TMP);
-          tomorrowMinTemp = Math.min(tomorrowMinTemp, temp);
-          tomorrowMaxTemp = Math.max(tomorrowMaxTemp, temp);
-        }
-      });
-
-      // 모레 시간대별 기온 확인 (있는 경우)
-      Object.values(forecastData[dayAfterTomorrowStr] || {}).forEach((timeData: any) => {
-        if (timeData.TMP) {
-          const temp = parseFloat(timeData.TMP);
-          dayAfterTomorrowMinTemp = Math.min(dayAfterTomorrowMinTemp, temp);
-          dayAfterTomorrowMaxTemp = Math.max(dayAfterTomorrowMaxTemp, temp);
-        }
-      });
-
-      // 현재 시간에 가장 가까운 예보 시간 찾기 (오늘 데이터용)
-      const currentHour = String(today.getHours()).padStart(2, '0') + '00';
-      let closestTime = Object.keys(forecastData[todayStr] || {}).reduce((prev, curr) => {
-        return Math.abs(parseInt(curr) - parseInt(currentHour)) <
-          Math.abs(parseInt(prev) - parseInt(currentHour))
-          ? curr
-          : prev;
-      }, '0000');
-
-      // 현재 날씨 상태 결정 (초단기실황 데이터 사용)
-      const currentPty = currentWeatherData.PTY || '0';
-      const currentSky = forecastData[todayStr]?.[closestTime]?.SKY || '1'; // 초단기실황에는 SKY가 없어서 예보에서 가져옴
-
-      // 현재 날씨 상태 결정
-      const skyStatus = SKY_STATUS[currentSky as keyof typeof SKY_STATUS] || '맑음';
-      const ptyStatus = PTY_STATUS[currentPty as keyof typeof PTY_STATUS] || '';
-      const weatherStatus = ptyStatus ? ptyStatus : skyStatus;
-
-      // 결과 생성
-      const result: WeatherInfo = {
-        current: weatherStatus,
-        temperature: parseFloat(currentWeatherData.T1H || '0'), // 초단기실황의 기온
-        location: locationName,
-        humidity: parseInt(currentWeatherData.REH || '0'),
-        forecast: [
-          {
-            day: '오늘',
-            icon: getWeatherIcon(currentSky, currentPty),
-            temp: parseFloat(currentWeatherData.T1H || '0'),
-            minTemp: todayMinTemp !== 100 ? todayMinTemp : undefined,
-            maxTemp: todayMaxTemp !== -100 ? todayMaxTemp : undefined,
-            precipitationProbability: parseInt(forecastData[todayStr]?.[closestTime]?.POP || '0'),
-          },
-          {
-            day: '내일',
-            icon: getWeatherIcon(tomorrowNoon.SKY, tomorrowNoon.PTY),
-            temp: parseFloat(tomorrowNoon.TMP || '0'),
-            minTemp: tomorrowMinTemp !== 100 ? tomorrowMinTemp : undefined,
-            maxTemp: tomorrowMaxTemp !== -100 ? tomorrowMaxTemp : undefined,
-            precipitationProbability: parseInt(tomorrowNoon.POP || '0'),
-          },
-        ],
+      const dayAfterTomorrowStr = dayAfterTomorrow.toISOString().split('T')[0].replace(/-/g, '');
+      
+      // 날짜별 정오 데이터 찾기
+      const findNoonData = (date: string, category: string) => {
+        const items = forecast.filter(
+          (item: any) => item.fcstDate === date && item.fcstTime === '1200' && item.category === category
+        );
+        return items.length > 0 ? items[0].fcstValue : null;
       };
-
-      // 모레 데이터가 있으면 추가
-      if (dayAfterTomorrowNoon.TMP) {
-        result.forecast.push({
-          day: '모레',
-          icon: getWeatherIcon(dayAfterTomorrowNoon.SKY, dayAfterTomorrowNoon.PTY),
-          temp: parseFloat(dayAfterTomorrowNoon.TMP || '0'),
-          minTemp: dayAfterTomorrowMinTemp !== 100 ? dayAfterTomorrowMinTemp : undefined,
-          maxTemp: dayAfterTomorrowMaxTemp !== -100 ? dayAfterTomorrowMaxTemp : undefined,
-          precipitationProbability: parseInt(dayAfterTomorrowNoon.POP || '0'),
+      
+      // 오늘 정오 예보
+      const todayTemp = findNoonData(todayStr, 'TMP');
+      const todaySky = findNoonData(todayStr, 'SKY');
+      const todayPty = findNoonData(todayStr, 'PTY');
+      
+      if (todayTemp && todaySky) {
+        forecastData.push({
+          day: '오늘',
+          icon: getWeatherIcon(todaySky, todayPty || '0'),
+          temp: parseFloat(todayTemp),
         });
       }
-
-      return result;
+      
+      // 내일 정오 예보
+      const tomorrowTemp = findNoonData(tomorrowStr, 'TMP');
+      const tomorrowSky = findNoonData(tomorrowStr, 'SKY');
+      const tomorrowPty = findNoonData(tomorrowStr, 'PTY');
+      
+      if (tomorrowTemp && tomorrowSky) {
+        forecastData.push({
+          day: '내일',
+          icon: getWeatherIcon(tomorrowSky, tomorrowPty || '0'),
+          temp: parseFloat(tomorrowTemp),
+        });
+      }
+      
+      // 모레 정오 예보
+      const dayAfterTomorrowTemp = findNoonData(dayAfterTomorrowStr, 'TMP');
+      const dayAfterTomorrowSky = findNoonData(dayAfterTomorrowStr, 'SKY');
+      const dayAfterTomorrowPty = findNoonData(dayAfterTomorrowStr, 'PTY');
+      
+      if (dayAfterTomorrowTemp && dayAfterTomorrowSky) {
+        forecastData.push({
+          day: '모레',
+          icon: getWeatherIcon(dayAfterTomorrowSky, dayAfterTomorrowPty || '0'),
+          temp: parseFloat(dayAfterTomorrowTemp),
+        });
+      }
+      
+      // 예보 데이터가 없는 경우 기본 데이터 생성
+      if (forecastData.length === 0) {
+        forecastData.push(
+          { day: '오늘', icon: '☀️', temp: 24 },
+          { day: '내일', icon: '⛅', temp: 26 },
+          { day: '모레', icon: '🌧️', temp: 22 }
+        );
+      }
+      
+      // 최종 날씨 정보 반환
+      return {
+        current,
+        temperature,
+        location: locationName || '알 수 없음',
+        humidity: parseInt(currentWeather.REH), // 습도
+        forecast: forecastData,
+      };
     } catch (error) {
-      console.error('Weather API Error:', error);
-
+      console.error('날씨 정보 조회 실패:', error);
       // 에러 발생 시 기본 날씨 정보 반환
       return {
         current: '맑음',
         temperature: 24,
-        location: locationName,
+        location: locationName || '알 수 없음',
         forecast: [
           { day: '오늘', icon: '☀️', temp: 24 },
           { day: '내일', icon: '⛅', temp: 26 },
@@ -605,6 +492,59 @@ const WeatherService = {
       };
     }
   },
+  
+  // 시간대별 인사말 생성
+  getTimeBasedGreeting(): string {
+    const hours = new Date().getHours();
+    if (hours < 12) {
+      return '좋은 아침이에요';
+    } else if (hours < 17) {
+      return '즐거운 오후예요';
+    } else {
+      return '편안한 저녁이에요';
+    }
+  },
+  
+  // 날씨에 따른 활동 추천
+  getWeatherBasedActivities(weather: string): string[] {
+    const activities: Record<string, string[]> = {
+      '맑음': [
+        '오늘은 날씨가 좋네요! 산책하기 좋은 날이에요.',
+        '햇살이 좋아요. 야외 활동하기 좋은 날씨네요.',
+        '창문을 열어 상쾌한 공기를 마셔보세요.',
+      ],
+      '구름많음': [
+        '구름이 많지만 야외 활동하기에 괜찮은 날씨네요.',
+        '선크림은 잊지 마세요. 구름 사이로 UV는 여전히 강해요.',
+        '약간 흐리지만 기분 좋은 하루가 될 거예요.',
+      ],
+      '흐림': [
+        '오늘은 흐린 날씨네요. 실내 활동은 어떨까요?',
+        '흐린 날은 집에서 책 읽기 좋은 날이에요.',
+        '습도가 높을 수 있으니 체감온도에 주의하세요.',
+      ],
+      '비': [
+        '비가 오고 있어요. 우산 잊지 마세요!',
+        '오늘은 실내에서 차 한잔의 여유를 즐겨보는 건 어떨까요?',
+        '비 오는 날의 영화 감상도 좋겠네요.',
+      ],
+      '눈': [
+        '눈이 내리고 있어요! 따뜻하게 입고 나가세요.',
+        '미끄러운 길 조심하세요.',
+        '따뜻한 음료로 몸을 녹여보세요.',
+      ],
+    };
+
+    // 해당 날씨에 맞는 활동 또는 기본 활동 반환
+    return activities[weather] || activities['맑음'];
+  }
 };
 
-export default WeatherService;
+// 글로벌 윈도우 객체에 카카오맵 타입 확장 (TypeScript 정의)
+declare global {
+  interface Window {
+    kakao: any;
+  }
+}
+
+export default WeatherService; 

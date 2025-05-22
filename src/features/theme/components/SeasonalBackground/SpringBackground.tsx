@@ -43,7 +43,7 @@ const fallingPetal = keyframes`
     opacity: 0.8;
   }
   100% {
-    transform: translateY(100vh) translateX(100px) rotate(360deg);
+    transform: translateY(90vh) translateX(100px) rotate(360deg);
     opacity: 0;
   }
 `;
@@ -53,14 +53,20 @@ const SpringContainer = styled(Box, {
   shouldForwardProp: prop => prop !== 'noPadding',
 })<SpringBackgroundProps>`
   width: 100%;
-  min-height: ${p => (p.noPadding ? '100%' : '100vh')};
-  background: linear-gradient(135deg, rgba(255, 245, 245, 1) 0%, rgba(255, 235, 235, 1) 100%);
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 1) 0%,
+    rgba(255, 250, 250, 1) 60%,
+    rgba(255, 240, 240, 1) 100%
+  );
   padding: ${p => (p.noPadding ? '0' : '2rem 0')};
+  padding-bottom: ${p => (p.noPadding ? '0' : '6rem')};
   position: relative;
   overflow: visible;
   animation: ${fadeIn} 0.6s ease-in-out;
   display: flex;
   flex-direction: column;
+  margin-top: 0;
 
   &::before,
   &::after {
@@ -71,7 +77,7 @@ const SpringContainer = styled(Box, {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FFD7D7'%3E%3Cpath d='M12 1C8.13 1 5 4.13 5 8c0 6 7 15 7 15s7-9 7-15c0-3.87-3.13-7-7-7z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-size: contain;
-    opacity: 0.2;
+    opacity: 0.15;
     pointer-events: none;
     z-index: 0;
   }
@@ -113,14 +119,16 @@ const FallingPetal = styled.div<{ size: number; left: string; duration: number; 
   height: ${props => props.size}px;
   top: -50px;
   left: ${props => props.left};
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FFBDBD'%3E%3Cpath d='M12 1C8.13 1 5 4.13 5 8c0 6 7 15 7 15s7-9 7-15c0-3.87-3.13-7-7-7z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FFD7D7'%3E%3Cpath d='M12 1C8.13 1 5 4.13 5 8c0 6 7 15 7 15s7-9 7-15c0-3.87-3.13-7-7-7z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-size: contain;
-  opacity: 0.2;
+  opacity: 0.18;
   animation: ${fallingPetal} ${props => props.duration}s linear infinite;
   animation-delay: ${props => props.delay}s;
   pointer-events: none;
   z-index: 1;
+  max-width: 100vw;
+  overflow: hidden;
 `;
 
 // 물결 효과
@@ -135,6 +143,8 @@ const WaveEffect = styled.div`
   background-size: 100% 100%;
   opacity: 0.5;
   z-index: 0;
+  max-width: 100vw;
+  overflow: hidden;
 `;
 
 interface SpringBackgroundProps {
@@ -142,7 +152,7 @@ interface SpringBackgroundProps {
   noPadding?: boolean;
 }
 
-const SpringBackground: React.FC<SpringBackgroundProps> = ({ children, noPadding = false }) => {
+const SpringBackground: React.FC<SpringBackgroundProps> = ({ children }) => {
   const petalElements = Array.from({ length: 5 }).map((_, index) => ({
     size: Math.floor(Math.random() * 30) + 20,
     top: `${Math.floor(Math.random() * 80) + 10}%`,
@@ -158,7 +168,7 @@ const SpringBackground: React.FC<SpringBackgroundProps> = ({ children, noPadding
     const petals = Array.from({ length: 15 }).map((_, index) => ({
       id: index,
       size: Math.floor(Math.random() * 20) + 15,
-      left: `${Math.floor(Math.random() * 100)}%`,
+      left: `${Math.floor(Math.random() * 90)}%`,
       duration: Math.floor(Math.random() * 10) + 10,
       delay: Math.floor(Math.random() * 10),
     }));
@@ -168,7 +178,7 @@ const SpringBackground: React.FC<SpringBackgroundProps> = ({ children, noPadding
       const newPetal = {
         id: Date.now(),
         size: Math.floor(Math.random() * 20) + 15,
-        left: `${Math.floor(Math.random() * 100)}%`,
+        left: `${Math.floor(Math.random() * 90)}%`,
         duration: Math.floor(Math.random() * 10) + 10,
         delay: 0,
       };
@@ -179,7 +189,7 @@ const SpringBackground: React.FC<SpringBackgroundProps> = ({ children, noPadding
   }, []);
 
   return (
-    <SpringContainer noPadding={noPadding}>
+    <SpringContainer noPadding>
       {petalElements.map((petal, index) => (
         <PetalElement
           key={index}
@@ -203,10 +213,10 @@ const SpringBackground: React.FC<SpringBackgroundProps> = ({ children, noPadding
         sx={{
           position: 'relative',
           zIndex: 10,
-          flexGrow: 1,
           width: '100%',
           display: 'flex',
           flexDirection: 'column',
+          padding: 0,
         }}
       >
         {children}
@@ -215,4 +225,4 @@ const SpringBackground: React.FC<SpringBackgroundProps> = ({ children, noPadding
   );
 };
 
-export default SpringBackground; 
+export default SpringBackground;

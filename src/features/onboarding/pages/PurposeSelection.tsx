@@ -310,7 +310,7 @@ const PurposeSelection: React.FC = () => {
   return (
     <Box
       sx={{
-        minHeight: '100vh',
+        minHeight: '100%',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -318,7 +318,6 @@ const PurposeSelection: React.FC = () => {
         position: 'relative',
         overflow: 'hidden',
         py: 6,
-        background: `linear-gradient(135deg, ${alpha(themeColor, 0.02)} 0%, ${alpha(themeColor, 0.05)} 100%)`,
       }}
     >
       {/* 배경 애니메이션 */}

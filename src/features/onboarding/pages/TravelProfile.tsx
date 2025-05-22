@@ -28,7 +28,7 @@ import {
   Button,
   IconButton,
   Avatar,
-  Theme
+  Theme,
 } from '@mui/material';
 import OnboardingLayout from '../components/common/OnboardingLayout';
 import FormButtons from '../components/common/FormButtons';
@@ -80,19 +80,23 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
   },
 }));
 
-const GradientButton = styled(Button)(({ theme, gradientcolors }: { theme: Theme, gradientcolors?: string }) => ({
-  background: gradientcolors || `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${alpha(theme.palette.primary.main, 0.8)} 100%)`,
-  color: '#fff',
-  fontWeight: 600,
-  padding: theme.spacing(1.2, 3),
-  borderRadius: theme.spacing(6),
-  boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
-  '&:hover': {
-    boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
-  },
-}));
+const GradientButton = styled(Button)(
+  ({ theme, gradientcolors }: { theme: Theme; gradientcolors?: string }) => ({
+    background:
+      gradientcolors ||
+      `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${alpha(theme.palette.primary.main, 0.8)} 100%)`,
+    color: '#fff',
+    fontWeight: 600,
+    padding: theme.spacing(1.2, 3),
+    borderRadius: theme.spacing(6),
+    boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
+    '&:hover': {
+      boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
+    },
+  })
+);
 
-const StepIcon = styled(Box)(({ theme, color = '#1976d2' }: { theme: Theme, color?: string }) => ({
+const StepIcon = styled(Box)(({ theme, color = '#1976d2' }: { theme: Theme; color?: string }) => ({
   width: 50,
   height: 50,
   borderRadius: '50%',
@@ -106,12 +110,14 @@ const StepIcon = styled(Box)(({ theme, color = '#1976d2' }: { theme: Theme, colo
   fontSize: '1.5rem',
 }));
 
-const StepConnector = styled(Box)(({ theme, active = false }: { theme: Theme, active?: boolean }) => ({
-  height: 3,
-  backgroundColor: active ? theme.palette.primary.main : theme.palette.grey[300],
-  width: '100%',
-  transition: 'background-color 0.3s ease',
-}));
+const StepConnector = styled(Box)(
+  ({ theme, active = false }: { theme: Theme; active?: boolean }) => ({
+    height: 3,
+    backgroundColor: active ? theme.palette.primary.main : theme.palette.grey[300],
+    width: '100%',
+    transition: 'background-color 0.3s ease',
+  })
+);
 
 const AnimatedBackground = styled(Box)(({ theme }) => ({
   position: 'absolute',
@@ -147,7 +153,7 @@ interface TravelProfileData {
   interestedCities: string[];
   travelPurposes: string[];
   visaType: string;
-  
+
   // 공통 섹션 데이터
   language: LanguageData;
   emergencyInfo: EmergencyData;
@@ -235,7 +241,7 @@ const TravelProfile: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { season } = useThemeStore();
-  
+
   // 현재 스텝
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -256,7 +262,7 @@ const TravelProfile: React.FC = () => {
     interestedCities: [],
     travelPurposes: [],
     visaType: '',
-    
+
     // 공통 섹션 초기화
     language: { koreanLevel: 'basic' },
     emergencyInfo: {
@@ -267,20 +273,25 @@ const TravelProfile: React.FC = () => {
     },
     interests: [],
   });
-  
+
   // 계절에 따른 색상 가져오기
   const getColorByTheme = (): string => {
     switch (season) {
-      case 'spring': return '#FFAAA5';
-      case 'summer': return '#77AADD';
-      case 'autumn': return '#E8846B';
-      case 'winter': return '#8795B5';
-      default: return '#FFAAA5';
+      case 'spring':
+        return '#FFAAA5';
+      case 'summer':
+        return '#77AADD';
+      case 'autumn':
+        return '#E8846B';
+      case 'winter':
+        return '#8795B5';
+      default:
+        return '#FFAAA5';
     }
   };
 
   const primaryColor = getColorByTheme();
-  
+
   // 스텝 라벨 정의
   const stepLabels = [
     '여행자 프로필',
@@ -291,7 +302,7 @@ const TravelProfile: React.FC = () => {
     '관심사',
     '응급 상황',
   ];
-  
+
   // 스텝 아이콘 정의
   const stepIcons = [
     <PersonIcon />,
@@ -302,22 +313,28 @@ const TravelProfile: React.FC = () => {
     <FavoriteIcon />,
     <HealthAndSafetyIcon />,
   ];
-  
+
   // 총 스텝 수
   const totalSteps = stepLabels.length;
-  
+
   // 현재 스텝에 해당하는 공통 컴포넌트 타입
   const getCommonStepType = (): CommonStepType | null => {
     switch (currentStep) {
-      case 5: return 'language';
-      case 6: return 'interests';
-      case 7: return 'emergency';
-      default: return null;
+      case 5:
+        return 'language';
+      case 6:
+        return 'interests';
+      case 7:
+        return 'emergency';
+      default:
+        return null;
     }
   };
-  
+
   // 입력값 변경 핸들러
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>
+  ) => {
     const { name, value } = e.target;
     if (name) {
       setFormData(prev => ({
@@ -326,7 +343,7 @@ const TravelProfile: React.FC = () => {
       }));
     }
   };
-  
+
   // 언어 데이터 변경 핸들러
   const handleLanguageChange = (data: LanguageData) => {
     setFormData(prev => ({
@@ -334,7 +351,7 @@ const TravelProfile: React.FC = () => {
       language: data,
     }));
   };
-  
+
   // 응급 정보 변경 핸들러
   const handleEmergencyChange = (data: EmergencyData) => {
     setFormData(prev => ({
@@ -342,7 +359,7 @@ const TravelProfile: React.FC = () => {
       emergencyInfo: data,
     }));
   };
-  
+
   // 관심사 변경 핸들러
   const handleInterestsChange = (interests: string[]) => {
     setFormData(prev => ({
@@ -350,7 +367,7 @@ const TravelProfile: React.FC = () => {
       interests,
     }));
   };
-  
+
   // 다음 단계로 이동
   const handleNext = () => {
     if (currentStep < totalSteps) {
@@ -359,7 +376,7 @@ const TravelProfile: React.FC = () => {
       handleSubmit();
     }
   };
-  
+
   // 이전 단계로 이동
   const handleBack = () => {
     if (currentStep > 1) {
@@ -368,11 +385,11 @@ const TravelProfile: React.FC = () => {
       navigate('/onboarding');
     }
   };
-  
+
   // 폼 제출 처리
   const handleSubmit = async () => {
-      setIsSubmitting(true);
-      
+    setIsSubmitting(true);
+
     try {
       // 필수 필드 검증
       if (!formData.nationality && !formData.country) {
@@ -386,35 +403,35 @@ const TravelProfile: React.FC = () => {
         setIsSubmitting(false);
         return;
       }
-      
+
       // 백엔드에 전달할 데이터 객체 생성
       const onboardingData = {
         // 백엔드 필수 필드에 매핑될 데이터
         country: formData.nationality || formData.country, // nation 필드로 매핑
         gender: formData.gender, // gender 필드로 매핑
         uiLanguage: formData.uiLanguage || 'ko', // language 필드로 매핑
-        
+
         // 상세 정보 (onBoardingPreference JSON으로 저장됨)
         name: formData.name,
         age: formData.age,
-          travelType: formData.travelType,
-          travelDuration: formData.travelDuration,
-          travelCompanions: formData.travelCompanions,
+        travelType: formData.travelType,
+        travelDuration: formData.travelDuration,
+        travelCompanions: formData.travelCompanions,
         startDate: formData.startDate,
         endDate: formData.endDate,
         interestedCities: formData.interestedCities,
         travelPurposes: formData.travelPurposes,
         visaType: formData.visaType,
-        
+
         // 공통 정보
         language: formData.language,
         emergencyInfo: formData.emergencyInfo,
         interests: formData.interests,
       };
-      
+
       try {
-      // 백엔드에 데이터 저장 (visit purpose: travel)
-      await saveOnboardingData('travel', onboardingData);
+        // 백엔드에 데이터 저장 (visit purpose: travel)
+        await saveOnboardingData('travel', onboardingData);
         // 성공 메시지 표시
         console.log('온보딩 데이터가 성공적으로 저장되었습니다.');
       } catch (saveError) {
@@ -422,9 +439,9 @@ const TravelProfile: React.FC = () => {
         console.warn('온보딩 데이터 저장 실패. 테스트 모드에서는 무시합니다:', saveError);
         // 에러를 throw하지 않고 계속 진행
       }
-      
+
       // 메인 페이지로 이동
-      navigate('/');
+      navigate('/home');
     } catch (error) {
       console.error('온보딩 데이터 저장 실패:', error);
     } finally {
@@ -439,16 +456,16 @@ const TravelProfile: React.FC = () => {
       transition: {
         duration: 4 + i,
         repeat: Infinity,
-        ease: "easeInOut",
-        delay: i * 0.3
-      }
-    })
+        ease: 'easeInOut',
+        delay: i * 0.3,
+      },
+    }),
   };
-  
+
   // 현재 단계에 따른 폼 렌더링
   const renderFormByStep = () => {
     const commonStepType = getCommonStepType();
-    
+
     if (commonStepType) {
       return (
         <CommonStep
@@ -462,41 +479,43 @@ const TravelProfile: React.FC = () => {
         />
       );
     }
-    
+
     switch (currentStep) {
       case 1: // 여행자 세부 프로필
         return (
           <StyledPaper elevation={0} sx={{ p: 4 }}>
             <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
               <Avatar
-                sx={{ 
-                  bgcolor: alpha(primaryColor, 0.2), 
+                sx={{
+                  bgcolor: alpha(primaryColor, 0.2),
                   color: primaryColor,
                   width: 48,
                   height: 48,
-                  mr: 2
+                  mr: 2,
                 }}
               >
                 <PersonIcon />
               </Avatar>
               <Typography variant="h5" sx={{ fontWeight: 600, color: 'text.primary' }}>
                 여행자 세부 프로필
-            </Typography>
+              </Typography>
             </Box>
-            
-            <Box sx={{ 
-              display: 'grid', 
-              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
-              gap: 3,
-              mb: 2 
-            }}>
+
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+                gap: 3,
+                mb: 2,
+              }}
+            >
               <StyledTextField
-                  label="이름"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  fullWidth
-                  required
+                label="이름"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                fullWidth
+                required
                 color="primary"
                 InputProps={{
                   startAdornment: (
@@ -504,17 +523,17 @@ const TravelProfile: React.FC = () => {
                       <PersonIcon sx={{ color: alpha(primaryColor, 0.7) }} />
                     </InputAdornment>
                   ),
-                  }}
-                />
-              
+                }}
+              />
+
               <Box>
                 <FormControl component="fieldset" fullWidth>
-                  <FormLabel 
-                    id="gender-label" 
-                    sx={{ 
+                  <FormLabel
+                    id="gender-label"
+                    sx={{
                       color: 'text.secondary',
                       '&.Mui-focused': { color: primaryColor },
-                      mb: 1
+                      mb: 1,
                     }}
                   >
                     성별
@@ -526,79 +545,83 @@ const TravelProfile: React.FC = () => {
                     value={formData.gender}
                     onChange={handleInputChange}
                   >
-                    <FormControlLabel 
-                      value="male" 
+                    <FormControlLabel
+                      value="male"
                       control={
-                        <Radio 
-                          sx={{ 
+                        <Radio
+                          sx={{
                             color: theme.palette.grey[400],
                             '&.Mui-checked': { color: primaryColor },
-                          }} 
+                          }}
                         />
-                      } 
-                      label="남성" 
+                      }
+                      label="남성"
                     />
-                    <FormControlLabel 
-                      value="female" 
+                    <FormControlLabel
+                      value="female"
                       control={
-                        <Radio 
-                          sx={{ 
+                        <Radio
+                          sx={{
                             color: theme.palette.grey[400],
                             '&.Mui-checked': { color: primaryColor },
-                          }} 
+                          }}
                         />
-                      } 
-                      label="여성" 
+                      }
+                      label="여성"
                     />
-                    <FormControlLabel 
-                      value="other" 
+                    <FormControlLabel
+                      value="other"
                       control={
-                        <Radio 
-                          sx={{ 
+                        <Radio
+                          sx={{
                             color: theme.palette.grey[400],
                             '&.Mui-checked': { color: primaryColor },
-                          }} 
+                          }}
                         />
-                      } 
-                      label="기타" 
+                      }
+                      label="기타"
                     />
                   </RadioGroup>
                 </FormControl>
               </Box>
             </Box>
-              
-            <Box sx={{ 
-              display: 'grid', 
-              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
-              gap: 3,
-              mb: 2 
-            }}>
+
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+                gap: 3,
+                mb: 2,
+              }}
+            >
               <StyledTextField
-                  label="나이"
-                  name="age"
-                  value={formData.age}
-                  onChange={handleInputChange}
-                  fullWidth
+                label="나이"
+                name="age"
+                value={formData.age}
+                onChange={handleInputChange}
+                fullWidth
                 color="primary"
                 type="number"
               />
-              
+
               <StyledTextField
-                  label="국적"
-                  name="nationality"
-                  value={formData.nationality}
-                  onChange={handleInputChange}
-                  fullWidth
+                label="국적"
+                name="nationality"
+                value={formData.nationality}
+                onChange={handleInputChange}
+                fullWidth
                 color="primary"
-                />
-          </Box>
-            
-            <Box sx={{ 
-              display: 'grid', 
-              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
-              gap: 3,
-              mb: 2 
-            }}>
+              />
+            </Box>
+
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+                gap: 3,
+                mb: 2,
+              }}
+            >
               <StyledTextField
                 select
                 label="UI 언어 선택"
@@ -616,21 +639,21 @@ const TravelProfile: React.FC = () => {
                   ),
                 }}
               >
-                {uiLanguageOptions.map((option) => (
+                {uiLanguageOptions.map(option => (
                   <MenuItem key={option.code} value={option.code}>
                     {option.name}
                   </MenuItem>
                 ))}
               </StyledTextField>
-              
+
               <StyledTextField
-                  select
+                select
                 label="여행 유형"
-                  name="travelType"
-                  value={formData.travelType}
-                  onChange={handleInputChange}
-                  fullWidth
-                  required
+                name="travelType"
+                value={formData.travelType}
+                onChange={handleInputChange}
+                fullWidth
+                required
                 color="primary"
                 InputProps={{
                   startAdornment: (
@@ -640,26 +663,28 @@ const TravelProfile: React.FC = () => {
                   ),
                 }}
               >
-                {travelTypeOptions.map((option) => (
+                {travelTypeOptions.map(option => (
                   <MenuItem key={option.value} value={option.value}>
                     {option.label}
                   </MenuItem>
                 ))}
               </StyledTextField>
             </Box>
-              
-            <Box sx={{ 
-              display: 'grid', 
-              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
-              gap: 3
-            }}>
+
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+                gap: 3,
+              }}
+            >
               <StyledTextField
-                  select
-                  label="여행 기간"
-                  name="travelDuration"
-                  value={formData.travelDuration}
-                  onChange={handleInputChange}
-                  fullWidth
+                select
+                label="여행 기간"
+                name="travelDuration"
+                value={formData.travelDuration}
+                onChange={handleInputChange}
+                fullWidth
                 color="primary"
                 InputProps={{
                   startAdornment: (
@@ -669,13 +694,13 @@ const TravelProfile: React.FC = () => {
                   ),
                 }}
               >
-                {travelDurationOptions.map((option) => (
+                {travelDurationOptions.map(option => (
                   <MenuItem key={option.value} value={option.value}>
                     {option.label}
                   </MenuItem>
                 ))}
               </StyledTextField>
-              
+
               <StyledTextField
                 select
                 label="여행 동반자"
@@ -692,14 +717,14 @@ const TravelProfile: React.FC = () => {
                   ),
                 }}
               >
-                {travelCompanionsOptions.map((option) => (
+                {travelCompanionsOptions.map(option => (
                   <MenuItem key={option.value} value={option.value}>
                     {option.label}
                   </MenuItem>
                 ))}
               </StyledTextField>
             </Box>
-            
+
             <Box sx={{ mt: 3 }}>
               <StyledTextField
                 select
@@ -717,7 +742,7 @@ const TravelProfile: React.FC = () => {
                   ),
                 }}
               >
-                {visaTypeOptions.map((option) => (
+                {visaTypeOptions.map(option => (
                   <MenuItem key={option.code} value={option.code}>
                     {option.name}
                   </MenuItem>
@@ -726,18 +751,18 @@ const TravelProfile: React.FC = () => {
             </Box>
           </StyledPaper>
         );
-        
+
       case 2: // 여행 기간 일정
         return (
           <StyledPaper elevation={0} sx={{ p: 4 }}>
             <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
               <Avatar
-                  sx={{
-                  bgcolor: alpha(primaryColor, 0.2), 
-                      color: primaryColor,
+                sx={{
+                  bgcolor: alpha(primaryColor, 0.2),
+                  color: primaryColor,
                   width: 48,
                   height: 48,
-                  mr: 2
+                  mr: 2,
                 }}
               >
                 <CalendarTodayIcon />
@@ -746,14 +771,14 @@ const TravelProfile: React.FC = () => {
                 여행 기간 일정
               </Typography>
             </Box>
-            
+
             <Box sx={{ mb: 4 }}>
-              <Typography 
-                variant="subtitle2" 
-                sx={{ 
-                  mb: 1, 
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  mb: 1,
                   color: 'text.secondary',
-                  fontWeight: 500
+                  fontWeight: 500,
                 }}
               >
                 여행 기간을 선택해주세요
@@ -774,41 +799,41 @@ const TravelProfile: React.FC = () => {
                       <CalendarTodayIcon sx={{ color: alpha(primaryColor, 0.7) }} />
                     </InputAdornment>
                   ),
-                  }}
-                >
-                  <MenuItem value="under_1week">1주일 미만</MenuItem>
-                  <MenuItem value="1week_2weeks">1~2주</MenuItem>
-                  <MenuItem value="2weeks_1month">2주~1개월</MenuItem>
-                  <MenuItem value="1month_3months">1~3개월</MenuItem>
-                  <MenuItem value="over_3months">3개월 이상</MenuItem>
+                }}
+              >
+                <MenuItem value="under_1week">1주일 미만</MenuItem>
+                <MenuItem value="1week_2weeks">1~2주</MenuItem>
+                <MenuItem value="2weeks_1month">2주~1개월</MenuItem>
+                <MenuItem value="1month_3months">1~3개월</MenuItem>
+                <MenuItem value="over_3months">3개월 이상</MenuItem>
               </StyledTextField>
-              <Typography 
-                variant="caption" 
-                sx={{ 
+              <Typography
+                variant="caption"
+                sx={{
                   color: 'text.secondary',
                   display: 'block',
-                  mt: 0.5
+                  mt: 0.5,
                 }}
               >
                 여행 기간에 따라 필요한 정보와 준비물이 달라질 수 있습니다
               </Typography>
             </Box>
-            
-            <Box 
-              sx={{ 
-                display: 'grid', 
-                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
+
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
                 gap: 3,
-                mb: 4
+                mb: 4,
               }}
             >
               <Box>
-                <Typography 
-                  variant="subtitle2" 
-                  sx={{ 
-                    mb: 1, 
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    mb: 1,
                     color: 'text.secondary',
-                    fontWeight: 500
+                    fontWeight: 500,
                   }}
                 >
                   출발 예정일
@@ -831,14 +856,14 @@ const TravelProfile: React.FC = () => {
                   }}
                 />
               </Box>
-              
+
               <Box>
-                <Typography 
-                  variant="subtitle2" 
-                  sx={{ 
-                    mb: 1, 
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    mb: 1,
                     color: 'text.secondary',
-                    fontWeight: 500
+                    fontWeight: 500,
                   }}
                 >
                   귀국 예정일
@@ -862,25 +887,25 @@ const TravelProfile: React.FC = () => {
                 />
               </Box>
             </Box>
-            
+
             <Box sx={{ mb: 2 }}>
-              <Typography 
-                variant="subtitle2" 
-                sx={{ 
-                  mb: 1, 
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  mb: 1,
                   color: 'text.secondary',
-                  fontWeight: 500
+                  fontWeight: 500,
                 }}
               >
                 입국 비자
               </Typography>
               <StyledTextField
-                  select
+                select
                 label="비자 종류"
                 name="visaType"
                 value={formData.visaType}
-                  onChange={handleInputChange}
-                  fullWidth
+                onChange={handleInputChange}
+                fullWidth
                 color="primary"
                 InputProps={{
                   startAdornment: (
@@ -890,18 +915,18 @@ const TravelProfile: React.FC = () => {
                   ),
                 }}
               >
-                {visaTypeOptions.map((option) => (
+                {visaTypeOptions.map(option => (
                   <MenuItem key={option.code} value={option.code}>
                     {option.name}
                   </MenuItem>
                 ))}
               </StyledTextField>
-              <Typography 
-                variant="caption" 
-                sx={{ 
+              <Typography
+                variant="caption"
+                sx={{
                   color: 'text.secondary',
                   display: 'block',
-                  mt: 0.5
+                  mt: 0.5,
                 }}
               >
                 한국 방문에 사용할 비자 종류를 선택해주세요
@@ -909,18 +934,18 @@ const TravelProfile: React.FC = () => {
             </Box>
           </StyledPaper>
         );
-        
+
       case 3: // 관심 도시 설정
         return (
           <StyledPaper elevation={0} sx={{ p: 4 }}>
             <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
               <Avatar
-                sx={{ 
-                  bgcolor: alpha(primaryColor, 0.2), 
+                sx={{
+                  bgcolor: alpha(primaryColor, 0.2),
                   color: primaryColor,
                   width: 48,
                   height: 48,
-                  mr: 2
+                  mr: 2,
                 }}
               >
                 <LocationOnIcon />
@@ -929,20 +954,20 @@ const TravelProfile: React.FC = () => {
                 관심 도시 설정
               </Typography>
             </Box>
-            
+
             <Box sx={{ mb: 2 }}>
               <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
-                한국에서 방문하고 싶은 도시나 관광지를 선택해주세요. 
-                여러 개를 선택할 수 있으며, 선택한 도시에 따라 맞춤형 정보를 제공해드립니다.
+                한국에서 방문하고 싶은 도시나 관광지를 선택해주세요. 여러 개를 선택할 수 있으며,
+                선택한 도시에 따라 맞춤형 정보를 제공해드립니다.
               </Typography>
-              
+
               <Box sx={{ mb: 4 }}>
-                <Typography 
-                  variant="subtitle2" 
-                  sx={{ 
+                <Typography
+                  variant="subtitle2"
+                  sx={{
                     mb: 1,
                     color: 'text.secondary',
-                    fontWeight: 500 
+                    fontWeight: 500,
                   }}
                 >
                   인기 도시
@@ -952,10 +977,10 @@ const TravelProfile: React.FC = () => {
                     display: 'flex',
                     flexWrap: 'wrap',
                     gap: 1,
-                    mb: 2
+                    mb: 2,
                   }}
                 >
-                  {['서울', '부산', '제주', '인천', '경주', '강릉'].map((city) => (
+                  {['서울', '부산', '제주', '인천', '경주', '강릉'].map(city => (
                     <Chip
                       key={city}
                       label={city}
@@ -964,31 +989,31 @@ const TravelProfile: React.FC = () => {
                       sx={{
                         borderRadius: '16px',
                         px: 1,
-                        backgroundColor: formData.interestedCities.includes(city) 
+                        backgroundColor: formData.interestedCities.includes(city)
                           ? alpha(primaryColor, 0.1)
                           : alpha(theme.palette.grey[200], 0.7),
-                        color: formData.interestedCities.includes(city) 
+                        color: formData.interestedCities.includes(city)
                           ? primaryColor
                           : 'text.secondary',
-                        border: formData.interestedCities.includes(city) 
+                        border: formData.interestedCities.includes(city)
                           ? `1px solid ${alpha(primaryColor, 0.3)}`
                           : `1px solid ${alpha(theme.palette.grey[300], 0.5)}`,
                         '&:hover': {
-                          backgroundColor: formData.interestedCities.includes(city) 
+                          backgroundColor: formData.interestedCities.includes(city)
                             ? alpha(primaryColor, 0.2)
                             : alpha(theme.palette.grey[300], 0.5),
-                        }
+                        },
                       }}
                       onClick={() => {
                         if (formData.interestedCities.includes(city)) {
                           setFormData(prev => ({
                             ...prev,
-                            interestedCities: prev.interestedCities.filter(c => c !== city)
+                            interestedCities: prev.interestedCities.filter(c => c !== city),
                           }));
                         } else {
                           setFormData(prev => ({
                             ...prev,
-                            interestedCities: [...prev.interestedCities, city]
+                            interestedCities: [...prev.interestedCities, city],
                           }));
                         }
                       }}
@@ -996,13 +1021,13 @@ const TravelProfile: React.FC = () => {
                   ))}
                 </Box>
               </Box>
-              
-              <Typography 
-                variant="subtitle2" 
-                sx={{ 
+
+              <Typography
+                variant="subtitle2"
+                sx={{
                   mb: 1,
                   color: 'text.secondary',
-                  fontWeight: 500 
+                  fontWeight: 500,
                 }}
               >
                 모든 도시 검색
@@ -1015,7 +1040,7 @@ const TravelProfile: React.FC = () => {
                 onChange={(event, newValue) => {
                   setFormData(prev => ({
                     ...prev,
-                    interestedCities: newValue
+                    interestedCities: newValue,
                   }));
                 }}
                 renderTags={(value, getTagProps) =>
@@ -1038,7 +1063,7 @@ const TravelProfile: React.FC = () => {
                     />
                   ))
                 }
-                renderInput={(params) => (
+                renderInput={params => (
                   <StyledTextField
                     {...params}
                     label="관심 있는 도시나 관광지"
@@ -1058,26 +1083,26 @@ const TravelProfile: React.FC = () => {
                   />
                 )}
               />
-              <Typography 
-                variant="caption" 
-                sx={{ 
+              <Typography
+                variant="caption"
+                sx={{
                   color: 'text.secondary',
                   display: 'block',
-                  mt: 1
+                  mt: 1,
                 }}
               >
                 최소 1개 이상의 도시를 선택해주세요. 도시는 언제든지 변경할 수 있습니다.
               </Typography>
             </Box>
-            
+
             {formData.interestedCities.length > 0 && (
               <Box sx={{ mt: 4 }}>
-                <Typography 
-                  variant="subtitle2" 
+                <Typography
+                  variant="subtitle2"
                   sx={{
                     mb: 2,
                     color: 'text.primary',
-                    fontWeight: 600 
+                    fontWeight: 600,
                   }}
                 >
                   선택한 도시 ({formData.interestedCities.length})
@@ -1089,7 +1114,7 @@ const TravelProfile: React.FC = () => {
                     gap: 2,
                   }}
                 >
-                  {formData.interestedCities.map((city) => (
+                  {formData.interestedCities.map(city => (
                     <Box
                       key={city}
                       sx={{
@@ -1103,12 +1128,12 @@ const TravelProfile: React.FC = () => {
                       }}
                     >
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <LocationOnIcon 
-                          sx={{ 
-                            fontSize: '1.2rem', 
+                        <LocationOnIcon
+                          sx={{
+                            fontSize: '1.2rem',
                             color: primaryColor,
-                            mr: 1 
-                          }} 
+                            mr: 1,
+                          }}
                         />
                         <Typography variant="body2" sx={{ fontWeight: 500 }}>
                           {city}
@@ -1119,16 +1144,16 @@ const TravelProfile: React.FC = () => {
                         onClick={() => {
                           setFormData(prev => ({
                             ...prev,
-                            interestedCities: prev.interestedCities.filter(c => c !== city)
+                            interestedCities: prev.interestedCities.filter(c => c !== city),
                           }));
                         }}
-                        sx={{ 
+                        sx={{
                           p: 0.5,
                           color: 'text.secondary',
                           '&:hover': {
                             color: theme.palette.error.main,
                             backgroundColor: alpha(theme.palette.error.main, 0.1),
-                          }
+                          },
                         }}
                       >
                         ✕
@@ -1140,18 +1165,18 @@ const TravelProfile: React.FC = () => {
             )}
           </StyledPaper>
         );
-        
+
       case 4: // 여행 목적 선택
         return (
           <StyledPaper elevation={0} sx={{ p: 4 }}>
             <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
               <Avatar
-                sx={{ 
-                  bgcolor: alpha(primaryColor, 0.2), 
+                sx={{
+                  bgcolor: alpha(primaryColor, 0.2),
                   color: primaryColor,
                   width: 48,
                   height: 48,
-                  mr: 2
+                  mr: 2,
                 }}
               >
                 <ExploreIcon />
@@ -1160,23 +1185,23 @@ const TravelProfile: React.FC = () => {
                 여행 목적 선택
               </Typography>
             </Box>
-            
+
             <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
-              한국 여행에서 가장 관심 있는 활동이나 경험을 선택해주세요. 
-              여러 개를 선택할 수 있으며, 선택한 목적에 맞는 맞춤형 정보를 제공해드립니다.
+              한국 여행에서 가장 관심 있는 활동이나 경험을 선택해주세요. 여러 개를 선택할 수 있으며,
+              선택한 목적에 맞는 맞춤형 정보를 제공해드립니다.
             </Typography>
-            
+
             <Box
               sx={{
                 display: 'grid',
                 gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)' },
                 gap: 2,
-                mb: 4
+                mb: 4,
               }}
             >
-              {travelPurposeOptions.map((option) => {
+              {travelPurposeOptions.map(option => {
                 const isSelected = formData.travelPurposes.includes(option.code);
-                
+
                 return (
                   <Box
                     key={option.code}
@@ -1184,12 +1209,12 @@ const TravelProfile: React.FC = () => {
                       if (isSelected) {
                         setFormData(prev => ({
                           ...prev,
-                          travelPurposes: prev.travelPurposes.filter(code => code !== option.code)
+                          travelPurposes: prev.travelPurposes.filter(code => code !== option.code),
                         }));
                       } else {
                         setFormData(prev => ({
                           ...prev,
-                          travelPurposes: [...prev.travelPurposes, option.code]
+                          travelPurposes: [...prev.travelPurposes, option.code],
                         }));
                       }
                     }}
@@ -1201,10 +1226,12 @@ const TravelProfile: React.FC = () => {
                       cursor: 'pointer',
                       transition: 'all 0.2s ease',
                       '&:hover': {
-                        backgroundColor: isSelected ? alpha(primaryColor, 0.12) : alpha(theme.palette.grey[100], 0.7),
+                        backgroundColor: isSelected
+                          ? alpha(primaryColor, 0.12)
+                          : alpha(theme.palette.grey[100], 0.7),
                         transform: 'translateY(-2px)',
-                        boxShadow: isSelected 
-                          ? `0 4px 10px ${alpha(primaryColor, 0.2)}` 
+                        boxShadow: isSelected
+                          ? `0 4px 10px ${alpha(primaryColor, 0.2)}`
                           : '0 4px 10px rgba(0, 0, 0, 0.05)',
                       },
                       display: 'flex',
@@ -1219,7 +1246,9 @@ const TravelProfile: React.FC = () => {
                         width: 40,
                         height: 40,
                         borderRadius: '50%',
-                        backgroundColor: isSelected ? alpha(primaryColor, 0.2) : alpha(theme.palette.grey[200], 0.7),
+                        backgroundColor: isSelected
+                          ? alpha(primaryColor, 0.2)
+                          : alpha(theme.palette.grey[200], 0.7),
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -1230,9 +1259,9 @@ const TravelProfile: React.FC = () => {
                         <Typography sx={{ fontWeight: 600, color: primaryColor }}>✓</Typography>
                       ) : null}
                     </Box>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ 
+                    <Typography
+                      variant="body2"
+                      sx={{
                         fontWeight: isSelected ? 600 : 500,
                         color: isSelected ? primaryColor : 'text.primary',
                         mb: 0.5,
@@ -1244,10 +1273,10 @@ const TravelProfile: React.FC = () => {
                 );
               })}
             </Box>
-            
-            <Typography 
-              variant="caption" 
-              sx={{ 
+
+            <Typography
+              variant="caption"
+              sx={{
                 color: 'text.secondary',
                 display: 'block',
               }}
@@ -1256,46 +1285,55 @@ const TravelProfile: React.FC = () => {
             </Typography>
           </StyledPaper>
         );
-        
+
       case 5: // 언어 능력
         return (
           <StyledPaper elevation={0} sx={{ p: 4 }}>
             <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
               <Avatar
-                sx={{ 
-                  bgcolor: alpha(primaryColor, 0.2), 
-                      color: primaryColor,
+                sx={{
+                  bgcolor: alpha(primaryColor, 0.2),
+                  color: primaryColor,
                   width: 48,
                   height: 48,
-                  mr: 2
-                  }}
-                >
+                  mr: 2,
+                }}
+              >
                 <TranslateIcon />
               </Avatar>
               <Typography variant="h5" sx={{ fontWeight: 600, color: 'text.primary' }}>
                 언어 능력
               </Typography>
             </Box>
-            
+
             <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
-              한국어 구사 능력을 선택해주세요. 언어 능력에 따라 여행 가이드와 번역 지원을 제공해드립니다.
+              한국어 구사 능력을 선택해주세요. 언어 능력에 따라 여행 가이드와 번역 지원을
+              제공해드립니다.
             </Typography>
-            
+
             <Box
               sx={{
                 display: 'grid',
                 gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' },
                 gap: 2,
-                mb: 4
+                mb: 4,
               }}
             >
               {[
                 { value: 'basic', label: '기본', description: '인사와 간단한 표현 가능' },
-                { value: 'intermediate', label: '중급', description: '일상 대화와 간단한 의사소통 가능' },
-                { value: 'advanced', label: '고급', description: '대부분의 상황에서 자연스러운 대화 가능' }
-              ].map((option) => {
+                {
+                  value: 'intermediate',
+                  label: '중급',
+                  description: '일상 대화와 간단한 의사소통 가능',
+                },
+                {
+                  value: 'advanced',
+                  label: '고급',
+                  description: '대부분의 상황에서 자연스러운 대화 가능',
+                },
+              ].map(option => {
                 const isSelected = formData.language.koreanLevel === option.value;
-                
+
                 return (
                   <Box
                     key={option.value}
@@ -1305,7 +1343,7 @@ const TravelProfile: React.FC = () => {
                         language: {
                           ...prev.language,
                           koreanLevel: option.value,
-                        }
+                        },
                       }));
                     }}
                     sx={{
@@ -1316,10 +1354,12 @@ const TravelProfile: React.FC = () => {
                       cursor: 'pointer',
                       transition: 'all 0.2s ease',
                       '&:hover': {
-                        backgroundColor: isSelected ? alpha(primaryColor, 0.12) : alpha(theme.palette.grey[100], 0.7),
+                        backgroundColor: isSelected
+                          ? alpha(primaryColor, 0.12)
+                          : alpha(theme.palette.grey[100], 0.7),
                         transform: 'translateY(-2px)',
-                        boxShadow: isSelected 
-                          ? `0 4px 10px ${alpha(primaryColor, 0.2)}` 
+                        boxShadow: isSelected
+                          ? `0 4px 10px ${alpha(primaryColor, 0.2)}`
                           : '0 4px 10px rgba(0, 0, 0, 0.05)',
                       },
                       display: 'flex',
@@ -1335,7 +1375,9 @@ const TravelProfile: React.FC = () => {
                         width: 48,
                         height: 48,
                         borderRadius: '50%',
-                        backgroundColor: isSelected ? alpha(primaryColor, 0.2) : alpha(theme.palette.grey[200], 0.7),
+                        backgroundColor: isSelected
+                          ? alpha(primaryColor, 0.2)
+                          : alpha(theme.palette.grey[200], 0.7),
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -1346,9 +1388,9 @@ const TravelProfile: React.FC = () => {
                         <Typography sx={{ fontWeight: 600, color: primaryColor }}>✓</Typography>
                       ) : null}
                     </Box>
-                    <Typography 
-                      variant="subtitle1" 
-                      sx={{ 
+                    <Typography
+                      variant="subtitle1"
+                      sx={{
                         fontWeight: isSelected ? 600 : 500,
                         color: isSelected ? primaryColor : 'text.primary',
                         mb: 1,
@@ -1365,34 +1407,35 @@ const TravelProfile: React.FC = () => {
                     >
                       {option.description}
                     </Typography>
-          </Box>
+                  </Box>
                 );
               })}
             </Box>
-            
-            <Typography 
-              variant="caption" 
-              sx={{ 
+
+            <Typography
+              variant="caption"
+              sx={{
                 color: 'text.secondary',
                 display: 'block',
               }}
             >
-              한국어 실력이 없어도 괜찮습니다. 여행에 필요한 번역 및 언어 지원 정보를 제공해드립니다.
+              한국어 실력이 없어도 괜찮습니다. 여행에 필요한 번역 및 언어 지원 정보를
+              제공해드립니다.
             </Typography>
           </StyledPaper>
         );
-        
+
       case 6: // 관심사 선택
         return (
           <StyledPaper elevation={0} sx={{ p: 4 }}>
             <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
               <Avatar
-                sx={{ 
-                  bgcolor: alpha(primaryColor, 0.2), 
+                sx={{
+                  bgcolor: alpha(primaryColor, 0.2),
                   color: primaryColor,
                   width: 48,
                   height: 48,
-                  mr: 2
+                  mr: 2,
                 }}
               >
                 <FavoriteIcon />
@@ -1401,23 +1444,24 @@ const TravelProfile: React.FC = () => {
                 관심사 선택
               </Typography>
             </Box>
-            
+
             <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
-              여행에서 관심 있는 분야를 선택해주세요. 선택한 관심사에 맞는 맞춤형 정보와 추천을 제공해드립니다.
+              여행에서 관심 있는 분야를 선택해주세요. 선택한 관심사에 맞는 맞춤형 정보와 추천을
+              제공해드립니다.
             </Typography>
-            
+
             <Box sx={{ mb: 4 }}>
-              <Typography 
-                variant="subtitle2" 
-                sx={{ 
+              <Typography
+                variant="subtitle2"
+                sx={{
                   mb: 2,
                   color: 'text.secondary',
-                  fontWeight: 500 
+                  fontWeight: 500,
                 }}
               >
                 관심사 선택 (여러 개 선택 가능)
               </Typography>
-              
+
               <Box
                 sx={{
                   display: 'flex',
@@ -1438,25 +1482,29 @@ const TravelProfile: React.FC = () => {
                   { value: '나이트라이프', icon: '🌃' },
                   { value: '액티비티', icon: '🏊' },
                   { value: '예술', icon: '🎨' },
-                ].map((interest) => {
+                ].map(interest => {
                   const isSelected = formData.interests.includes(interest.value);
-                  
+
                   return (
                     <Chip
                       key={interest.value}
-                      icon={<Box component="span" sx={{ mr: 0.5 }}>{interest.icon}</Box>}
+                      icon={
+                        <Box component="span" sx={{ mr: 0.5 }}>
+                          {interest.icon}
+                        </Box>
+                      }
                       label={interest.value}
                       clickable
                       onClick={() => {
                         if (isSelected) {
                           setFormData(prev => ({
                             ...prev,
-                            interests: prev.interests.filter(i => i !== interest.value)
+                            interests: prev.interests.filter(i => i !== interest.value),
                           }));
                         } else {
                           setFormData(prev => ({
                             ...prev,
-                            interests: [...prev.interests, interest.value]
+                            interests: [...prev.interests, interest.value],
                           }));
                         }
                       }}
@@ -1464,15 +1512,15 @@ const TravelProfile: React.FC = () => {
                         borderRadius: '16px',
                         px: 1,
                         py: 2.5,
-                        backgroundColor: isSelected 
+                        backgroundColor: isSelected
                           ? alpha(primaryColor, 0.1)
                           : alpha(theme.palette.grey[100], 0.7),
                         color: isSelected ? primaryColor : 'text.primary',
-                        border: isSelected 
+                        border: isSelected
                           ? `1px solid ${alpha(primaryColor, 0.3)}`
                           : `1px solid ${alpha(theme.palette.grey[300], 0.5)}`,
                         '&:hover': {
-                          backgroundColor: isSelected 
+                          backgroundColor: isSelected
                             ? alpha(primaryColor, 0.2)
                             : alpha(theme.palette.grey[200], 0.7),
                         },
@@ -1486,15 +1534,15 @@ const TravelProfile: React.FC = () => {
                 })}
               </Box>
             </Box>
-            
+
             {formData.interests.length > 0 && (
               <Box sx={{ mt: 4 }}>
-                <Typography 
-                  variant="subtitle2" 
-                  sx={{ 
+                <Typography
+                  variant="subtitle2"
+                  sx={{
                     mb: 2,
                     color: 'text.primary',
-                    fontWeight: 600 
+                    fontWeight: 600,
                   }}
                 >
                   선택한 관심사 ({formData.interests.length})
@@ -1533,10 +1581,10 @@ const TravelProfile: React.FC = () => {
                 </Box>
               </Box>
             )}
-            
-            <Typography 
-              variant="caption" 
-              sx={{ 
+
+            <Typography
+              variant="caption"
+              sx={{
                 color: 'text.secondary',
                 display: 'block',
                 mt: 2,
@@ -1546,18 +1594,18 @@ const TravelProfile: React.FC = () => {
             </Typography>
           </StyledPaper>
         );
-        
+
       case 7: // 응급 상황 설정
         return (
           <StyledPaper elevation={0} sx={{ p: 4 }}>
             <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
               <Avatar
-                sx={{ 
-                  bgcolor: alpha(primaryColor, 0.2), 
+                sx={{
+                  bgcolor: alpha(primaryColor, 0.2),
                   color: primaryColor,
                   width: 48,
                   height: 48,
-                  mr: 2
+                  mr: 2,
                 }}
               >
                 <HealthAndSafetyIcon />
@@ -1566,18 +1614,19 @@ const TravelProfile: React.FC = () => {
                 응급 상황 설정
               </Typography>
             </Box>
-            
+
             <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
-              응급 상황에 대비한 정보를 입력해주세요. 이 정보는 여행 중 응급 상황이 발생했을 때 도움을 드리기 위해 사용됩니다.
+              응급 상황에 대비한 정보를 입력해주세요. 이 정보는 여행 중 응급 상황이 발생했을 때
+              도움을 드리기 위해 사용됩니다.
             </Typography>
-            
+
             <Box sx={{ mb: 4 }}>
-              <Typography 
-                variant="subtitle2" 
-                sx={{ 
+              <Typography
+                variant="subtitle2"
+                sx={{
                   mb: 1,
                   color: 'text.secondary',
-                  fontWeight: 500 
+                  fontWeight: 500,
                 }}
               >
                 비상 연락처
@@ -1601,13 +1650,13 @@ const TravelProfile: React.FC = () => {
                   ),
                 }}
               />
-              
-              <Typography 
-                variant="subtitle2" 
-                sx={{ 
+
+              <Typography
+                variant="subtitle2"
+                sx={{
                   mb: 1,
                   color: 'text.secondary',
-                  fontWeight: 500 
+                  fontWeight: 500,
                 }}
               >
                 의료 정보
@@ -1632,13 +1681,13 @@ const TravelProfile: React.FC = () => {
                   ),
                 }}
               />
-              
-              <Typography 
-                variant="subtitle2" 
-                sx={{ 
+
+              <Typography
+                variant="subtitle2"
+                sx={{
                   mb: 1,
                   color: 'text.secondary',
-                  fontWeight: 500 
+                  fontWeight: 500,
                 }}
               >
                 음식 알레르기
@@ -1663,10 +1712,10 @@ const TravelProfile: React.FC = () => {
                   ),
                 }}
               />
-              
-              <Box 
-                sx={{ 
-                  p: 2, 
+
+              <Box
+                sx={{
+                  p: 2,
                   backgroundColor: alpha(theme.palette.info.main, 0.05),
                   borderRadius: 2,
                   border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
@@ -1674,10 +1723,10 @@ const TravelProfile: React.FC = () => {
                   alignItems: 'flex-start',
                 }}
               >
-                <Box 
-                  component="span" 
-                  sx={{ 
-                    mr: 1.5, 
+                <Box
+                  component="span"
+                  sx={{
+                    mr: 1.5,
                     color: theme.palette.info.main,
                     fontSize: '1.2rem',
                     mt: 0.5,
@@ -1690,9 +1739,9 @@ const TravelProfile: React.FC = () => {
                   한국에서 여행 중 응급 상황 발생 시 <strong>119</strong>로 전화하세요.
                 </Typography>
               </Box>
-              
-              <Box 
-                sx={{ 
+
+              <Box
+                sx={{
                   mt: 3,
                   display: 'flex',
                   alignItems: 'center',
@@ -1702,7 +1751,7 @@ const TravelProfile: React.FC = () => {
                   control={
                     <Radio
                       checked={formData.emergencyInfo.receiveEmergencyAlerts}
-                      onChange={(e) => {
+                      onChange={e => {
                         setFormData(prev => ({
                           ...prev,
                           emergencyInfo: {
@@ -1711,7 +1760,7 @@ const TravelProfile: React.FC = () => {
                           },
                         }));
                       }}
-                      sx={{ 
+                      sx={{
                         color: theme.palette.grey[400],
                         '&.Mui-checked': { color: primaryColor },
                       }}
@@ -1726,12 +1775,12 @@ const TravelProfile: React.FC = () => {
             </Box>
           </StyledPaper>
         );
-        
+
       default:
         return null;
     }
   };
-  
+
   // 다음 버튼 비활성화 여부 확인
   const isNextDisabled = () => {
     switch (currentStep) {
@@ -1748,15 +1797,19 @@ const TravelProfile: React.FC = () => {
       case 6: // 관심사 선택
         return formData.interests.length === 0;
       case 7: // 응급 상황 설정
-        return !formData.emergencyInfo.contact || !formData.emergencyInfo.medicalConditions || !formData.emergencyInfo.foodAllergies;
+        return (
+          !formData.emergencyInfo.contact ||
+          !formData.emergencyInfo.medicalConditions ||
+          !formData.emergencyInfo.foodAllergies
+        );
       default:
         return false;
     }
   };
-  
+
   // 커스텀 스텝 표시
   const renderCustomStepper = () => {
-  return (
+    return (
       <Box
         sx={{
           display: 'flex',
@@ -1773,9 +1826,9 @@ const TravelProfile: React.FC = () => {
         {stepLabels.map((label, index) => {
           const isActive = currentStep === index + 1;
           const isCompleted = currentStep > index + 1;
-          
+
           return (
-            <Box 
+            <Box
               key={index}
               sx={{
                 display: 'flex',
@@ -1796,12 +1849,11 @@ const TravelProfile: React.FC = () => {
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center',
-                  background: isActive || isCompleted 
-                    ? `linear-gradient(135deg, ${primaryColor} 0%, ${alpha(primaryColor, 0.8)} 100%)`
-                    : theme.palette.grey[200],
-                  boxShadow: isActive 
-                    ? `0 4px 12px ${alpha(primaryColor, 0.3)}`
-                    : 'none',
+                  background:
+                    isActive || isCompleted
+                      ? `linear-gradient(135deg, ${primaryColor} 0%, ${alpha(primaryColor, 0.8)} 100%)`
+                      : theme.palette.grey[200],
+                  boxShadow: isActive ? `0 4px 12px ${alpha(primaryColor, 0.3)}` : 'none',
                   mb: 1,
                   transition: 'all 0.3s ease',
                   transform: isActive ? 'scale(1.1)' : 'scale(1)',
@@ -1814,7 +1866,7 @@ const TravelProfile: React.FC = () => {
                   <Typography sx={{ fontWeight: 600 }}>{index + 1}</Typography>
                 )}
               </Box>
-              
+
               <Typography
                 variant="caption"
                 sx={{
@@ -1834,7 +1886,7 @@ const TravelProfile: React.FC = () => {
       </Box>
     );
   };
-  
+
   return (
     <Box
       sx={{
@@ -1867,34 +1919,34 @@ const TravelProfile: React.FC = () => {
           />
         ))}
       </AnimatedBackground>
-      
+
       <Container maxWidth="md" sx={{ py: 2, zIndex: 1, width: '100%' }}>
         {/* 헤더 */}
-        <Box 
-          sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
             mb: 4,
             mt: 2,
           }}
         >
-          <IconButton 
+          <IconButton
             onClick={handleBack}
-            sx={{ 
+            sx={{
               mr: 2,
               color: 'text.secondary',
-              '&:hover': { color: primaryColor }
+              '&:hover': { color: primaryColor },
             }}
           >
             <ArrowBackIcon />
           </IconButton>
-          
+
           <Box>
-            <Typography 
-              variant="h4" 
-              component="h1" 
-              sx={{ 
-                fontWeight: 600, 
+            <Typography
+              variant="h4"
+              component="h1"
+              sx={{
+                fontWeight: 600,
                 color: 'text.primary',
                 fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' },
                 letterSpacing: '-0.01em',
@@ -1902,9 +1954,9 @@ const TravelProfile: React.FC = () => {
             >
               여행 프로필 설정
             </Typography>
-            <Typography 
-              variant="body2" 
-              sx={{ 
+            <Typography
+              variant="body2"
+              sx={{
                 color: 'text.secondary',
                 opacity: 0.85,
               }}
@@ -1913,10 +1965,10 @@ const TravelProfile: React.FC = () => {
             </Typography>
           </Box>
         </Box>
-        
+
         {/* 스텝퍼 */}
         {renderCustomStepper()}
-        
+
         {/* 메인 콘텐츠 */}
         <motion.div
           key={currentStep}
@@ -1927,11 +1979,11 @@ const TravelProfile: React.FC = () => {
         >
           {renderFormByStep()}
         </motion.div>
-        
+
         {/* 버튼 */}
-        <Box 
-          sx={{ 
-            display: 'flex', 
+        <Box
+          sx={{
+            display: 'flex',
             justifyContent: 'space-between',
             mt: 4,
             mb: 6,
@@ -1956,7 +2008,7 @@ const TravelProfile: React.FC = () => {
           >
             이전
           </Button>
-          
+
           <Button
             variant="contained"
             onClick={currentStep === totalSteps ? handleSubmit : handleNext}
@@ -1986,4 +2038,4 @@ const TravelProfile: React.FC = () => {
   );
 };
 
-export default TravelProfile; 
+export default TravelProfile;

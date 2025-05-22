@@ -11,7 +11,7 @@ import {
 import { useMypageStore } from '../store/mypageStore';
 import styled from '@emotion/styled';
 import { useAuthStore } from '../../auth/store/authStore';
-import { Alert, Snackbar, Typography, Box, Avatar, Chip, Divider } from '@mui/material';
+import { Alert, Snackbar, Typography, Box, Avatar, Chip, Divider, Container } from '@mui/material';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import ForumIcon from '@mui/icons-material/Forum';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
@@ -132,7 +132,7 @@ const StatCard = styled.div`
   text-align: center;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
-  
+
   &:hover {
     transform: translateY(-5px);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
@@ -178,7 +178,7 @@ const ActivityItem = styled.div`
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   margin-bottom: 12px;
   transition: all 0.2s ease;
-  
+
   &:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
@@ -213,11 +213,11 @@ const BadgeGrid = styled.div`
   grid-template-columns: repeat(5, 1fr);
   gap: 16px;
   margin-top: 16px;
-  
+
   @media (max-width: 768px) {
     grid-template-columns: repeat(3, 1fr);
   }
-  
+
   @media (max-width: 480px) {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -232,7 +232,7 @@ const Badge = styled.div`
   background: #fff;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
-  
+
   &:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
@@ -275,16 +275,16 @@ const IconWithText = styled.div`
 // 방문 목적에 따른 한국어 변환 함수
 const translateVisitPurpose = (purpose?: string): string => {
   if (!purpose) return '미지정';
-  
+
   const purposeMap: Record<string, string> = {
-    'travel': '여행',
-    'study': '유학',
-    'work': '취업',
-    'living': '거주',
-    'business': '사업',
-    'other': '기타'
+    travel: '여행',
+    study: '유학',
+    work: '취업',
+    living: '거주',
+    business: '사업',
+    other: '기타',
   };
-  
+
   return purposeMap[purpose] || purpose;
 };
 
@@ -312,7 +312,7 @@ const ProfilePage: React.FC = () => {
     fetchMyDebates,
     fetchMyBookmarks,
   } = useMypageStore();
-  
+
   const { user } = useAuthStore();
 
   // 로컬 상태
@@ -331,7 +331,7 @@ const ProfilePage: React.FC = () => {
   useEffect(() => {
     console.log('프로필 로드 시작, 현재 인증 사용자:', user);
     fetchProfile();
-    
+
     // 사용자 활동 데이터 로드
     if (user?.userId) {
       const userId = Number(user.userId);
@@ -378,7 +378,7 @@ const ProfilePage: React.FC = () => {
     e.preventDefault();
     updateProfile({
       ...formData,
-      userId: profile?.userId // 기존 userId 유지
+      userId: profile?.userId, // 기존 userId 유지
     });
   };
 
@@ -423,7 +423,7 @@ const ProfilePage: React.FC = () => {
 
   // 방문 목적 표시 (여행, 유학, 취업 등)
   const visitPurpose = translateVisitPurpose(profile?.role);
-  
+
   // 통계 데이터 계산
   const postsCount = posts?.totalElements || 0;
   const commentsCount = comments?.totalElements || 0;
@@ -433,51 +433,61 @@ const ProfilePage: React.FC = () => {
 
   // 배지 정보 (임시 데이터)
   const badges = [
-    { 
-      id: 1, 
-      name: '첫 게시글', 
-      icon: '📝', 
+    {
+      id: 1,
+      name: '첫 게시글',
+      icon: '📝',
       description: '첫 번째 게시글을 작성했습니다!',
       unlocked: postsCount > 0,
     },
-    { 
-      id: 2, 
-      name: '소통왕', 
-      icon: '💬', 
+    {
+      id: 2,
+      name: '소통왕',
+      icon: '💬',
       description: '10개 이상의 댓글을 작성했습니다!',
       unlocked: commentsCount >= 10,
     },
-    { 
-      id: 3, 
-      name: '토론 참여자', 
-      icon: '🗳️', 
+    {
+      id: 3,
+      name: '토론 참여자',
+      icon: '🗳️',
       description: '토론에 참여하여 의견을 표현했습니다!',
       unlocked: debatesCount > 0,
     },
-    { 
-      id: 4, 
-      name: '지식 수집가', 
-      icon: '📚', 
+    {
+      id: 4,
+      name: '지식 수집가',
+      icon: '📚',
       description: '첫 번째 북마크를 추가했습니다!',
       unlocked: bookmarksCount > 0,
     },
-    { 
-      id: 5, 
-      name: '활발한 활동가', 
-      icon: '🌟', 
+    {
+      id: 5,
+      name: '활발한 활동가',
+      icon: '🌟',
       description: '10개 이상의 활동을 완료했습니다!',
       unlocked: totalActivities >= 10,
     },
   ];
-  
+
   // 사용자 레벨 계산 (임시 로직)
   const userLevel = Math.min(Math.floor(totalActivities / 5) + 1, 10);
   const maxLevel = 10;
   const levelProgress = (userLevel / maxLevel) * 100;
 
   return (
-    <PageLayout title="내 프로필">
-      <PageContainer>
+    <Container
+      maxWidth="lg"
+      sx={{
+        py: 3,
+        display: 'flex',
+        flexDirection: 'column',
+        flexGrow: 1,
+        position: 'relative',
+        zIndex: 5,
+      }}
+    >
+      <PageLayout title="내 프로필">
         <form onSubmit={handleSubmit}>
           <ProfileSection>
             {/* 왼쪽: 프로필 카드 */}
@@ -518,23 +528,23 @@ const ProfilePage: React.FC = () => {
                   </Button>
                 )}
               </ProfileActions>
-              
+
               <Box mt={2} p={2} bgcolor="#f9f9f9" borderRadius={2}>
                 <Typography variant="body2" color="text.secondary" align="center">
                   활동 레벨: {userLevel}/{maxLevel}
                 </Typography>
-                <Box 
-                  mt={1} 
-                  width="100%" 
-                  height={8} 
-                  bgcolor="#e0e0e0" 
+                <Box
+                  mt={1}
+                  width="100%"
+                  height={8}
+                  bgcolor="#e0e0e0"
                   borderRadius={4}
                   overflow="hidden"
                   position="relative"
                 >
-                  <Box 
-                    width={`${levelProgress}%`} 
-                    height="100%" 
+                  <Box
+                    width={`${levelProgress}%`}
+                    height="100%"
                     bgcolor="#FF9999"
                     borderRadius={4}
                   />
@@ -574,9 +584,7 @@ const ProfilePage: React.FC = () => {
                       rows={4}
                     />
                   ) : (
-                    <ReadOnlyValue>
-                      {profile?.introduction || '자기소개가 없습니다.'}
-                    </ReadOnlyValue>
+                    <ReadOnlyValue>{profile?.introduction || '자기소개가 없습니다.'}</ReadOnlyValue>
                   )}
                 </StyledFormField>
 
@@ -588,21 +596,21 @@ const ProfilePage: React.FC = () => {
                         <strong>국가:</strong> {profile?.country || '국가 정보 없음'}
                       </Typography>
                     </IconWithText>
-                    
+
                     <IconWithText>
                       <TranslateIcon fontSize="small" sx={{ color: '#FF9999' }} />
                       <Typography variant="body2">
                         <strong>언어:</strong> {profile?.language || '언어 정보 없음'}
                       </Typography>
                     </IconWithText>
-                    
+
                     <IconWithText>
                       <CakeIcon fontSize="small" sx={{ color: '#FF9999' }} />
                       <Typography variant="body2">
                         <strong>가입일:</strong> {profile?.joinDate || '가입일 정보 없음'}
                       </Typography>
                     </IconWithText>
-                    
+
                     <IconWithText>
                       <TravelExploreIcon fontSize="small" sx={{ color: '#FF9999' }} />
                       <Typography variant="body2">
@@ -615,7 +623,7 @@ const ProfilePage: React.FC = () => {
             </InfoCard>
           </ProfileSection>
         </form>
-        
+
         {/* 활동 통계 */}
         <Typography variant="h6" component="h2" sx={{ mb: 2, mt: 4 }}>
           활동 통계
@@ -628,7 +636,7 @@ const ProfilePage: React.FC = () => {
             <StatValue>{postsCount}</StatValue>
             <StatLabel>작성한 게시글</StatLabel>
           </StatCard>
-          
+
           <StatCard>
             <StatIcon>
               <ChatBubbleOutlineIcon />
@@ -636,7 +644,7 @@ const ProfilePage: React.FC = () => {
             <StatValue>{commentsCount}</StatValue>
             <StatLabel>작성한 댓글</StatLabel>
           </StatCard>
-          
+
           <StatCard>
             <StatIcon>
               <HowToVoteIcon />
@@ -644,7 +652,7 @@ const ProfilePage: React.FC = () => {
             <StatValue>{debatesCount}</StatValue>
             <StatLabel>참여한 토론</StatLabel>
           </StatCard>
-          
+
           <StatCard>
             <StatIcon>
               <BookmarkIcon />
@@ -653,22 +661,23 @@ const ProfilePage: React.FC = () => {
             <StatLabel>저장한 북마크</StatLabel>
           </StatCard>
         </StatsSection>
-        
+
         {/* 배지 섹션 */}
         <Typography variant="h6" component="h2" sx={{ mb: 2, mt: 4 }}>
           나의 배지
         </Typography>
-        
+
         {badges.some(badge => badge.unlocked) ? (
           <BadgeGrid>
-            {badges.map(badge => 
-              badge.unlocked && (
-                <Badge key={badge.id}>
-                  <BadgeIcon>{badge.icon}</BadgeIcon>
-                  <BadgeName>{badge.name}</BadgeName>
-                  <BadgeDescription>{badge.description}</BadgeDescription>
-                </Badge>
-              )
+            {badges.map(
+              badge =>
+                badge.unlocked && (
+                  <Badge key={badge.id}>
+                    <BadgeIcon>{badge.icon}</BadgeIcon>
+                    <BadgeName>{badge.name}</BadgeName>
+                    <BadgeDescription>{badge.description}</BadgeDescription>
+                  </Badge>
+                )
             )}
           </BadgeGrid>
         ) : (
@@ -682,34 +691,34 @@ const ProfilePage: React.FC = () => {
             </Typography>
           </NoBadge>
         )}
-        
+
         {/* 최근 활동 */}
         <ActivitySection>
           <Typography variant="h6" component="h2" sx={{ mb: 2 }}>
             최근 활동
           </Typography>
-          
+
           <Box sx={{ display: 'flex', mb: 2, gap: 1 }}>
-            <Chip 
-              label="게시글" 
+            <Chip
+              label="게시글"
               onClick={() => setActiveTab('posts')}
               color={activeTab === 'posts' ? 'primary' : 'default'}
               variant={activeTab === 'posts' ? 'filled' : 'outlined'}
             />
-            <Chip 
-              label="댓글" 
+            <Chip
+              label="댓글"
               onClick={() => setActiveTab('comments')}
               color={activeTab === 'comments' ? 'primary' : 'default'}
               variant={activeTab === 'comments' ? 'filled' : 'outlined'}
             />
-            <Chip 
-              label="토론" 
+            <Chip
+              label="토론"
               onClick={() => setActiveTab('debates')}
               color={activeTab === 'debates' ? 'primary' : 'default'}
               variant={activeTab === 'debates' ? 'filled' : 'outlined'}
             />
           </Box>
-          
+
           <ActivityContainer>
             {activeTab === 'posts' && (
               <>
@@ -734,7 +743,7 @@ const ProfilePage: React.FC = () => {
                 )}
               </>
             )}
-            
+
             {activeTab === 'comments' && (
               <>
                 {comments?.content?.length ? (
@@ -756,7 +765,7 @@ const ProfilePage: React.FC = () => {
                 )}
               </>
             )}
-            
+
             {activeTab === 'debates' && (
               <>
                 {debates?.content?.length ? (
@@ -786,7 +795,7 @@ const ProfilePage: React.FC = () => {
             )}
           </ActivityContainer>
         </ActivitySection>
-        
+
         {/* 성공 메시지 표시 */}
         <Snackbar
           open={showSuccess}
@@ -794,16 +803,12 @@ const ProfilePage: React.FC = () => {
           onClose={() => setShowSuccess(false)}
           anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         >
-          <Alert
-            onClose={() => setShowSuccess(false)}
-            severity="success"
-            sx={{ width: '100%' }}
-          >
+          <Alert onClose={() => setShowSuccess(false)} severity="success" sx={{ width: '100%' }}>
             프로필이 성공적으로 업데이트되었습니다.
           </Alert>
         </Snackbar>
-      </PageContainer>
-    </PageLayout>
+      </PageLayout>
+    </Container>
   );
 };
 

@@ -450,7 +450,7 @@ const JobProfile: React.FC = () => {
       }
       
       // 메인 페이지로 이동
-      navigate('/');
+      navigate('/home');
     } catch (error) {
       console.error('온보딩 데이터 저장 실패:', error);
     } finally {

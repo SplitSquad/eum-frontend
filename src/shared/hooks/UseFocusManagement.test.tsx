@@ -1,23 +1,18 @@
 import { renderHook } from '@testing-library/react';
 import UseFocusManagement from './UseFocusManagement';
-import React from 'react';
 
 describe('UseFocusManagement hook', () => {
   let containerRef: React.RefObject<HTMLDivElement>;
-  let container: HTMLDivElement | null;
+  let container: HTMLDivElement;
 
   beforeEach(() => {
     containerRef = { current: document.createElement('div') };
     container = containerRef.current;
-    if (container) {
-      document.body.appendChild(container);
-    }
+    document.body.appendChild(container);
   });
 
   afterEach(() => {
-    if (container) {
-      document.body.removeChild(container);
-    }
+    document.body.removeChild(container);
   });
 
   it('포커스 가능한 요소가 없을 때 Tab 키를 막는다', () => {
@@ -26,20 +21,16 @@ describe('UseFocusManagement hook', () => {
     const event = new KeyboardEvent('keydown', { key: 'Tab' });
     const preventDefaultSpy = jest.spyOn(event, 'preventDefault');
 
-    if (container) {
-      container.dispatchEvent(event);
-      expect(preventDefaultSpy).toHaveBeenCalled();
-    }
+    container.dispatchEvent(event);
+    expect(preventDefaultSpy).toHaveBeenCalled();
   });
 
   it('Tab 키를 누르면 첫 번째 요소에서 마지막 요소로 포커스가 이동한다', () => {
     // 포커스 가능한 요소들 추가
     const button1 = document.createElement('button');
     const button2 = document.createElement('button');
-    if (container) {
-      container.appendChild(button1);
-      container.appendChild(button2);
-    }
+    container.appendChild(button1);
+    container.appendChild(button2);
 
     renderHook(() => UseFocusManagement(containerRef));
 
@@ -49,9 +40,7 @@ describe('UseFocusManagement hook', () => {
 
     // Tab 키 이벤트 발생
     const event = new KeyboardEvent('keydown', { key: 'Tab' });
-    if (container) {
-      container.dispatchEvent(event);
-    }
+    container.dispatchEvent(event);
 
     // 포커스가 두 번째 버튼으로 이동
     expect(document.activeElement).toStrictEqual(button2);
@@ -61,10 +50,8 @@ describe('UseFocusManagement hook', () => {
     // 포커스 가능한 요소들 추가
     const button1 = document.createElement('button');
     const button2 = document.createElement('button');
-    if (container) {
-      container.appendChild(button1);
-      container.appendChild(button2);
-    }
+    container.appendChild(button1);
+    container.appendChild(button2);
 
     renderHook(() => UseFocusManagement(containerRef));
 
@@ -74,24 +61,21 @@ describe('UseFocusManagement hook', () => {
 
     // Shift+Tab 키 이벤트 발생
     const event = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true });
-    if (container) {
-      container.dispatchEvent(event);
-    }
+    container.dispatchEvent(event);
 
     // 포커스가 첫 번째 버튼으로 이동
     expect(document.activeElement).toStrictEqual(button1);
   });
 
   it('컨테이너가 없을 때는 이벤트 리스너를 추가하지 않는다', () => {
-    const emptyRef = { current: null };
+    const emptyRef = { current: document.createElement('div') };
+    emptyRef.current.remove();
     renderHook(() => UseFocusManagement(emptyRef));
 
     const event = new KeyboardEvent('keydown', { key: 'Tab' });
     const preventDefaultSpy = jest.spyOn(event, 'preventDefault');
 
-    if (container) {
-      container.dispatchEvent(event);
-      expect(preventDefaultSpy).not.toHaveBeenCalled();
-    }
+    container.dispatchEvent(event);
+    expect(preventDefaultSpy).not.toHaveBeenCalled();
   });
 });

@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+/*import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from '@/pages/Home';
 import Login from '@/pages/Login';
 import AiAssistant from '@/pages/AiAssistant';
@@ -24,7 +24,7 @@ const AppRoutes = () => {
       <Routes>
         <Route path="/" element={<Loading />} />
         <Route path="/home" element={<Home />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/google-login" element={<Login />} />
         <Route path="/community" element={<Community />} />
         <Route path="/community/groups" element={<CommunityGroup />} />
         <Route path="/community/groups/:id" element={<CommunityGroupDetail />} />
@@ -44,3 +44,4 @@ const AppRoutes = () => {
 };
 
 export default AppRoutes;
+*/

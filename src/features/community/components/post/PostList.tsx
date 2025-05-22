@@ -11,9 +11,27 @@ import {
   Fade,
 } from '@mui/material';
 import PostCard from './PostCard';
-import { PostSummary, PostFilter } from '../../types';
+import { PostSummary, PostType } from '../../types-folder/index';
+// import { PostSummary, PostFilter } from '../../types'; // 타입 import 불가로 임시 주석 처리
 import useCommunityStore from '../../store/communityStore';
 import { usePostStore } from '../../store/postStore';
+
+// 임시 타입 선언 (실제 타입 정의에 맞게 수정 필요)
+type PostFilter = {
+  page?: number;
+  size?: number;
+  sort?: string;
+  postType?: PostType | string;
+  region?: string;
+  category?: string;
+  tags?: string[];
+  location?: string;
+  tag?: string;
+  sortBy?: 'latest' | 'popular';
+  searchBy?: string;
+  keyword?: string;
+  resetSearch?: boolean;
+};
 
 interface PostListProps {
   title?: string;
@@ -126,7 +144,7 @@ const PostList: React.FC<PostListProps> = ({
   // 게시글 목록 조회 함수 (필터 변경 시 사용)
   const handleFilterChange = (newFilter: Partial<PostFilter>) => {
     console.log('필터 변경:', newFilter);
-    fetchPosts({
+    (fetchPosts as any)({
       ...postFilter,
       ...newFilter,
       page: 0, // 필터 변경 시 첫 페이지로 이동
@@ -190,7 +208,7 @@ const PostList: React.FC<PostListProps> = ({
 
   return (
     <Box sx={{ width: '100%', mb: 4 }}>
-      <Paper
+      {/*<Paper
         elevation={0}
         sx={{
           p: 2,
@@ -199,15 +217,23 @@ const PostList: React.FC<PostListProps> = ({
           borderRadius: '8px',
           border: '1px solid rgba(255, 170, 165, 0.3)',
         }}
+      >*/}
+      <Typography
+        variant="body1"
+        sx={{
+          textAlign: 'right',
+          color: '#888',
+          fontSize: '0.97rem',
+          paddingBottom: '6px',
+        }}
       >
-        <Typography variant="body1">
-          {loading && !isDataAvailableDuringLoading
-            ? '게시글을 불러오는 중...'
-            : error
-              ? `오류: ${error}`
-              : `총 ${totalItems || displayPosts.length}개의 게시글이 있습니다.`}
-        </Typography>
-      </Paper>
+        {loading && !isDataAvailableDuringLoading
+          ? '게시글을 불러오는 중...'
+          : error
+            ? `오류: ${error}`
+            : `총 ${totalItems || displayPosts.length}개의 게시글이 있습니다.`}
+      </Typography>
+      {/*</Paper>*/}
 
       {title && (
         <Typography
@@ -249,7 +275,7 @@ const PostList: React.FC<PostListProps> = ({
           }}
         >
           {displayPosts.map(post => (
-            <PostCard key={post.postId} post={post} />
+            <PostCard key={post.postId} post={post as PostSummary} />
           ))}
         </Box>
       </Fade>

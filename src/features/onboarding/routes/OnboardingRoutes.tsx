@@ -1,6 +1,6 @@
 import React, { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { OnboardingGuard } from '../../../routes/guards';
+// import { AuthGuard } from '../../../routes/guards'; // 제거
 import Loading from '../../../pages/Loading';
 
 // 온보딩 페이지 지연 로딩
@@ -21,7 +21,6 @@ const LoadingFallback = () => <Loading />;
  */
 const OnboardingRoutes: React.FC = () => {
   return (
-    <OnboardingGuard>
       <Suspense fallback={<LoadingFallback />}>
         <Routes>
           {/* 목적 선택 페이지 */}
@@ -43,7 +42,6 @@ const OnboardingRoutes: React.FC = () => {
           <Route path="*" element={<Navigate to="/onboarding" replace />} />
         </Routes>
       </Suspense>
-    </OnboardingGuard>
   );
 };
 

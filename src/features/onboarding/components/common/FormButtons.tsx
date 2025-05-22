@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button, useTheme } from '@mui/material';
+import { Box, Button, useTheme, useMediaQuery } from '@mui/material';
 import { useThemeStore } from '../../../theme/store/themeStore';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
@@ -34,6 +34,7 @@ const FormButtons: React.FC<FormButtonsProps> = ({
   isNextDisabled = false,
 }) => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { season } = useThemeStore();
   
   // 계절에 따른 버튼 색상

@@ -8,9 +8,6 @@ export interface Debate {
   source?: string; // 기사 출처
   imageUrl?: string; // 관련 이미지
   
-  // 추천 시스템에서 사용할 사용자 관심사와의 일치도 점수
-  matchScore?: number; // 0~100 사이의 값
-  
   // 찬반 통계
   proCount: number;
   conCount: number;
@@ -52,6 +49,9 @@ export interface Debate {
     page: number;
     totalPages: number;
   };
+  
+  // 추천 시스템에서 사용되는 매칭 점수 (0-100)
+  matchScore?: number;
 }
 
 // 토론 댓글 타입
@@ -227,7 +227,7 @@ export interface CommentResDto {
   isState: string;
   content: string;
   userName: string;
-  userId?: number; // userId 필드 추가
+  userId?: number; // 백엔드에서 userId를 제공할 수 있음
   createdAt: string;
   stance?: 'pro' | 'con';
 }
@@ -239,7 +239,7 @@ export interface ReplyResDto {
   isState: string;
   content: string;
   userName: string;
-  userId?: number; // userId 필드 추가
+  userId?: number; // 백엔드에서 userId를 제공할 수 있음
   createdAt: string;
 }
 
@@ -254,7 +254,13 @@ export function mapDebateResToFrontend(dto: DebateResDto): Debate {
   // 백엔드 응답에 따라 필드 이름이 다를 수 있음
   const debateId = dto.debateId || dto.id || 0;
   const views = dto.views || dto.viewCount || 0;
+  
+  // 댓글 수와 답글 수를 합산하여 총 댓글 수 계산
+  // commentCnt는 백엔드에서 받은 댓글 수
   const commentCnt = dto.commentCnt || dto.commentCount || 0;
+  
+  // 답글 수를 고려한 총 댓글 수 계산 (여기서는 댓글 데이터가 없으므로 백엔드 데이터 그대로 사용)
+  // 나중에 댓글과 답글이 모두 로드되면 그때 정확한 계산을 위해 store에서 별도로 처리
   
   return {
     id: debateId,
@@ -278,37 +284,60 @@ export function mapDebateResToFrontend(dto: DebateResDto): Debate {
     commentCount: commentCnt,
     isVotedState: dto.isVotedState,
     isState: dto.isState,
-    category: dto.category || undefined
+    category: dto.category || undefined,
+    matchScore: dto.nationPercent ? Math.round(agreePercent) : undefined
   };
 }
 
 export function mapCommentResToFrontend(dto: CommentResDto, debateId: number): DebateComment {
+  // 디버그를 위한 로그 추가
+  console.log(`[DEBUG] 댓글 매핑 (ID: ${dto.commentId}):`, dto);
+  
+  // 댓글 내용으로부터 stance 값 추출
+  let extractedStance: 'pro' | 'con' = 'pro'; // 기본값은 pro
+  let content = dto.content || '';
+  
+  // 댓글 내용에서 stance 정보 확인
+  if (content.startsWith('【반대】')) {
+    extractedStance = 'con';
+    console.log(`[DEBUG] 댓글 ID ${dto.commentId}에서 반대 의견 접두사 발견`);
+  } else if (content.startsWith('【찬성】')) {
+    extractedStance = 'pro';
+    console.log(`[DEBUG] 댓글 ID ${dto.commentId}에서 찬성 의견 접두사 발견`);
+  }
+  
+  // stance 값 디버깅 출력
+  console.log(`[DEBUG] 댓글 ID: ${dto.commentId}의 최종 stance 값:`, extractedStance);
+  
   return {
     id: dto.commentId,
     debateId: debateId,
-    userId: dto.userId || 0, // 백엔드에서 userId를 제공하면 사용
+    userId: dto.userId || 0, // 백엔드에서 userId를 제공하는 경우 사용
     userName: dto.userName || '익명',
     content: dto.content || '',
     createdAt: dto.createdAt || new Date().toISOString(),
     reactions: {
       like: dto.like || 0,
       dislike: dto.dislike || 0,
-      happy: 0, // 백엔드에 없음
-      angry: 0, // 백엔드에 없음
-      sad: 0, // 백엔드에 없음
-      unsure: 0, // 백엔드에 없음
+      happy: 0,
+      angry: 0,
+      sad: 0,
+      unsure: 0
     },
-    stance: dto.stance || 'pro', // 백엔드에서 제공하지 않을 수 있음, 기본값 설정
+    stance: dto.stance || extractedStance, // 1순위: 백엔드 응답의 stance, 2순위: 내용에서 추출한 값, 3순위: 기본값 'pro'
     replyCount: dto.reply || 0,
     isState: dto.isState
   };
 }
 
 export function mapReplyResToFrontend(dto: ReplyResDto, commentId: number): DebateReply {
+  // 디버그를 위한 로그 추가
+  console.log(`[DEBUG] 답글 매핑 (ID: ${dto.replyId}):`, dto);
+  
   return {
     id: dto.replyId,
     commentId: commentId,
-    userId: dto.userId || 0, // 백엔드에서 userId를 제공하면 사용
+    userId: dto.userId || 0, // 백엔드에서 userId를 제공하는 경우 사용
     userName: dto.userName,
     content: dto.content,
     createdAt: dto.createdAt,

@@ -94,19 +94,52 @@ const formatTimeAgo = (dateString: string): string => {
   }
 };
 
-// 주소 정제 함수: '서울특별시 중구 장충동 2가' -> '서울-중구'
+// 주소 정제 함수: '서울특별시 중구 장충동 2가' -> '서울특별시 중구 장충동', '서울특별시 양천구 목2동' -> '서울특별시 양천구 목동' 
 const formatAddress = (address: string): string => {
   if (!address || address === '자유') return '자유';
   
-  // 주소에서 시/도와 구/군 추출
+  // 주소에서 구성 요소 추출
   const parts = address.split(' ');
-  if (parts.length >= 2) {
-    // 시/도에서 '특별시', '광역시' 등 제거
-    const city = parts[0].replace(/(특별시|광역시|특별자치도|특별자치시|자치도)/, '');
-    const district = parts[1];
-    return `${city}-${district}`;
+  
+  // 주소 단계에 따라 처리
+  if (parts.length >= 3) {
+    // 시/도 처리 (특별시, 광역시 등은 그대로 유지)
+    const city = parts[0]; // 예: 서울특별시
+    const district = parts[1]; // 예: 중구, 양천구
+    
+    // 동 이름 처리 (숫자 제거)
+    let dong = parts[2]; // 예: 장충동, 목2동
+    // 숫자 제거하고 '동', '가' 등의 접미사 앞 부분만 추출
+    dong = dong.replace(/\d+/, ''); // 숫자 제거 (목2동 -> 목동)
+    
+    return `${city} ${district} ${dong}`;
+  } else if (parts.length >= 2) {
+    // 시/도와 구/군만 있는 경우
+    return `${parts[0]} ${parts[1]}`;
   }
   
+  return address;
+};
+
+// 위치 이름을 더 예쁘게 표시하는 함수
+const formatLocationName = (address: string): string => {
+  if (!address) return '지역 정보 없음';
+  
+  const parts = address.split(' ');
+  
+  // 서울특별시 양천구 목동 형태인 경우
+  if (parts.length >= 3) {
+    // 마지막 부분 (동/읍/면)을 강조
+    const lastPart = parts[parts.length - 1];
+    return `${parts[0]} ${parts[1]} 「${lastPart}」`;
+  }
+  
+  // 두 부분으로 이루어진 경우 (시/도 구/군)
+  if (parts.length === 2) {
+    return `${parts[0]} 「${parts[1]}」`;
+  }
+  
+  // 그 외는 그대로 반환
   return address;
 };
 
@@ -261,6 +294,29 @@ const PostItem = memo(({ post, onClick }: { post: Post, onClick?: () => void }) 
         <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 0.5 }}>
           {post.title}
         </Typography>
+        
+        {/* 모임 게시글인 경우 위치 정보 표시 */}
+        {post.source === 'discussion' && (
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center',
+            mb: 0.5, 
+            color: 'text.secondary',
+            bgcolor: 'rgba(156, 39, 176, 0.1)', // 모임 색상에 맞춤
+            px: 1,
+            py: 0.5,
+            borderRadius: 1,
+            width: 'fit-content'
+          }}>
+            <LocationOnIcon sx={{ fontSize: 16, mr: 0.5, color: sourceColors.discussion }} />
+            <Typography variant="caption" fontWeight={500}>
+              {post.address ? 
+                formatLocationName(post.address) : 
+                '지역 정보 없음'}
+            </Typography>
+          </Box>
+        )}
+        
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
           {post.content}
         </Typography>
@@ -459,9 +515,15 @@ const DynamicFeedWidget: React.FC = () => {
           position.latitude,
           (result: any, status: any) => {
             if (status === window.kakao.maps.services.Status.OK && result[0]) {
-              // ~구 단위까지만 주소 추출 (예: '서울시 강남구')
-              const address = result[0].region_1depth_name + ' ' + result[0].region_2depth_name;
-              // 주소 형식 변환: '서울특별시 중구' -> '서울-중구'
+              // 동까지 포함한 주소 추출
+              const city = result[0].region_1depth_name; // 시/도 (예: 서울특별시)
+              const district = result[0].region_2depth_name; // 구/군 (예: 양천구)
+              const dong = result[0].region_3depth_name || ''; // 동/읍/면 (예: 목동)
+              
+              // 동 정보가 있으면 포함, 없으면 시/구만 사용
+              const address = dong ? `${city} ${district} ${dong}` : `${city} ${district}`;
+              
+              // 가공 처리된 주소 반환
               const formattedAddress = formatAddress(address);
               setUserLocation(formattedAddress); // 상태 업데이트
               resolve(formattedAddress);
@@ -679,7 +741,7 @@ const DynamicFeedWidget: React.FC = () => {
   const loadData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
       // 유저 위치 정보 가져오기
       const userAddress = await getUserLocation();
@@ -693,10 +755,10 @@ const DynamicFeedWidget: React.FC = () => {
         // 병렬로 API 호출
         const [jaYuPostsData, moimPostsData, debatePostsData, infoPostsData] = await Promise.all([
           // 자유 게시글 - address를 '자유'로 설정
-          CommunityService.getRecommendedPosts(4, jaYuAddress),
+          CommunityService.getRecommendedPosts(jaYuAddress, 4),
           
           // 모임 게시글 - 현재 위치 정보 사용
-          CommunityService.getRecommendedPosts(4, moimAddress),
+          CommunityService.getRecommendedPosts(moimAddress, 4),
           
           // 토론 게시글 - 추천 API 사용
           fetchDebatePosts(),

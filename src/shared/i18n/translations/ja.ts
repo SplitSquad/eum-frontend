@@ -1,8 +1,10 @@
 const ja = {
   common: {
     home: 'ホーム',
-    community: 'コミュニティ',
-    debate: 'ディベート',
+    community: 'クラブ＆フォーラム',
+    debate: 'ホットイシュー討論',
+    aiassistant: 'AI専門家',
+    info: '韓国生活ガイド',
     mypage: 'マイページ',
     login: 'ログイン',
     logout: 'ログアウト',
@@ -11,6 +13,8 @@ const ja = {
     settings: '設定',
     languageSettings: '言語設定',
     selectLanguage: '言語を選択',
+    smallGroups: '소그룹 모임',
+    communicationBoard: '자유 게시판',
   },
   nav: {
     accountSettings: 'アカウント設定',
@@ -28,4 +32,4 @@ const ja = {
   },
 };
 
-export default ja; 
+export default ja;

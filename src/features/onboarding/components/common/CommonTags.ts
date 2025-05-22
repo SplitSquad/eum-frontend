@@ -60,7 +60,7 @@ export const interestTags = [
   { id: 'shopping', name: '쇼핑' },
   { id: 'events', name: '축제/이벤트' },
   { id: 'nightlife', name: '나이트라이프' },
-
+  
   // 커뮤니티 태그 추가
   { id: 'tourism', name: '관광/체험' },
   { id: 'food_tour', name: '식도락/맛집' },
@@ -79,7 +79,7 @@ export const interestTags = [
   { id: 'visa_law', name: '비자/법률/노동' },
   { id: 'job_networking', name: '잡페어/네트워킹' },
   { id: 'part_time', name: '알바/파트타임' },
-
+  
   // 토론 카테고리 추가
   { id: 'politics', name: '정치/사회' },
   { id: 'economy', name: '경제' },
@@ -87,6 +87,4 @@ export const interestTags = [
   { id: 'science_tech', name: '과학/기술' },
   { id: 'sports_news', name: '스포츠' },
   { id: 'entertainment_news', name: '엔터테인먼트' },
-
-  // 정보 카테고리 추가
-];
+]; 
