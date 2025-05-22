@@ -489,13 +489,30 @@ const PostCreateEditPage: React.FC = () => {
           selectedFiles
         );
         enqueueSnackbar('게시글이 성공적으로 수정되었습니다.', { variant: 'success' });
+        
+        // 수정된 게시글로 바로 이동
+        navigate(`/community/${postId}`);
       } else {
-        await createPost(postData, selectedFiles);
+        try {
+          // 게시글 생성 시도
+          const result = await createPost(postData, selectedFiles);
         enqueueSnackbar('게시글이 성공적으로 작성되었습니다.', { variant: 'success' });
-      }
-
-      // 게시글 목록 페이지로 이동
+          
+          // 생성 결과 확인
+          console.log('게시글 생성 결과:', result);
+          
+          // 약간의 지연 후 목록 페이지로 이동
+          // 이렇게 하면 서버에서 데이터가 완전히 처리될 시간을 확보함
+          setTimeout(() => {
+            // 강제로 게시판 목록 페이지를 새로고침하여 최신 게시글이 표시되도록 함
+            window.location.href = '/community';
+          }, 500);
+        } catch (error) {
+          console.error('게시글 생성 오류:', error);
+          enqueueSnackbar('게시글 작성에 실패했습니다.', { variant: 'error' });
       navigate('/community');
+        }
+      }
     } catch (error) {
       console.error('게시글 저장 오류:', error);
       enqueueSnackbar('게시글 저장 중 오류가 발생했습니다.', { variant: 'error' });

@@ -30,6 +30,7 @@ export interface Post {
   address?: string;
   location?: string;
   files?: any[];
+  matchScore?: number; // 추천 시스템에서 사용하는 매칭 점수 (0-100)
 }
 
 export interface PostReactionResponse {

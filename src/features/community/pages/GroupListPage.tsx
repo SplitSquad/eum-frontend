@@ -463,61 +463,6 @@ const GroupListPage: React.FC = () => {
     applyFilterWithSearchState({ sortBy, page: 0 });
   };
 
-  // 게시글 타입(자유/모임) 변경 핸들러
-  // const handlePostTypeChange = (newPostType: 'ALL' | '자유' | '모임') => {
-  //   if (!newPostType) return; // 값이 null이면 무시
-  //
-  //   console.log('[DEBUG] 게시글 타입 변경 시작:', newPostType);
-  //
-  //   // 이전 타입과 같으면 변경 없음
-  //   if (
-  //     (newPostType === 'ALL' && selectedPostType === 'ALL') ||
-  //     (newPostType === '자유' && selectedPostType === '자유') ||
-  //     (newPostType === '모임' && selectedPostType === '모임')
-  //   ) {
-  //     console.log('[DEBUG] 같은 게시글 타입 선택, 변경 없음');
-  //     return;
-  //   }
-  //
-  //   // 상태 업데이트
-  //   setSelectedPostType(newPostType);
-  //
-  //   // 필터 업데이트
-  //   const newFilter = { ...filter };
-  //
-  //   if (newPostType === 'ALL') {
-  //     // 전체 선택 시 자유 게시글로 기본 설정 (백엔드 요구사항)
-  //     newFilter.postType = '자유' as PostType;
-  //     // 자유 게시글에는 자유 지역 설정
-  //     newFilter.location = '자유';
-  //     console.log('[DEBUG] 전체 게시글 선택: postType을 "자유"로 설정, location을 "자유"로 설정');
-  //   } else if (newPostType === '자유') {
-  //     newFilter.postType = '자유' as PostType; // 명시적으로 타입 설정
-  //     // 자유 게시글에는 무조건 자유 지역
-  //     newFilter.location = '자유';
-  //     console.log(`[DEBUG] 자유 게시글 선택: postType을 '자유'로 설정, location을 "자유"로 설정`);
-  //   } else {
-  //     // 모임 게시글
-  //     newFilter.postType = '모임' as PostType; // 명시적으로 타입 설정
-  //     // 모임 게시글은 기존 지역 유지하거나 새로 설정
-  //     if (newFilter.location === '자유') {
-  //       newFilter.location = '전체'; // 기존에 자유였으면 전체로 변경
-  //     }
-  //     console.log(
-  //       `[DEBUG] 모임 게시글 선택: postType을 '모임'로 설정, location: ${newFilter.location}`
-  //     );
-  //   }
-  //
-  //   // 지역 선택기 업데이트
-  //   setSelectedRegion(newFilter.location);
-  //
-  //   // 페이지 초기화
-  //   newFilter.page = 0;
-  //
-  //   // 필터 적용 (검색 상태 유지하면서)
-  //   applyFilterWithSearchState(newFilter);
-  // };
-
   // 지역 변경 핸들러
   const { selectedCity, selectedDistrict, selectedNeighborhood } = useRegionStore();
 
@@ -781,51 +726,6 @@ const GroupListPage: React.FC = () => {
               gap: 2,
             }}
           >
-            {/* 게시글 타입(자유/모임) 선택 */}
-            {/* 게시글 타입(자유/모임) 선택 UI 주석 처리
-            <Box>
-              <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600, color: '#555' }}>
-                게시글 타입
-              </Typography>
-              <ToggleButtonGroup
-                color="primary"
-                value={selectedPostType}
-                exclusive
-                onChange={(e, newPostType) => newPostType && handlePostTypeChange(newPostType)}
-                size="small"
-                sx={{
-                  width: '100%',
-                  '& .MuiToggleButton-root': {
-                    borderRadius: '8px',
-                    border: '1px solid #FFD7D7',
-                    '&.Mui-selected': {
-                      bgcolor: 'rgba(255, 170, 165, 0.2)',
-                      color: '#FF6B6B',
-                      fontWeight: 'bold',
-                    },
-                    '&:hover': {
-                      bgcolor: 'rgba(255, 235, 235, 0.4)',
-                    },
-                  },
-                  '& .MuiToggleButtonGroup-grouped': {
-                    borderRadius: '8px !important',
-                    mx: 0.5,
-                  },
-                }}
-              >
-                <ToggleButton value="ALL" sx={{ width: '33%' }}>
-                  전체
-                </ToggleButton>
-                <ToggleButton value="자유" sx={{ width: '33%' }}>
-                  자유 게시글
-                </ToggleButton>
-                <ToggleButton value="모임" sx={{ width: '33%' }}>
-                  모임 게시글
-                </ToggleButton>
-              </ToggleButtonGroup>
-            </Box>
-            */}
-
             {/* 지역 선택  */}
             <Box>
               <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600, color: '#555' }}>

@@ -32,6 +32,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import FlagIcon from '@mui/icons-material/Flag'; // 신고 아이콘 추가
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
@@ -47,6 +48,7 @@ import useAuthStore from '../../auth/store/authStore';
 import { usePostReactions } from '../hooks';
 import * as api from '../api/communityApi';
 import { useLanguageContext } from '../../../features/theme/components/LanguageProvider';
+import ReportDialog, { ServiceType, ReportTargetType } from '../../common/components/ReportDialog';
 
 // 임시 타입 선언 (실제 타입 정의에 맞게 수정 필요)
 type ReactionType = 'LIKE' | 'DISLIKE';
@@ -181,6 +183,12 @@ const PostDetailPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
+  // 신고 기능 관련 상태 추가
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+
+  // 사용자가 작성한 게시글 ID 목록
+  const [userPosts, setUserPosts] = useState<number[]>([]);
+
   // communityStore 사용
   const communityStore = useCommunityStore();
 
@@ -192,18 +200,28 @@ const PostDetailPage: React.FC = () => {
 
   const { handleReaction } = usePostReactions(numericPostId);
 
-  // isState 값을 myReaction으로 변환하는 함수
-  const convertIsStateToMyReaction = (
-    isState?: string | null | undefined
-  ): ReactionType | undefined => {
-    if (!isState) return undefined;
-    if (isState === '좋아요') return 'LIKE';
-    if (isState === '싫어요') return 'DISLIKE';
-    return undefined;
+  // 현재 사용자가 작성한 게시글 목록 가져오기
+  const fetchUserPosts = async () => {
+    // 로그인 상태가 아니면 무시
+    if (!currentUser || !currentUser.userId) return;
+
+    try {
+      // "/community/post/written" API 호출 - 현재 사용자가 작성한 게시글 목록 가져오기
+      const response = await api.getUserPosts(currentUser.userId, 0, 100);
+
+      if (response && response.postList) {
+        // 게시글 ID 목록만 추출하여 저장
+        const postIds = response.postList.map((post: any) => post.postId);
+        console.log('[DEBUG] 사용자 작성 게시글 목록:', postIds);
+        setUserPosts(postIds);
+      }
+    } catch (error) {
+      console.error('[ERROR] 사용자 게시글 목록 로드 실패:', error);
+    }
   };
 
   // 게시글 데이터 로딩
-  const fetchPostData = async () => {
+  const fetchPostData = async (noViewCount: boolean = false) => {
     if (!actualPostId) return;
 
     try {
@@ -224,14 +242,19 @@ const PostDetailPage: React.FC = () => {
         setPost(null);
       }
 
-      console.log('[DEBUG] 게시글 로딩 시작:', { actualPostId, language: currentLanguage });
+      console.log('[DEBUG] 게시글 로딩 시작:', {
+        actualPostId,
+        language: currentLanguage,
+        noViewCount,
+      });
 
       // API에서 직접 데이터를 가져오도록 수정
       const numericPostId = parseInt(actualPostId);
 
       try {
         // fetch 요청에 signal 전달 (필요시 중단 가능)
-        const fetchedPost = await api.getPostById(numericPostId);
+        // noViewCount 파라미터를 전달하여 언어 변경 시 조회수 증가를 방지
+        const fetchedPost = await api.getPostById(numericPostId, signal, noViewCount);
 
         // 요청이 중단되었다면 처리 중단
         if (signal.aborted) {
@@ -294,7 +317,22 @@ const PostDetailPage: React.FC = () => {
 
   // 게시글 로딩 Effect - 게시글 ID 변경 시
   useEffect(() => {
-    fetchPostData();
+    // 리스트에서 왔는지 확인
+    const fromPostList = sessionStorage.getItem('fromPostList') === 'true';
+
+    console.log('[DEBUG] 게시글 상세 페이지 접근 방식:', {
+      fromPostList,
+      noViewCount: fromPostList,
+    });
+
+    // 리스트에서 왔으면 조회수 증가 방지(noViewCount=true), 아니면 조회수 증가
+    fetchPostData(fromPostList);
+
+    // 플래그 초기화
+    sessionStorage.removeItem('fromPostList');
+
+    // 사용자 작성 게시글 목록 갱신 (권한 확인용)
+    fetchUserPosts();
 
     // Clean up 함수
     return () => {
@@ -327,13 +365,23 @@ const PostDetailPage: React.FC = () => {
       const timer = setTimeout(() => {
         if (actualPostId) {
           console.log('[INFO] 언어 변경으로 게시글 새로고침');
-          fetchPostData();
+          // 언어 변경 시에는 조회수를 증가시키지 않음
+          fetchPostData(true);
         }
       }, 100);
 
       return () => clearTimeout(timer);
     }
   }, [currentLanguage, actualPostId]); // 의존성 배열에 필요한 항목 추가
+
+  // 사용자 작성 게시글 목록 가져오기 - 로그인 상태 변경 시
+  useEffect(() => {
+    if (currentUser && currentUser.userId) {
+      fetchUserPosts();
+    } else {
+      setUserPosts([]);
+    }
+  }, [currentUser?.userId]); // 사용자 ID가 변경될 때만 다시 실행
 
   // 게시글 삭제 핸들러
   const handleDeletePost = async () => {
@@ -370,6 +418,21 @@ const PostDetailPage: React.FC = () => {
 
   const handleBack = () => {
     navigate('/community');
+  };
+
+  // 신고 다이얼로그 열기
+  const handleOpenReportDialog = () => {
+    if (!post || !post.userId) {
+      console.error('게시글 작성자 정보가 없습니다.');
+      enqueueSnackbar('신고할 수 없는 게시글입니다.', { variant: 'error' });
+      return;
+    }
+    setReportDialogOpen(true);
+  };
+
+  // 신고 다이얼로그 닫기
+  const handleCloseReportDialog = () => {
+    setReportDialogOpen(false);
   };
 
   // 게시글 좋아요/싫어요 핸들러 (직접 구현 - 반응형 UI)
@@ -455,9 +518,38 @@ const PostDetailPage: React.FC = () => {
     }
   };
 
-  // 현재 사용자가 게시글 작성자인지 확인
-  const isPostAuthor =
-    currentUser && post?.userId?.toString() === (currentUser as any)?.id?.toString();
+  // isState 값을 myReaction으로 변환하는 함수
+  const convertIsStateToMyReaction = (
+    isState?: string | null | undefined
+  ): ReactionType | undefined => {
+    if (!isState) return undefined;
+    if (isState === '좋아요') return 'LIKE';
+    if (isState === '싫어요') return 'DISLIKE';
+    return undefined;
+  };
+
+  // 디버깅 용도의 데이터 로깅
+  console.log('===== 게시글 전체 데이터 =====', post);
+  console.log('===== 사용자 전체 데이터 =====', currentUser);
+  console.log('===== 사용자 작성 게시글 목록 =====', userPosts);
+
+  // 작성자 여부 확인 - 사용자의 작성 게시글 목록에 현재 게시글 ID가 있는지 확인
+  const isPostAuthor = Boolean(post && post.postId && userPosts.includes(post.postId));
+
+  // 관리자 권한 확인
+  const isAdmin = Boolean(currentUser?.role === 'ROLE_ADMIN');
+
+  // 수정/삭제 권한 확인
+  const canEditDelete = isPostAuthor || isAdmin;
+
+  // 디버깅을 위한 권한 상태 로그
+  console.log('===== 권한 확인 결과 =====', {
+    isPostAuthor,
+    isAdmin,
+    canEditDelete,
+    postId: post?.postId,
+    userPosts,
+  });
 
   // 게시글 로딩 중 표시
   if (loading) {
@@ -532,8 +624,8 @@ const PostDetailPage: React.FC = () => {
                 <ArrowBackIcon />
               </IconButton>
 
-              {/* 게시글 작성자일 경우 수정/삭제 버튼 표시 */}
-              {isPostAuthor && (
+              {/* 게시글 작성자 또는 관리자일 경우 수정/삭제 버튼 표시 */}
+              {canEditDelete ? (
                 <Box>
                   <Button
                     startIcon={<EditIcon />}
@@ -554,6 +646,21 @@ const PostDetailPage: React.FC = () => {
                     삭제
                   </Button>
                 </Box>
+              ) : (
+                /* 신고 버튼 - 작성자가 아닌 로그인한 사용자에게만 표시 */
+                currentUser && (
+                  <Box>
+                    <Button
+                      startIcon={<FlagIcon />}
+                      sx={{ color: '#f57c00', borderColor: '#f57c00' }}
+                      variant="outlined"
+                      size="small"
+                      onClick={handleOpenReportDialog}
+                    >
+                      신고하기
+                    </Button>
+                  </Box>
+                )
               )}
             </Box>
 
@@ -700,6 +807,18 @@ const PostDetailPage: React.FC = () => {
             {/* 댓글 섹션 */}
             <Divider sx={{ my: 4 }} />
             <CommentSection postId={numericPostId} />
+
+            {/* 신고 다이얼로그 */}
+            {post && (
+              <ReportDialog
+                open={reportDialogOpen}
+                onClose={handleCloseReportDialog}
+                targetId={post.postId}
+                targetType="POST"
+                serviceType="COMMUNITY"
+                reportedUserId={post.userId || 0}
+              />
+            )}
           </>
         ) : null}
       </Container>

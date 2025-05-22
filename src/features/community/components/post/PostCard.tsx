@@ -338,7 +338,8 @@ const PostCard: React.FC<PostCardProps> = ({ post, hideImage = false, onClick })
   const handleCardClick = async () => {
     const uid = getUserId() || 0;
     // content는 받아 올 수가 없어, api 호출 후 값을 받아와서 웹 로그로 전송
-    const res = await fetch(`${BASE}/community/post/${post.postId}`, {
+    // noViewCount=true 파라미터를 추가하여 조회수 증가 방지
+    const res = await fetch(`${BASE}/community/post/${post.postId}?noViewCount=true`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

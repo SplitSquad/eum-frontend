@@ -61,21 +61,24 @@ const Pagination: React.FC<PaginationProps> = ({
   const pageNumbers = generatePageNumbers();
 
   return (
-    <nav className="flex justify-center">
-      <ul className="flex items-center">
+    <nav style={{ display: 'flex', justifyContent: 'center', margin: '16px 0' }}>
+      <ul style={{ display: 'flex', alignItems: 'center', listStyle: 'none', padding: 0 }}>
         {/* 이전 페이지 버튼 */}
         <li>
           <button
             onClick={() => onPageChange(Math.max(1, currentPage - 1))}
             disabled={currentPage === 1}
-            className={`
-              px-3 py-1 mx-1 rounded-md
-              ${
-                currentPage === 1
-                  ? 'text-gray-400 cursor-not-allowed'
-                  : 'text-gray-700 hover:bg-gray-100'
-              }
-            `}
+            style={{
+              padding: '8px 12px',
+              margin: '0 4px',
+              borderRadius: '4px',
+              border: 'none',
+              background: currentPage === 1 ? '#f0f0f0' : '#fff',
+              color: currentPage === 1 ? '#ccc' : '#333',
+              cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+              boxShadow: currentPage === 1 ? 'none' : '0 1px 3px rgba(0,0,0,0.1)',
+              fontWeight: 'bold',
+            }}
             aria-label="이전 페이지"
           >
             &lt;
@@ -88,26 +91,32 @@ const Pagination: React.FC<PaginationProps> = ({
           if (pageNumber < 0) {
             return (
               <li key={`ellipsis-${index}`}>
-                <span className="px-3 py-1 mx-1 text-gray-500">...</span>
+                <span style={{ padding: '8px 12px', margin: '0 4px', color: '#666' }}>...</span>
               </li>
             );
           }
 
           // 일반 페이지 번호
+          const isCurrentPage = pageNumber === currentPage;
+
           return (
             <li key={pageNumber}>
               <button
                 onClick={() => onPageChange(pageNumber)}
-                className={`
-                  px-3 py-1 mx-1 rounded-md
-                  ${
-                    pageNumber === currentPage
-                      ? 'bg-primary text-white'
-                      : 'text-gray-700 hover:bg-gray-100'
-                  }
-                `}
+                style={{
+                  padding: '8px 12px',
+                  margin: '0 4px',
+                  borderRadius: '4px',
+                  border: 'none',
+                  background: isCurrentPage ? '#e91e63' : '#fff',
+                  color: isCurrentPage ? '#fff' : '#333',
+                  cursor: 'pointer',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                  fontWeight: isCurrentPage ? 'bold' : 'normal',
+                  minWidth: '32px',
+                }}
                 aria-label={`${pageNumber} 페이지`}
-                aria-current={pageNumber === currentPage ? 'page' : undefined}
+                aria-current={isCurrentPage ? 'page' : undefined}
               >
                 {pageNumber}
               </button>
@@ -120,14 +129,17 @@ const Pagination: React.FC<PaginationProps> = ({
           <button
             onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
             disabled={currentPage === totalPages}
-            className={`
-              px-3 py-1 mx-1 rounded-md
-              ${
-                currentPage === totalPages
-                  ? 'text-gray-400 cursor-not-allowed'
-                  : 'text-gray-700 hover:bg-gray-100'
-              }
-            `}
+            style={{
+              padding: '8px 12px',
+              margin: '0 4px',
+              borderRadius: '4px',
+              border: 'none',
+              background: currentPage === totalPages ? '#f0f0f0' : '#fff',
+              color: currentPage === totalPages ? '#ccc' : '#333',
+              cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+              boxShadow: currentPage === totalPages ? 'none' : '0 1px 3px rgba(0,0,0,0.1)',
+              fontWeight: 'bold',
+            }}
             aria-label="다음 페이지"
           >
             &gt;
