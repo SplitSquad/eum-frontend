@@ -51,6 +51,7 @@ import useAuthStore from '../../../features/auth/store/authStore';
 import { usePostStore } from '../store/postStore';
 import { PostApi } from '../api/postApi';
 import { PostType } from '../types-folder';
+import { useRegionStore } from '../store/regionStore';
 
 /**
  * 게시글 목록 페이지 컴포넌트
@@ -112,7 +113,6 @@ const GroupListPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [showFilters, setShowFilters] = useState<boolean>(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [selectedRegion, setSelectedRegion] = useState<string>('전체');
   const [searchType, setSearchType] = useState<string>('제목_내용');
   const [isSearchMode, setIsSearchMode] = useState<boolean>(false);
 
@@ -254,6 +254,12 @@ const GroupListPage: React.FC = () => {
     );
   };
 
+  // Helper function for region string with default
+  const getRegionString = () => {
+    const region = [selectedCity, selectedDistrict, selectedNeighborhood].filter(Boolean).join(' ');
+    return region && region.trim() !== '' ? region : '전체';
+  };
+
   // 필터 변경 시 검색 상태를 유지하는 함수
   const applyFilterWithSearchState = (newFilter: Partial<LocalPostFilter>) => {
     const updatedFilter = { ...filter, ...newFilter };
@@ -276,7 +282,7 @@ const GroupListPage: React.FC = () => {
         page: updatedFilter.page !== undefined ? updatedFilter.page : 0,
         size: updatedFilter.size || 6,
         postType: '모임',
-        region: updatedFilter.location,
+        region: getRegionString(),
         category: updatedFilter.category,
         tag: updatedFilter.tag,
         sort: updatedFilter.sortBy === 'popular' ? 'views,desc' : 'createdAt,desc',
@@ -393,7 +399,7 @@ const GroupListPage: React.FC = () => {
       page: 0,
       size: 6,
       postType: '모임' as PostType,
-      region: selectedRegion,
+      region: getRegionString(),
       category: selectedCategory,
       tag: filter.tag,
       sort: filter.sortBy === 'popular' ? 'views,desc' : 'createdAt,desc',
@@ -513,25 +519,20 @@ const GroupListPage: React.FC = () => {
   // };
 
   // 지역 변경 핸들러
-  const handleRegionChange = (region: string) => {
-    console.log('[DEBUG] 지역 변경:', region);
+  const { selectedCity, selectedDistrict, selectedNeighborhood } = useRegionStore();
 
-    // 이전 지역과 같으면 변경 없음
-    if (region === selectedRegion) {
-      console.log('[DEBUG] 같은 지역 선택, 변경 없음');
-      return;
-    }
-
-    setSelectedRegion(region);
-
+  const handleRegionChange = (
+    city: string | null,
+    district: string | null,
+    neighborhood: string | null
+  ) => {
+    const region = [city, district, neighborhood].filter(Boolean).join(' ');
     // 필터 업데이트
     const newFilter = {
       ...filter,
-      location: region,
+      location: region || '전체',
       page: 0,
     };
-
-    // 필터 적용 (검색 상태 유지하면서)
     applyFilterWithSearchState(newFilter);
   };
 
@@ -830,7 +831,7 @@ const GroupListPage: React.FC = () => {
               <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600, color: '#555' }}>
                 지역 선택
               </Typography>
-              <RegionSelector selectedRegion={selectedRegion} onChange={handleRegionChange} />
+              <RegionSelector onChange={handleRegionChange} />
             </Box>
 
             {/* 카테고리와 태그 영역(통합) */}

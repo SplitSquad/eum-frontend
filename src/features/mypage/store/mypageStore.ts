@@ -1,12 +1,5 @@
 import { create } from 'zustand';
-import { 
-  ProfileInfo, 
-  MyPost, 
-  MyComment, 
-  MyDebate, 
-  MyBookmark, 
-  PaginatedResponse 
-} from '../types';
+import { ProfileInfo, MyPost, MyComment, MyDebate, MyBookmark, PaginatedResponse } from '../types';
 import mypageApi from '../api/mypageApi';
 import { useAuthStore } from '../../auth/store/authStore';
 
@@ -55,7 +48,7 @@ interface MypageState {
   fetchMyComments: (page?: number, size?: number) => Promise<void>;
   fetchMyDebates: (page?: number, size?: number) => Promise<void>;
   fetchMyBookmarks: (page?: number, size?: number) => Promise<void>;
-  
+
   // 상태 리셋
   resetPasswordChangeStatus: () => void;
   resetProfileUpdateStatus: () => void;
@@ -98,34 +91,38 @@ export const useMypageStore = create<MypageState>((set, get) => ({
     set({ profileLoading: 'loading', profileError: null });
     try {
       // 현재 사용자 ID 가져오기
-      const userId = useAuthStore.getState().user?.userId ? Number(useAuthStore.getState().user?.userId) : undefined;
-      
+      const userId = useAuthStore.getState().user?.userId
+        ? Number(useAuthStore.getState().user?.userId)
+        : undefined;
+
       const profile = await mypageApi.getProfileInfo(userId);
       set({ profile, profileLoading: 'success' });
     } catch (error) {
       console.error('프로필 정보 로딩 실패:', error);
-      set({ 
-        profileLoading: 'error', 
-        profileError: error instanceof Error ? error.message : '프로필 정보를 불러오는데 실패했습니다.' 
+      set({
+        profileLoading: 'error',
+        profileError:
+          error instanceof Error ? error.message : '프로필 정보를 불러오는데 실패했습니다.',
       });
     }
   },
 
-  updateProfile: async (profileData) => {
+  updateProfile: async profileData => {
     set({ profileUpdateLoading: 'loading', profileUpdateError: null, profileUpdated: false });
     try {
       const updatedProfile = await mypageApi.updateProfile(profileData);
-      set({ 
-        profile: updatedProfile, 
+      set({
+        profile: updatedProfile,
         profileUpdateLoading: 'success',
-        profileUpdated: true
+        profileUpdated: true,
       });
     } catch (error) {
       console.error('프로필 업데이트 실패:', error);
-      set({ 
-        profileUpdateLoading: 'error', 
-        profileUpdateError: error instanceof Error ? error.message : '프로필 정보 업데이트에 실패했습니다.',
-        profileUpdated: false
+      set({
+        profileUpdateLoading: 'error',
+        profileUpdateError:
+          error instanceof Error ? error.message : '프로필 정보 업데이트에 실패했습니다.',
+        profileUpdated: false,
       });
     }
   },
@@ -134,16 +131,17 @@ export const useMypageStore = create<MypageState>((set, get) => ({
     set({ passwordChangeLoading: 'loading', passwordChangeError: null, passwordChanged: false });
     try {
       const success = await mypageApi.changePassword(currentPassword, newPassword);
-      set({ 
+      set({
         passwordChangeLoading: 'success',
-        passwordChanged: success
+        passwordChanged: success,
       });
     } catch (error) {
       console.error('비밀번호 변경 실패:', error);
-      set({ 
-        passwordChangeLoading: 'error', 
-        passwordChangeError: error instanceof Error ? error.message : '비밀번호 변경에 실패했습니다.',
-        passwordChanged: false
+      set({
+        passwordChangeLoading: 'error',
+        passwordChangeError:
+          error instanceof Error ? error.message : '비밀번호 변경에 실패했습니다.',
+        passwordChanged: false,
       });
     }
   },
@@ -154,20 +152,21 @@ export const useMypageStore = create<MypageState>((set, get) => ({
       // 현재 사용자 ID 가져오기
       const user = useAuthStore.getState().user;
       const userId = user?.userId ? Number(user.userId) : 0;
-      
+
       if (!userId) {
         throw new Error('사용자 ID를 찾을 수 없습니다.');
       }
-      
+
       const posts = await mypageApi.getMyPosts(userId, page, size);
       set({ posts, postsLoading: 'success' });
-      
+
       console.log('[DEBUG] 내 게시글 로드 성공:', posts);
     } catch (error) {
       console.error('내 게시글 로딩 실패:', error);
-      set({ 
-        postsLoading: 'error', 
-        postsError: error instanceof Error ? error.message : '게시글 목록을 불러오는데 실패했습니다.' 
+      set({
+        postsLoading: 'error',
+        postsError:
+          error instanceof Error ? error.message : '게시글 목록을 불러오는데 실패했습니다.',
       });
     }
   },
@@ -178,20 +177,21 @@ export const useMypageStore = create<MypageState>((set, get) => ({
       // 현재 사용자 ID 가져오기
       const user = useAuthStore.getState().user;
       const userId = user?.userId ? Number(user.userId) : 0;
-      
+
       if (!userId) {
         throw new Error('사용자 ID를 찾을 수 없습니다.');
       }
-      
+
       const comments = await mypageApi.getMyComments(userId, page, size);
       set({ comments, commentsLoading: 'success' });
-      
+
       console.log('[DEBUG] 내 댓글 로드 성공:', comments);
     } catch (error) {
       console.error('내 댓글 로딩 실패:', error);
-      set({ 
-        commentsLoading: 'error', 
-        commentsError: error instanceof Error ? error.message : '댓글 목록을 불러오는데 실패했습니다.' 
+      set({
+        commentsLoading: 'error',
+        commentsError:
+          error instanceof Error ? error.message : '댓글 목록을 불러오는데 실패했습니다.',
       });
     }
   },
@@ -202,20 +202,21 @@ export const useMypageStore = create<MypageState>((set, get) => ({
       // 현재 사용자 ID 가져오기
       const user = useAuthStore.getState().user;
       const userId = user?.userId ? Number(user.userId) : 0;
-      
+
       if (!userId) {
         throw new Error('사용자 ID를 찾을 수 없습니다.');
       }
-      
+
       const debates = await mypageApi.getMyDebates(userId, page, size);
       set({ debates, debatesLoading: 'success' });
-      
+
       console.log('[DEBUG] 내 토론 로드 성공:', debates);
     } catch (error) {
       console.error('내 토론 로딩 실패:', error);
-      set({ 
-        debatesLoading: 'error', 
-        debatesError: error instanceof Error ? error.message : '토론 목록을 불러오는데 실패했습니다.' 
+      set({
+        debatesLoading: 'error',
+        debatesError:
+          error instanceof Error ? error.message : '토론 목록을 불러오는데 실패했습니다.',
       });
     }
   },
@@ -223,32 +224,40 @@ export const useMypageStore = create<MypageState>((set, get) => ({
   fetchMyBookmarks: async (page = 0, size = 10) => {
     set({ bookmarksLoading: 'loading', bookmarksError: null });
     try {
-      const bookmarks = await mypageApi.getMyBookmarks(page, size);
+      // 현재 사용자 ID 가져오기
+      const user = useAuthStore.getState().user;
+      const userId = user?.userId ? Number(user.userId) : 0;
+
+      if (!userId) {
+        throw new Error('사용자 ID를 찾을 수 없습니다.');
+      }
+      const bookmarks = await mypageApi.getMyBookmarks(userId, page, size);
       set({ bookmarks, bookmarksLoading: 'success' });
     } catch (error) {
       console.error('북마크 로딩 실패:', error);
-      set({ 
-        bookmarksLoading: 'error', 
-        bookmarksError: error instanceof Error ? error.message : '북마크 목록을 불러오는데 실패했습니다.' 
+      set({
+        bookmarksLoading: 'error',
+        bookmarksError:
+          error instanceof Error ? error.message : '북마크 목록을 불러오는데 실패했습니다.',
       });
     }
   },
 
   // 비밀번호 변경 상태 리셋
   resetPasswordChangeStatus: () => {
-    set({ 
-      passwordChangeLoading: 'idle', 
-      passwordChangeError: null, 
-      passwordChanged: false 
+    set({
+      passwordChangeLoading: 'idle',
+      passwordChangeError: null,
+      passwordChanged: false,
     });
   },
 
   // 프로필 업데이트 상태 리셋
   resetProfileUpdateStatus: () => {
-    set({ 
-      profileUpdateLoading: 'idle', 
-      profileUpdateError: null, 
-      profileUpdated: false 
+    set({
+      profileUpdateLoading: 'idle',
+      profileUpdateError: null,
+      profileUpdated: false,
     });
   },
 
@@ -281,9 +290,9 @@ export const useMypageStore = create<MypageState>((set, get) => ({
 
       profileUpdateLoading: 'idle',
       profileUpdateError: null,
-      profileUpdated: false
+      profileUpdated: false,
     });
-  }
+  },
 }));
 
-export default useMypageStore; 
+export default useMypageStore;
