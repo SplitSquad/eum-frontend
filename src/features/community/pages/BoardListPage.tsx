@@ -39,8 +39,6 @@ import CreateIcon from '@mui/icons-material/Create';
 import ClearIcon from '@mui/icons-material/Clear';
 import { styled } from '@mui/system';
 
-import SpringBackground from '../components/shared/SpringBackground';
-import CategoryTabs from '../components/shared/CategoryTabs';
 import PostList from '../components/post/PostList';
 
 import useCommunityStore from '../store/communityStore';
@@ -482,17 +480,7 @@ const BoardListPage: React.FC = () => {
   };
 
   return (
-    <Container
-      maxWidth="lg"
-      sx={{
-        py: 3,
-        display: 'flex',
-        flexDirection: 'column',
-        flexGrow: 1,
-        position: 'relative',
-        zIndex: 5,
-      }}
-    >
+    <div>
       {/* 페이지 헤더 */}
       <Box
         sx={{
@@ -918,7 +906,7 @@ const BoardListPage: React.FC = () => {
           <PostList />
         </Box>
       )}
-    </Container>
+    </div>
   );
 };
 

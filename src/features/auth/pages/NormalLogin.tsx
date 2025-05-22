@@ -15,6 +15,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 import { loginUser } from '../api/authApi';
+import Loading from '@/pages/Loading';
 // 로그인 카드 스타일
 const LoginCard = styled(Paper)`
   padding: 2rem;
@@ -139,6 +140,7 @@ const LoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
 
   // 이미 로그인되어 있으면 메인 페이지로 리디렉션
+  /*
   useEffect(() => {
     // sessionStorage에도 토큰이 있으면 로그인 상태로 간주
     const token = sessionStorage.getItem('auth_token');
@@ -146,7 +148,7 @@ const LoginPage: React.FC = () => {
       navigate('/home');
     }
   }, [isAuthenticated, navigate]);
-
+*/
   const handleLoginClick = async () => {
     setLoading(true);
     try {
@@ -159,11 +161,13 @@ const LoginPage: React.FC = () => {
       const updatedUser = useAuthStore.getState().user;
       setLoading(false);
       // 온보딩 여부에 따라 라우팅
-      if (updatedUser?.isNewUser || !updatedUser?.isOnBoardDone) {
-        navigate('/onboarding');
-      } else {
-        navigate('/home');
-      }
+      setTimeout(() => {
+        if (updatedUser?.isNewUser || !updatedUser?.isOnBoardDone) {
+          navigate('/onboarding');
+        } else {
+          navigate('/home');
+        }
+      }, 1000);
     } catch (err: any) {
       setLoading(false);
       setError(err.message || '로그인 중 오류가 발생했습니다.');
@@ -175,75 +179,73 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="md">
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          minHeight: 'calc(100vh - 4rem)',
-          position: 'relative',
-          zIndex: 10,
-        }}
-      >
-        <Fade in={true} timeout={1000}>
-          <LoginCard elevation={3}>
-            <LogoContainer>
-              {/* TODO: 실제 로고로 교체 */}
-              <Typography
-                variant="h4"
+    <>
+      {loading && <Loading />}
+      <Container maxWidth="md">
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            minHeight: 'calc(100vh - 4rem)',
+            position: 'relative',
+            zIndex: 10,
+          }}
+        >
+          <Fade in={true} timeout={1000}>
+            <LoginCard elevation={3}>
+              <LogoContainer>
+                {/* TODO: 실제 로고로 교체 */}
+                <Typography
+                  variant="h4"
+                  sx={{
+                    fontWeight: 700,
+                    color: '#FF9999',
+                    fontFamily: '"Roboto", "Noto Sans KR", sans-serif',
+                  }}
+                >
+                  봄날의 기억
+                </Typography>
+              </LogoContainer>
+              <PageTitle variant={isMobile ? 'h5' : 'h4'}>환영합니다</PageTitle>
+              <Subtitle variant="body1">
+                일반 로그인 시 구글 캘린더 연동 기능 사용이 어렵습니다.
+              </Subtitle>
+              {error && (
+                <Box mb={3}>
+                  <Alert severity="error" onClose={() => setError(null)}>
+                    {error}
+                  </Alert>
+                </Box>
+              )}
+              <Box
                 sx={{
-                  fontWeight: 700,
-                  color: '#FF9999',
-                  fontFamily: '"Roboto", "Noto Sans KR", sans-serif',
+                  width: '100%',
+                  mt: 2,
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'scale(1.02)',
+                  },
                 }}
               >
-                봄날의 기억
-              </Typography>
-            </LogoContainer>
-
-            <PageTitle variant={isMobile ? 'h5' : 'h4'}>환영합니다</PageTitle>
-
-            <Subtitle variant="body1">
-              일반 로그인 시 구글 캘린더 연동 기능 사용이 어렵습니다.
-            </Subtitle>
-
-            {error && (
-              <Box mb={3}>
-                <Alert severity="error" onClose={() => setError(null)}>
-                  {error}
-                </Alert>
+                {/*아이디 비밀번호 입력 영역*/}
+                <LoginInputs id={id} setId={setId} password={password} setPassword={setPassword} />
+                {/*로그인 버튼*/}
+                <LoginActionButton onClick={handleLoginClick} loading={loading} />
+                {/*회원가입 버튼*/}
+                <SignupButton onClick={handleSignupClick} />
               </Box>
-            )}
-
-            <Box
-              sx={{
-                width: '100%',
-                mt: 2,
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  transform: 'scale(1.02)',
-                },
-              }}
-            >
-              {/*아이디 비밀번호 입력 영역*/}
-              <LoginInputs id={id} setId={setId} password={password} setPassword={setPassword} />
-              {/*로그인 버튼*/}
-              <LoginActionButton onClick={handleLoginClick} loading={loading} />
-              {/*회원가입 버튼*/}
-              <SignupButton onClick={handleSignupClick} />
-            </Box>
-
-            <Box mt={4}>
-              <Typography variant="caption" color="textSecondary">
-                로그인 시 서비스 이용약관 및 개인정보 처리방침에 동의하게 됩니다.
-              </Typography>
-            </Box>
-          </LoginCard>
-        </Fade>
-      </Box>
-    </Container>
+              <Box mt={4}>
+                <Typography variant="caption" color="textSecondary">
+                  로그인 시 서비스 이용약관 및 개인정보 처리방침에 동의하게 됩니다.
+                </Typography>
+              </Box>
+            </LoginCard>
+          </Fade>
+        </Box>
+      </Container>
+    </>
   );
 };
 

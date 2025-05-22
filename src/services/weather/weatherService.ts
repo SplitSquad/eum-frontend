@@ -261,7 +261,7 @@ const WeatherService = {
           WSD: '1.2', // 풍속
         };
       }
-      
+
       // 기상청 API 호출
       const url = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst`;
       const params = {
@@ -274,9 +274,9 @@ const WeatherService = {
         nx: gridCoord.nx.toString(),
         ny: gridCoord.ny.toString(),
       };
-      
+
       const response = await axios.get(url, { params });
-      
+
       // 결과 데이터 변환 (카테고리별 값을 키-값 형태로 변환)
       if (
         response.data?.response?.body?.items?.item &&
@@ -288,7 +288,7 @@ const WeatherService = {
         });
         return result;
       }
-      
+
       throw new Error('Invalid API response format');
     } catch (error) {
       console.error('기상청 API 호출 실패:', error);
@@ -303,19 +303,19 @@ const WeatherService = {
       };
     }
   },
-  
+
   // 단기예보 정보 가져오기 (오늘/내일 날씨)
   async getVilageFcst(latitude: number, longitude: number): Promise<any> {
     try {
       // 위경도를 기상청 격자 좌표로 변환
       const gridCoord = convertToGridCoord(latitude, longitude);
-      
+
       // API 호출에 사용할 날짜/시간 정보
       const { baseDate, baseTime } = getFormattedDateTime();
-      
+
       // 기상청 API 키
       let apiKey = import.meta.env.VITE_WEATHER_API_KEY;
-      
+
       // 운영 환경이 아닌 경우 실제 API 호출 대신 더미 데이터 반환
       if (!apiKey) {
         console.warn('Weather API key not provided. Returning mock forecast data.');
@@ -324,12 +324,27 @@ const WeatherService = {
           { fcstDate: baseDate, fcstTime: '1200', category: 'SKY', fcstValue: '1' },
           { fcstDate: baseDate, fcstTime: '1200', category: 'PTY', fcstValue: '0' },
           // 내일
-          { fcstDate: String(Number(baseDate) + 1), fcstTime: '1200', category: 'TMP', fcstValue: '23' },
-          { fcstDate: String(Number(baseDate) + 1), fcstTime: '1200', category: 'SKY', fcstValue: '3' },
-          { fcstDate: String(Number(baseDate) + 1), fcstTime: '1200', category: 'PTY', fcstValue: '0' },
+          {
+            fcstDate: String(Number(baseDate) + 1),
+            fcstTime: '1200',
+            category: 'TMP',
+            fcstValue: '23',
+          },
+          {
+            fcstDate: String(Number(baseDate) + 1),
+            fcstTime: '1200',
+            category: 'SKY',
+            fcstValue: '3',
+          },
+          {
+            fcstDate: String(Number(baseDate) + 1),
+            fcstTime: '1200',
+            category: 'PTY',
+            fcstValue: '0',
+          },
         ];
       }
-      
+
       // 기상청 API 호출
       const url = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst`;
       const params = {
@@ -342,9 +357,9 @@ const WeatherService = {
         nx: gridCoord.nx.toString(),
         ny: gridCoord.ny.toString(),
       };
-      
+
       const response = await axios.get<KmaApiResponse>(url, { params });
-      
+
       // 결과 데이터 변환
       if (
         response.data?.response?.body?.items?.item &&
@@ -352,7 +367,7 @@ const WeatherService = {
       ) {
         return response.data.response.body.items.item;
       }
-      
+
       throw new Error('Invalid API response format');
     } catch (error) {
       console.error('기상청 단기예보 API 호출 실패:', error);
@@ -361,7 +376,7 @@ const WeatherService = {
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
       const tomorrowDate = tomorrow.toISOString().split('T')[0].replace(/-/g, '');
-      
+
       return [
         { fcstDate: baseDate, fcstTime: '1200', category: 'TMP', fcstValue: '22' },
         { fcstDate: baseDate, fcstTime: '1200', category: 'SKY', fcstValue: '1' },
@@ -373,7 +388,7 @@ const WeatherService = {
       ];
     }
   },
-  
+
   // 종합된 날씨 정보 가져오기
   async getWeatherInfo(
     latitude: number,
@@ -383,49 +398,47 @@ const WeatherService = {
     try {
       // 초단기실황 API 호출 (현재 날씨)
       const currentWeather = await this.getUltraSrtNcst(latitude, longitude);
-      
+
       // 단기예보 API 호출 (예보)
       const forecast = await this.getVilageFcst(latitude, longitude);
-      
+
       // 현재 온도
       const temperature = parseFloat(currentWeather.T1H);
-      
+
       // 현재 날씨 상태
-      const current = 
-        PTY_STATUS[currentWeather.PTY] || 
-        SKY_STATUS[currentWeather.SKY] || 
-        '맑음';
-      
+      const current = PTY_STATUS[currentWeather.PTY] || SKY_STATUS[currentWeather.SKY] || '맑음';
+
       // 예보 데이터 가공
-      const forecastData = [];
-      
+      const forecastData: { day: string; icon: string; temp: number }[] = [];
+
       // 오늘 정오 예보
       const today = new Date();
       const todayStr = today.toISOString().split('T')[0].replace(/-/g, '');
-      
+
       // 내일 정오 예보
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
       const tomorrowStr = tomorrow.toISOString().split('T')[0].replace(/-/g, '');
-      
+
       // 모레 정오 예보
       const dayAfterTomorrow = new Date();
       dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
       const dayAfterTomorrowStr = dayAfterTomorrow.toISOString().split('T')[0].replace(/-/g, '');
-      
+
       // 날짜별 정오 데이터 찾기
       const findNoonData = (date: string, category: string) => {
         const items = forecast.filter(
-          (item: any) => item.fcstDate === date && item.fcstTime === '1200' && item.category === category
+          (item: any) =>
+            item.fcstDate === date && item.fcstTime === '1200' && item.category === category
         );
         return items.length > 0 ? items[0].fcstValue : null;
       };
-      
+
       // 오늘 정오 예보
       const todayTemp = findNoonData(todayStr, 'TMP');
       const todaySky = findNoonData(todayStr, 'SKY');
       const todayPty = findNoonData(todayStr, 'PTY');
-      
+
       if (todayTemp && todaySky) {
         forecastData.push({
           day: '오늘',
@@ -433,12 +446,12 @@ const WeatherService = {
           temp: parseFloat(todayTemp),
         });
       }
-      
+
       // 내일 정오 예보
       const tomorrowTemp = findNoonData(tomorrowStr, 'TMP');
       const tomorrowSky = findNoonData(tomorrowStr, 'SKY');
       const tomorrowPty = findNoonData(tomorrowStr, 'PTY');
-      
+
       if (tomorrowTemp && tomorrowSky) {
         forecastData.push({
           day: '내일',
@@ -446,12 +459,12 @@ const WeatherService = {
           temp: parseFloat(tomorrowTemp),
         });
       }
-      
+
       // 모레 정오 예보
       const dayAfterTomorrowTemp = findNoonData(dayAfterTomorrowStr, 'TMP');
       const dayAfterTomorrowSky = findNoonData(dayAfterTomorrowStr, 'SKY');
       const dayAfterTomorrowPty = findNoonData(dayAfterTomorrowStr, 'PTY');
-      
+
       if (dayAfterTomorrowTemp && dayAfterTomorrowSky) {
         forecastData.push({
           day: '모레',
@@ -459,7 +472,7 @@ const WeatherService = {
           temp: parseFloat(dayAfterTomorrowTemp),
         });
       }
-      
+
       // 예보 데이터가 없는 경우 기본 데이터 생성
       if (forecastData.length === 0) {
         forecastData.push(
@@ -468,7 +481,7 @@ const WeatherService = {
           { day: '모레', icon: '🌧️', temp: 22 }
         );
       }
-      
+
       // 최종 날씨 정보 반환
       return {
         current,
@@ -492,7 +505,7 @@ const WeatherService = {
       };
     }
   },
-  
+
   // 시간대별 인사말 생성
   getTimeBasedGreeting(): string {
     const hours = new Date().getHours();
@@ -504,31 +517,31 @@ const WeatherService = {
       return '편안한 저녁이에요';
     }
   },
-  
+
   // 날씨에 따른 활동 추천
   getWeatherBasedActivities(weather: string): string[] {
     const activities: Record<string, string[]> = {
-      '맑음': [
+      맑음: [
         '오늘은 날씨가 좋네요! 산책하기 좋은 날이에요.',
         '햇살이 좋아요. 야외 활동하기 좋은 날씨네요.',
         '창문을 열어 상쾌한 공기를 마셔보세요.',
       ],
-      '구름많음': [
+      구름많음: [
         '구름이 많지만 야외 활동하기에 괜찮은 날씨네요.',
         '선크림은 잊지 마세요. 구름 사이로 UV는 여전히 강해요.',
         '약간 흐리지만 기분 좋은 하루가 될 거예요.',
       ],
-      '흐림': [
+      흐림: [
         '오늘은 흐린 날씨네요. 실내 활동은 어떨까요?',
         '흐린 날은 집에서 책 읽기 좋은 날이에요.',
         '습도가 높을 수 있으니 체감온도에 주의하세요.',
       ],
-      '비': [
+      비: [
         '비가 오고 있어요. 우산 잊지 마세요!',
         '오늘은 실내에서 차 한잔의 여유를 즐겨보는 건 어떨까요?',
         '비 오는 날의 영화 감상도 좋겠네요.',
       ],
-      '눈': [
+      눈: [
         '눈이 내리고 있어요! 따뜻하게 입고 나가세요.',
         '미끄러운 길 조심하세요.',
         '따뜻한 음료로 몸을 녹여보세요.',
@@ -537,7 +550,7 @@ const WeatherService = {
 
     // 해당 날씨에 맞는 활동 또는 기본 활동 반환
     return activities[weather] || activities['맑음'];
-  }
+  },
 };
 
 // 글로벌 윈도우 객체에 카카오맵 타입 확장 (TypeScript 정의)
@@ -547,4 +560,4 @@ declare global {
   }
 }
 
-export default WeatherService; 
+export default WeatherService;

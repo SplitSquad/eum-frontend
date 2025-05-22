@@ -4,7 +4,6 @@ import { AuthGuard, GuestGuard, RoleGuard } from './guards';
 // import TempAuthPage from '../features/auth/pages/TempAuthPage'; // 임시 로그인 제거
 import { OAuthCallbackPage, AccessDeniedPage } from '../features/auth';
 import LoginPage from '../pages/LoginPage';
-import Profile from '../pages/Profile';
 import { LanguageProvider } from '../features/theme';
 import AiAssistant from '@/tests/unit/componentPageTest/testPages/AiAssistant';
 import SignUpPage from '@/features/auth/pages/SignUpPage';
@@ -59,7 +58,11 @@ const router = createBrowserRouter([
     element: <AppLayout />,
     children: [
       {
-        path: '',
+        index: true,
+        element: <Navigate to="/init" replace />,
+      },
+      {
+        path: '/init',
         element: (
           <Suspense fallback={<LoadingFallback />}>
             <Init isLoaded={false} />

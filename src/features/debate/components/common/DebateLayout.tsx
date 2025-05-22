@@ -59,17 +59,7 @@ const DebateLayout: React.FC<DebateLayoutProps> = ({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   return (
-    <Container
-      maxWidth="lg"
-      sx={{
-        py: 3,
-        display: 'flex',
-        flexDirection: 'column',
-        flexGrow: 1,
-        position: 'relative',
-        zIndex: 5,
-      }}
-    >
+    <div>
       {/* 페이지 헤더 */}
       <Box
         sx={{
@@ -98,7 +88,7 @@ const DebateLayout: React.FC<DebateLayoutProps> = ({
         <Main>{children}</Main>
       </LayoutContent>
       <Toast />
-    </Container>
+    </div>
   );
 };
 

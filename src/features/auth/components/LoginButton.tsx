@@ -75,19 +75,6 @@ const LoginButton: React.FC<LoginButtonProps> = ({ buttonText = '일반 계정�
   const navigate = useNavigate();
   // 로그인 페이지 호출 함수
   const handleLogin = async () => {
-    /*try {
-      setLoading(true);
-      // TODO: 실제 로그인 로직 구현
-      // 예시: const response = await loginApi(id, password);
-      const response = { token: 'dummy', user: { name: '홍길동' } };
-      setTimeout(() => {
-        setLoading(false);
-        if (onSuccess) onSuccess(response);
-      }, 1000);
-    } catch (error) {
-      setLoading(false);
-      if (onError) onError(error);
-    }*/
     navigate('/login');
   };
 

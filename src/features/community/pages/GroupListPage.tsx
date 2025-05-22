@@ -482,38 +482,7 @@ const GroupListPage: React.FC = () => {
   };
 
   return (
-    <Container
-      maxWidth="lg"
-      sx={{
-        py: 3,
-        display: 'flex',
-        flexDirection: 'column',
-        flexGrow: 1,
-        position: 'relative',
-        zIndex: 5,
-      }}
-    >
-      {/* 디버깅 정보 패널 
-      <Paper
-        elevation={1}
-        sx={{
-          p: 2,
-          mb: 3,
-          bgcolor: 'rgba(255, 255, 255, 0.8)',
-          border: '1px solid #FF9999',
-        }}
-      >
-        <Typography variant="h6" gutterBottom>
-          DEBUG: 페이지 상태
-        </Typography>
-        <Typography variant="body2">
-          선택 카테고리: {selectedCategory} | 카테고리 타입: {typeof selectedCategory} | 게시글 수:{' '}
-          {posts.length} <br />
-          선택 게시글 타입: {selectedPostType} | 필터 게시글 타입: {filter.postType || 'ALL'} <br />
-          로딩 상태: {postLoading ? 'LOADING...' : 'READY'} | 오류: {postError || 'NONE'}
-        </Typography>
-      </Paper>*/}
-
+    <div>
       {/* 페이지 헤더 */}
       <Box
         sx={{
@@ -947,7 +916,7 @@ const GroupListPage: React.FC = () => {
           <PostList />
         </Box>
       )}
-    </Container>
+    </div>
   );
 };
 

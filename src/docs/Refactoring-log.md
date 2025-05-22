@@ -62,3 +62,6 @@
   - Slide1,2,3.tsx: 슬라이드 애니메이션 구현을 위한 슬라이드 구성 요소
   - IntroSlider.tsx: 애니메이션 디자인 구성 컴포넌트
   - UseIntroSlider.tsx: 애니메이션 동작 훅
+
+# 에러 fix
+ - 언어 변경 시 리 랜더링 안됨
