@@ -3,7 +3,6 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import DebateListPage from './pages/DebateListPage';
 import DebateDetailPage from './pages/DebateDetailPage';
 import MainIssuesPage from './pages/MainIssuesPage';
-import AppLayout from '@/components/layout/LegacyAppLayout';
 
 /**
  * 토론 기능의 라우팅을 관리하는 컴포넌트

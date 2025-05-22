@@ -565,7 +565,7 @@ function Header({
   const handleLogoutClick = () => {
     handleLogout();
     handleProfileMenuClose();
-    navigate('/home');
+    navigate('/google-login');
   };
 
   const handleNavigation = (path: string) => {
