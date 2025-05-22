@@ -18,6 +18,7 @@ import { DebateRoutes } from '../features/debate';
 // 마이페이지 기능 임포트
 import { MypageRoutes } from '../features/mypage';
 import NormalLogin from '@/features/auth/pages/NormalLogin';
+import { InfoRoutes } from '@/features/info/utils';
 
 // 온보딩 라우트 컴포넌트 임포트
 const OnboardingRoutes = lazy(() => import('../features/onboarding/routes/OnboardingRoutes'));
@@ -143,6 +144,24 @@ const router = createBrowserRouter([
           <Suspense fallback={<LoadingFallback />}>
             <AuthGuard>
               <DebateRoutes />
+            </AuthGuard>
+          </Suspense>
+        ),
+      },
+      {
+        path: 'info/*',
+        element: (
+          <AuthGuard>
+            <InfoRoutes />
+          </AuthGuard>
+        ),
+      },
+      {
+        path: 'information/*',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <AuthGuard>
+              <InfoRoutes />
             </AuthGuard>
           </Suspense>
         ),

@@ -37,6 +37,7 @@ import LanguageIcon from '@mui/icons-material/Language';
 import { SUPPORTED_LANGUAGES } from '@/features/onboarding/components/common/LanguageSelector';
 import { getGoogleAuthUrl } from '@/features/auth/api/authApi';
 import { AlarmCenter } from '@/components/notification/AlarmCenter';
+import { InfoIcon } from 'lucide-react';
 
 /**-----------------------------------웹로그 관련------------------------------------ **/
 // userId 꺼내오는 헬퍼
@@ -319,6 +320,7 @@ function logMenuClick(menuName: string, currentPath: string, clickPath: string) 
 // 네비게이션 항목 정의
 const getNavItems = (t: (key: string) => string) => [
   { name: t('common.home'), path: '/home', icon: <HomeIcon /> },
+  { name: t('common.info'), path: '/info', icon: <ForumIcon /> },
   {
     name: t('common.community'),
     path: '/community',

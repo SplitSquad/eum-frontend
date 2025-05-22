@@ -2,7 +2,7 @@
 
 import React, { useRef } from 'react';
 import Header from './Header';
-import GuestHeader from './GuestHeader';
+//import GuestHeader from './GuestHeader';
 import Footer from './Footer';
 import { useUserStore } from '@/shared/store/UserStore';
 import { useModalStore } from '@/shared/store/ModalStore';
@@ -43,8 +43,6 @@ export default function LegacyAppLayout({ children }: { children: React.ReactNod
       <Modal isOpen={isModalOpen} onClose={closeModal} position={position}>
         {content ?? <ModalContent />}
       </Modal>
-
-      {showHeader && (isAuthenticated ? <Header /> : <GuestHeader />)}
 
       <main className="flex-1 flex flex-col">
         <div className="flex-1">{children}</div>
