@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from '@emotion/styled';
 import { keyframes } from '@emotion/react';
-import { SidebarMenu, SpringBackground } from '.';
+import { SidebarMenu } from '.';
 import { useLocation } from 'react-router-dom';
 
 // Animations
@@ -231,7 +231,7 @@ const ContentArea = styled.main<{ isVisible: boolean; isLeaving: boolean }>`
 `;
 
 const PageContent = styled.div`
-  max-width: 700px;
+  max-width: 1000px;
   margin: 0 auto;
   height: 100%;
   position: relative;
@@ -503,7 +503,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({ children, title }) => {
             </MobileSidebar>
             <Overlay isOpen={isMobileSidebarOpen} onClick={closeMobileSidebar} />
 
-            <MobileMenuButton onClick={toggleMobileSidebar} aria-label="메뉴 열기/닫기">
+            {/* <MobileMenuButton onClick={toggleMobileSidebar} aria-label="메뉴 열기/닫기">
               {isMobileSidebarOpen ? (
                 <CloseIcon>
                   <span></span>
@@ -517,7 +517,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({ children, title }) => {
                   <span></span>
                 </MenuIcon>
               )}
-            </MobileMenuButton>
+            </MobileMenuButton> */}
 
             {/* 내용 영역 - 페이지 전환 시 이 부분만 변경됨 */}
             <ContentArea isVisible={contentVisible} isLeaving={isLeaving}>

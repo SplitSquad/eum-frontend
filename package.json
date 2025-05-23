@@ -17,6 +17,7 @@
     "@mui/material": "^7.1.0",
     "@mui/system": "^7.1.0",
     "@mui/x-date-pickers": "^8.2.0",
+    "@tanstack/react-table": "^8.21.3",
     "@tiptap/extension-highlight": "^2.12.0",
     "@tiptap/extension-image": "^2.12.0",
     "@tiptap/extension-link": "^2.12.0",

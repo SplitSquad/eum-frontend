@@ -11,6 +11,7 @@ import adminpageApi from './adminpageApi';
 // export const getMyComments = mypageApi.getMyComments;
 // export const getMyDebates = mypageApi.getMyDebates;
 // export const getMyBookmarks = mypageApi.getMyBookmarks;
+export const getUserList = adminpageApi.getUserList;
 
 // 기본 내보내기
 export default adminpageApi;
