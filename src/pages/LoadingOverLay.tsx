@@ -34,17 +34,14 @@ const LoadingOverlay = ({ isLoaded = true }: Props) => {
   }, []);
 
   return (
-    <main
-      className="w-screen opacity-100 flex flex-col items-center justify-center"
-      style={{ minHeight: '100vh', height: 'auto' }}
-    >
+    <>
       <LoadingAnimation doorsOpen={doorsOpen} />
       <IntroSlider currentIndex={currentIndex}>
         <Slide1 />
         <Slide2 />
         <Slide3 />
       </IntroSlider>
-    </main>
+    </>
   );
 };
 

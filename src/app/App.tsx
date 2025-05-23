@@ -34,7 +34,7 @@ const App: React.FC = () => {
   // 경로에 따른 컴포넌트 가시성 설정
   const updateVisibility = (path: string) => {
     // 루트 경로 체크
-    if (path === '/') {
+    if (path === '/init') {
       setIsHeaderVisible(false);
       setIsModalVisible(false);
       return;
@@ -124,7 +124,7 @@ const App: React.FC = () => {
         vertical: 'top',
         horizontal: 'right',
       }}
-      autoHideDuration={3000}
+      autoHideDuration={1500}
     >
       <div className={`app-container ${isModalOpen ? 'modal-open' : ''}`}>
         {/* 모달 */}
