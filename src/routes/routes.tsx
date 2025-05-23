@@ -1,12 +1,14 @@
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import React, { lazy, Suspense } from 'react';
-import { AuthGuard, GuestGuard, RoleGuard, requireAuth } from './guards';
+import { AuthGuard, GuestGuard, RoleGuard, requireAuth, requireUser } from './guards';
 // import TempAuthPage from '../features/auth/pages/TempAuthPage'; // 임시 로그인 제거
 import { OAuthCallbackPage, AccessDeniedPage } from '../features/auth';
 import LoginPage from '../pages/LoginPage';
 import { LanguageProvider } from '../features/theme';
 import AiAssistant from '@/tests/unit/componentPageTest/testPages/AiAssistant';
 import SignUpPage from '@/features/auth/pages/SignUpPage';
+import Loading from '@/pages/Loading';
+
 // 커뮤니티 기능 임포트
 // import { PostListPage, PostDetailPage, PostCreatePage } from '../features/community/pages';
 import { CommunityRoutes } from '../features/community';
@@ -42,7 +44,6 @@ const Onboarding = lazy(() => import('../pages/Onboarding'));
 */
 const NotFound = lazy(() => import('../pages/NotFound'));
 const Init = lazy(() => import('../pages/LoadingOverLay'));
-const Loading = lazy(() => import('../pages/Loading'));
 
 /**
  * 로딩 화면
@@ -111,6 +112,21 @@ const router = createBrowserRouter([
         loader: requireAuth,
         children: [
           {
+            path: '/onboarding/*',
+            element: (
+              <AuthGuard>
+                <Suspense fallback={<LoadingFallback />}>
+                  <OnboardingRoutes />
+                </Suspense>
+              </AuthGuard>
+            ),
+          },
+        ],
+      },
+      {
+        loader: requireUser,
+        children: [
+          {
             path: '/home',
             element: (
               <Suspense fallback={<LoadingFallback />}>
@@ -123,14 +139,6 @@ const router = createBrowserRouter([
             element: (
               <Suspense fallback={<LoadingFallback />}>
                 <Home />
-              </Suspense>
-            ),
-          },
-          {
-            path: '/onboarding/*',
-            element: (
-              <Suspense fallback={<LoadingFallback />}>
-                <OnboardingRoutes />
               </Suspense>
             ),
           },

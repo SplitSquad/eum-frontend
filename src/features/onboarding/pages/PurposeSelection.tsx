@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -24,6 +24,7 @@ import WorkIcon from '@mui/icons-material/Work';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { mainCategories } from '../components/common/CommonTags';
 import { motion } from 'framer-motion';
+import { useSnackbar } from 'notistack';
 
 // Material UI의 Grid를 스타일링된 버전으로 재정의
 //const Grid = styled(Box)(({ theme }) => ({}));
@@ -250,6 +251,8 @@ const PurposeSelection: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { season } = useThemeStore();
+  const { enqueueSnackbar } = useSnackbar();
+  const location = useLocation();
 
   const [selectedPurpose, setSelectedPurpose] = useState<string | null>(null);
 
@@ -289,6 +292,7 @@ const PurposeSelection: React.FC = () => {
 
   // 다음 단계로 이동
   const handleNext = () => {
+    setSelectedPurpose(null);
     if (selectedPurpose) {
       navigate(`/onboarding/${selectedPurpose}`);
     }
@@ -306,6 +310,14 @@ const PurposeSelection: React.FC = () => {
       },
     }),
   };
+
+  // onboarding 리다이렉트 시 스낵바 알림
+  React.useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.has('from')) {
+      enqueueSnackbar('상세 정보 입력을 완료해주세요', { variant: 'info', autoHideDuration: 1500 });
+    }
+  }, [location.search, enqueueSnackbar]);
 
   return (
     <Box
@@ -394,7 +406,10 @@ const PurposeSelection: React.FC = () => {
                 id={category.id}
                 name={category.name}
                 selected={selectedPurpose === category.id}
-                onClick={() => setSelectedPurpose(category.id)}
+                onClick={() => {
+                  setSelectedPurpose(category.id);
+                  navigate(`/onboarding/${category.id}`);
+                }}
                 icon={purposeIconMap[category.id]}
                 description={purposeDescriptionMap[category.id]}
                 themeColor={themeColor}
@@ -402,38 +417,6 @@ const PurposeSelection: React.FC = () => {
               />
             </Box>
           ))}
-        </Box>
-
-        <Box sx={{ mt: 6, textAlign: 'center' }}>
-          <Button
-            variant="contained"
-            size="large"
-            disabled={!selectedPurpose}
-            onClick={handleNext}
-            sx={{
-              bgcolor: themeColor,
-              color: 'white',
-              px: { xs: 4, md: 5 },
-              py: { xs: 1.3, md: 1.5 },
-              borderRadius: '50px',
-              fontWeight: 600,
-              fontSize: { xs: '1rem', md: '1.1rem' },
-              boxShadow: `0 6px 16px ${alpha(themeColor, 0.25)}`,
-              textTransform: 'none',
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                bgcolor: alpha(themeColor, 0.9),
-                boxShadow: `0 8px 20px ${alpha(themeColor, 0.35)}`,
-                transform: 'translateY(-2px)',
-              },
-              '&.Mui-disabled': {
-                bgcolor: alpha(theme.palette.grey[300], 0.7),
-                color: theme.palette.grey[500],
-              },
-            }}
-          >
-            {selectedPurpose ? '계속하기' : '목적을 선택해주세요'}
-          </Button>
         </Box>
       </Container>
     </Box>

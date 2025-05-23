@@ -53,6 +53,11 @@ const App: React.FC = () => {
       setIsModalVisible(false);
       return;
     }
+    if (path.startsWith('/404')) {
+      setIsHeaderVisible(false);
+      setIsModalVisible(false);
+      return;
+    }
 
     // 기본 상태
     setIsHeaderVisible(true);
