@@ -1160,16 +1160,27 @@ const CommentSection: React.FC<CommentSectionProps> = ({
       </Box>
 
       {/* 댓글 내용 */}
-      <Typography
-        variant="body1"
-        sx={{
-          mb: 2,
-          whiteSpace: 'pre-wrap',
-          wordBreak: 'break-word',
-        }}
-      >
-        {comment.content}
-      </Typography>
+      {controls.editMode[comment.commentId] ? (
+        <CommentForm
+          initialValue={comment.content}
+          onSubmit={async content => {
+            return await handleCommentForm(comment.commentId, content, false);
+          }}
+          onCancel={() => controls.handleEditCancel(comment.commentId)}
+          buttonText="수정"
+        />
+      ) : (
+        <Typography
+          variant="body1"
+          sx={{
+            mb: 2,
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word',
+          }}
+        >
+          {comment.content}
+        </Typography>
+      )}
 
       <CommentFooter>
         <ReactionButton
