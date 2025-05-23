@@ -5,22 +5,24 @@ import Header from '@/components/layout/Header';
 import { useModalStore } from '@/shared/store/ModalStore';
 import ChatIcon from '@mui/icons-material/Chat';
 import CloseIcon from '@mui/icons-material/Close';
-import { IconButton } from '@mui/material';
+import { Container, IconButton } from '@mui/material';
 import { SnackbarProvider } from 'notistack';
 import React, { useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import useAuthStore from '../features/auth/store/authStore';
 import { SeasonalBackground } from '../features/theme';
+import FloatingNavigator from '@/components/layout/FloatingNavigator';
 import './App.css';
+import eum2Image from '@/assets/images/characters/이음이.png';
 
 /**
  * 애플리케이션 레이아웃 컴포넌트
  * 모든 라우트의 부모 컴포넌트로 작동
  */
 const App: React.FC = () => {
-  const { loadUser } = useAuthStore();
+  const { loadUser, isAuthenticated } = useAuthStore();
   const { isModalOpen, content, position, openModal, closeModal } = useModalStore();
-  const btnRef = useRef<HTMLButtonElement>(null);
+  const btnRef = useRef<HTMLImageElement>(null);
   const location = useLocation();
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [isModalVisible, setIsModalVisible] = useState(true);
@@ -32,7 +34,7 @@ const App: React.FC = () => {
   // 경로에 따른 컴포넌트 가시성 설정
   const updateVisibility = (path: string) => {
     // 루트 경로 체크
-    if (path === '/') {
+    if (path === '/init') {
       setIsHeaderVisible(false);
       setIsModalVisible(false);
       return;
@@ -48,6 +50,11 @@ const App: React.FC = () => {
     // assistant 경로 체크 (하위 경로 포함)
     if (path.startsWith('/assistant')) {
       setIsHeaderVisible(true);
+      setIsModalVisible(false);
+      return;
+    }
+    if (path.startsWith('/404')) {
+      setIsHeaderVisible(false);
       setIsModalVisible(false);
       return;
     }
@@ -80,6 +87,7 @@ const App: React.FC = () => {
   }, []);
 
   const onButtonClick = () => {
+    console.log('onButtonClick');
     if (isModalOpen) {
       closeModal();
     } else if (btnRef.current) {
@@ -121,11 +129,11 @@ const App: React.FC = () => {
         vertical: 'top',
         horizontal: 'right',
       }}
-      autoHideDuration={3000}
+      autoHideDuration={1500}
     >
       <div className={`app-container ${isModalOpen ? 'modal-open' : ''}`}>
         {/* 모달 */}
-        {isModalVisible && (
+        {isModalVisible && isAuthenticated && (
           <Modal isOpen={isModalOpen} onClose={closeModal} position={position}>
             {content ?? <ModalContent />}
           </Modal>
@@ -135,34 +143,45 @@ const App: React.FC = () => {
           <Header isVisible={isHeaderVisible} />
           <SeasonalBackground>
             <main className="main-content">
-              <Outlet />
-            </main>
-            {isModalVisible && (
-              <div className="fixed bottom-[170px] right-8 z-[1001]">
-                <IconButton
-                  ref={btnRef}
-                  onClick={onButtonClick}
-                  className="modal-toggle-button"
+              <div style={{ paddingTop: '0.5rem', height: '100%' }}>
+                <Container
+                  maxWidth="lg"
                   sx={{
-                    backgroundColor: 'rgba(255, 182, 193, 0.4)',
-                    '&:hover': {
-                      backgroundColor: 'rgba(255, 182, 193, 0.6)',
-                    },
-                    padding: '12px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                    py: 3,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    flexGrow: 1,
+                    position: 'relative',
+                    zIndex: 5,
                   }}
                 >
-                  {isModalOpen ? (
-                    <CloseIcon sx={{ color: 'white', fontSize: '24px' }} />
-                  ) : (
-                    <ChatIcon sx={{ color: 'white', fontSize: '24px' }} />
-                  )}
-                </IconButton>
+                  <Outlet />
+                </Container>
+              </div>
+            </main>
+            {isModalVisible && isAuthenticated && (
+              <div className="fixed bottom-[170px] right-8 z-[1001]">
+                <img
+                  ref={btnRef}
+                  src={eum2Image}
+                  alt="이음이"
+                  onClick={onButtonClick}
+                  style={{
+                    width: 48,
+                    height: 48,
+                    objectFit: 'contain',
+                    cursor: 'pointer',
+                    transition: 'transform 0.3s',
+                    transform: isModalOpen ? 'rotate(90deg)' : 'none',
+                  }}
+                  className="modal-toggle-img"
+                />
               </div>
             )}
           </SeasonalBackground>
           <Footer />
         </div>
+        <FloatingNavigator isHeaderVisible={isHeaderVisible} />
       </div>
     </SnackbarProvider>
   );

@@ -208,7 +208,7 @@ const PostList: React.FC<PostListProps> = ({
 
   return (
     <Box sx={{ width: '100%', mb: 4 }}>
-      <Paper
+      {/*<Paper
         elevation={0}
         sx={{
           p: 2,
@@ -217,15 +217,23 @@ const PostList: React.FC<PostListProps> = ({
           borderRadius: '8px',
           border: '1px solid rgba(255, 170, 165, 0.3)',
         }}
+      >*/}
+      <Typography
+        variant="body1"
+        sx={{
+          textAlign: 'right',
+          color: '#888',
+          fontSize: '0.97rem',
+          paddingBottom: '6px',
+        }}
       >
-        <Typography variant="body1">
-          {loading && !isDataAvailableDuringLoading
-            ? '게시글을 불러오는 중...'
-            : error
-              ? `오류: ${error}`
-              : `총 ${totalItems || displayPosts.length}개의 게시글이 있습니다.`}
-        </Typography>
-      </Paper>
+        {loading && !isDataAvailableDuringLoading
+          ? '게시글을 불러오는 중...'
+          : error
+            ? `오류: ${error}`
+            : `총 ${totalItems || displayPosts.length}개의 게시글이 있습니다.`}
+      </Typography>
+      {/*</Paper>*/}
 
       {title && (
         <Typography

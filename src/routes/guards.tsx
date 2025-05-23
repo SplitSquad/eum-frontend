@@ -1,6 +1,7 @@
 import React, { ReactNode, useEffect, useState } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation, redirect, type LoaderFunctionArgs } from 'react-router-dom';
 import { useAuthStore } from '../features/auth';
+import Loading from '@/pages/Loading';
 
 // 기존 임시 useAuth 함수 제거 (AuthStore로 대체)
 
@@ -14,6 +15,40 @@ interface AuthGuardProps {
  *
  * TODO: 백엔드 API 연동 시 실제 인증 상태 검증 로직 구현 필요
  */
+export async function requireAuth({ request }: LoaderFunctionArgs) {
+  const { isAuthenticated, user } = useAuthStore.getState();
+  console.log('isAuthenticated', isAuthenticated);
+  if (!isAuthenticated) {
+    // 로그인 안 된 유저는 구글 로그인 페이지로
+    const url = new URL(request.url);
+    return redirect(`/google-login?from=${encodeURIComponent(url.pathname)}`);
+  }
+  return null;
+}
+export async function requireUser({ request }: LoaderFunctionArgs) {
+  let { isAuthenticated, user } = useAuthStore.getState();
+
+  // user가 undefined/null이거나 isOnBoardDone이 undefined면 최대 10번(500ms)까지 대기
+  let tries = 0;
+  while ((!user || user.isOnBoardDone === undefined) && tries < 10) {
+    await new Promise(res => setTimeout(res, 50));
+    ({ isAuthenticated, user } = useAuthStore.getState());
+    tries++;
+  }
+
+  console.log('isAuthenticated', isAuthenticated);
+  if (!isAuthenticated) {
+    // 로그인 안 된 유저는 구글 로그인 페이지로
+    const url = new URL(request.url);
+    return redirect(`/google-login?from=${encodeURIComponent(url.pathname)}`);
+  }
+  if (!user?.isOnBoardDone) {
+    console.log('user?.isOnBoardDone', user?.isOnBoardDone);
+    const url = new URL(request.url);
+    return redirect(`/onboarding?from=${encodeURIComponent(url.pathname)}`);
+  }
+  return null;
+}
 export const AuthGuard = ({ children }: AuthGuardProps) => {
   const { isAuthenticated, user, isLoading, loadUser } = useAuthStore();
   const location = useLocation();
@@ -24,23 +59,21 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
     const checkAuthentication = async () => {
       try {
         // 인증 상태가 불확실한 경우 백엔드에서 사용자 정보 로드
-        if (!isAuthenticated && !isLoading) {
+        if (user === undefined && !isLoading) {
           await loadUser();
         }
       } catch (error) {
         console.error('인증 상태 확인 실패:', error);
       } finally {
-        // 인증 체크가 완료되었음을 표시
         setIsChecking(false);
       }
     };
-
     checkAuthentication();
-  }, [isAuthenticated, isLoading, loadUser]);
+  }, [user, isLoading, loadUser]);
 
-  if (isLoading || isChecking) {
+  if (isLoading || isChecking || user === undefined) {
     // 인증 확인 중에는 로딩 상태 표시
-    return <div>인증 확인 중...</div>;
+    return <Loading />;
   }
 
   if (!isAuthenticated) {
@@ -66,7 +99,7 @@ export const GuestGuard = ({ children }: GuestGuardProps) => {
 
   // 이미 로그인했으면 홈 또는 이전 페이지로 리다이렉트
   if (isAuthenticated) {
-    const from = (location.state as any)?.from?.pathname || '/';
+    const from = (location.state as any)?.from?.pathname || '/home';
     return <Navigate to={from} replace />;
   }
 

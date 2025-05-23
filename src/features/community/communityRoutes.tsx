@@ -2,7 +2,13 @@ import React from 'react';
 import { Route, Routes } from 'react-router-dom';
 
 // 페이지 컴포넌트들
-import { PostListPage, PostDetailPage, PostCreatePage } from './pages';
+import {
+  PostListPage,
+  PostDetailPage,
+  PostCreatePage,
+  GroupListPage,
+  BoardListPage,
+} from './pages';
 
 /**
  * 커뮤니티 서브 라우트
@@ -11,9 +17,9 @@ import { PostListPage, PostDetailPage, PostCreatePage } from './pages';
 export const CommunityRoutes: React.FC = () => {
   return (
     <Routes>
-      <Route path="/" element={<PostListPage />} />
-      <Route path="/groups" element={<PostListPage />} />
-      <Route path="/board" element={<PostListPage />} />
+      <Route path="/" element={<GroupListPage />} />
+      <Route path="/groups" element={<GroupListPage />} />
+      <Route path="/board" element={<BoardListPage />} />
       <Route path="/create" element={<PostCreatePage />} />
       <Route path="/edit/:postId" element={<PostCreatePage />} />
       <Route path="/:postId" element={<PostDetailPage />} />

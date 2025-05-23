@@ -31,6 +31,7 @@ const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
 
   // 언어 변경 핸들러 - Context를 통해 노출됨
   const handleLanguageChange = (lang: string) => {
+    console.log('handleLanguageChange', lang);
     setLanguage(lang);
   };
 
@@ -38,32 +39,27 @@ const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
   useEffect(() => {
     if (language && SUPPORTED_LANGUAGE_CODES.includes(language)) {
       document.documentElement.lang = language;
-      
+
       // RTL 언어인 경우 dir 속성 설정 (추후 RTL 지원 시 활성화)
       // document.documentElement.dir = isRTLLanguage(language) ? 'rtl' : 'ltr';
     }
   }, [language]);
-  
+
   // 앱 초기화 시 로그인 상태인 경우 백엔드와 언어 설정 동기화
   useEffect(() => {
     // 사용자가 로그인 상태이고, 언어가 설정되어 있는 경우에만 동기화
     if (isAuthenticated && language) {
-      syncWithBackend(language)
-        .catch(err => console.error('Initial language sync failed:', err));
+      syncWithBackend(language).catch(err => console.error('Initial language sync failed:', err));
     }
   }, [isAuthenticated, language, syncWithBackend]);
 
   // Context 값 정의
   const contextValue: LanguageContextType = {
     currentLanguage: language,
-    changeLanguage: handleLanguageChange
+    changeLanguage: handleLanguageChange,
   };
 
-  return (
-    <LanguageContext.Provider value={contextValue}>
-      {children}
-    </LanguageContext.Provider>
-  );
+  return <LanguageContext.Provider value={contextValue}>{children}</LanguageContext.Provider>;
 };
 
-export default LanguageProvider; 
+export default LanguageProvider;

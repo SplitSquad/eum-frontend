@@ -6,6 +6,8 @@ export interface ENV {
   KAKAO_MAP_API_KEY: string;
   WEATHER_API_KEY: string;
   TOUR_API_KEY: string;
+  YOUTUBE_API_KEY: string;
+  NAVER_API_KEY: string;
   GPT_API_KEY: string;
 }
 
@@ -14,10 +16,12 @@ export interface ENV {
  * Vite의 import.meta.env에서 환경변수를 가져와 타입을 가진 객체로 변환
  */
 export const env: ENV = {
-  API_BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
+  API_BASE_URL: import.meta.env.VITE_API_BASE_URL,
   KAKAO_MAP_API_KEY: import.meta.env.VITE_KAKAO_MAP_API_KEY || '',
   WEATHER_API_KEY: import.meta.env.VITE_WEATHER_API_KEY || '',
   TOUR_API_KEY: import.meta.env.VITE_TOUR_API_KEY || '',
+  YOUTUBE_API_KEY: import.meta.env.VITE_YOUTUBE_API_KEY || '',
+  NAVER_API_KEY: import.meta.env.VITE_NAVER_API_KEY || '',
   GPT_API_KEY: import.meta.env.VITE_GPT_API_KEY || '',
 };
 

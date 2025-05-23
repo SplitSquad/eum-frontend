@@ -18,6 +18,7 @@ import ThumbUpAltOutlinedIcon from '@mui/icons-material/ThumbUpAltOutlined';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import ThumbDownAltOutlinedIcon from '@mui/icons-material/ThumbDownAltOutlined';
 import ThumbDownIcon from '@mui/icons-material/ThumbDown';
+import FlagIcon from '@mui/icons-material/Flag'; // 신고 아이콘 추가
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 
@@ -25,6 +26,7 @@ import useCommunityStore from '../../store/communityStore';
 import { Comment, User, ReactionType } from '../../types';
 import useAuthStore from '../../../auth/store/authStore';
 import ReplyForm from '../ReplyForm';
+import ReportDialog, { ReportTargetType } from '../../../common/components/ReportDialog';
 import { useComments } from '../../hooks';
 
 // 스타일링된 컴포넌트
@@ -87,6 +89,9 @@ const CommentItem: React.FC<CommentItemProps> = ({
   const [editMode, setEditMode] = useState(false);
   const [editedContent, setEditedContent] = useState(comment.content);
 
+  // 신고 다이얼로그 관련 상태
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+
   // 커스텀 훅 사용
   const { updateComment, deleteComment, replyComment, reactToComment } = useComments(postId);
 
@@ -100,6 +105,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
     ((comment.writer as any)?.id ?? (comment.writer as any)?.userId)?.toString();
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+    console.log('handleMenuClick 실행됨', isCommentAuthor);
     setAnchorEl(event.currentTarget);
   };
 
@@ -149,6 +155,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
   const handleEditStart = () => {
     setEditMode(true);
     setEditedContent(comment.content);
+    console.log('handleEditStart', comment.content);
     handleMenuClose();
   };
 
@@ -170,6 +177,20 @@ const CommentItem: React.FC<CommentItemProps> = ({
 
   const handleReplyFormClose = () => {
     setShowReplyForm(false);
+  };
+
+  // 신고 다이얼로그 열기
+  const handleOpenReportDialog = () => {
+    if (!comment.writer?.userId) {
+      console.error('댓글 작성자 정보가 없습니다.');
+      return;
+    }
+    setReportDialogOpen(true);
+  };
+
+  // 신고 다이얼로그 닫기
+  const handleCloseReportDialog = () => {
+    setReportDialogOpen(false);
   };
 
   const formattedDate = comment.createdAt
@@ -322,10 +343,28 @@ const CommentItem: React.FC<CommentItemProps> = ({
               '&:hover': {
                 backgroundColor: 'rgba(255, 170, 165, 0.2)',
               },
+              mr: 1,
             }}
           >
             답글 작성 {comment.replies?.length ? `(${comment.replies.length})` : ''}
           </ActionButton>
+
+          {/* 신고 버튼 - 작성자가 아닌 경우에만 표시 */}
+          {currentUser && !isCommentAuthor && (
+            <ActionButton
+              startIcon={<FlagIcon fontSize="small" />}
+              onClick={handleOpenReportDialog}
+              variant="text"
+              sx={{
+                '&:hover': {
+                  backgroundColor: 'rgba(245, 124, 0, 0.1)',
+                  color: '#f57c00',
+                },
+              }}
+            >
+              신고
+            </ActionButton>
+          )}
         </Box>
 
         {/* 새로운 ReplyForm 컴포넌트 사용 */}
@@ -357,6 +396,18 @@ const CommentItem: React.FC<CommentItemProps> = ({
             ))}
           </Collapse>
         </>
+      )}
+
+      {/* 신고 다이얼로그 */}
+      {comment.writer?.userId && (
+        <ReportDialog
+          open={reportDialogOpen}
+          onClose={handleCloseReportDialog}
+          targetId={comment.commentId}
+          targetType={isReply ? 'REPLY' : 'COMMENT'}
+          serviceType="COMMUNITY"
+          reportedUserId={Number(comment.writer.userId)}
+        />
       )}
     </>
   );

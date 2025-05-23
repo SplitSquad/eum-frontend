@@ -1,3 +1,5 @@
+import { CommentResponseData } from '@/features/community/api/commentApi';
+import apiClient from '../../../config/axios';
 import axiosInstance from '../../../config/axios';
 import { User } from '../store/authStore';
 import { setToken, removeToken, getToken } from '../tokenUtils';
@@ -23,6 +25,26 @@ interface UserProfileResponse {
   address?: string;
   signedAt?: string;
   isDeactivate?: boolean;
+}
+interface CommonUserRequest {
+  name: string;
+  address: string;
+  phoneNumber: string;
+  birthday: string;
+  email: string;
+  password: string;
+}
+interface CommonUserLoginRequest {
+  email: string;
+  password: string;
+}
+
+interface CommonUserLoginResponse {
+  token: string;
+  email: string;
+  role: string;
+  loginType: string;
+  isOnBoardDone: string;
 }
 
 // 사용자 선호도 응답 타입 정의
@@ -61,6 +83,81 @@ export const getGoogleAuthUrl = async () => {
     return (response as any).authUrl;
   } catch (error) {
     console.error('Google 인증 URL 가져오기 실패:', error);
+    throw error;
+  }
+};
+/**
+ * 일반 회원 가입
+ */
+export const registerUser = async (user: CommonUserRequest) => {
+  try {
+    // API 명세에 맞게 필드명 변환
+    const payload = {
+      name: user.name,
+      address: user.address,
+      phoneNumber: user.phoneNumber, // user.phoneNumber
+      birthday: user.birthday,
+      email: user.email, // user.email
+      password: user.password,
+    };
+    console.log('회원가입 요청 데이터:', payload);
+    const response = await axiosInstance.post('/auth/common/join', payload);
+    console.log('회원가입 응답 데이터:', response);
+    return response;
+  } catch (error: any) {
+    // 서버에서 resultCode 400 등으로 내려줄 때
+    if (error.response) {
+      throw new Error(error.response || '회원가입 실패');
+    }
+    // 기타 네트워크/예상치 못한 에러
+    console.error('회원가입 실패:', error);
+    throw error;
+  }
+};
+/**
+ * 일반 로그인 구현
+ */
+export const loginUser = async (loginUser: CommonUserLoginRequest) => {
+  try {
+    const payload = {
+      email: loginUser.email,
+      password: loginUser.password,
+    };
+    console.log('로그인 요청 데이터:', payload);
+    const response = await apiClient.post<CommonUserLoginResponse>('/auth/common/login', payload);
+    console.log('로그인 응답 데이터:', response);
+    // 토큰 저장
+    setToken(response.token);
+
+    // localStorage에도 토큰 저장 (axios 인터셉터가 사용하는 키)
+    localStorage.setItem('auth_token', response.token);
+
+    // 사용자 이메일 저장 (X-User-Email 헤더에 사용)
+    if (response.email) {
+      localStorage.setItem('userEmail', response.email);
+      console.log('사용자 이메일 저장됨:', response.email);
+    }
+    console.log(
+      '토큰 저장됨, localStorage 확인:',
+      localStorage.getItem('auth_token') ? '토큰 저장 성공' : '토큰 저장 실패'
+    );
+
+    // 사용자 정보 구성 (서버에서 받은 email과 role을 직접 사용)
+    const user: User = {
+      userId: getUserIdFromToken(response.token),
+      role: response.role || 'ROLE_USER',
+      email: response.email || '',
+    };
+
+    return { token: response.token, user };
+  } catch (error) {
+    if (error === 'User not found') {
+      throw new Error('존재하지 않는 사용자입니다.');
+    }
+    if (error === 'Wrong password') {
+      throw new Error('비밀번호가 일치하지 않습니다.');
+    }
+    console.error('로그인 실패:', error);
     throw error;
   }
 };

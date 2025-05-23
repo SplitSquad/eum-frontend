@@ -146,24 +146,6 @@ const PostListPage: React.FC = () => {
   // 현재 URL에서 쿼리 파라미터 가져오기
   const queryParams = new URLSearchParams(location.search);
 
-  // URL 경로에 따른 초기 게시글 타입 설정
-  useEffect(() => {
-    const path = location.pathname;
-    if (path.includes('/community/groups')) {
-      setSelectedPostType('모임');
-      handlePostTypeChange('모임');
-      setShowFilters(true);
-    } else if (path.includes('/community/board')) {
-      setSelectedPostType('자유');
-      handlePostTypeChange('자유');
-      setShowFilters(true);
-    } else {
-      setSelectedPostType('ALL');
-      handlePostTypeChange('ALL');
-      setShowFilters(false);
-    }
-  }, [location.pathname]);
-
   // URL 쿼리 파라미터에서 필터 상태 초기화
   const [filter, setFilter] = useState<LocalPostFilter>({
     category: queryParams.get('category') || '전체',
@@ -547,10 +529,14 @@ const PostListPage: React.FC = () => {
   };
 
   // 지역 변경 핸들러
-  const handleRegionChange = (region: string) => {
+  const handleRegionChange = (
+    city: string | null,
+    district: string | null,
+    neighborhood: string | null
+  ) => {
+    const region = [city, district, neighborhood].filter(Boolean).join(' ');
     console.log('[DEBUG] 지역 변경:', region);
 
-    // 이전 지역과 같으면 변경 없음
     if (region === selectedRegion) {
       console.log('[DEBUG] 같은 지역 선택, 변경 없음');
       return;
@@ -867,7 +853,7 @@ const PostListPage: React.FC = () => {
                 >
                   지역 선택
                 </Typography>
-                <RegionSelector selectedRegion={selectedRegion} onChange={handleRegionChange} />
+                <RegionSelector onChange={handleRegionChange} />
               </Box>
             )}
 

@@ -51,3 +51,17 @@
 - 전체 배경 색 기준을 SeansonalBackground에서 조절
 - 가시성 떨어지는 wave effect 주석 처리
 - app.tsx에서 모달 주석 처리
+
+# 파일 구조 및 리팩토링
+
+- integration.tsx : 레이아웃 관련 컴포넌트 모아 놓은 뒤 추후 정리
+
+- LoadingOverLay.tsx: 페이지 구현
+  - LoadingAnimation.tsx: 애니메이션 컴포넌트
+    - OverLayAnimation.tsx: 애니메이션 구현을 위한 디자인 컴포넌트 모음
+  - Slide1,2,3.tsx: 슬라이드 애니메이션 구현을 위한 슬라이드 구성 요소
+  - IntroSlider.tsx: 애니메이션 디자인 구성 컴포넌트
+  - UseIntroSlider.tsx: 애니메이션 동작 훅
+
+# 에러 fix
+ - 언어 변경 시 리 랜더링 안됨

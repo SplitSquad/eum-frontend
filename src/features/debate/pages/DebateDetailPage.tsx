@@ -25,7 +25,7 @@ import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAlt
 import SentimentVeryDissatisfiedIcon from '@mui/icons-material/SentimentVeryDissatisfied';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { styled } from '@mui/material/styles';
-
+import { useLocation } from 'react-router-dom';
 import { formatDate, formatRelativeTime } from '../utils/dateUtils';
 import DebateLayout from '../components/common/DebateLayout';
 import CommentSection from '../components/comment/CommentSection';
@@ -34,6 +34,47 @@ import DebateApi, { getVotesByDebateId } from '../api/debateApi';
 // Import the recharts library for pie charts
 // The recharts package should be installed with: npm install recharts
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+
+/**-----------------------------------웹로그 관련------------------------------------ **/
+// userId 꺼내오는 헬퍼
+export function getUserId(): number | null {
+  try {
+    const raw = localStorage.getItem('auth-storage');
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed?.state?.user?.userId ?? null;
+  } catch {
+    return null;
+  }
+}
+
+// 로그 전송 타입 정의
+interface WebLog {
+  userId: number;
+  content: string;
+}
+
+// BASE URL에 엔드포인트 설정
+const BASE = import.meta.env.VITE_API_BASE_URL;
+
+// 로그 전송 함수
+export function sendWebLog(log: WebLog) {
+  // jwt token 가져오기
+  const token = localStorage.getItem('auth_token');
+  if (!token) {
+    throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
+  }
+  fetch(`${BASE}/logs`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: token },
+    body: JSON.stringify(log),
+  }).catch(err => {
+    console.error('WebLog 전송 실패:', err);
+  });
+  // 전송 완료
+  console.log('WebLog 전송 성공:', log);
+}
+/**------------------------------------------------------------------------------------ **/
 
 // Styled components
 const DebateCard = styled(Paper)(({ theme }) => ({
@@ -309,6 +350,24 @@ const DebateDetailPage: React.FC = () => {
       console.log('토론 데이터 로드됨:', debate);
       console.log('투표 상태 (isVotedState):', debate.isVotedState);
       console.log('감정표현 상태 (isState):', debate.isState);
+
+      // 토론 관련 웹로그
+      const userId = getUserId() ?? 0;
+      const debateContent = {
+        // 토론 제목과 내용
+        debateTitle: debate.title,
+        debateContent: debate.content,
+      };
+      const chatLogPayload = {
+        UID: userId,
+        ClickPath: location.pathname,
+        TAG: debate.category,
+        CurrentPath: location.pathname,
+        Event: 'click',
+        Content: debateContent,
+        Timestamp: new Date().toISOString(),
+      };
+      sendWebLog({ userId, content: JSON.stringify(chatLogPayload) });
 
       // 사용자 투표 상태 초기화
       if (debate.isVotedState) {

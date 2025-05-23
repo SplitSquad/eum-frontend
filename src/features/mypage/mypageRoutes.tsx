@@ -21,4 +21,4 @@ export const MypageRoutes: React.FC = () => {
   );
 };
 
-export default MypageRoutes; 
+export default MypageRoutes;

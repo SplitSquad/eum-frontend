@@ -8,12 +8,12 @@ import { motion } from 'framer-motion';
 const Slide3 = () => {
   return (
     <motion.div
-      className="flex flex-col items-center justify-center w-full text-center px-6 space-y-6 min-h-screen"
-      style={{ minHeight: 'calc(var(--vh, 1vh) * 100)' }}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.8 }}
+      className="flex flex-col items-center justify-center w-full text-center px-6 space-y-6 mt-16"
+      style={{ minHeight: '100%' }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.6 }}
     >
       <motion.h2
         className="text-4xl font-bold bg-gradient-to-r from-purple-300 to-purple-500 bg-clip-text text-transparent"

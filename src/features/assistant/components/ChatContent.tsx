@@ -4,6 +4,48 @@ import React, { useState, useRef, useEffect } from 'react';
 import { fetchChatbotResponse } from '@/features/assistant/api/ChatApi';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { Box, Typography } from '@mui/material';
+
+/**-----------------------------------웹로그 관련------------------------------------ **/
+// userId 꺼내오는 헬퍼
+export function getUserId(): number | null {
+  try {
+    const raw = localStorage.getItem('auth-storage');
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed?.state?.user?.userId ?? null;
+  } catch {
+    return null;
+  }
+}
+
+// 로그 전송 타입 정의
+interface WebLog {
+  userId: number;
+  content: string;
+}
+
+// BASE URL에 엔드포인트 설정
+const BASE = import.meta.env.VITE_API_BASE_URL;
+
+// 로그 전송 함수
+export function sendWebLog(log: WebLog) {
+  // jwt token 가져오기
+  const token = localStorage.getItem('auth_token');
+  if (!token) {
+    throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
+  }
+  fetch(`${BASE}/logs`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: token },
+    body: JSON.stringify(log),
+  }).catch(err => {
+    console.error('WebLog 전송 실패:', err);
+  });
+  // 전송 완료
+  console.log('WebLog 전송 성공:', log);
+}
+/**------------------------------------------------------------------------------------**/
 
 // 채팅 메시지 객체 형태 정의
 interface Message {
@@ -23,7 +65,7 @@ interface ChatContentProps {
 /**
  * ChatContent 컴포넌트
  * - AI 챗봇과의 상호작용 UI를 렌더링하고,
- *   타자기 효과로 메시지를 한 글자씩 표시합니다.
+ *   타자기 효과로 메시지를 한 글자씩 표시
  */
 export default function ChatContent({
   categoryLabel = '전체',
@@ -52,6 +94,21 @@ export default function ChatContent({
 
     // 사용자 메시지 추가
     setMessages(prev => [...prev, { id: Date.now(), sender: 'user', text }]);
+
+    // 웹로그 전송
+    const userId = getUserId() ?? 0;
+    const chatLogPayload = {
+      UID: userId,
+      ClickPath: location.pathname,
+      TAG: categoryLabel,
+      CurrentPath: location.pathname,
+      Event: 'chat',
+      Content: text,
+      Timestamp: new Date().toISOString(),
+    };
+    sendWebLog({ userId, content: JSON.stringify(chatLogPayload) });
+
+    // 입력창 초기화 및 로딩 상태 설정
     setInput('');
     setLoading(true);
 
@@ -69,6 +126,19 @@ export default function ChatContent({
         },
       ]);
 
+      // 봇 웹로그 전송
+      const userId = getUserId() ?? 0;
+      const chatLogPayload = {
+        UID: userId,
+        ClickPath: location.pathname,
+        TAG: categoryLabel,
+        CurrentPath: location.pathname,
+        Event: 'chat',
+        Content: text,
+        Timestamp: new Date().toISOString(),
+      };
+      sendWebLog({ userId, content: JSON.stringify(chatLogPayload) });
+
       // 예시: 카테고리 매핑 로직
       const map: Record<string, string> = {
         visa_law: 'visa',
@@ -79,6 +149,7 @@ export default function ChatContent({
         daily_life: 'life',
         all: 'all',
       };
+
       const rag = data.metadata?.rag_type;
       const newKey = rag && map[rag] ? map[rag] : undefined;
       if (newKey && onCategoryChange) onCategoryChange(newKey);
@@ -96,6 +167,7 @@ export default function ChatContent({
       ]);
     } finally {
       setLoading(false);
+      // 웹로그
     }
   };
 
@@ -137,72 +209,55 @@ export default function ChatContent({
   }, [messages, loading]);
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-gray-100">
-      {/* 헤더 영역 */}
-      <div className="px-6 py-4 bg-white border-b">
-        <h1 className="text-2xl font-bold inline">{categoryLabel} AI 비서</h1>
-        <span className="ml-4 text-gray-600">
-          {new Intl.DateTimeFormat('ko-KR', { hour: '2-digit', minute: '2-digit' }).format(
-            new Date()
-          )}
-        </span>
-        <p className="mt-2 text-gray-700">안녕하세요! {categoryLabel} AI 비서입니다.</p>
-        <div className="mt-4 flex flex-wrap gap-2">
-          {['한국에서 필요한 기본 서류는?', '한국에서 일하려면?', '한국어 배우는 방법?'].map(q => (
-            <button
-              key={q}
-              onClick={() => sendMessage(q)}
-              className="px-4 py-1 bg-blue-50 text-blue-600 rounded-full text-sm hover:bg-blue-100"
-            >
-              {q}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* 메시지 리스트 영역 */}
-      <div ref={listRef} className="overflow-auto p-2 space-y-3 bg-gray-50 h-[50vh]">
-        {messages.map(m => (
-          <div
-            key={m.id}
-            className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
-            {m.sender === 'user' ? (
-              <span className="inline-block px-4 py-2 rounded-xl max-w-[70%] break-words bg-blue-500 text-white">
-                {m.text}
-              </span>
-            ) : (
-              <span className="inline-block px-4 py-2 rounded-xl max-w-[70%] whitespace-pre-wrap break-words bg-gray-200 text-gray-800">
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  components={{ p: ({ children }) => <>{children}</> }}
-                  children={m.displayText ?? m.text}
-                />
-              </span>
-            )}
+    <div className="h-full">
+      {/* 카테고리 + 메인 flex (아래에 배치) */}
+      <div className="flex h-[calc(100%-120px)]">
+        {/* 오른쪽: 메인(채팅) */}
+        <main className="flex-1 flex flex-col pl-8">
+          {/* 메시지 리스트 영역 */}
+          <div ref={listRef} className="overflow-auto p-2 space-y-3 bg-gray-50 h-[50vh]">
+            {messages.map(m => (
+              <div
+                key={m.id}
+                className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                {m.sender === 'user' ? (
+                  <span className="inline-block px-4 py-2 rounded-xl max-w-[70%] break-words bg-blue-500 text-white">
+                    {m.text}
+                  </span>
+                ) : (
+                  <span className="inline-block px-4 py-2 rounded-xl max-w-[70%] whitespace-pre-wrap break-words bg-gray-200 text-gray-800">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      components={{ p: ({ children }) => <>{children}</> }}
+                      children={m.displayText ?? m.text}
+                    />
+                  </span>
+                )}
+              </div>
+            ))}
+            {loading && <div className="text-center text-gray-500">답변 중...</div>}
           </div>
-        ))}
-        {loading && <div className="text-center text-gray-500">답변 중...</div>}
-      </div>
-
-      {/* 입력창 영역 */}
-      <div className="px-6 py-4 bg-white border-t flex items-center">
-        <input
-          type="text"
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && !loading && sendMessage()}
-          disabled={loading}
-          className="flex-1 px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring disabled:opacity-50"
-          placeholder="질문을 입력하세요..."
-        />
-        <button
-          onClick={() => sendMessage()}
-          disabled={loading}
-          className="ml-4 px-6 py-2 bg-indigo-600 text-white rounded-full disabled:opacity-50"
-        >
-          전송
-        </button>
+          {/* 입력창 영역 */}
+          <div className="px-6 py-4 bg-white border-t flex items-center">
+            <input
+              type="text"
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && !loading && sendMessage()}
+              disabled={loading}
+              className="flex-1 px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring disabled:opacity-50"
+              placeholder="질문을 입력하세요..."
+            />
+            <button
+              onClick={() => sendMessage()}
+              disabled={loading}
+              className="ml-4 px-6 py-2 bg-indigo-600 text-white rounded-full disabled:opacity-50"
+            >
+              전송
+            </button>
+          </div>
+        </main>
       </div>
     </div>
   );

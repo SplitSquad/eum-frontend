@@ -2,4 +2,10 @@
 export { default as CommunityRoutes } from './communityRoutes';
 
 // 페이지 컴포넌트 내보내기
-export { PostListPage, PostDetailPage, PostCreatePage } from './pages'; 
+export {
+  PostListPage,
+  PostDetailPage,
+  PostCreatePage,
+  GroupListPage,
+  BoardListPage,
+} from './pages';

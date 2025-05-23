@@ -1,12 +1,13 @@
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import React, { lazy, Suspense } from 'react';
-import { AuthGuard, GuestGuard, RoleGuard } from './guards';
+import { AuthGuard, GuestGuard, RoleGuard, requireAuth, requireUser } from './guards';
 // import TempAuthPage from '../features/auth/pages/TempAuthPage'; // 임시 로그인 제거
 import { OAuthCallbackPage, AccessDeniedPage } from '../features/auth';
 import LoginPage from '../pages/LoginPage';
-import Profile from '../pages/Profile';
 import { LanguageProvider } from '../features/theme';
 import AiAssistant from '@/tests/unit/componentPageTest/testPages/AiAssistant';
+import SignUpPage from '@/features/auth/pages/SignUpPage';
+import Loading from '@/pages/Loading';
 
 // 커뮤니티 기능 임포트
 // import { PostListPage, PostDetailPage, PostCreatePage } from '../features/community/pages';
@@ -17,6 +18,8 @@ import { DebateRoutes } from '../features/debate';
 
 // 마이페이지 기능 임포트
 import { MypageRoutes } from '../features/mypage';
+import NormalLogin from '@/features/auth/pages/NormalLogin';
+import { InfoRoutes } from '@/features/info/utils';
 
 // 관리자페이지 기능 임포트
 import { AdminpageRoutes } from '../features/adminpage';
@@ -43,8 +46,7 @@ const Search = lazy(() => import('../pages/Search'));
 const Onboarding = lazy(() => import('../pages/Onboarding'));
 */
 const NotFound = lazy(() => import('../pages/NotFound'));
-const Init = lazy(() => import('../components/feedback/LoadingOverLay'));
-const Loading = lazy(() => import('../pages/Loading'));
+const Init = lazy(() => import('../pages/LoadingOverLay'));
 
 /**
  * 로딩 화면
@@ -60,18 +62,14 @@ const router = createBrowserRouter([
     element: <AppLayout />,
     children: [
       {
-        path: '',
+        index: true,
+        element: <Navigate to="/init" replace />,
+      },
+      {
+        path: '/init',
         element: (
           <Suspense fallback={<LoadingFallback />}>
             <Init isLoaded={false} />
-          </Suspense>
-        ),
-      },
-      {
-        path: '/home',
-        element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <Home />
           </Suspense>
         ),
       },
@@ -86,6 +84,26 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: '/login',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <GuestGuard>
+              <NormalLogin />
+            </GuestGuard>
+          </Suspense>
+        ),
+      },
+      {
+        path: '/signup',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <GuestGuard>
+              <SignUpPage />
+            </GuestGuard>
+          </Suspense>
+        ),
+      },
+      {
         path: '/auth/callback',
         element: (
           <Suspense fallback={<LoadingFallback />}>
@@ -94,58 +112,86 @@ const router = createBrowserRouter([
         ),
       },
       {
+        loader: requireAuth,
+        children: [
+          {
+            path: '/onboarding/*',
+            element: (
+              <AuthGuard>
+                <Suspense fallback={<LoadingFallback />}>
+                  <OnboardingRoutes />
+                </Suspense>
+              </AuthGuard>
+            ),
+          },
+        ],
+      },
+      {
+        loader: requireUser,
+        children: [
+          {
+            path: '/home',
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <Home />
+              </Suspense>
+            ),
+          },
+          {
+            path: '/dashboard',
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <Home />
+              </Suspense>
+            ),
+          },
+          {
+            path: '/community/*',
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <CommunityRoutes />
+              </Suspense>
+            ),
+          },
+          {
+            path: '/debate/*',
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <DebateRoutes />
+              </Suspense>
+            ),
+          },
+          {
+            path: 'info/*',
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <InfoRoutes />
+              </Suspense>
+            ),
+          },
+          {
+            path: '/assistant',
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <AiAssistant />
+              </Suspense>
+            ),
+          },
+          {
+            path: '/mypage/*',
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <MypageRoutes />
+              </Suspense>
+            ),
+          },
+        ],
+      },
+      {
         path: '/access-denied',
         element: (
           <Suspense fallback={<LoadingFallback />}>
             <AccessDeniedPage />
-          </Suspense>
-        ),
-      },
-      {
-        path: '/onboarding/*',
-        element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <OnboardingRoutes />
-          </Suspense>
-        ),
-      },
-      {
-        path: '/community/*',
-        element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <AuthGuard>
-              <CommunityRoutes />
-            </AuthGuard>
-          </Suspense>
-        ),
-      },
-      {
-        path: '/debate/*',
-        element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <AuthGuard>
-              <DebateRoutes />
-            </AuthGuard>
-          </Suspense>
-        ),
-      },
-      {
-        path: '/assistant',
-        element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <AuthGuard>
-              <AiAssistant />
-            </AuthGuard>
-          </Suspense>
-        ),
-      },
-      {
-        path: '/mypage/*',
-        element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <AuthGuard>
-              <MypageRoutes />
-            </AuthGuard>
           </Suspense>
         ),
       },

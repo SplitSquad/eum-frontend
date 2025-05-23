@@ -1,5 +1,5 @@
 import { convertToRegionTree, flattenRegionTree } from '@/shared/utils/RegionUtils';
-import { rawRegionTree } from './rawObject/rawRegionTree';
+import { sortedRegionTree } from './rawObject/sortedRegionTree';
 
-export const regionTree = convertToRegionTree(rawRegionTree);
-export const flatRegionList = flattenRegionTree(regionTree);
+export const regionTree = convertToRegionTree(sortedRegionTree);
+//export const flatRegionList = flattenRegionTree(regionTree);
