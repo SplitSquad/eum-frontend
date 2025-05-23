@@ -178,6 +178,12 @@ const LoginPage: React.FC = () => {
     navigate('/signup');
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !loading) {
+      handleLoginClick();
+    }
+  };
+
   return (
     <>
       {loading && <Loading />}
@@ -228,6 +234,8 @@ const LoginPage: React.FC = () => {
                     transform: 'scale(1.02)',
                   },
                 }}
+                onKeyDown={handleKeyDown}
+                tabIndex={0}
               >
                 {/*아이디 비밀번호 입력 영역*/}
                 <LoginInputs id={id} setId={setId} password={password} setPassword={setPassword} />

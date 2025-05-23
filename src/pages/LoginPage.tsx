@@ -10,10 +10,25 @@ import {
   useTheme,
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import GoogleLoginButton from '../features/auth/components/GoogleLoginButton';
 import useAuthStore from '../features/auth/store/authStore';
 import LoginButton from '../features/auth/components/LoginButton';
+import { useSnackbar } from 'notistack';
+
+const TransparentSnackbar = styled('div')(() => ({
+  borderRadius: 10,
+  padding: '10px 16px',
+  fontWeight: 600,
+  fontSize: '0.95rem',
+  color: '#fff',
+  background: 'rgba(255,182,193,0.85)', // 반투명 분홍색
+  boxShadow: '0 4px 16px rgba(255, 170, 165, 0.15)',
+  display: 'flex',
+  alignItems: 'center',
+  gap: 12,
+}));
+
 // 로그인 카드 스타일
 const LoginCard = styled(Paper)`
   padding: 2rem;
@@ -56,6 +71,8 @@ const LoginPage: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { isAuthenticated, handleLogin } = useAuthStore();
   const [error, setError] = useState<string | null>(null);
+  const [qs] = useSearchParams();
+  const { enqueueSnackbar } = useSnackbar();
 
   // 이미 로그인되어 있으면 메인 페이지로 리디렉션
   useEffect(() => {
@@ -65,6 +82,18 @@ const LoginPage: React.FC = () => {
       navigate('/home');
     }
   }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    if (qs.has('from')) {
+      enqueueSnackbar('로그인 후 서비스 이용이 가능합니다.', {
+        variant: 'warning',
+        autoHideDuration: 1500,
+        content: (key, message) => (
+          <TransparentSnackbar id={key as string}>{message}</TransparentSnackbar>
+        ),
+      });
+    }
+  }, [qs, enqueueSnackbar]);
 
   const handleLoginSuccess = (response: any) => {
     try {

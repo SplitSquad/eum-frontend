@@ -189,6 +189,15 @@ const LoginNavButton = styled(NavButton)`
         font-weight: bold;
       }
     }
+
+    &:focus {
+      outline: none !important;
+      box-shadow: none !important;
+    }
+    &:focus-visible {
+      outline: none !important;
+      box-shadow: none !important;
+    }
   }
 `;
 
@@ -562,8 +571,8 @@ function Header({
     setAnchorEl(null);
   };
 
-  const handleLogoutClick = () => {
-    handleLogout();
+  const handleLogoutClick = async () => {
+    await handleLogout();
     handleProfileMenuClose();
     navigate('/google-login');
   };

@@ -1,5 +1,5 @@
 import React, { ReactNode, useEffect, useState } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation, redirect, type LoaderFunctionArgs } from 'react-router-dom';
 import { useAuthStore } from '../features/auth';
 
 // 기존 임시 useAuth 함수 제거 (AuthStore로 대체)
@@ -14,6 +14,17 @@ interface AuthGuardProps {
  *
  * TODO: 백엔드 API 연동 시 실제 인증 상태 검증 로직 구현 필요
  */
+export async function requireAuth({ request }: LoaderFunctionArgs) {
+  const { isAuthenticated } = useAuthStore.getState();
+  console.log('isAuthenticated', isAuthenticated);
+  if (!isAuthenticated) {
+    // 로그인 안 된 유저는 구글 로그인 페이지로
+    const url = new URL(request.url);
+    return redirect(`/google-login?from=${encodeURIComponent(url.pathname)}`);
+  }
+  return null;
+}
+
 export const AuthGuard = ({ children }: AuthGuardProps) => {
   const { isAuthenticated, user, isLoading, loadUser } = useAuthStore();
   const location = useLocation();
