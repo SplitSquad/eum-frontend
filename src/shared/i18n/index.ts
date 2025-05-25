@@ -4,6 +4,10 @@ import ko from './translations/ko';
 import en from './translations/en';
 import ja from './translations/ja';
 import zh from './translations/zh';
+import de from './translations/de';
+import fr from './translations/fr';
+import es from './translations/es';
+import ru from './translations/ru';
 
 // 모든 번역 정보 맵
 const translations: Record<string, any> = {
@@ -11,7 +15,10 @@ const translations: Record<string, any> = {
   en,
   ja,
   zh,
-  // 다른 언어가 추가될 경우 여기에 추가
+  de,
+  fr,
+  es,
+  ru,
 };
 
 /**

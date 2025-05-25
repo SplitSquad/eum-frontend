@@ -159,8 +159,14 @@ const setupLanguageChangeListener = () => {
 
       const postState = usePostStore.getState();
 
+      // 캐시 초기화 (하지만 현재 posts 데이터는 유지)
+      lastFetchTimestamp = 0;
+      lastFetchedFilter = null;
+      pageCache = {};
+
       // 현재 필터 정보를 유지하면서 게시글 목록 새로고침
       const currentFilter = postState.postFilter;
+      const currentPosts = postState.posts; // 현재 게시글 데이터 백업
 
       // 캐시를 무시하고 새로 요청하기 위해 임시 필터 속성 추가
       const refreshFilter = {
@@ -168,19 +174,52 @@ const setupLanguageChangeListener = () => {
         _forceRefresh: Date.now(), // 강제 새로고침을 위한 임시 속성
       };
 
-      // 게시글 목록 데이터 다시 로드
-      setTimeout(() => {
-        usePostStore.getState().fetchPosts(refreshFilter);
+      // 백그라운드에서 새로운 데이터 가져오기 (기존 데이터는 유지)
+      setTimeout(async () => {
+        try {
+          console.log(`[INFO] 언어 변경 - 현재 게시글 ${currentPosts.length}개 유지하며 백그라운드 새로고침`);
+          
+          // 검색 상태 확인
+          const isSearchActive = postState.searchActive;
+          const searchTerm = postState.searchTerm;
+          const searchType = postState.searchType;
+          
+          if (isSearchActive && searchTerm) {
+            console.log(`[INFO] 언어 변경 - 검색 상태 유지: "${searchTerm}" (${searchType})`);
+            
+            // 검색 상태인 경우 검색 API로 새로고침
+            await usePostStore.getState().searchPosts(searchTerm, searchType, {
+              page: currentFilter.page || 0,
+              size: 6,
+              sort: currentFilter.sortBy === 'popular' ? 'views,desc' : 'createdAt,desc',
+              postType: currentFilter.postType,
+              region: currentFilter.location,
+              category: currentFilter.category,
+              tag: currentFilter.tag,
+            });
+          } else {
+            // 일반 상태인 경우 일반 API로 새로고침
+            await usePostStore.getState().fetchPosts(refreshFilter);
+          }
 
-        // 현재 보고 있는 게시글이 있다면 상세 정보도 새로고침
-        const currentPost = postState.currentPost;
-        if (currentPost) {
-          console.log(
-            `[INFO] 언어 변경으로 현재 게시글(ID: ${currentPost.postId}) 상세 정보 새로고침`
-          );
-          usePostStore.getState().fetchPostById(currentPost.postId);
+          // 현재 보고 있는 게시글이 있다면 상세 정보도 새로고침
+          const currentPost = postState.currentPost;
+          if (currentPost) {
+            console.log(
+              `[INFO] 언어 변경으로 현재 게시글(ID: ${currentPost.postId}) 상세 정보 새로고침`
+            );
+            await usePostStore.getState().fetchPostById(currentPost.postId);
+          }
+        } catch (error) {
+          console.error('[ERROR] 언어 변경 시 데이터 새로고침 실패:', error);
+          // 에러 발생 시에도 기존 데이터 유지
+          usePostStore.setState({ 
+            posts: currentPosts,
+            postLoading: false,
+            postError: null
+          });
         }
-      }, 0);
+      }, 50); // 지연 시간을 줄여서 더 빠른 응답
     }
   });
 };
@@ -272,7 +311,8 @@ export const usePostStore = create<PostState & PostActions>()(
           }
 
           // 필터 병합 전에 언어 변경 확인
-          if (filter && filter._forceRefresh) {
+          const isLanguageRefresh = filter && filter._forceRefresh;
+          if (isLanguageRefresh) {
             console.log('[DEBUG] 언어 변경으로 인한 강제 새로고침, 캐시 무시');
             lastFetchTimestamp = 0; // 캐시 무효화
             pageCache = {}; // 페이지 캐시도 초기화
@@ -390,8 +430,14 @@ export const usePostStore = create<PostState & PostActions>()(
           // 로딩 상태 설정 - 페이지 이동은 빠르게 처리되어야 해서 지연 적용
           let loadingTimeout: any = null;
 
+          // 언어 변경으로 인한 새로고침인 경우 로딩 상태를 부드럽게 처리
+          if (isLanguageRefresh) {
+            console.log('[DEBUG] 언어 변경 새로고침 - 기존 데이터 유지하며 백그라운드 로딩');
+            // 기존 데이터를 유지하면서 백그라운드에서 로딩
+            set({ postLoading: true, postError: null });
+          }
           // 페이지네이션 이동 시 100ms 후에만 로딩 상태 표시 (깜빡임 방지)
-          if (filter?.page !== undefined && currentState.posts.length > 0) {
+          else if (filter?.page !== undefined && currentState.posts.length > 0) {
             loadingTimeout = setTimeout(() => {
               // 이 요청이 여전히 최신 요청인 경우에만 로딩 상태 설정
               if (currentRequestId === lastRequestId && activeRequest) {
@@ -456,12 +502,21 @@ export const usePostStore = create<PostState & PostActions>()(
                   loadingTimeout = null;
                 }
 
-                // 오류 상태 설정 및 빈 배열 반환
-                set({
-                  postLoading: false,
-                  postError: '게시글을 불러올 수 없습니다.',
-                  posts: [], // 에러 시 빈 목록으로 설정
-                });
+                // 언어 변경으로 인한 요청인 경우 기존 데이터 유지
+                if (isLanguageRefresh) {
+                  console.log('[DEBUG] 언어 변경 중 API 에러 - 기존 데이터 유지');
+                  set({
+                    postLoading: false,
+                    postError: null, // 에러 메시지도 표시하지 않음
+                  });
+                } else {
+                  // 일반적인 에러인 경우에만 빈 배열로 설정
+                  set({
+                    postLoading: false,
+                    postError: '게시글을 불러올 수 없습니다.',
+                    posts: [], // 에러 시 빈 목록으로 설정
+                  });
+                }
 
                 // 에러 발생 시 캐시 타임스탬프 초기화
                 lastFetchTimestamp = 0;
@@ -479,17 +534,25 @@ export const usePostStore = create<PostState & PostActions>()(
                   loadingTimeout = null;
                 }
 
-                // 빈 결과 설정
-                set({
-                  posts: [],
-                  postPageInfo: {
-                    page: mergedFilter.page,
-                    size: 6,
-                    totalElements: 0,
-                    totalPages: 0,
-                  },
-                  postLoading: false,
-                });
+                // 언어 변경으로 인한 요청인 경우 기존 데이터 유지
+                if (isLanguageRefresh) {
+                  console.log('[DEBUG] 언어 변경 중 응답 없음 - 기존 데이터 유지');
+                  set({
+                    postLoading: false,
+                  });
+                } else {
+                  // 일반적인 경우에만 빈 결과 설정
+                  set({
+                    posts: [],
+                    postPageInfo: {
+                      page: mergedFilter.page,
+                      size: 6,
+                      totalElements: 0,
+                      totalPages: 0,
+                    },
+                    postLoading: false,
+                  });
+                }
 
                 return;
               }
@@ -568,11 +631,20 @@ export const usePostStore = create<PostState & PostActions>()(
                 loadingTimeout = null;
               }
 
-              set({
-                postLoading: false,
-                postError: '게시글을 불러오는 중 오류가 발생했습니다.',
-                posts: [],
-              });
+              // 언어 변경으로 인한 요청인 경우 기존 데이터 유지
+              if (isLanguageRefresh) {
+                console.log('[DEBUG] 언어 변경 중 전체 에러 - 기존 데이터 유지');
+                set({
+                  postLoading: false,
+                  postError: null,
+                });
+              } else {
+                set({
+                  postLoading: false,
+                  postError: '게시글을 불러오는 중 오류가 발생했습니다.',
+                  posts: [],
+                });
+              }
 
               // 에러 발생 시 캐시 타임스탬프 초기화
               lastFetchTimestamp = 0;
@@ -588,11 +660,22 @@ export const usePostStore = create<PostState & PostActions>()(
           await activeRequest;
         } catch (error) {
           console.error('fetchPosts 전체 실패:', error);
-          set({
-            postLoading: false,
-            postError: '게시글을 불러오는 중 오류가 발생했습니다.',
-            posts: [],
-          });
+          
+          // 언어 변경으로 인한 요청인 경우 기존 데이터 유지
+          const isLanguageRefresh = filter && filter._forceRefresh;
+          if (isLanguageRefresh) {
+            console.log('[DEBUG] 언어 변경 중 최외부 에러 - 기존 데이터 유지');
+            set({
+              postLoading: false,
+              postError: null,
+            });
+          } else {
+            set({
+              postLoading: false,
+              postError: '게시글을 불러오는 중 오류가 발생했습니다.',
+              posts: [],
+            });
+          }
 
           // 진행 중인 요청 추적 제거
           activeRequest = null;
@@ -1033,10 +1116,60 @@ export const usePostStore = create<PostState & PostActions>()(
             },
           });
 
+          // 번역된 검색 타입을 한국어로 변환
+          let convertedSearchType = searchType;
+          if (searchType) {
+            // 번역 키에서 한국어로 변환하는 매핑
+            const searchTypeMapping: Record<string, string> = {
+              'Title+Content': '제목_내용',
+              'Title': '제목',
+              'Content': '내용',
+              'Author': '작성자',
+              // 영어
+              'title': '제목',
+              'content': '내용',
+              'author': '작성자',
+              'title_content': '제목_내용',
+              // 스페인어
+              'Título+Contenido': '제목_내용',
+              'Título': '제목',
+              'Contenido': '내용',
+              'Autor': '작성자',
+              // 프랑스어
+              'Titre+Contenu': '제목_내용',
+              'Titre': '제목',
+              'Contenu': '내용',
+              'Auteur': '작성자',
+              // 독일어
+              'Titel+Inhalt': '제목_내용',
+              'Titel': '제목',
+              'Inhalt': '내용',
+              'Autor_de': '작성자',
+              // 일본어
+              'タイトル+内容': '제목_내용',
+              'タイトル': '제목',
+              '内容_ja': '내용',
+              '作成者': '작성자',
+              // 중국어
+              '标题+内容': '제목_내용',
+              '标题': '제목',
+              '内容_zh': '내용',
+              '作者': '작성자',
+              // 러시아어
+              'Заголовок+Содержание': '제목_내용',
+              'Заголовок': '제목',
+              'Содержание': '내용',
+              'Автор': '작성자',
+            };
+            
+            convertedSearchType = searchTypeMapping[searchType] || searchType;
+            console.log('[DEBUG] 검색 타입 변환:', { 원본: searchType, 변환: convertedSearchType });
+          }
+
           // 검색 API 호출 시 필터 적용
           const apiParams: any = {
             keyword: keyword,
-            searchType: searchType,
+            searchType: convertedSearchType,
             page: searchOptions.page || 0,
             size: searchOptions.size || 6,
             sort: searchOptions.sort || 'createdAt,desc',
@@ -1071,9 +1204,9 @@ export const usePostStore = create<PostState & PostActions>()(
           });
 
           try {
-            // API 호출과 타임아웃 중 먼저 완료되는 것 처리
+            // API 호출과 타임아웃 중 먼저 완료되는 것 처리 - 올바른 경로로 수정
             const response = (await Promise.race([
-              postApi.PostApi.searchPosts(keyword, searchType, searchOptions),
+              postApi.PostApi.searchPosts(keyword, convertedSearchType, searchOptions),
               timeoutPromise,
             ])) as any;
 

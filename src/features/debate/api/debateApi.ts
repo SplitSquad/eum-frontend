@@ -322,12 +322,14 @@ const DebateApi = {
                 const comments = commentsResponse.commentList.map((comment: any) => {
                   // 서버에서 제공하는 isState 값을 myReaction으로 변환
                   const myReaction = convertIsStateToMyReaction(comment.isState);
-                  
+
                   // API 응답에서 userID 추출 시도
                   const userId = comment.userId || 0;
-                  
+
                   // 디버그 로그 추가
-                  console.log(`[DEBUG] 댓글 원본 ID: ${comment.commentId}, API에서 받은 userId: ${userId}, userName: ${comment.userName}`);
+                  console.log(
+                    `[DEBUG] 댓글 원본 ID: ${comment.commentId}, API에서 받은 userId: ${userId}, userName: ${comment.userName}`
+                  );
 
                   return {
                     id: comment.commentId,
@@ -382,12 +384,14 @@ const DebateApi = {
                           repliesMap[comment.id] = replyResponse.replyList.map((reply: any) => {
                             // 서버에서 제공하는 isState 값을 myReaction으로 변환
                             const myReaction = convertIsStateToMyReaction(reply.isState);
-                            
+
                             // API 응답에서 userID 추출 시도
                             const userId = reply.userId || 0;
-                            
+
                             // 디버그 로그 추가
-                            console.log(`[DEBUG] 답글 원본 ID: ${reply.replyId}, API에서 받은 userId: ${userId}, userName: ${reply.userName}`);
+                            console.log(
+                              `[DEBUG] 답글 원본 ID: ${reply.replyId}, API에서 받은 userId: ${userId}, userName: ${reply.userName}`
+                            );
 
                             return {
                               id: reply.replyId,
@@ -691,18 +695,18 @@ const DebateApi = {
     try {
       // 사용자 맞춤 추천 API 호출
       const response = await apiClient.get<any>('/debate/recommendation');
-      
+
       // 응답 로깅
       console.log('토론 추천 응답 데이터:', response);
-      
+
       const responseData = response.data || response;
-      
+
       // 추천 토론 정보
       let debates: Debate[] = [];
-      
+
       // 분석 데이터 (카테고리별 선호도 등)
       let analysis: Record<string, number> = {};
-      
+
       // 응답 형식에 따른 처리
       if (responseData) {
         // 데이터가 debateList 필드를 가지는 경우
@@ -710,56 +714,56 @@ const DebateApi = {
           // 2차원 배열인 경우 ([카테고리별 토론 그룹])
           if (Array.isArray(responseData.debateList) && responseData.debateList.length > 0) {
             const allDebates: Debate[] = [];
-            
+
             // 각 카테고리 그룹마다 토론을 변환하고 합침
             responseData.debateList.forEach((debateGroup: any[]) => {
               if (Array.isArray(debateGroup)) {
                 const groupDebates = debateGroup.map((item: any) => {
                   const debate = mapDebateResToFrontend(item);
-                  
+
                   // 매칭 점수 추가
                   if (typeof item.matchScore === 'number') {
                     debate.matchScore = item.matchScore;
                   }
-                  
+
                   return debate;
                 });
-                
+
                 allDebates.push(...groupDebates);
               }
             });
-            
+
             debates = allDebates;
-          } 
+          }
           // 일반 배열인 경우
           else if (Array.isArray(responseData.debateList)) {
             debates = responseData.debateList.map((item: any) => {
               const debate = mapDebateResToFrontend(item);
-              
+
               // 매칭 점수 추가
               if (typeof item.matchScore === 'number') {
                 debate.matchScore = item.matchScore;
               }
-              
+
               return debate;
             });
           }
         }
-        
+
         // analysis 데이터가 있는 경우
         if (responseData.analysis && typeof responseData.analysis === 'object') {
           analysis = responseData.analysis;
         }
-        
+
         // 선호도 분석 데이터가 없는 경우 기본 데이터 생성
         if (Object.keys(analysis).length === 0) {
           // 토론 카테고리별로 임시 선호도 분석 생성
           const categories = ['정치/사회', '경제', '과학/기술', '생활/문화', '스포츠/레저'];
           const existingCategories = debates.map(d => d.category).filter(Boolean);
-          
+
           // 기존 토론의 카테고리와 기본 카테고리를 합쳐서 분석 데이터 생성
           const allCategories = Array.from(new Set([...categories, ...existingCategories]));
-          
+
           allCategories.forEach(category => {
             if (category) {
               // 0.1 ~ 0.9 사이의 랜덤 선호도
@@ -768,18 +772,18 @@ const DebateApi = {
           });
         }
       }
-      
+
       return {
         debates,
         analysis,
-        total: debates.length
+        total: debates.length,
       };
     } catch (error) {
       console.error('추천 토론 조회 실패:', error);
       return {
         debates: [],
         analysis: {},
-        total: 0
+        total: 0,
       };
     }
   },

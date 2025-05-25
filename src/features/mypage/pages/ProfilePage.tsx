@@ -476,339 +476,322 @@ const ProfilePage: React.FC = () => {
   const levelProgress = (userLevel / maxLevel) * 100;
 
   return (
-    <Container
-      maxWidth="lg"
-      sx={{
-        py: 3,
-        display: 'flex',
-        flexDirection: 'column',
-        flexGrow: 1,
-        position: 'relative',
-        zIndex: 5,
-      }}
-    >
-      <PageLayout title="내 프로필">
-        <form onSubmit={handleSubmit}>
-          <ProfileSection>
-            {/* 왼쪽: 프로필 카드 */}
-            <ProfileCard
-              profileImage={profile?.profileImage}
-              name={profile?.name || ''}
-              role={visitPurpose || '사용자'}
-              email={profile?.email || ''}
-            >
-              <ProfileActions>
-                {isEditing ? (
-                  <>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleCancel}
-                      disabled={profileUpdateLoading === 'loading'}
-                    >
-                      취소
-                    </Button>
-                    <Button
-                      type="submit"
-                      variant="primary"
-                      isLoading={profileUpdateLoading === 'loading'}
-                      className="ml-2"
-                    >
-                      {profileUpdateLoading === 'loading' ? '저장 중...' : '저장하기'}
-                    </Button>
-                  </>
-                ) : (
+    <PageLayout title="내 프로필">
+      <form onSubmit={handleSubmit}>
+        <ProfileSection>
+          {/* 왼쪽: 프로필 카드 */}
+          <ProfileCard
+            profileImage={profile?.profileImage}
+            name={profile?.name || ''}
+            role={visitPurpose || '사용자'}
+            email={profile?.email || ''}
+          >
+            <ProfileActions>
+              {isEditing ? (
+                <>
                   <Button
                     type="button"
-                    variant="primary"
-                    onClick={() => setIsEditing(true)}
-                    fullWidth
+                    variant="outline"
+                    onClick={handleCancel}
+                    disabled={profileUpdateLoading === 'loading'}
                   >
-                    프로필 수정
+                    취소
                   </Button>
-                )}
-              </ProfileActions>
-
-              <Box mt={2} p={2} bgcolor="#f9f9f9" borderRadius={2}>
-                <Typography variant="body2" color="text.secondary" align="center">
-                  활동 레벨: {userLevel}/{maxLevel}
-                </Typography>
-                <Box
-                  mt={1}
-                  width="100%"
-                  height={8}
-                  bgcolor="#e0e0e0"
-                  borderRadius={4}
-                  overflow="hidden"
-                  position="relative"
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    isLoading={profileUpdateLoading === 'loading'}
+                    className="ml-2"
+                  >
+                    {profileUpdateLoading === 'loading' ? '저장 중...' : '저장하기'}
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  type="button"
+                  variant="primary"
+                  onClick={() => setIsEditing(true)}
+                  fullWidth
                 >
-                  <Box
-                    width={`${levelProgress}%`}
-                    height="100%"
-                    bgcolor="#FF9999"
-                    borderRadius={4}
+                  프로필 수정
+                </Button>
+              )}
+            </ProfileActions>
+
+            <Box mt={2} p={2} bgcolor="#f9f9f9" borderRadius={2}>
+              <Typography variant="body2" color="text.secondary" align="center">
+                활동 레벨: {userLevel}/{maxLevel}
+              </Typography>
+              <Box
+                mt={1}
+                width="100%"
+                height={8}
+                bgcolor="#e0e0e0"
+                borderRadius={4}
+                overflow="hidden"
+                position="relative"
+              >
+                <Box width={`${levelProgress}%`} height="100%" bgcolor="#FF9999" borderRadius={4} />
+              </Box>
+            </Box>
+          </ProfileCard>
+
+          {/* 오른쪽: 상세 정보 */}
+          <InfoCard title="개인 정보">
+            <ProfileInfoSection>
+              <StyledFormField label="이름" htmlFor="name">
+                {isEditing ? (
+                  <StyledInput
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    placeholder="이름을 입력하세요"
                   />
+                ) : (
+                  <ReadOnlyValue>{profile?.name || '이름 없음'}</ReadOnlyValue>
+                )}
+              </StyledFormField>
+
+              <StyledFormField label="이메일" htmlFor="email">
+                <ReadOnlyValue>{profile?.email || '이메일 없음'}</ReadOnlyValue>
+              </StyledFormField>
+
+              <StyledFormField label="자기소개" htmlFor="introduction">
+                {isEditing ? (
+                  <StyledTextarea
+                    id="introduction"
+                    name="introduction"
+                    value={formData.introduction}
+                    onChange={handleChange}
+                    placeholder="자기소개를 입력하세요"
+                    rows={4}
+                  />
+                ) : (
+                  <ReadOnlyValue>{profile?.introduction || '자기소개가 없습니다.'}</ReadOnlyValue>
+                )}
+              </StyledFormField>
+
+              <Box gridColumn="span 2">
+                <Box display="flex" flexDirection="column" gap={1}>
+                  <IconWithText>
+                    <PublicIcon fontSize="small" sx={{ color: '#FF9999' }} />
+                    <Typography variant="body2">
+                      <strong>국가:</strong> {profile?.country || '국가 정보 없음'}
+                    </Typography>
+                  </IconWithText>
+
+                  <IconWithText>
+                    <TranslateIcon fontSize="small" sx={{ color: '#FF9999' }} />
+                    <Typography variant="body2">
+                      <strong>언어:</strong> {profile?.language || '언어 정보 없음'}
+                    </Typography>
+                  </IconWithText>
+
+                  <IconWithText>
+                    <CakeIcon fontSize="small" sx={{ color: '#FF9999' }} />
+                    <Typography variant="body2">
+                      <strong>가입일:</strong> {profile?.joinDate || '가입일 정보 없음'}
+                    </Typography>
+                  </IconWithText>
+
+                  <IconWithText>
+                    <TravelExploreIcon fontSize="small" sx={{ color: '#FF9999' }} />
+                    <Typography variant="body2">
+                      <strong>방문 목적:</strong> {visitPurpose}
+                    </Typography>
+                  </IconWithText>
                 </Box>
               </Box>
-            </ProfileCard>
+            </ProfileInfoSection>
+          </InfoCard>
+        </ProfileSection>
+      </form>
 
-            {/* 오른쪽: 상세 정보 */}
-            <InfoCard title="개인 정보">
-              <ProfileInfoSection>
-                <StyledFormField label="이름" htmlFor="name">
-                  {isEditing ? (
-                    <StyledInput
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      placeholder="이름을 입력하세요"
-                    />
-                  ) : (
-                    <ReadOnlyValue>{profile?.name || '이름 없음'}</ReadOnlyValue>
-                  )}
-                </StyledFormField>
+      {/* 활동 통계 */}
+      <Typography variant="h6" component="h2" sx={{ mb: 2, mt: 4 }}>
+        활동 통계
+      </Typography>
+      <StatsSection>
+        <StatCard>
+          <StatIcon>
+            <ForumIcon />
+          </StatIcon>
+          <StatValue>{postsCount}</StatValue>
+          <StatLabel>작성한 게시글</StatLabel>
+        </StatCard>
 
-                <StyledFormField label="이메일" htmlFor="email">
-                  <ReadOnlyValue>{profile?.email || '이메일 없음'}</ReadOnlyValue>
-                </StyledFormField>
+        <StatCard>
+          <StatIcon>
+            <ChatBubbleOutlineIcon />
+          </StatIcon>
+          <StatValue>{commentsCount}</StatValue>
+          <StatLabel>작성한 댓글</StatLabel>
+        </StatCard>
 
-                <StyledFormField label="자기소개" htmlFor="introduction">
-                  {isEditing ? (
-                    <StyledTextarea
-                      id="introduction"
-                      name="introduction"
-                      value={formData.introduction}
-                      onChange={handleChange}
-                      placeholder="자기소개를 입력하세요"
-                      rows={4}
-                    />
-                  ) : (
-                    <ReadOnlyValue>{profile?.introduction || '자기소개가 없습니다.'}</ReadOnlyValue>
-                  )}
-                </StyledFormField>
+        <StatCard>
+          <StatIcon>
+            <HowToVoteIcon />
+          </StatIcon>
+          <StatValue>{debatesCount}</StatValue>
+          <StatLabel>참여한 토론</StatLabel>
+        </StatCard>
 
-                <Box gridColumn="span 2">
-                  <Box display="flex" flexDirection="column" gap={1}>
-                    <IconWithText>
-                      <PublicIcon fontSize="small" sx={{ color: '#FF9999' }} />
-                      <Typography variant="body2">
-                        <strong>국가:</strong> {profile?.country || '국가 정보 없음'}
-                      </Typography>
-                    </IconWithText>
+        <StatCard>
+          <StatIcon>
+            <BookmarkIcon />
+          </StatIcon>
+          <StatValue>{bookmarksCount}</StatValue>
+          <StatLabel>저장한 북마크</StatLabel>
+        </StatCard>
+      </StatsSection>
 
-                    <IconWithText>
-                      <TranslateIcon fontSize="small" sx={{ color: '#FF9999' }} />
-                      <Typography variant="body2">
-                        <strong>언어:</strong> {profile?.language || '언어 정보 없음'}
-                      </Typography>
-                    </IconWithText>
+      {/* 배지 섹션 */}
+      <Typography variant="h6" component="h2" sx={{ mb: 2, mt: 4 }}>
+        나의 배지
+      </Typography>
 
-                    <IconWithText>
-                      <CakeIcon fontSize="small" sx={{ color: '#FF9999' }} />
-                      <Typography variant="body2">
-                        <strong>가입일:</strong> {profile?.joinDate || '가입일 정보 없음'}
-                      </Typography>
-                    </IconWithText>
-
-                    <IconWithText>
-                      <TravelExploreIcon fontSize="small" sx={{ color: '#FF9999' }} />
-                      <Typography variant="body2">
-                        <strong>방문 목적:</strong> {visitPurpose}
-                      </Typography>
-                    </IconWithText>
-                  </Box>
-                </Box>
-              </ProfileInfoSection>
-            </InfoCard>
-          </ProfileSection>
-        </form>
-
-        {/* 활동 통계 */}
-        <Typography variant="h6" component="h2" sx={{ mb: 2, mt: 4 }}>
-          활동 통계
-        </Typography>
-        <StatsSection>
-          <StatCard>
-            <StatIcon>
-              <ForumIcon />
-            </StatIcon>
-            <StatValue>{postsCount}</StatValue>
-            <StatLabel>작성한 게시글</StatLabel>
-          </StatCard>
-
-          <StatCard>
-            <StatIcon>
-              <ChatBubbleOutlineIcon />
-            </StatIcon>
-            <StatValue>{commentsCount}</StatValue>
-            <StatLabel>작성한 댓글</StatLabel>
-          </StatCard>
-
-          <StatCard>
-            <StatIcon>
-              <HowToVoteIcon />
-            </StatIcon>
-            <StatValue>{debatesCount}</StatValue>
-            <StatLabel>참여한 토론</StatLabel>
-          </StatCard>
-
-          <StatCard>
-            <StatIcon>
-              <BookmarkIcon />
-            </StatIcon>
-            <StatValue>{bookmarksCount}</StatValue>
-            <StatLabel>저장한 북마크</StatLabel>
-          </StatCard>
-        </StatsSection>
-
-        {/* 배지 섹션 */}
-        <Typography variant="h6" component="h2" sx={{ mb: 2, mt: 4 }}>
-          나의 배지
-        </Typography>
-
-        {badges.some(badge => badge.unlocked) ? (
-          <BadgeGrid>
-            {badges.map(
-              badge =>
-                badge.unlocked && (
-                  <Badge key={badge.id}>
-                    <BadgeIcon>{badge.icon}</BadgeIcon>
-                    <BadgeName>{badge.name}</BadgeName>
-                    <BadgeDescription>{badge.description}</BadgeDescription>
-                  </Badge>
-                )
-            )}
-          </BadgeGrid>
-        ) : (
-          <NoBadge>
-            <EmojiEventsIcon sx={{ fontSize: 48, color: '#ddd', mb: 2 }} />
-            <Typography variant="body1" color="text.secondary">
-              아직 획득한 배지가 없습니다.
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              활동을 통해 다양한 배지를 수집해 보세요!
-            </Typography>
-          </NoBadge>
-        )}
-
-        {/* 최근 활동 */}
-        <ActivitySection>
-          <Typography variant="h6" component="h2" sx={{ mb: 2 }}>
-            최근 활동
+      {badges.some(badge => badge.unlocked) ? (
+        <BadgeGrid>
+          {badges.map(
+            badge =>
+              badge.unlocked && (
+                <Badge key={badge.id}>
+                  <BadgeIcon>{badge.icon}</BadgeIcon>
+                  <BadgeName>{badge.name}</BadgeName>
+                  <BadgeDescription>{badge.description}</BadgeDescription>
+                </Badge>
+              )
+          )}
+        </BadgeGrid>
+      ) : (
+        <NoBadge>
+          <EmojiEventsIcon sx={{ fontSize: 48, color: '#ddd', mb: 2 }} />
+          <Typography variant="body1" color="text.secondary">
+            아직 획득한 배지가 없습니다.
           </Typography>
+          <Typography variant="body2" color="text.secondary">
+            활동을 통해 다양한 배지를 수집해 보세요!
+          </Typography>
+        </NoBadge>
+      )}
 
-          <Box sx={{ display: 'flex', mb: 2, gap: 1 }}>
-            <Chip
-              label="게시글"
-              onClick={() => setActiveTab('posts')}
-              color={activeTab === 'posts' ? 'primary' : 'default'}
-              variant={activeTab === 'posts' ? 'filled' : 'outlined'}
-            />
-            <Chip
-              label="댓글"
-              onClick={() => setActiveTab('comments')}
-              color={activeTab === 'comments' ? 'primary' : 'default'}
-              variant={activeTab === 'comments' ? 'filled' : 'outlined'}
-            />
-            <Chip
-              label="토론"
-              onClick={() => setActiveTab('debates')}
-              color={activeTab === 'debates' ? 'primary' : 'default'}
-              variant={activeTab === 'debates' ? 'filled' : 'outlined'}
-            />
-          </Box>
+      {/* 최근 활동 */}
+      <ActivitySection>
+        <Typography variant="h6" component="h2" sx={{ mb: 2 }}>
+          최근 활동
+        </Typography>
 
-          <ActivityContainer>
-            {activeTab === 'posts' && (
-              <>
-                {posts?.content?.length ? (
-                  posts.content.map(post => (
-                    <ActivityItem key={post.id}>
-                      <ActivityTitle>{post.title}</ActivityTitle>
-                      <Typography variant="body2" color="text.secondary" noWrap>
-                        {post.content.substring(0, 100)}
-                        {post.content.length > 100 ? '...' : ''}
-                      </Typography>
-                      <ActivityMeta>
-                        <span>카테고리: {post.category}</span>
-                        <span>작성일: {post.createdAt}</span>
-                      </ActivityMeta>
-                    </ActivityItem>
-                  ))
-                ) : (
-                  <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 4 }}>
-                    작성한 게시글이 없습니다.
-                  </Typography>
-                )}
-              </>
-            )}
+        <Box sx={{ display: 'flex', mb: 2, gap: 1 }}>
+          <Chip
+            label="게시글"
+            onClick={() => setActiveTab('posts')}
+            color={activeTab === 'posts' ? 'primary' : 'default'}
+            variant={activeTab === 'posts' ? 'filled' : 'outlined'}
+          />
+          <Chip
+            label="댓글"
+            onClick={() => setActiveTab('comments')}
+            color={activeTab === 'comments' ? 'primary' : 'default'}
+            variant={activeTab === 'comments' ? 'filled' : 'outlined'}
+          />
+          <Chip
+            label="토론"
+            onClick={() => setActiveTab('debates')}
+            color={activeTab === 'debates' ? 'primary' : 'default'}
+            variant={activeTab === 'debates' ? 'filled' : 'outlined'}
+          />
+        </Box>
 
-            {activeTab === 'comments' && (
-              <>
-                {comments?.content?.length ? (
-                  comments.content.map(comment => (
-                    <ActivityItem key={comment.id}>
-                      <Typography variant="body2" sx={{ mb: 1 }}>
-                        게시글: <strong>{comment.postTitle}</strong>
-                      </Typography>
-                      <Typography variant="body1">{comment.content}</Typography>
-                      <ActivityMeta>
-                        <span>작성일: {comment.createdAt}</span>
-                      </ActivityMeta>
-                    </ActivityItem>
-                  ))
-                ) : (
-                  <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 4 }}>
-                    작성한 댓글이 없습니다.
-                  </Typography>
-                )}
-              </>
-            )}
+        <ActivityContainer>
+          {activeTab === 'posts' && (
+            <>
+              {posts?.content?.length ? (
+                posts.content.map(post => (
+                  <ActivityItem key={post.id}>
+                    <ActivityTitle>{post.title}</ActivityTitle>
+                    <Typography variant="body2" color="text.secondary" noWrap>
+                      {post.content.substring(0, 100)}
+                      {post.content.length > 100 ? '...' : ''}
+                    </Typography>
+                    <ActivityMeta>
+                      <span>카테고리: {post.category}</span>
+                      <span>작성일: {post.createdAt}</span>
+                    </ActivityMeta>
+                  </ActivityItem>
+                ))
+              ) : (
+                <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 4 }}>
+                  작성한 게시글이 없습니다.
+                </Typography>
+              )}
+            </>
+          )}
 
-            {activeTab === 'debates' && (
-              <>
-                {debates?.content?.length ? (
-                  debates.content.map(debate => (
-                    <ActivityItem key={debate.id}>
-                      <ActivityTitle>{debate.title}</ActivityTitle>
-                      <Box sx={{ mt: 1 }}>
-                        <Chip
-                          label={`투표: ${debate.votedOption}`}
-                          size="small"
-                          color="primary"
-                          variant="outlined"
-                        />
-                      </Box>
-                      <ActivityMeta>
-                        <span>투표 수: {debate.totalVotes}</span>
-                        <span>참여일: {debate.createdAt}</span>
-                      </ActivityMeta>
-                    </ActivityItem>
-                  ))
-                ) : (
-                  <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 4 }}>
-                    참여한 토론이 없습니다.
-                  </Typography>
-                )}
-              </>
-            )}
-          </ActivityContainer>
-        </ActivitySection>
+          {activeTab === 'comments' && (
+            <>
+              {comments?.content?.length ? (
+                comments.content.map(comment => (
+                  <ActivityItem key={comment.id}>
+                    <Typography variant="body2" sx={{ mb: 1 }}>
+                      게시글: <strong>{comment.postTitle}</strong>
+                    </Typography>
+                    <Typography variant="body1">{comment.content}</Typography>
+                    <ActivityMeta>
+                      <span>작성일: {comment.createdAt}</span>
+                    </ActivityMeta>
+                  </ActivityItem>
+                ))
+              ) : (
+                <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 4 }}>
+                  작성한 댓글이 없습니다.
+                </Typography>
+              )}
+            </>
+          )}
 
-        {/* 성공 메시지 표시 */}
-        <Snackbar
-          open={showSuccess}
-          autoHideDuration={3000}
-          onClose={() => setShowSuccess(false)}
-          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-        >
-          <Alert onClose={() => setShowSuccess(false)} severity="success" sx={{ width: '100%' }}>
-            프로필이 성공적으로 업데이트되었습니다.
-          </Alert>
-        </Snackbar>
-      </PageLayout>
-    </Container>
+          {activeTab === 'debates' && (
+            <>
+              {debates?.content?.length ? (
+                debates.content.map(debate => (
+                  <ActivityItem key={debate.id}>
+                    <ActivityTitle>{debate.title}</ActivityTitle>
+                    <Box sx={{ mt: 1 }}>
+                      <Chip
+                        label={`투표: ${debate.votedOption}`}
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                      />
+                    </Box>
+                    <ActivityMeta>
+                      <span>투표 수: {debate.totalVotes}</span>
+                      <span>참여일: {debate.createdAt}</span>
+                    </ActivityMeta>
+                  </ActivityItem>
+                ))
+              ) : (
+                <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 4 }}>
+                  참여한 토론이 없습니다.
+                </Typography>
+              )}
+            </>
+          )}
+        </ActivityContainer>
+      </ActivitySection>
+
+      {/* 성공 메시지 표시 */}
+      <Snackbar
+        open={showSuccess}
+        autoHideDuration={3000}
+        onClose={() => setShowSuccess(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setShowSuccess(false)} severity="success" sx={{ width: '100%' }}>
+          프로필이 성공적으로 업데이트되었습니다.
+        </Alert>
+      </Snackbar>
+    </PageLayout>
   );
 };
 

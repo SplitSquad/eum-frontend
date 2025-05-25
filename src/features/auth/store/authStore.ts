@@ -46,7 +46,7 @@ interface AuthState {
   handleLogout: () => Promise<void>;
   loadUser: () => Promise<void>;
   clearAuthState: () => void;
-  
+
   // isOnBoardDone 직접 제어 (추가)
   setOnBoardDone: (isDone: boolean) => void;
   getOnBoardDone: () => boolean;
@@ -140,12 +140,13 @@ export const useAuthStore = create<AuthState>()(
       setAuthState: user => {
         const token = getToken();
         // isOnBoardDone 값을 boolean으로 정규화
-        const normalizedUser = user && 'isOnBoardDone' in user 
-          ? {
-              ...user,
-              isOnBoardDone: ensureBoolean(user.isOnBoardDone),
-            }
-          : user;
+        const normalizedUser =
+          user && 'isOnBoardDone' in user
+            ? {
+                ...user,
+                isOnBoardDone: ensureBoolean(user.isOnBoardDone),
+              }
+            : user;
 
         set({
           isAuthenticated: true,
@@ -184,12 +185,13 @@ export const useAuthStore = create<AuthState>()(
         }
 
         // isOnBoardDone 값을 boolean으로 정규화
-        const normalizedUser = user && 'isOnBoardDone' in user
-          ? {
-              ...user,
-              isOnBoardDone: ensureBoolean(user.isOnBoardDone),
-            }
-          : user;
+        const normalizedUser =
+          user && 'isOnBoardDone' in user
+            ? {
+                ...user,
+                isOnBoardDone: ensureBoolean(user.isOnBoardDone),
+              }
+            : user;
 
         // 디버깅: 원본 값과 정규화된 값 로깅
         if (user && 'isOnBoardDone' in user) {
@@ -243,15 +245,16 @@ export const useAuthStore = create<AuthState>()(
             const userData = await checkAuthStatus();
 
             // isOnBoardDone 값을 명시적으로 boolean으로 변환
-            const normalizedUserData = userData && 'isOnBoardDone' in userData
-              ? {
-                  ...userData,
-                  isOnBoardDone: ensureBoolean(userData.isOnBoardDone),
-                }
-              : userData;
+            const normalizedUserData =
+              userData && 'isOnBoardDone' in userData
+                ? {
+                    ...userData,
+                    isOnBoardDone: ensureBoolean(userData.isOnBoardDone),
+                  }
+                : userData;
 
             console.log('사용자 정보 로드 성공:', normalizedUserData);
-            
+
             if (userData && 'isOnBoardDone' in userData) {
               console.log('isOnBoardDone 값 확인:', {
                 원본값: userData.isOnBoardDone,
@@ -356,29 +359,29 @@ export default useAuthStore;
 export const processOAuthToken = (token: string, userData: any) => {
   // 토큰 저장 (tokenUtils 사용)
   setToken(token);
-  
+
   // localStorage에도 토큰 저장 (axios 인터셉터용)
   localStorage.setItem('auth_token', token);
-  
+
   // 사용자 정보 저장
   if (userData && userData.email) {
     localStorage.setItem('userEmail', userData.email);
   }
-  
+
   if (userData && userData.name) {
     localStorage.setItem('userName', userData.name);
   }
-  
+
   if (userData && userData.role) {
     localStorage.setItem('userRole', userData.role);
   }
-  
+
   return {
     token,
     user: {
       userId: getUserIdFromToken(token),
       email: userData?.email || '',
       role: userData?.role || 'ROLE_USER',
-    }
+    },
   };
 };

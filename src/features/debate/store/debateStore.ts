@@ -272,9 +272,12 @@ export const useDebateStore = create<DebateState>()(
             });
 
             // 댓글 수와 답글 수를 합산하여 총 댓글 수 계산
-            const totalReplies = response.comments.reduce((sum, comment) => sum + (comment.replyCount || 0), 0);
+            const totalReplies = response.comments.reduce(
+              (sum, comment) => sum + (comment.replyCount || 0),
+              0
+            );
             const totalCommentsWithReplies = response.total + totalReplies;
-            
+
             set({
               comments: response.comments,
               totalComments: totalCommentsWithReplies, // 답글 수를 포함한 총 댓글 수
@@ -389,8 +392,8 @@ export const useDebateStore = create<DebateState>()(
 
             if (comment) {
               // 백엔드에 stance 필드가 없으므로, 로컬 스토리지의 값 사용
-              let savedStance = stance || 'pro';  // 기본값
-              
+              let savedStance = stance || 'pro'; // 기본값
+
               // 로컬 스토리지에서 이 댓글의 stance 값 가져오기
               try {
                 if (comment && comment.id) {
@@ -403,12 +406,12 @@ export const useDebateStore = create<DebateState>()(
               } catch (error) {
                 console.error('로컬 스토리지에서 stance 정보 가져오기 실패:', error);
               }
-              
+
               const commentWithCorrectStance = {
                 ...comment,
-                stance: savedStance  // 로컬 스토리지에 저장된 값 사용
+                stance: savedStance, // 로컬 스토리지에 저장된 값 사용
               };
-              
+
               // 임시 댓글을 실제 댓글로 교체
               set(state => {
                 const updatedComments = state.comments.map(c =>
@@ -559,7 +562,7 @@ export const useDebateStore = create<DebateState>()(
                   commentCount: currentDebate.commentCount + 1, // 답글도 전체 댓글 수에 포함
                 }
               : null;
-            
+
             // 즉시 UI에 임시 대댓글 추가
             set({
               replies: {
@@ -732,7 +735,7 @@ export const useDebateStore = create<DebateState>()(
                         commentCount: Math.max(0, currentDebate.commentCount - 1), // 답글도 전체 댓글 수에 포함
                       }
                     : null;
-                  
+
                   // 한 번에 모든 상태 업데이트
                   set({
                     replies: updatedReplies,

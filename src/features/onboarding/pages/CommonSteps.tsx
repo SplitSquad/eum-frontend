@@ -102,7 +102,7 @@ const CommonStep: React.FC<CommonStepProps> = ({
       case 'interests':
         // 관심사 태그 준비
         const interestCategories = [
-          { id: 'basic', name: '일반 관심사' },
+          { id: 'info', name: '정보 관심사' },
           { id: 'community', name: '커뮤니티 주제' },
           { id: 'debate', name: '토론 주제' },
         ];
@@ -118,9 +118,9 @@ const CommonStep: React.FC<CommonStepProps> = ({
             description="관심 있는 주제를 선택해주세요. 최대 10개까지 선택 가능합니다."
             grouped={true}
             groupMapping={{
-              basic: interestTags.slice(0, 20).map(tag => tag.id),
-              community: interestTags.slice(20, 37).map(tag => tag.id),
-              debate: interestTags.slice(37).map(tag => tag.id),
+              info: interestTags.slice(23, 31).map(tag => tag.id),
+              community: interestTags.slice(0, 17).map(tag => tag.id),
+              debate: interestTags.slice(17, 23).map(tag => tag.id),
             }}
           />
         );

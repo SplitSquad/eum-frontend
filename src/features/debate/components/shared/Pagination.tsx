@@ -77,7 +77,7 @@ const Pagination: React.FC<PaginationProps> = ({
               color: currentPage === 1 ? '#ccc' : '#333',
               cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
               boxShadow: currentPage === 1 ? 'none' : '0 1px 3px rgba(0,0,0,0.1)',
-              fontWeight: 'bold'
+              fontWeight: 'bold',
             }}
             aria-label="이전 페이지"
           >
@@ -98,7 +98,7 @@ const Pagination: React.FC<PaginationProps> = ({
 
           // 일반 페이지 번호
           const isCurrentPage = pageNumber === currentPage;
-          
+
           return (
             <li key={pageNumber}>
               <button
@@ -113,7 +113,7 @@ const Pagination: React.FC<PaginationProps> = ({
                   cursor: 'pointer',
                   boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
                   fontWeight: isCurrentPage ? 'bold' : 'normal',
-                  minWidth: '32px'
+                  minWidth: '32px',
                 }}
                 aria-label={`${pageNumber} 페이지`}
                 aria-current={isCurrentPage ? 'page' : undefined}
@@ -138,7 +138,7 @@ const Pagination: React.FC<PaginationProps> = ({
               color: currentPage === totalPages ? '#ccc' : '#333',
               cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
               boxShadow: currentPage === totalPages ? 'none' : '0 1px 3px rgba(0,0,0,0.1)',
-              fontWeight: 'bold'
+              fontWeight: 'bold',
             }}
             aria-label="다음 페이지"
           >

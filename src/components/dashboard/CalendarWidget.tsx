@@ -38,6 +38,7 @@ import CalendarService, {
   CalendarEvent,
   GoogleCalendarEventRequest,
 } from '../../services/calendar/calendarService';
+import { useTranslation } from '../../shared/i18n';
 
 // ISO 문자열을 한국 시간대로 변환하는 유틸리티 함수
 const formatToKoreanTimezone = (date: Date): string => {
@@ -49,6 +50,8 @@ const formatToKoreanTimezone = (date: Date): string => {
 };
 
 const CalendarWidget: React.FC = () => {
+  const { t } = useTranslation();
+  
   const [hoveredDate, setHoveredDate] = useState<number | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState('');
@@ -79,7 +82,15 @@ const CalendarWidget: React.FC = () => {
   const completedDays: number[] = [];
 
   // 요일 레이블
-  const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+  const weekdays = [
+    t('calendar.weekdays.sunday'),
+    t('calendar.weekdays.monday'),
+    t('calendar.weekdays.tuesday'),
+    t('calendar.weekdays.wednesday'),
+    t('calendar.weekdays.thursday'),
+    t('calendar.weekdays.friday'),
+    t('calendar.weekdays.saturday'),
+  ];
 
   // 이벤트 타입별 색상 - 구글 캘린더 이벤트는 타입이 없으므로 이름 기반으로 임의 분류
   const getEventTypeColor = (summary: string) => {
@@ -103,11 +114,11 @@ const CalendarWidget: React.FC = () => {
     const diffTime = date.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    if (diffDays === 0) return '오늘';
-    else if (diffDays === 1) return '내일';
-    else if (diffDays === 2) return '모레';
-    else if (diffDays > 0) return `${diffDays}일 후`;
-    else return `${Math.abs(diffDays)}일 전`;
+    if (diffDays === 0) return t('calendar.dateLabels.today');
+    else if (diffDays === 1) return t('calendar.dateLabels.tomorrow');
+    else if (diffDays === 2) return t('calendar.dateLabels.dayAfterTomorrow');
+    else if (diffDays > 0) return t('calendar.dateLabels.daysLater', { days: diffDays.toString() });
+    else return t('calendar.dateLabels.daysAgo', { days: Math.abs(diffDays).toString() });
   };
 
   // 구글 캘린더 연동 상태 확인
@@ -265,7 +276,7 @@ const CalendarWidget: React.FC = () => {
 
   // 이벤트 삭제
   const deleteEvent = async (event: CalendarEvent) => {
-    if (!window.confirm('이 이벤트를 삭제하시겠습니까?')) return;
+    if (!window.confirm(t('calendar.events.deleteConfirm'))) return;
 
     setIsLoading(true);
     try {
@@ -452,7 +463,7 @@ const CalendarWidget: React.FC = () => {
                   {currentYear} {currentMonth}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  일정 및 캘린더
+                  {t('calendar.events.calendarAndSchedule')}
                 </Typography>
               </Box>
             </Box>
@@ -494,7 +505,7 @@ const CalendarWidget: React.FC = () => {
                 <ArrowForwardIosIcon fontSize="small" />
               </IconButton>
 
-              <Tooltip title="오늘로 이동" placement="top" arrow>
+              <Tooltip title={t('calendar.events.goToToday')} placement="top" arrow>
                 <IconButton
                   size="small"
                   onClick={goToToday}
@@ -538,7 +549,7 @@ const CalendarWidget: React.FC = () => {
               },
             }}
           >
-            {isGoogleConnected ? '구글 캘린더 동기화됨' : '구글 캘린더와 동기화'}
+{isGoogleConnected ? t('calendar.events.googleCalendarSynced') : t('calendar.events.googleCalendarSync')}
             {isLoading && <CircularProgress size={16} sx={{ ml: 1 }} />}
           </Button>
 
@@ -754,7 +765,7 @@ const CalendarWidget: React.FC = () => {
             sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}
           >
             <Typography variant="subtitle1" fontWeight={600}>
-              다가오는 일정
+              {t('calendar.events.upcomingEvents')}
             </Typography>
 
             <IconButton
@@ -813,7 +824,7 @@ const CalendarWidget: React.FC = () => {
               >
                 <GoogleIcon sx={{ fontSize: 40, color: 'text.secondary', mb: 1 }} />
                 <Typography variant="body2" color="text.secondary" gutterBottom>
-                  구글 캘린더와 연동하여 일정을 관리하세요
+                  {t('calendar.events.googleCalendarSync')}
                 </Typography>
                 <Button
                   variant="contained"
@@ -822,7 +833,7 @@ const CalendarWidget: React.FC = () => {
                   onClick={handleGoogleSync}
                   sx={{ mt: 1 }}
                 >
-                  구글 캘린더 연동
+{t('calendar.events.googleCalendarSync')}
                 </Button>
               </Box>
             ) : getUpcomingEvents().length === 0 ? (
@@ -841,7 +852,7 @@ const CalendarWidget: React.FC = () => {
               >
                 <EventIcon sx={{ fontSize: 40, color: 'text.secondary', mb: 1 }} />
                 <Typography variant="body2" color="text.secondary" gutterBottom>
-                  예정된 일정이 없습니다
+                  {t('calendar.events.noScheduledEvents')}
                 </Typography>
                 <Button
                   variant="contained"
@@ -850,7 +861,7 @@ const CalendarWidget: React.FC = () => {
                   onClick={() => openEventDialog()}
                   sx={{ mt: 1 }}
                 >
-                  새 일정 추가
+{t('calendar.events.newScheduleAdd')}
                 </Button>
               </Box>
             ) : (
@@ -894,7 +905,7 @@ const CalendarWidget: React.FC = () => {
                     >
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <Chip
-                          label="오늘"
+                          label={t('calendar.dateLabels.today')}
                           size="small"
                           sx={{
                             height: 20,
@@ -915,9 +926,9 @@ const CalendarWidget: React.FC = () => {
                                   minute: '2-digit',
                                 });
                               }
-                              return '시간 정보 없음';
+                              return t('calendar.events.timeInfoNotAvailable');
                             } catch (error) {
-                              return '시간 정보 없음';
+                              return t('calendar.events.timeInfoNotAvailable');
                             }
                           })()}
                         </Typography>
@@ -1011,12 +1022,12 @@ const CalendarWidget: React.FC = () => {
                             label={(() => {
                               try {
                                 const date = new Date(event.start.dateTime);
-                                if (!isNaN(date.getTime())) {
-                                  return getDateDiff(date);
-                                }
-                                return '날짜 정보 없음';
+                                                              if (!isNaN(date.getTime())) {
+                                return getDateDiff(date);
+                              }
+                              return t('calendar.events.dateInfoNotAvailable');
                               } catch (error) {
-                                return '날짜 정보 없음';
+                                return t('calendar.events.dateInfoNotAvailable');
                               }
                             })()}
                             size="small"
@@ -1033,15 +1044,15 @@ const CalendarWidget: React.FC = () => {
                             {(() => {
                               try {
                                 const date = new Date(event.start.dateTime);
-                                if (!isNaN(date.getTime())) {
-                                  return date.toLocaleTimeString('ko-KR', {
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                  });
-                                }
-                                return '시간 정보 없음';
+                                                              if (!isNaN(date.getTime())) {
+                                return date.toLocaleTimeString('ko-KR', {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                });
+                              }
+                              return t('calendar.events.timeInfoNotAvailable');
                               } catch (error) {
-                                return '시간 정보 없음';
+                                return t('calendar.events.timeInfoNotAvailable');
                               }
                             })()}
                           </Typography>
@@ -1099,7 +1110,7 @@ const CalendarWidget: React.FC = () => {
               >
                 <NotificationsIcon sx={{ fontSize: 18, color: 'text.secondary', mr: 1 }} />
                 <Typography variant="caption" color="text.secondary">
-                  모든 일정에 대한 알림이 설정되어 있습니다.
+                  {t('calendar.events.allEventsNotificationSet')}
                 </Typography>
               </Box>
             )}
@@ -1109,11 +1120,11 @@ const CalendarWidget: React.FC = () => {
 
       {/* 이벤트 추가/수정 다이얼로그 */}
       <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>{selectedEvent ? '일정 수정' : '새 일정 추가'}</DialogTitle>
+        <DialogTitle>{selectedEvent ? t('calendar.events.eventEditTitle') : t('calendar.events.newEventTitle')}</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
             <TextField
-              label="일정 제목"
+              label={t('calendar.events.eventTitle')}
               fullWidth
               value={newEvent.summary}
               onChange={e => setNewEvent({ ...newEvent, summary: e.target.value })}
@@ -1121,14 +1132,14 @@ const CalendarWidget: React.FC = () => {
             />
 
             <TextField
-              label="장소"
+              label={t('calendar.events.location')}
               fullWidth
               value={newEvent.location}
               onChange={e => setNewEvent({ ...newEvent, location: e.target.value })}
             />
 
             <TextField
-              label="설명"
+              label={t('calendar.events.description')}
               fullWidth
               multiline
               rows={3}
@@ -1138,7 +1149,7 @@ const CalendarWidget: React.FC = () => {
 
             <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ko}>
               <DateTimePicker
-                label="시작 시간"
+                label={t('calendar.events.startTime')}
                 value={new Date(newEvent.startDateTime)}
                 onChange={date =>
                   date &&
@@ -1150,7 +1161,7 @@ const CalendarWidget: React.FC = () => {
               />
 
               <DateTimePicker
-                label="종료 시간"
+                label={t('calendar.events.endTime')}
                 value={new Date(newEvent.endDateTime)}
                 onChange={date =>
                   date &&
@@ -1164,9 +1175,9 @@ const CalendarWidget: React.FC = () => {
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setIsDialogOpen(false)}>취소</Button>
+          <Button onClick={() => setIsDialogOpen(false)}>{t('calendar.events.cancel')}</Button>
           <Button variant="contained" onClick={saveEvent} disabled={isLoading || !newEvent.summary}>
-            {isLoading ? <CircularProgress size={24} /> : '저장'}
+            {isLoading ? <CircularProgress size={24} /> : t('calendar.events.save')}
           </Button>
         </DialogActions>
       </Dialog>

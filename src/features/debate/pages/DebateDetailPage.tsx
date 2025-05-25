@@ -342,58 +342,42 @@ const DebateDetailPage: React.FC = () => {
 
   // 토론 상세 불러온 후 댓글도 불러오기
   useEffect(() => {
-    if (debate && id) {
-      // 댓글 목록 로드
-      fetchComments(parseInt(id));
-
-      // 디버깅용 로그
-      console.log('토론 데이터 로드됨:', debate);
-      console.log('투표 상태 (isVotedState):', debate.isVotedState);
-      console.log('감정표현 상태 (isState):', debate.isState);
-
-      // 토론 관련 웹로그
+    if (debate) {
+      // 상태 초기화
+      if (debate?.isVotedState === '찬성') {
+        setUserVote('pro');
+        setStance('pro');
+      } else if (debate?.isVotedState === '반대') {
+        setUserVote('con');
+        setStance('con');
+      } else {
+        setUserVote(null);
+        setStance(null);
+      }
       const userId = getUserId() ?? 0;
-      const debateContent = {
-        // 토론 제목과 내용
-        debateTitle: debate.title,
-        debateContent: debate.content,
-      };
       const chatLogPayload = {
         UID: userId,
         ClickPath: location.pathname,
         TAG: debate.category,
         CurrentPath: location.pathname,
         Event: 'click',
-        Content: debateContent,
+        Content: null,
         Timestamp: new Date().toISOString(),
       };
       sendWebLog({ userId, content: JSON.stringify(chatLogPayload) });
 
-      // 사용자 투표 상태 초기화
-      if (debate.isVotedState) {
-        const mappedVoteType = mapIsVotedStateToVoteType(debate.isVotedState);
-        console.log('매핑된 투표 타입:', mappedVoteType);
-        setUserVote(mappedVoteType);
-        setStance(mappedVoteType); // 댓글 작성 시 선택할 수 있는 입장도 함께 설정
-      } else {
-        // 투표 상태가 없으면 초기화
-        setUserVote(null);
-        setStance(null);
+      // 코멘트 로드
+      if (id) {
+        fetchComments(parseInt(id));
       }
 
-      // 사용자 감정표현 상태 초기화
-      if (debate.isState) {
-        const mappedEmotionType = mapIsStateToEmotionType(debate.isState);
-        console.log('매핑된 감정 타입:', mappedEmotionType);
+      // 감정표현 상태 확인
+      const mappedEmotionType = debate.isState ? mapIsStateToEmotionType(debate.isState) : null;
 
-        // 유효한 감정표현 타입이면 설정
-        if (mappedEmotionType) {
-          setUserEmotion(mappedEmotionType);
-        } else {
-          setUserEmotion(null);
-        }
+      // 감정표현 상태가 있으면 설정
+      if (mappedEmotionType) {
+        setUserEmotion(mappedEmotionType);
       } else {
-        // 감정표현 상태가 없으면 초기화
         setUserEmotion(null);
       }
 
@@ -402,45 +386,47 @@ const DebateDetailPage: React.FC = () => {
         console.log('국가별 참여 정보:', debate.countryStats);
       } else {
         console.log('국가별 참여 정보가 없습니다.');
-      }
 
-      // 항상 최신 투표 정보를 가져오기 위해 VoteController의 getVotes API 호출
-      getVotesByDebateId(parseInt(id))
-        .then(voteData => {
-          if (voteData && voteData.nationPercent) {
-            console.log('투표 API에서 국가별 참여 정보 로드됨:', voteData.nationPercent);
+        // 국가별 참여 정보가 없을 경우 즉시 API에서 가져옴
+        if (id) {
+          getVotesByDebateId(parseInt(id))
+            .then(voteData => {
+              if (voteData && voteData.nationPercent) {
+                console.log('투표 API에서 국가별 참여 정보 로드됨:', voteData.nationPercent);
 
-            // nationPercent를 countryStats로 변환
-            const countryStats = Object.entries(voteData.nationPercent).map(
-              ([countryCode, percentage]) => {
-                // 국가 코드에서 국가명 추출 (간단한 매핑)
-                let countryName = countryCode;
-                if (countryCode === 'KR') countryName = '대한민국';
-                else if (countryCode === 'US') countryName = '미국';
-                else if (countryCode === 'JP') countryName = '일본';
-                else if (countryCode === 'CN') countryName = '중국';
+                // nationPercent를 countryStats로 변환
+                const countryStats = Object.entries(voteData.nationPercent).map(
+                  ([countryCode, percentage]) => {
+                    // 국가 코드에서 국가명 추출
+                    let countryName = countryCode;
+                    if (countryCode === 'KR') countryName = '대한민국';
+                    else if (countryCode === 'US') countryName = '미국';
+                    else if (countryCode === 'JP') countryName = '일본';
+                    else if (countryCode === 'CN') countryName = '중국';
 
-                return {
-                  countryCode,
-                  countryName,
-                  count: Math.round(((percentage as number) / 100) * (voteData.voteCnt || 0)),
-                  percentage: percentage as number,
-                };
+                    return {
+                      countryCode,
+                      countryName,
+                      count: Math.round(((percentage as number) / 100) * (voteData.voteCnt || 0)),
+                      percentage: percentage as number,
+                    };
+                  }
+                );
+
+                // 토론 객체의 countryStats 업데이트
+                debate.countryStats = countryStats;
+
+                // 강제 리렌더링을 위해 상태 업데이트
+                setUserVote(prev => prev);
+              } else {
+                console.log('투표 API에서 국가별 참여 정보를 가져오지 못했습니다.');
               }
-            );
-
-            // 토론 객체의 countryStats 업데이트
-            debate.countryStats = countryStats;
-
-            // 컴포넌트 강제 리렌더링을 위해 상태 업데이트 (빈 객체로 업데이트해도 리렌더링 발생)
-            setUserVote(prev => prev);
-          } else {
-            console.log('투표 API에서 국가별 참여 정보를 가져오지 못했습니다.');
-          }
-        })
-        .catch(error => {
-          console.error('투표 API 호출 중 오류:', error);
-        });
+            })
+            .catch(error => {
+              console.error('투표 API 호출 중 오류:', error);
+            });
+        }
+      }
     }
   }, [debate, id, fetchComments]);
 
@@ -499,6 +485,9 @@ const DebateDetailPage: React.FC = () => {
 
           // 상태 업데이트
           debate.countryStats = countryStats;
+
+          // 강제 리렌더링을 위해 상태 업데이트
+          setUserVote(prev => prev);
         }
         // 투표 실패하거나 응답에 nationPercent가 없는 경우 최신 투표 정보 가져오기
         else if (!success || !response.nationPercent) {
@@ -603,6 +592,9 @@ const DebateDetailPage: React.FC = () => {
 
           // 상태 업데이트
           debate.countryStats = countryStats;
+
+          // 강제 리렌더링을 위해 상태 업데이트
+          setUserVote(prev => prev);
         }
 
         // 실패 시에만 원래 상태로 되돌림

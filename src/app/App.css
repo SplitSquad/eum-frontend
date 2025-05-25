@@ -1,3 +1,11 @@
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+}
+
 /* 전체 앱 컨테이너 스타일 */
 .app-container {
   min-height: 100vh;
@@ -28,6 +36,25 @@
   /*margin-top: 64px;  헤더 높이만큼 여백 추가 */
   /*margin-bottom: 120px; /* 푸터 높이만큼 여백 추가 */
   z-index: 1;
+}
+
+/* 모바일 최적화 */
+@media (max-width: 768px) {
+  .main-content {
+    min-height: calc(100vh - 56px - 100px); /* 모바일 헤더와 푸터 높이 조정 */
+    padding: 0.25rem 0;
+  }
+  
+  .app-container {
+    font-size: 14px; /* 모바일에서 기본 폰트 크기 조정 */
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    min-height: calc(100vh - 56px - 80px);
+    padding: 0.125rem 0;
+  }
 }
 
 /* 봄 테마 색상 변수 */

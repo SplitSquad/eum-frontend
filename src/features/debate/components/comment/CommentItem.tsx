@@ -42,7 +42,10 @@ import ThumbDownIcon from '@mui/icons-material/ThumbDown';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { format } from 'date-fns';
 import { useAuthStore } from '../../../auth';
-import ReportDialog, { ReportTargetType, ServiceType } from '../../../common/components/ReportDialog';
+import ReportDialog, {
+  ReportTargetType,
+  ServiceType,
+} from '../../../common/components/ReportDialog';
 
 interface CommentItemProps {
   comment: DebateComment;
@@ -168,7 +171,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
   // content에서 stance 정보 추출
   let extractedStance: 'pro' | 'con' = stance || 'pro';
   let displayContent = content || '';
-  
+
   // 댓글 내용에서 stance 프리픽스 확인 및 추출
   if (displayContent.startsWith('【반대】')) {
     extractedStance = 'con';
@@ -177,11 +180,13 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
     extractedStance = 'pro';
     displayContent = displayContent.replace('【찬성】 ', '');
   }
-  
+
   // localContent는 이미 초기값으로 설정되었으므로 추가 작업 필요 없음
-  
+
   // 추가 디버그 로그
-  console.log(`[DEBUG] 토론 댓글 ID: ${id}, 작성자 ID: ${userId}, 작성자 이름: ${userName}, 찬반 입장: ${extractedStance}, 원본: ${content}, 표시: ${displayContent}`);
+  console.log(
+    `[DEBUG] 토론 댓글 ID: ${id}, 작성자 ID: ${userId}, 작성자 이름: ${userName}, 찬반 입장: ${extractedStance}, 원본: ${content}, 표시: ${displayContent}`
+  );
 
   // Store access
   const {
@@ -196,7 +201,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
 
   // Auth store
   const { user } = useAuthStore();
-  
+
   // 로컬 상태
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(displayContent);
@@ -205,7 +210,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
   const [localContent, setLocalContent] = useState(displayContent);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  
+
   // Report dialog states
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
 
@@ -265,26 +270,26 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
-  
+
   // 신고 대화상자 핸들러
   const handleOpenReportDialog = () => {
     if (!user) {
       alert('로그인이 필요합니다.');
       return;
     }
-    
+
     // 신고 전 userId 확인
-    console.log(`[DEBUG] 신고 대상 작성자 정보:`, { 
-      userId, 
-      id, 
-      userName, 
-      commentUserId: comment.userId 
+    console.log(`[DEBUG] 신고 대상 작성자 정보:`, {
+      userId,
+      id,
+      userName,
+      commentUserId: comment.userId,
     });
-    
+
     // API에서 직접 받은 댓글 작성자 ID 사용 (없으면 0으로 대체)
     const reportedUserId = comment.userId || userId || 0;
     console.log(`[DEBUG] 신고에 사용될 작성자 ID: ${reportedUserId}`);
-    
+
     setReportDialogOpen(true);
     handleMenuClose();
   };
@@ -294,9 +299,10 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
   };
 
   // 현재 사용자가 작성자이거나 관리자인지 확인
-  const isMyCommentOrAdmin = userId && 
+  const isMyCommentOrAdmin =
+    userId &&
     ((user && ((user as any)?.id ?? (user as any)?.userId) === userId) || // 작성자인 경우
-     (user && user.role === 'ROLE_ADMIN')); // 관리자인 경우
+      (user && user.role === 'ROLE_ADMIN')); // 관리자인 경우
 
   // 댓글 수정 핸들러 - 낙관적 UI 업데이트 적용
   const handleEdit = async (e?: React.MouseEvent) => {
@@ -482,10 +488,10 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
               <CountryChip icon={<FlagIcon fontSize="small" />} label={countryName} size="small" />
             )}
             {/* 입장 표시 - 댓글 내용에서 추출한 stance 사용 */}
-            <StanceChip 
-              label={extractedStance === 'con' ? '반대' : '찬성'} 
-              stance={extractedStance} 
-              size="small" 
+            <StanceChip
+              label={extractedStance === 'con' ? '반대' : '찬성'}
+              stance={extractedStance}
+              size="small"
             />
           </Box>
         }
@@ -497,19 +503,15 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
         }
         action={
           <Box>
-            {user && (
-              isMyCommentOrAdmin ? (
-                <IconButton
-                  size="small"
-                  onClick={handleMenuOpen}
-                  aria-label="더 보기"
-                >
+            {user &&
+              (isMyCommentOrAdmin ? (
+                <IconButton size="small" onClick={handleMenuOpen} aria-label="더 보기">
                   <MoreVertIcon fontSize="small" />
                 </IconButton>
               ) : (
                 <IconButton
                   size="small"
-                  onClick={(e) => {
+                  onClick={e => {
                     e.stopPropagation();
                     handleOpenReportDialog();
                   }}
@@ -518,18 +520,17 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
                 >
                   <FlagIcon fontSize="small" />
                 </IconButton>
-              )
-            )}
-            
+              ))}
+
             {/* 댓글 메뉴 */}
             <Menu
               anchorEl={anchorEl}
               open={Boolean(anchorEl)}
               onClose={handleMenuClose}
-              onClick={(e) => e.stopPropagation()}
+              onClick={e => e.stopPropagation()}
             >
-              <MenuItem 
-                onClick={(e) => {
+              <MenuItem
+                onClick={e => {
                   e.stopPropagation();
                   handleMenuClose();
                   setIsEditing(true);
@@ -537,8 +538,8 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
               >
                 수정
               </MenuItem>
-              <MenuItem 
-                onClick={(e) => {
+              <MenuItem
+                onClick={e => {
                   e.stopPropagation();
                   handleMenuClose();
                   handleDelete();

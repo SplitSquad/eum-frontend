@@ -2,12 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { PageLayout, InfoCard } from '../components';
 import styled from '@emotion/styled';
 import { useMypageStore } from '../store/mypageStore';
-import { useDebateStore } from '../../debate/store';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../auth/store/authStore';
 import { CircularProgress } from '@mui/material';
 import DebateApi from '../../debate/api/debateApi';
 
+//리스폰스 타입 정의
+interface Activity {
+  id: number;
+  type: string;
+  title: string;
+  description: string;
+  date: string;
+  onClick: () => void;
+}
 // 스타일 컴포넌트
 const PageContainer = styled.div`
   padding: 20px 0;
@@ -363,7 +371,7 @@ const ActivitiesPage: React.FC = () => {
       const bookmarkActivities = bookmarks.content.map(bookmark => ({
         id: bookmark.id || 0,
         type: 'bookmark',
-        title: '북마크 추가',
+        title: '북마크 보관',
         description: bookmark.title || '',
         date: bookmark.createdAt || '',
         onClick: () => handleActivityClick('bookmark', bookmark.id || 0),

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Paper, Box, Typography, Grid } from '@mui/material';
+import { Paper, Box, Typography } from '@mui/material';
 import { PieChart } from '@mui/x-charts/PieChart';
 import { BarChart } from '@mui/x-charts/BarChart';
 
@@ -28,24 +28,29 @@ const StatusWidget: React.FC = () => {
   ];
 
   return (
-    <Paper 
-      elevation={1} 
-      sx={{ 
-        p: 2, 
+    <Paper
+      elevation={1}
+      sx={{
+        p: 2,
         height: '100%',
         borderRadius: 2,
-        boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
+        boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
       }}
     >
       <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
         업무 현황
       </Typography>
 
-      <Grid container spacing={2}>
+      {/* Box로 Grid 대체 */}
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
         {/* 첫 번째 차트 행 */}
-        <Grid item xs={12} sm={6}>
+        <Box sx={{ flex: { xs: '0 0 100%', sm: '0 0 48%' }, minWidth: 0, mb: { xs: 2, sm: 0 } }}>
           <Box sx={{ bgcolor: 'rgba(0,0,0,0.02)', p: 1, borderRadius: 1 }}>
-            <Typography variant="body2" align="center" sx={{ mb: 1, fontSize: '0.8rem', color: 'text.secondary' }}>
+            <Typography
+              variant="body2"
+              align="center"
+              sx={{ mb: 1, fontSize: '0.8rem', color: 'text.secondary' }}
+            >
               업무 처리 현황
             </Typography>
             <PieChart
@@ -60,18 +65,17 @@ const StatusWidget: React.FC = () => {
                   endAngle: 270,
                   cx: 80,
                   cy: 80,
-                }
+                },
               ]}
               width={160}
               height={160}
-              slotProps={{
-                legend: { hidden: true }
-              }}
             />
             <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1, mt: 1 }}>
-              {taskStatus.map((item) => (
+              {taskStatus.map(item => (
                 <Box key={item.id} sx={{ display: 'flex', alignItems: 'center' }}>
-                  <Box sx={{ width: 8, height: 8, borderRadius: 1, bgcolor: item.color, mr: 0.5 }} />
+                  <Box
+                    sx={{ width: 8, height: 8, borderRadius: 1, bgcolor: item.color, mr: 0.5 }}
+                  />
                   <Typography variant="caption" sx={{ fontSize: '0.7rem' }}>
                     {item.label} {item.value}%
                   </Typography>
@@ -79,12 +83,15 @@ const StatusWidget: React.FC = () => {
               ))}
             </Box>
           </Box>
-        </Grid>
-        
+        </Box>
         {/* 두 번째 차트 */}
-        <Grid item xs={12} sm={6}>
+        <Box sx={{ flex: { xs: '0 0 100%', sm: '0 0 48%' }, minWidth: 0, mb: { xs: 2, sm: 0 } }}>
           <Box sx={{ bgcolor: 'rgba(0,0,0,0.02)', p: 1, borderRadius: 1 }}>
-            <Typography variant="body2" align="center" sx={{ mb: 1, fontSize: '0.8rem', color: 'text.secondary' }}>
+            <Typography
+              variant="body2"
+              align="center"
+              sx={{ mb: 1, fontSize: '0.8rem', color: 'text.secondary' }}
+            >
               업무 유형별 분포
             </Typography>
             <PieChart
@@ -99,18 +106,17 @@ const StatusWidget: React.FC = () => {
                   endAngle: 270,
                   cx: 80,
                   cy: 80,
-                }
+                },
               ]}
               width={160}
               height={160}
-              slotProps={{
-                legend: { hidden: true }
-              }}
             />
             <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1, mt: 1 }}>
-              {taskTypes.map((item) => (
+              {taskTypes.map(item => (
                 <Box key={item.id} sx={{ display: 'flex', alignItems: 'center' }}>
-                  <Box sx={{ width: 8, height: 8, borderRadius: 1, bgcolor: item.color, mr: 0.5 }} />
+                  <Box
+                    sx={{ width: 8, height: 8, borderRadius: 1, bgcolor: item.color, mr: 0.5 }}
+                  />
                   <Typography variant="caption" sx={{ fontSize: '0.7rem' }}>
                     {item.label} {item.value}%
                   </Typography>
@@ -118,39 +124,39 @@ const StatusWidget: React.FC = () => {
               ))}
             </Box>
           </Box>
-        </Grid>
-        
-        {/* 세 번째 차트 - 막대 그래프 */}
-        <Grid item xs={12}>
-          <Box sx={{ bgcolor: 'rgba(0,0,0,0.02)', p: 1, borderRadius: 1, mt: 1 }}>
-            <Typography variant="body2" align="center" sx={{ mb: 1, fontSize: '0.8rem', color: 'text.secondary' }}>
-              주간 업무량
-            </Typography>
-            <BarChart
-              series={[
-                {
-                  data: weeklyData.map(d => d.value),
-                  color: '#2196f3',
-                  label: '업무량',
-                },
-              ]}
-              xAxis={[
-                {
-                  data: weeklyData.map(d => d.day),
-                  scaleType: 'band',
-                },
-              ]}
-              height={150}
-              margin={{ top: 10, bottom: 30, left: 40, right: 10 }}
-              slotProps={{
-                legend: { hidden: true }
-              }}
-            />
-          </Box>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
+      {/* 세 번째 차트 - 막대 그래프 */}
+      <Box sx={{ mt: 2 }}>
+        <Box sx={{ bgcolor: 'rgba(0,0,0,0.02)', p: 1, borderRadius: 1 }}>
+          <Typography
+            variant="body2"
+            align="center"
+            sx={{ mb: 1, fontSize: '0.8rem', color: 'text.secondary' }}
+          >
+            주간 업무량
+          </Typography>
+          <BarChart
+            series={[
+              {
+                data: weeklyData.map(d => d.value),
+                color: '#2196f3',
+                label: '업무량',
+              },
+            ]}
+            xAxis={[
+              {
+                data: weeklyData.map(d => d.day),
+                scaleType: 'band',
+              },
+            ]}
+            height={150}
+            margin={{ top: 10, bottom: 30, left: 40, right: 10 }}
+          />
+        </Box>
+      </Box>
     </Paper>
   );
 };
 
-export default StatusWidget; 
+export default StatusWidget;

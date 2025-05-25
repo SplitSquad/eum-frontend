@@ -32,7 +32,7 @@ function transformCommentData(comment: any, postId?: number): Comment {
   const writerObj = comment.writer || {
     userId: comment.userId,
     nickname: comment.userName,
-    profileImage: comment.userPicture || ''
+    profileImage: comment.userPicture || '',
   };
 
   return {
@@ -41,7 +41,7 @@ function transformCommentData(comment: any, postId?: number): Comment {
     myReaction: myReaction, // isState -> myReaction으로 변환
     likeCount: comment.like || 0, // like -> likeCount로 매핑
     dislikeCount: comment.dislike || 0, // dislike -> dislikeCount로 매핑
-    writer: writerObj // writer 객체 추가
+    writer: writerObj, // writer 객체 추가
   };
 }
 
@@ -55,8 +55,8 @@ function transformReplyData(reply: any, commentId?: number): Reply {
   // writer 객체 생성
   const writerObj = reply.writer || {
     userId: reply.userId,
-    nickname: reply.userName, 
-    profileImage: reply.userPicture || ''
+    nickname: reply.userName,
+    profileImage: reply.userPicture || '',
   };
 
   return {
@@ -68,7 +68,7 @@ function transformReplyData(reply: any, commentId?: number): Reply {
     dislikeCount: reply.dislike || 0,
     writer: writerObj,
     liked: myReaction === 'LIKE',
-    disliked: myReaction === 'DISLIKE'
+    disliked: myReaction === 'DISLIKE',
   };
 }
 
@@ -130,7 +130,7 @@ export const CommentApi = {
       // 댓글 목록이 있는 경우 (commentList 배열)
       if (response && response.commentList) {
         // 각 댓글을 변환 (userName -> writer.nickname)
-        const transformedComments = response.commentList.map(comment => 
+        const transformedComments = response.commentList.map(comment =>
           transformCommentData(comment, postId)
         );
 
@@ -150,9 +150,7 @@ export const CommentApi = {
 
       // 응답이 배열인 경우 (백엔드가 배열을 직접 반환)
       if (Array.isArray(response)) {
-        const transformedComments = response.map(comment => 
-          transformCommentData(comment, postId)
-        );
+        const transformedComments = response.map(comment => transformCommentData(comment, postId));
 
         return {
           commentList: transformedComments,
@@ -314,7 +312,7 @@ export const CommentApi = {
       const response = await apiClient.get<ReplyResponseData>(
         `${REPLIES_BASE_URL}?commentId=${commentId}`
       );
-      
+
       console.log(`[DEBUG] 대댓글 원본 응답:`, response);
 
       // 응답이 배열인 경우 (백엔드가 직접 배열을 반환)
@@ -322,7 +320,7 @@ export const CommentApi = {
         console.log(`[DEBUG] 대댓글 응답이 배열 형태 - 개수: ${response.length}`);
         // 각 항목을 Reply 타입으로 변환
         const transformedReplies = response.map(reply => transformReplyData(reply, commentId));
-        
+
         return {
           replyList: transformedReplies,
           total: transformedReplies.length,
@@ -331,17 +329,17 @@ export const CommentApi = {
             size: size,
             totalElements: transformedReplies.length,
             totalPages: Math.ceil(transformedReplies.length / size),
-          }
+          },
         };
       }
 
       // replyList 배열이 있는 경우
       if (response.replyList) {
         console.log(`[DEBUG] 대댓글 응답에 replyList 존재 - 개수: ${response.replyList.length}`);
-        const transformedReplies = response.replyList.map(reply => 
+        const transformedReplies = response.replyList.map(reply =>
           transformReplyData(reply, commentId)
         );
-        
+
         return {
           ...response,
           replyList: transformedReplies,
@@ -350,15 +348,15 @@ export const CommentApi = {
             size: size,
             totalElements: response.total || 0,
             totalPages: Math.ceil((response.total || 0) / size),
-          }
+          },
         };
       }
-      
+
       // 숫자 키로 된 객체인 경우 (0, 1, 2, ...)
       if (response && typeof response === 'object') {
         console.log(`[DEBUG] 대댓글 응답이 객체 형태`);
         const replyArray: Reply[] = [];
-        
+
         for (const key in response) {
           if (
             !isNaN(Number(key)) &&
@@ -372,7 +370,7 @@ export const CommentApi = {
             }
           }
         }
-        
+
         console.log(`[DEBUG] 대댓글 객체에서 추출된 배열 - 개수: ${replyArray.length}`);
         return {
           replyList: replyArray,
@@ -382,7 +380,7 @@ export const CommentApi = {
             size: size,
             totalElements: replyArray.length,
             totalPages: Math.ceil(replyArray.length / size),
-          }
+          },
         };
       }
 
@@ -396,7 +394,7 @@ export const CommentApi = {
           size: size,
           totalElements: 0,
           totalPages: 0,
-        }
+        },
       };
     } catch (error) {
       console.error('대댓글 목록 조회 실패:', error);

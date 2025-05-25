@@ -11,6 +11,33 @@
   overflow: visible;
 }
 
+/* 모바일 최적화 */
+@media (max-width: 768px) {
+  .footer {
+    padding: 1.5rem 0;
+    font-size: 0.8rem;
+  }
+  
+  .footer-container {
+    padding: 0 1rem;
+  }
+  
+  .footer-copyright {
+    margin-bottom: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer {
+    padding: 1rem 0;
+    font-size: 0.75rem;
+  }
+  
+  .footer-container {
+    padding: 0 0.75rem;
+  }
+}
+
 .footer-container {
   max-width: 1200px;
   margin: 0 auto;

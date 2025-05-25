@@ -14,6 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import GoogleLoginButton from '../features/auth/components/GoogleLoginButton';
 import useAuthStore from '../features/auth/store/authStore';
 import LoginButton from '../features/auth/components/LoginButton';
+import { useTranslation } from '../shared/i18n';
 // 로그인 카드 스타일
 const LoginCard = styled(Paper)`
   padding: 2rem;
@@ -51,6 +52,7 @@ const Subtitle = styled(Typography)`
  * 봄 테마를 적용한 디자인으로 구글 로그인 기능 제공
  */
 const LoginPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -72,7 +74,7 @@ const LoginPage: React.FC = () => {
       const { token, user } = response;
 
       if (!token || !user) {
-        throw new Error('로그인 정보가 올바르지 않습니다.');
+        throw new Error(t('auth.invalidLoginInfo'));
       }
 
       // 전역 상태에 로그인 정보 저장
@@ -81,13 +83,13 @@ const LoginPage: React.FC = () => {
       // 홈페이지로 리디렉션
       navigate('/home');
     } catch (err) {
-      setError('로그인 처리 중 오류가 발생했습니다.');
+      setError(t('auth.loginError'));
       console.error('로그인 처리 실패:', err);
     }
   };
 
   const handleLoginError = (error: any) => {
-    setError('구글 로그인 중 오류가 발생했습니다. 다시 시도해주세요.');
+    setError(t('auth.googleLoginError'));
     console.error('구글 로그인 오류:', error);
   };
 
@@ -116,13 +118,13 @@ const LoginPage: React.FC = () => {
                   fontFamily: '"Roboto", "Noto Sans KR", sans-serif',
                 }}
               >
-                봄날의 기억
+                {t('auth.springMemories')}
               </Typography>
             </LogoContainer>
 
-            <PageTitle variant={isMobile ? 'h5' : 'h4'}>환영합니다</PageTitle>
+            <PageTitle variant={isMobile ? 'h5' : 'h4'}>{t('auth.welcome')}</PageTitle>
 
-            <Subtitle variant="body1">구글 계정으로 간편하게 로그인하세요</Subtitle>
+            <Subtitle variant="body1">{t('auth.loginDescription')}</Subtitle>
 
             {error && (
               <Box mb={3}>
@@ -151,14 +153,14 @@ const LoginPage: React.FC = () => {
               <GoogleLoginButton
                 onSuccess={handleLoginSuccess}
                 onError={handleLoginError}
-                buttonText="구글 계정으로 로그인"
+                buttonText={t('auth.loginWithGoogleButton')}
               />
-              <LoginButton buttonText="일반 계정으로 로그인" />
+              <LoginButton buttonText={t('auth.loginWithGeneral')} />
             </Box>
 
             <Box mt={4}>
               <Typography variant="caption" color="textSecondary">
-                로그인 시 서비스 이용약관 및 개인정보 처리방침에 동의하게 됩니다.
+                {t('auth.termsAgreement')}
               </Typography>
             </Box>
           </LoginCard>

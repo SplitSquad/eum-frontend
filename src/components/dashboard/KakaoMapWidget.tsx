@@ -196,12 +196,14 @@ const KakaoMapWidget: React.FC = () => {
         throw new Error('카카오맵 객체가 초기화되지 않았습니다.');
       }
 
-      // 지도 스타일 적용
-      try {
-        applyCustomMapStyle(mapInstance);
-      } catch (styleError) {
-        console.warn('지도 스타일 적용 실패:', styleError);
-      }
+      // 지도 스타일 적용 (지연 적용)
+      setTimeout(() => {
+        try {
+          applyCustomMapStyle(mapInstance);
+        } catch (styleError) {
+          console.warn('지도 스타일 적용 실패:', styleError);
+        }
+      }, 1000); // 1초 후 스타일 적용
 
       setInitState('success');
       setLoading(false);
@@ -233,6 +235,11 @@ const KakaoMapWidget: React.FC = () => {
     // 컴포넌트 언마운트 시 정리
     return () => {
       clearTimeout(initTimer);
+      
+      // 검색 타이머 정리
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
 
       // 마커 정리
       if (markers.length > 0) {
@@ -299,46 +306,48 @@ const KakaoMapWidget: React.FC = () => {
         console.log('전체화면 지도 인스턴스 생성 성공');
         setFullMap(mapInstance);
 
-        // 스타일 적용
-        try {
-          applyCustomMapStyle(mapInstance);
-          applyEnhancedMapStyle(mapInstance);
-
-          // 사용자 위치 마커
-          if (userLocation && window.kakao && window.kakao.maps) {
-            createUserMarker(
-              mapInstance,
-              window.kakao.maps,
-              userLocation.latitude,
-              userLocation.longitude
-            );
-          }
-
-          // 장소 마커
-          if (places.length > 0 && window.kakao && window.kakao.maps) {
-            createPlaceMarkersForFullMap(mapInstance, window.kakao.maps, places);
-          }
-
-          // 컨트롤 추가
-          if (window.kakao && window.kakao.maps) {
-            const mapTypeControl = new window.kakao.maps.MapTypeControl();
-            mapInstance.addControl(mapTypeControl, window.kakao.maps.ControlPosition.TOPRIGHT);
-
-            const zoomControl = new window.kakao.maps.ZoomControl();
-            mapInstance.addControl(zoomControl, window.kakao.maps.ControlPosition.RIGHT);
-          }
-
-          // 길찾기 함수 설정
-          window.kakaoMapDirections = (placeId: string) => {
-            const place = places.find(p => p.id === placeId);
-            if (!place || !place.latitude || !place.longitude) return;
-
-            setSelectedPlace(place);
-            setIsRouteMode(true);
-          };
-        } catch (configError: any) {
-          console.warn('지도 설정 중 일부 오류 발생:', configError.message);
+        // 사용자 위치 마커
+        if (userLocation && window.kakao && window.kakao.maps) {
+          createUserMarker(
+            mapInstance,
+            window.kakao.maps,
+            userLocation.latitude,
+            userLocation.longitude
+          );
         }
+
+        // 장소 마커
+        if (places.length > 0 && window.kakao && window.kakao.maps) {
+          createPlaceMarkersForFullMap(mapInstance, window.kakao.maps, places);
+        }
+
+        // 컨트롤 추가
+        if (window.kakao && window.kakao.maps) {
+          const mapTypeControl = new window.kakao.maps.MapTypeControl();
+          mapInstance.addControl(mapTypeControl, window.kakao.maps.ControlPosition.TOPRIGHT);
+
+          const zoomControl = new window.kakao.maps.ZoomControl();
+          mapInstance.addControl(zoomControl, window.kakao.maps.ControlPosition.RIGHT);
+        }
+
+        // 길찾기 함수 설정
+        window.kakaoMapDirections = (placeId: string) => {
+          const place = places.find(p => p.id === placeId);
+          if (!place || !place.latitude || !place.longitude) return;
+
+          setSelectedPlace(place);
+          setIsRouteMode(true);
+        };
+
+        // 스타일 적용 (지연 적용)
+        setTimeout(() => {
+          try {
+            applyCustomMapStyle(mapInstance);
+            applyEnhancedMapStyle(mapInstance);
+          } catch (styleError) {
+            console.warn('지도 스타일 적용 실패:', styleError);
+          }
+        }, 1500); // 1.5초 후 스타일 적용
 
         setLoading(false);
       } catch (error: any) {
@@ -439,8 +448,10 @@ const KakaoMapWidget: React.FC = () => {
             // 사용자 위치 마커 생성
             createUserMarker(mapInstance, kakaoMaps, latitude, longitude);
 
-            // 주변 장소 검색
-            searchNearbyPlaces(mapInstance, kakaoMaps, latitude, longitude, '');
+            // 주변 장소 검색 (지연 실행으로 API 호출 분산)
+            setTimeout(() => {
+              searchNearbyPlaces(mapInstance, kakaoMaps, latitude, longitude, '');
+            }, 1000);
 
             // 주소 가져오기
             try {
@@ -459,7 +470,9 @@ const KakaoMapWidget: React.FC = () => {
 
           // 위치 정보를 가져올 수 없는 경우 서울 중심으로 설정
           setUserLocation({ latitude: 37.5665, longitude: 126.978 });
-          searchNearbyPlaces(mapInstance, kakaoMaps, 37.5665, 126.978, '');
+          setTimeout(() => {
+            searchNearbyPlaces(mapInstance, kakaoMaps, 37.5665, 126.978, '');
+          }, 1000);
         },
         {
           enableHighAccuracy: false,
@@ -473,7 +486,9 @@ const KakaoMapWidget: React.FC = () => {
 
       // 기본 위치 설정
       setUserLocation({ latitude: 37.5665, longitude: 126.978 });
-      searchNearbyPlaces(mapInstance, kakaoMaps, 37.5665, 126.978, '');
+      setTimeout(() => {
+        searchNearbyPlaces(mapInstance, kakaoMaps, 37.5665, 126.978, '');
+      }, 1000);
     }
   };
 
@@ -582,14 +597,39 @@ const KakaoMapWidget: React.FC = () => {
     return newMarkers;
   };
 
-  // 주변 장소 검색
+  // API 호출 디바운싱을 위한 ref 추가
+  const searchTimeoutRef = useRef<number | null>(null);
+  const lastSearchTimeRef = useRef<number>(0);
+
+  // 주변 장소 검색 (디바운싱 및 재시도 로직 추가)
   const searchNearbyPlaces = (
     mapInstance: any,
     kakaoMaps: any,
     lat: number,
     lng: number,
-    keyword: string = ''
+    keyword: string = '',
+    retryCount: number = 0
   ) => {
+    // 이전 검색 취소
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    // API 호출 간격 제한 (최소 500ms)
+    const now = Date.now();
+    const timeSinceLastSearch = now - lastSearchTimeRef.current;
+    const minInterval = 500;
+
+    if (timeSinceLastSearch < minInterval) {
+      // 너무 빠른 연속 호출 방지
+      searchTimeoutRef.current = window.setTimeout(() => {
+        searchNearbyPlaces(mapInstance, kakaoMaps, lat, lng, keyword, retryCount);
+      }, minInterval - timeSinceLastSearch);
+      return;
+    }
+
+    lastSearchTimeRef.current = now;
+
     // 이전 마커 제거
     if (markers.length > 0) {
       markers.forEach(marker => marker.setMap(null));
@@ -599,7 +639,7 @@ const KakaoMapWidget: React.FC = () => {
     // 장소 검색 객체 생성
     const placesService = new kakaoMaps.services.Places();
 
-    // 검색 콜백
+    // 검색 콜백 (에러 핸들링 강화)
     const placesSearchCB = (result: any, status: any) => {
       if (status === kakaoMaps.services.Status.OK) {
         console.log('검색 결과:', result);
@@ -658,8 +698,18 @@ const KakaoMapWidget: React.FC = () => {
 
         setPlaces(newPlaces);
       } else {
-        console.error('장소 검색 실패:', status);
-        setError('주변 장소를 검색하는데 실패했습니다');
+        console.error('장소 검색 실패:', status, '재시도 횟수:', retryCount);
+        
+        // 401 에러 또는 기타 일시적 오류인 경우 재시도
+        if (retryCount < 2 && (status === kakaoMaps.services.Status.ERROR || !status)) {
+          console.log(`장소 검색 재시도 중... (${retryCount + 1}/3)`);
+          setTimeout(() => {
+            searchNearbyPlaces(mapInstance, kakaoMaps, lat, lng, keyword, retryCount + 1);
+          }, 1000 * (retryCount + 1)); // 1초, 2초, 3초 간격으로 재시도
+          return;
+        }
+        
+        setError(`주변 장소를 검색하는데 실패했습니다 (상태: ${status})`);
         setPlaces([]);
       }
     };
@@ -701,31 +751,25 @@ const KakaoMapWidget: React.FC = () => {
     );
   };
 
-  // 카테고리 클릭 핸들러
-  const handleCategoryClick = (categoryId: string) => {
+  // 카테고리 검색 함수 (재시도 로직 포함)
+  const searchByCategory = (categoryCode: string, categoryId: string, retryCount: number = 0) => {
     if (!map || !userLocation) return;
 
     const kakaoMaps = window.kakao.maps;
-    let categoryCode = '';
 
-    // 카테고리 코드 변환
-    // TODO : 유저 취향에 따라서 다른 카테고리 검색되도록
-    switch (categoryId) {
-      case 'cafe':
-        categoryCode = 'CE7'; // 카페
-        break;
-      case 'restaurant':
-        categoryCode = 'FD6'; // 음식점
-        break;
-      case 'culture':
-        categoryCode = 'CT1'; // 문화시설
-        break;
-      case 'tourist':
-        categoryCode = 'AT4'; // 관광명소
-        break;
-      default:
-        categoryCode = '';
+    // API 호출 간격 제한
+    const now = Date.now();
+    const timeSinceLastSearch = now - lastSearchTimeRef.current;
+    const minInterval = 500;
+
+    if (timeSinceLastSearch < minInterval) {
+      setTimeout(() => {
+        searchByCategory(categoryCode, categoryId, retryCount);
+      }, minInterval - timeSinceLastSearch);
+      return;
     }
+
+    lastSearchTimeRef.current = now;
 
     // 이전 마커 제거
     if (markers.length > 0) {
@@ -779,8 +823,18 @@ const KakaoMapWidget: React.FC = () => {
 
           setPlaces(newPlaces);
         } else {
-          console.error('카테고리 검색 실패:', status);
-          setError('카테고리 검색에 실패했습니다');
+          console.error('카테고리 검색 실패:', status, '재시도 횟수:', retryCount);
+          
+          // 401 에러 또는 기타 일시적 오류인 경우 재시도
+          if (retryCount < 2 && (status === kakaoMaps.services.Status.ERROR || !status)) {
+            console.log(`카테고리 검색 재시도 중... (${retryCount + 1}/3)`);
+            setTimeout(() => {
+              searchByCategory(categoryCode, categoryId, retryCount + 1);
+            }, 1000 * (retryCount + 1)); // 1초, 2초, 3초 간격으로 재시도
+            return;
+          }
+          
+          setError(`카테고리 검색에 실패했습니다 (상태: ${status})`);
           setPlaces([]);
         }
       },
@@ -790,6 +844,33 @@ const KakaoMapWidget: React.FC = () => {
         sort: kakaoMaps.services.SortBy.DISTANCE,
       }
     );
+  };
+
+  // 카테고리 클릭 핸들러
+  const handleCategoryClick = (categoryId: string) => {
+    let categoryCode = '';
+
+    // 카테고리 코드 변환
+    switch (categoryId) {
+      case 'cafe':
+        categoryCode = 'CE7'; // 카페
+        break;
+      case 'restaurant':
+        categoryCode = 'FD6'; // 음식점
+        break;
+      case 'culture':
+        categoryCode = 'CT1'; // 문화시설
+        break;
+      case 'tourist':
+        categoryCode = 'AT4'; // 관광명소
+        break;
+      default:
+        categoryCode = '';
+    }
+
+    if (categoryCode) {
+      searchByCategory(categoryCode, categoryId);
+    }
   };
 
   // 내 위치로 이동
@@ -1666,8 +1747,19 @@ const getCategoryName = (category: string): string => {
 // 커스텀 지도 스타일 적용 함수
 const applyCustomMapStyle = (mapInstance: any) => {
   try {
+    // 지도 인스턴스 유효성 검사
+    if (!mapInstance || typeof mapInstance.getContainer !== 'function') {
+      console.warn('지도 인스턴스가 완전히 초기화되지 않았습니다. 스타일 적용을 건너뜁니다.');
+      return;
+    }
+
     // 기본 타일 스타일 개선
     const mapContainer = mapInstance.getContainer();
+    if (!mapContainer) {
+      console.warn('지도 컨테이너를 찾을 수 없습니다.');
+      return;
+    }
+
     const mapCanvas = mapContainer.querySelector('.map_canvas') || mapContainer;
 
     // 약간의 필터 효과 추가로 더 현대적인 느낌 부여
@@ -1682,9 +1774,22 @@ const applyCustomMapStyle = (mapInstance: any) => {
 // 향상된 지도 스타일 적용 (야간 모드 스타일)
 const applyEnhancedMapStyle = (mapInstance: any) => {
   try {
+    // 지도 인스턴스 유효성 검사
+    if (!mapInstance || typeof mapInstance.getContainer !== 'function') {
+      console.warn('지도 인스턴스가 완전히 초기화되지 않았습니다. 향상된 스타일 적용을 건너뜁니다.');
+      return;
+    }
+
     // 확장된 스타일 적용
     const mapContainer = mapInstance.getContainer();
-    if (!mapContainer) return;
+    if (!mapContainer) {
+      console.warn('지도 컨테이너를 찾을 수 없습니다.');
+      return;
+    }
+
+    // 기존 오버레이 제거 (중복 방지)
+    const existingOverlays = mapContainer.querySelectorAll('.map-style-overlay, .map-shadow-overlay');
+    existingOverlays.forEach(overlay => overlay.remove());
 
     // 전체 지도에 스타일 오버레이 추가
     const styleOverlay = document.createElement('div');
