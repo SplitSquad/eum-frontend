@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Typography, useTheme, useMediaQuery, Box } from '@mui/material';
+import useAuthStore from '@/features/auth/store/authStore';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 const categories = [
@@ -35,20 +36,9 @@ export default function InfoListPage() {
   // 페이지네이션 크기
   const blockSize = 5;
 
-  // ADMIN 권한 여부 확인
-  const [isAdmin, setIsAdmin] = useState(false);
-  useEffect(() => {
-    const stored = localStorage.getItem('auth-storage');
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        const role = parsed?.state?.user?.role;
-        setIsAdmin(role === 'ROLE_ADMIN');
-      } catch {
-        // 파싱 오류 시 false로 유지
-      }
-    }
-  }, []);
+  // ADMIN 권한 여부 확인 (authStore 사용)
+  const { user } = useAuthStore();
+  const isAdmin = user?.role === 'ROLE_ADMIN';
 
   // 기존 북마크 로드
   useEffect(() => {

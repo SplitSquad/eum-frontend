@@ -628,7 +628,7 @@ function Header({
     handleCommunityMenuClose();
   };
 
-  const navItems = getNavItems(t);
+  const navItems = React.useMemo(() => getNavItems(t), [t, language]);
 
   const handleGoogleLogin = async () => {
     /*try {
@@ -906,6 +906,30 @@ function Header({
             </Drawer>
           )}
         </Toolbar>
+        {/* When isVisible is false, show logout button at far right if authenticated */}
+        {!isVisible && isAuthenticated && (
+          <Box sx={{ position: 'absolute', right: 24, top: 16 }}>
+            <Button
+              variant="contained"
+              color="secondary"
+              startIcon={<LogoutIcon />}
+              onClick={handleLogoutClick}
+              sx={{
+                fontWeight: 700,
+                fontSize: '1.1rem',
+                color: 'white',
+                backgroundColor: seasonalColors[season]?.primary,
+                '&:hover': {
+                  backgroundColor: seasonalColors[season]?.secondary,
+                },
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                zIndex: 2000,
+              }}
+            >
+              {t('common.logout')}
+            </Button>
+          </Box>
+        )}
       </StyledAppBar>
     </header>
   );
