@@ -60,6 +60,10 @@ const UserManagementTable: React.FC<UserItemProps> = ({ user }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
+  useEffect(() => {
+    setData(user);
+  }, [user]);
+
   const columns = [
     columnHelper.accessor('name', {
       header: '이름',

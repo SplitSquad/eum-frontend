@@ -11,7 +11,7 @@ const UserManagePage: React.FC = () => {
   const { userList, fetchUser } = useAdminpageStore();
 
   useEffect(() => {
-    console.log('[Render]관리자등록 페이지 렌더링');
+    console.log('[Render]사용자등록 페이지 렌더링');
     fetchUser();
   }, [fetchUser]);
 

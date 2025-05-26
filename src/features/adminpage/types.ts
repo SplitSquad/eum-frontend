@@ -76,6 +76,7 @@ export interface Report {
   reportContent: string;
   reporterName: string;
   nreported: number;
+  readStatus: number;
 }
 
 export enum ServiceType {
