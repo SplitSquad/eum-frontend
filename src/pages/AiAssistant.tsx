@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Container from '@mui/material/Container';
-import CategorySidebar, { Category } from '@/features/assistant/components/ChatCategory';
+import CategorySidebar from '@/features/assistant/components/ChatCategory';
+import { Category } from '@/features/assistant/types';
 import ChatContent from '@/features/assistant/components/ChatContent';
 import { Box, Typography } from '@mui/material';
 
@@ -26,8 +27,7 @@ export default function AiAssistant() {
   // 현재 선택된 카테고리 키를 상태로 관리
   const [selectedKey, setSelectedKey] = useState<string>('all'); // default는 전체로 설정
   // 선택된 key에 해당하는 카테고리 객체를 찾도록 구현
-  const selected = categories.find(c => c.key === selectedKey)!;
-
+  const selected = useMemo(() => categories.find(c => c.key === selectedKey)!, [selectedKey]);
   return (
     <>
       {/* 페이지 최상단 헤더 */}

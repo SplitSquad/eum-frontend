@@ -16,34 +16,43 @@ interface AuthGuardProps {
  * TODO: 백엔드 API 연동 시 실제 인증 상태 검증 로직 구현 필요
  */
 export async function requireAuth({ request }: LoaderFunctionArgs) {
-  const { isAuthenticated, user } = useAuthStore.getState();
-  console.log('isAuthenticated', isAuthenticated);
+  let { isAuthenticated, user, isLoading } = useAuthStore.getState();
+
+  // 인증 상태가 확정될 때까지 대기 (requireUser와 동일)
+  let tries = 0;
+  while ((user === undefined || isAuthenticated === undefined || isLoading) && tries < 100) {
+    await new Promise(res => setTimeout(res, 50));
+    ({ isAuthenticated, user, isLoading } = useAuthStore.getState());
+    tries++;
+  }
+  if (user === undefined || isAuthenticated === undefined || isLoading) {
+    return <Loading />;
+  }
   if (!isAuthenticated) {
-    // 로그인 안 된 유저는 구글 로그인 페이지로
     const url = new URL(request.url);
     return redirect(`/google-login?from=${encodeURIComponent(url.pathname)}`);
   }
   return null;
 }
 export async function requireUser({ request }: LoaderFunctionArgs) {
-  let { isAuthenticated, user } = useAuthStore.getState();
+  let { isAuthenticated, user, isLoading } = useAuthStore.getState();
 
-  // user가 undefined/null이거나 isOnBoardDone이 undefined면 최대 10번(500ms)까지 대기
+  // 인증 상태가 확정될 때까지 대기
   let tries = 0;
-  while ((!user || user.isOnBoardDone === undefined) && tries < 10) {
+  while ((user === undefined || isAuthenticated === undefined || isLoading) && tries < 100) {
     await new Promise(res => setTimeout(res, 50));
-    ({ isAuthenticated, user } = useAuthStore.getState());
+    ({ isAuthenticated, user, isLoading } = useAuthStore.getState());
     tries++;
   }
-
-  console.log('isAuthenticated', isAuthenticated);
+  if (user === undefined || isAuthenticated === undefined || isLoading) {
+    return <Loading />;
+  }
   if (!isAuthenticated) {
     // 로그인 안 된 유저는 구글 로그인 페이지로
     const url = new URL(request.url);
     return redirect(`/google-login?from=${encodeURIComponent(url.pathname)}`);
   }
   if (!user?.isOnBoardDone) {
-    console.log('user?.isOnBoardDone', user?.isOnBoardDone);
     const url = new URL(request.url);
     return redirect(`/onboarding?from=${encodeURIComponent(url.pathname)}`);
   }
@@ -58,20 +67,20 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
     // 인증 상태 확인
     const checkAuthentication = async () => {
       try {
-        // 인증 상태가 불확실한 경우 백엔드에서 사용자 정보 로드
-        if (user === undefined && !isLoading) {
+        // 인증 상태가 불확실한 경우에만 loadUser 호출
+        if (user === undefined && isAuthenticated !== true && !isLoading) {
           await loadUser();
         }
       } catch (error) {
-        console.error('인증 상태 확인 실패:', error);
+        // 인증 상태 확인 실패
       } finally {
         setIsChecking(false);
       }
     };
     checkAuthentication();
-  }, [user, isLoading, loadUser]);
+  }, [user, isAuthenticated, isLoading, loadUser]);
 
-  if (isLoading || isChecking || user === undefined) {
+  if (isLoading || isChecking || user === undefined || isAuthenticated === undefined) {
     // 인증 확인 중에는 로딩 상태 표시
     return <Loading />;
   }
@@ -94,11 +103,31 @@ interface GuestGuardProps {
  * @param children 보호할 컴포넌트
  */
 export const GuestGuard = ({ children }: GuestGuardProps) => {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user, isLoading, loadUser } = useAuthStore();
   const location = useLocation();
-
+  const [isChecking, setIsChecking] = useState(true);
+  useEffect(() => {
+    // 인증 상태 확인
+    const checkAuthentication = async () => {
+      try {
+        // 인증 상태가 불확실한 경우에만 loadUser 호출
+        if (user === undefined && isAuthenticated !== true && !isLoading) {
+          await loadUser();
+        }
+      } catch (error) {
+        // 인증 상태 확인 실패
+      } finally {
+        setIsChecking(false);
+      }
+    };
+    checkAuthentication();
+  }, [user, isAuthenticated, isLoading, loadUser]);
+  // 인증 상태가 확정되지 않았으면 로딩
+  if (isLoading || isChecking || user === undefined || isAuthenticated === undefined) {
+    return <Loading />;
+  }
   // 이미 로그인했으면 홈 또는 이전 페이지로 리다이렉트
-  if (isAuthenticated) {
+  if (user !== undefined && isAuthenticated === true) {
     const from = (location.state as any)?.from?.pathname || '/home';
     return <Navigate to={from} replace />;
   }

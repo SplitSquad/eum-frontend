@@ -69,19 +69,21 @@ const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const { isAuthenticated, handleLogin } = useAuthStore();
+  const { isAuthenticated, user, token, handleLogin } = useAuthStore();
   const [error, setError] = useState<string | null>(null);
   const [qs] = useSearchParams();
   const { enqueueSnackbar } = useSnackbar();
 
   // 이미 로그인되어 있으면 메인 페이지로 리디렉션
   useEffect(() => {
-    // sessionStorage에도 토큰이 있으면 로그인 상태로 간주
-    const token = sessionStorage.getItem('auth_token');
-    if (isAuthenticated || token) {
+    // 인증 상태가 확정되지 않았으면 대기
+    if (isAuthenticated === undefined || user === undefined) return;
+
+    // 인증 상태가 true이고 토큰이 있으면 홈으로 이동
+    if (isAuthenticated && token) {
       navigate('/home');
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, user, token, navigate]);
 
   useEffect(() => {
     if (qs.has('from')) {
