@@ -89,7 +89,7 @@ export function useTrackedNavigation() {
     const navLogPayload = {
       UID: userId,
       ClickPath: location.pathname,
-      TAG: tag,
+      TAG: null,
       CurrentPath: location.pathname,
       Event: 'click',
       Content: `Navigated to ${to} from ${location.pathname}`,

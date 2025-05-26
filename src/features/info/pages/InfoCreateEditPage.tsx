@@ -18,26 +18,32 @@ import { Selection } from '@tiptap-editor/components/tiptap-extension/selection-
 import { ImageUploadNode } from '@tiptap-editor/components/tiptap-node/image-upload-node/image-upload-node-extension';
 import { TrailingNode } from '@tiptap-editor/components/tiptap-extension/trailing-node-extension';
 import { handleImageUpload, MAX_FILE_SIZE } from '@tiptap-editor/lib/tiptap-utils';
+import { useTranslation } from '@/shared/i18n/index';
+import koTranslations from '@/shared/i18n/translations/ko';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
-const categoryOptions = [
-  '관광/체험',
-  '교통/이동',
-  '부동산/계약',
-  '문화/생활',
-  '학사/캠퍼스',
-  '비자/법률',
-  '잡페어',
-  '숙소/지역정보',
-];
 
 export default function InfoCreatePage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id?: string }>();
   const isEdit = Boolean(id);
+  const { t } = useTranslation();
+  const categoryKeys = [
+    'all',
+    'education',
+    'financeTaxes',
+    'visaLaw',
+    'shopping',
+    'medicalHealth',
+    'residentialRealestate',
+    'employmentWorkplace',
+  ] as const;
 
   const { title, setTitle, category, setCategory, content, setContent } = useInfoFormStore();
-
+  const categoryOptions = categoryKeys.map(key => {
+    const translationKey = `info.${key}`;
+    return t(translationKey, koTranslations[translationKey]);
+  });
   // 초기화: 새 글 작성 모드일 때만 빈 상태로
   useEffect(() => {
     if (!isEdit) {
@@ -163,25 +169,28 @@ export default function InfoCreatePage() {
         body: JSON.stringify(body),
       });
       if (!res.ok) throw new Error(`${method} 실패: ${res.status}`);
-
+      //const data = await res.json();
+      //console.log('게시글 등록/수정 성공:', data);
       // 등록 후 목록, 수정 후 상세로 이동
       isEdit ? navigate(`/info/${id}`) : navigate('/info');
     } catch (err) {
-      console.error(isEdit ? '게시글 수정 실패:' : '게시글 등록 실패:', err);
-      alert(isEdit ? '수정에 실패했습니다.' : '등록에 실패했습니다.');
+      console.error(isEdit ? t('게시글 수정 실패:') : '게시글 등록 실패:', err);
+      alert(isEdit ? t('info.editFailed') : t('info.createFailed'));
     }
   };
 
   return (
     <div className="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-lg">
-      <h2 className="text-xl font-semibold mb-4">{isEdit ? '정보글 수정' : '정보글 작성'}</h2>
+      <h2 className="text-xl font-semibold mb-4">
+        {isEdit ? t('info.infoEdit') : t('info.infoCreate')}
+      </h2>
 
       {/* 제목 */}
       <input
         type="text"
         value={title}
         onChange={e => setTitle(e.target.value)}
-        placeholder="제목을 입력하세요"
+        placeholder={t('info.titlePlaceholder')}
         className="w-full border border-gray-300 rounded-md px-4 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
       />
 
@@ -192,7 +201,7 @@ export default function InfoCreatePage() {
         className="w-full border border-gray-300 rounded-md px-4 py-2 mb-6 focus:outline-none focus:ring-2 focus:ring-blue-400"
       >
         <option value="" disabled>
-          카테고리를 선택하세요
+          {t('info.categoryPlaceholder')}
         </option>
         {categoryOptions.map(opt => (
           <option key={opt} value={opt}>
@@ -211,7 +220,7 @@ export default function InfoCreatePage() {
         onClick={handleSubmit}
         className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-md transition"
       >
-        {isEdit ? '수정하기' : '작성하기'}
+        {isEdit ? t('info.edit') : t('info.create')}
       </button>
     </div>
   );

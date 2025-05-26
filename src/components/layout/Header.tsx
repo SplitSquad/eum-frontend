@@ -35,9 +35,7 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import LoginIcon from '@mui/icons-material/Login';
 import LanguageIcon from '@mui/icons-material/Language';
 import { SUPPORTED_LANGUAGES } from '@/features/onboarding/components/common/LanguageSelector';
-import { getGoogleAuthUrl } from '@/features/auth/api/authApi';
 import { AlarmCenter } from '@/components/notification/AlarmCenter';
-import { InfoIcon } from 'lucide-react';
 
 /**-----------------------------------웹로그 관련------------------------------------ **/
 // userId 꺼내오는 헬퍼
@@ -90,7 +88,7 @@ export function useTrackedNavigation() {
     const navLogPayload = {
       UID: userId,
       ClickPath: location.pathname,
-      TAG: tag,
+      TAG: null,
       CurrentPath: location.pathname,
       Event: 'click',
       Content: `Navigated to ${to} from ${location.pathname}`,

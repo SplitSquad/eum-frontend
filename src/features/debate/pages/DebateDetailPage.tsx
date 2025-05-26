@@ -364,7 +364,7 @@ const DebateDetailPage: React.FC = () => {
         TAG: debate.category,
         CurrentPath: location.pathname,
         Event: 'click',
-        Content: debateContent,
+        Content: null,
         Timestamp: new Date().toISOString(),
       };
       sendWebLog({ userId, content: JSON.stringify(chatLogPayload) });

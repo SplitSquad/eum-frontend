@@ -1,0 +1,65 @@
+// ru.ts
+const ru = {
+  common: {
+    home: 'Главная',
+    community: 'Клубы и форумы',
+    debate: 'Дебаты по актуальным вопросам',
+    aiassistant: 'Эксперт ИИ',
+    info: 'Руководство по жизни в Корее',
+    mypage: 'Моя страница',
+    login: 'Войти',
+    logout: 'Выйти',
+    search: 'Поиск',
+    profile: 'Профиль',
+    settings: 'Настройки',
+    languageSettings: 'Настройки языка',
+    selectLanguage: 'Выбрать язык',
+    smallGroups: 'Малые группы',
+    communicationBoard: 'Форум для общения',
+  },
+  nav: {
+    accountSettings: 'Настройки аккаунта',
+  },
+  auth: {
+    loginWithGoogle: 'Войти через Google',
+    loginRequired: 'Требуется вход',
+    accessDenied: 'Доступ запрещен',
+  },
+  info: {
+    title: 'Информация',
+    koreaLifeGuide: 'Руководство по жизни в Корее',
+    description: 'Предоставляет информацию, необходимую для жизни в Корее.',
+    all: 'Все',
+    education: 'Образование',
+    financeTaxes: 'Финансы/Налоги',
+    visaLaw: 'Виза/Закон',
+    shopping: 'Покупки',
+    medicalHealth: 'Медицина/Здоровье',
+    residentialRealestate: 'Жилье/Недвижимость',
+    employmentWorkplace: 'Работа/Место работы',
+    create: 'Создать запись',
+  },
+  sort: {
+    latest: 'Последние',
+    views: 'Популярные',
+  },
+  views: 'Просмотров: {{count}}',
+  create: 'Создать запись',
+  searchPlaceholder: 'Поиск записей...',
+  searchButton: 'Поиск',
+  onboarding: {
+    welcome: 'Добро пожаловать',
+    next: 'Далее',
+    back: 'Назад',
+    finish: 'Завершить',
+  },
+  pagination: {
+    prev: 'Назад',
+    next: 'Далее',
+  },
+  noResults: 'Результаты не найдены.',
+  bookmarkAdded: 'Добавлено в закладки.',
+  bookmarkRemoved: 'Удалено из закладок.',
+};
+
+export default ru;

@@ -1,5 +1,3 @@
-import AiAssistant from '@/tests/unit/componentPageTest/testPages/AiAssistant';
-
 const ko = {
   common: {
     home: '홈',
@@ -17,6 +15,13 @@ const ko = {
     selectLanguage: '언어 선택',
     smallGroups: '소그룹 모임',
     communicationBoard: '자유 게시판',
+    all: '전체',
+    showFilters: '필터 열기',
+    hideFilters: '필터 접기',
+    cancel: '취소',
+    retry: '다시 시도하기',
+    errorOccurred: '오류가 발생했습니다',
+    noResults: '검색 결과가 없습니다',
   },
   nav: {
     accountSettings: '계정 설정',
@@ -26,11 +31,103 @@ const ko = {
     loginRequired: '로그인이 필요합니다',
     accessDenied: '접근 거부됨',
   },
+  info: {
+    title: '정보',
+    koreaLifeGuide: '한국 생활 가이드',
+    description: '한국 생활에 필요한 다양한 정보를 제공합니다.',
+    all: '전체',
+    education: '교육',
+    financeTaxes: '금융/세금',
+    visaLaw: '비자/법률',
+    shopping: '쇼핑',
+    medicalHealth: '의료/건강',
+    residentialRealestate: '주거/부동산',
+    employmentWorkplace: '취업/직장',
+    create: '작성하기',
+    infoCreate: '정보 작성하기',
+    infoEdit: '정보 수정하기',
+    titlePlaceholder: '제목을 입력하세요.',
+    categoryPlaceholder: '카테고리를 선택하세요.',
+    edit: '수정하기',
+    editFailed: '수정을 실패했습니다.',
+    createFailed: '작성을 실패했습니다.',
+    view: '조회수',
+    delete: '삭제하기',
+    deleteFailed: '삭제를 실패했습니다.',
+    deleteConfirm: '정말 삭제하시겠습니까?',
+    transportation: '교통',
+    sort: {
+      latest: '최신순',
+      views: '인기순',
+    },
+    views: '조회수: {{count}}',
+    searchPlaceholder: '제목을 검색하세요.',
+    searchButton: '검색',
+  },
+  sort: {
+    latest: '최신순',
+    views: '인기순',
+  },
+  community: {
+    boardTitle: '이야기 게시판',
+    createPost: '게시글 작성',
+    filter: {
+      title: '필터',
+      postType: '게시글 유형',
+      category: '카테고리',
+      location: '지역',
+      tags: '세부 태그 선택',
+      sort: {
+        title: '정렬',
+        latest: '최신순',
+        popular: '인기순',
+      },
+      toggle: {
+        show: '필터 열기',
+        hide: '필터 접기',
+      },
+      categories: {
+        title: '카테고리 선택',
+        all: '전체',
+        travel: '여행',
+        living: '생활',
+        study: '학업',
+        job: '취업',
+      },
+    },
+    search: {
+      title: '검색',
+      placeholder: '검색어를 입력하세요',
+      typeLabel: '검색 유형',
+      type: {
+        titleContent: '제목+내용',
+        title: '제목',
+        content: '내용',
+        author: '작성자',
+      },
+      cancel: '검색 취소',
+      status: '"{{term}}" 검색 중 {{type}}',
+      noResults: '검색 결과가 없습니다',
+    },
+    noResults: {
+      title: '검색 결과가 없습니다',
+      message: '다른 검색어로 다시 시도해보세요.',
+      backToList: '전체 게시글 보기',
+    },
+    loading: '게시글을 불러오는 중...',
+    error: {
+      loadFailed: '게시글을 불러오는 중 문제가 발생했습니다.',
+    },
+  },
   onboarding: {
     welcome: '환영합니다',
     next: '다음',
     back: '이전',
     finish: '완료',
+  },
+  pagination: {
+    prev: '이전',
+    next: '다음',
   },
 };
 

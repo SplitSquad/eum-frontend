@@ -1,5 +1,3 @@
-import AiAssistant from '@/tests/unit/componentPageTest/testPages/AiAssistant';
-
 const zh = {
   common: {
     home: '首页',
@@ -15,8 +13,8 @@ const zh = {
     settings: '设置',
     languageSettings: '语言设置',
     selectLanguage: '选择语言',
-    smallGroups: '소그룹 모임',
-    communicationBoard: '자유 게시판',
+    smallGroups: '小组聚会',
+    communicationBoard: '自由讨论区',
   },
   nav: {
     accountSettings: '账号设置',
@@ -26,12 +24,75 @@ const zh = {
     loginRequired: '需要登录',
     accessDenied: '访问被拒绝',
   },
+  info: {
+    title: '信息',
+    koreaLifeGuide: '韩国生活指南',
+    description: '提供韩国生活所需的各种信息',
+    all: '全部',
+    education: '教育',
+    financeTaxes: '金融/税务',
+    visaLaw: '签证/法律',
+    shopping: '购物',
+    medicalHealth: '医疗/健康',
+    residentialRealestate: '居住/房地产',
+    employmentWorkplace: '就业/职场',
+    create: '写文章',
+  },
+  community: {
+    postType: {
+      all: '全部',
+      free: '自由',
+      meeting: '聚会',
+    },
+    search: {
+      title: '搜索',
+      placeholder: '请输入搜索词',
+      type: {
+        title: '搜索类型',
+        titleContent: '标题+内容',
+        titleOnly: '标题',
+        contentOnly: '内容',
+        author: '作者',
+      },
+      cancel: '取消搜索',
+      status: '正在搜索"{{term}}" {{type}}',
+      noResults: '未找到搜索结果',
+    },
+    filter: {
+      title: '筛选',
+      category: '分类',
+      location: '地区',
+      tag: '标签',
+      sort: {
+        title: '排序',
+        latest: '最新',
+        popular: '热门',
+      },
+    },
+    createPost: '发布帖子',
+    scrollToTop: '返回顶部',
+  },
+  sort: {
+    latest: '最新',
+    views: '最受欢迎',
+  },
+  views: '浏览量: {{count}}',
+  create: '写文章',
+  searchPlaceholder: '搜索帖子...',
+  searchButton: '搜索',
   onboarding: {
     welcome: '欢迎',
     next: '下一步',
     back: '返回',
     finish: '完成',
   },
+  pagination: {
+    prev: '上一页',
+    next: '下一页',
+  },
+  noResults: '未找到结果。',
+  bookmarkAdded: '已添加到书签。',
+  bookmarkRemoved: '已从书签中移除。',
 };
 
 export default zh;

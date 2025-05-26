@@ -1,24 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from '@/shared/i18n/index';
+import koTranslations from '@/shared/i18n/translations/ko';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
-const categories = [
-  '전체',
-  '관광/체험',
-  '교통/이동',
-  '부동산/계약',
-  '문화/생활',
-  '학사/캠퍼스',
-  '비자/법률',
-  '잡페어',
-  '숙소/지역정보',
-];
 
 export default function InfoListPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
-  // 기존 상태 관리
-  const [selectedCategory, setSelectedCategory] = useState('전체');
+  // 카테고리 코드를 배열로 정의
+  const categoryKeys = [
+    'all',
+    'education',
+    'financeTaxes',
+    'visaLaw',
+    'shopping',
+    'medicalHealth',
+    'residentialRealestate',
+    'employmentWorkplace',
+    'transportation',
+  ] as const;
+
+  // 선택된 카테고리 키만 상태에 저장
+  const [selectedKey, setSelectedKey] = useState<(typeof categoryKeys)[number]>('all');
   const [posts, setPosts] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -26,28 +31,22 @@ export default function InfoListPage() {
   const [inputValue, setInputValue] = useState('');
   const [keyword, setKeyword] = useState('');
   const [bookmarkedIds, setBookmarkedIds] = useState<number[]>([]);
-
-  // 페이지에 표시할 게시글 수
   const size = 4;
-  // 페이지네이션 크기
   const blockSize = 5;
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // ADMIN 권한 여부 확인
-  const [isAdmin, setIsAdmin] = useState(false);
   useEffect(() => {
     const stored = localStorage.getItem('auth-storage');
     if (stored) {
       try {
-        const parsed = JSON.parse(stored);
-        const role = parsed?.state?.user?.role;
+        const role = JSON.parse(stored)?.state?.user?.role;
         setIsAdmin(role === 'ROLE_ADMIN');
-      } catch {
-        // 파싱 오류 시 false로 유지
-      }
+      } catch {}
     }
   }, []);
 
-  // 기존 북마크 로드
+  // 로컬 북마크 초기 로드
   useEffect(() => {
     const saved = localStorage.getItem('bookmarkedIds');
     if (saved) {
@@ -64,12 +63,15 @@ export default function InfoListPage() {
     const fetchPosts = async () => {
       try {
         const token = localStorage.getItem('auth_token') || '';
+        // API에는 항상 한국어 카테고리만 전달
+        const koreanCategory = koTranslations.info[selectedKey];
+
         const params = new URLSearchParams({
           page: String(page - 1),
           size: String(size),
           sort: sortOrder,
           keyword,
-          category: selectedCategory !== '전체' ? selectedCategory : '전체',
+          category: koreanCategory,
         });
         const url = keyword
           ? `${API_BASE}/information/search?${params}`
@@ -82,7 +84,7 @@ export default function InfoListPage() {
         setPosts(data.informationList || []);
         setTotal(data.total || 0);
 
-        // 서버에 isBookmarked 필드 있으면 덮어쓰기
+        // 서버가 isBookmarked 필드를 주면 로컬 덮어쓰기
         if (data.informationList?.[0]?.hasOwnProperty('isBookmarked')) {
           const ids = data.informationList
             .filter((i: any) => i.isBookmarked)
@@ -95,7 +97,7 @@ export default function InfoListPage() {
       }
     };
     fetchPosts();
-  }, [selectedCategory, page, sortOrder, keyword]);
+  }, [selectedKey, page, sortOrder, keyword]);
 
   // 북마크 토글
   const handleBookmark = async (id: number) => {
@@ -115,7 +117,7 @@ export default function InfoListPage() {
     }
   };
 
-  // 페이징 계산
+  // 페이지네이션 계산
   const totalPages = Math.ceil(total / size);
   const currentBlock = Math.floor((page - 1) / blockSize);
   const startPage = currentBlock * blockSize + 1;
@@ -125,35 +127,37 @@ export default function InfoListPage() {
     <div className="flex max-w-6xl mx-auto p-6">
       {/* 카테고리 사이드바 */}
       <aside className="w-48 space-y-2 mr-8">
-        {categories.map(cat => (
-          <button
-            key={cat}
-            onClick={() => {
-              setSelectedCategory(cat);
-              setPage(1);
-              setKeyword('');
-            }}
-            className={`block w-full px-4 py-2 text-left rounded-lg transition-colors ${
-              selectedCategory === cat
-                ? 'bg-green-100 text-green-700'
-                : 'bg-white hover:bg-gray-100'
-            }`}
-          >
-            {cat}
-          </button>
-        ))}
+        {categoryKeys.map(key => {
+          const label = t(`info.${key}`);
+          const isActive = selectedKey === key;
+          return (
+            <button
+              key={key}
+              onClick={() => {
+                setSelectedKey(key);
+                setPage(1);
+                setKeyword('');
+              }}
+              className={`block w-full px-4 py-2 text-left rounded-lg transition-colors ${
+                isActive ? 'bg-green-100 text-green-700' : 'bg-white hover:bg-gray-100'
+              }`}
+            >
+              {label}
+            </button>
+          );
+        })}
       </aside>
 
       {/* 메인 컨텐츠 */}
       <main className="flex-1">
-        <h1 className="text-2xl font-semibold mb-4">한국 생활 가이드</h1>
+        <h1 className="text-2xl font-semibold mb-4">{t('info.koreaLifeGuide')}</h1>
 
         {/* 검색 + 정렬 바 */}
         <div className="flex justify-between items-center mb-6 space-x-4">
           <div className="flex flex-1 border border-gray-300 rounded-lg overflow-hidden">
             <input
               type="text"
-              placeholder="제목을 검색하세요."
+              placeholder={t('info.searchPlaceholder')}
               value={inputValue}
               onChange={e => setInputValue(e.target.value)}
               className="flex-1 h-10 px-4 focus:outline-none"
@@ -166,42 +170,35 @@ export default function InfoListPage() {
               }}
               className="px-4 bg-gray-100 hover:bg-gray-200"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 text-gray-600"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M21 21l-4.35-4.35m1.2-5.15a7 7 0 1 1-14 0 7 7 0 0 1 14 0z"
-                />
-              </svg>
+              🔍
             </button>
           </div>
           <div className="flex space-x-2">
             <button
-              onClick={() => setSortOrder('latest')}
+              onClick={() => {
+                setSortOrder('latest');
+                setPage(1);
+              }}
               className={`px-3 py-1 rounded ${
                 sortOrder === 'latest'
                   ? 'bg-blue-100 text-blue-600 font-semibold'
                   : 'bg-white text-gray-600 hover:bg-gray-100'
               }`}
             >
-              최신순
+              {t('info.sort.latest')}
             </button>
             <button
-              onClick={() => setSortOrder('views')}
+              onClick={() => {
+                setSortOrder('views');
+                setPage(1);
+              }}
               className={`px-3 py-1 rounded ${
                 sortOrder === 'views'
                   ? 'bg-blue-100 text-blue-600 font-semibold'
                   : 'bg-white text-gray-600 hover:bg-gray-100'
               }`}
             >
-              인기순
+              {t('info.sort.views')}
             </button>
           </div>
         </div>
@@ -226,59 +223,56 @@ export default function InfoListPage() {
                   onClick={() => handleBookmark(item.informationId)}
                   className="text-gray-400 hover:text-blue-500"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24">
-                    <path
-                      fill={bookmarkedIds.includes(item.informationId) ? 'currentColor' : 'none'}
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 5v14l7-7 7 7V5H5z"
-                    />
-                  </svg>
+                  {bookmarkedIds.includes(item.informationId) ? '★' : '☆'}
                 </button>
-                <span className="text-sm text-gray-500">조회수: {item.views}</span>
+                <span className="text-sm text-gray-500">
+                  {t('info.views', { count: item.views })}
+                </span>
               </div>
             </li>
           ))}
         </ul>
 
         {/* 페이지네이션 */}
-        <div className="mt-6 relative">
-          <div className="flex justify-center items-center space-x-2">
-            <button
-              onClick={() => setPage(Math.max(startPage - blockSize, 1))}
-              className="px-3 py-1 rounded hover:bg-gray-100"
-            >
-              이전
-            </button>
-            {Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i).map(p => (
+        {totalPages > 1 && (
+          <div className="mt-6 relative">
+            <div className="flex justify-center items-center space-x-2">
               <button
-                key={p}
-                onClick={() => setPage(p)}
-                className={`px-3 py-1 rounded ${p === page ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
+                onClick={() => setPage(Math.max(startPage - blockSize, 1))}
+                className="px-3 py-1 rounded hover:bg-gray-100"
               >
-                {p}
+                {t('pagination.prev')}
               </button>
-            ))}
-            <button
-              onClick={() => setPage(Math.min(startPage + blockSize, totalPages))}
-              className="px-3 py-1 rounded hover:bg-gray-100"
-            >
-              다음
-            </button>
-          </div>
+              {Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i).map(p => (
+                <button
+                  key={p}
+                  onClick={() => setPage(p)}
+                  className={`px-3 py-1 rounded ${
+                    p === page ? 'bg-gray-200' : 'hover:bg-gray-100'
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
+              <button
+                onClick={() => setPage(Math.min(startPage + blockSize, totalPages))}
+                className="px-3 py-1 rounded hover:bg-gray-100"
+              >
+                {t('pagination.next')}
+              </button>
+            </div>
 
-          {/* ROLE_ADMIN 일 때만 보이는 글쓰기 버튼 */}
-          {isAdmin && (
-            <button
-              onClick={() => navigate('create')}
-              className="absolute right-0 top-0 translate-y-1 bg-blue-600 text-white px-4 py-1 rounded-lg hover:bg-blue-700"
-            >
-              글쓰기
-            </button>
-          )}
-        </div>
+            {/* ROLE_ADMIN 일 때만 보이는 글쓰기 버튼 */}
+            {isAdmin && (
+              <button
+                onClick={() => navigate('create')}
+                className="absolute right-0 top-0 translate-y-1 bg-blue-600 text-white px-4 py-1 rounded-lg hover:bg-blue-700"
+              >
+                {t('info.create')}
+              </button>
+            )}
+          </div>
+        )}
       </main>
     </div>
   );

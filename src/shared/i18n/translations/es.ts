@@ -1,0 +1,65 @@
+// es.ts
+const es = {
+  common: {
+    home: 'Inicio',
+    community: 'Clubes y Foros',
+    debate: 'Debate sobre temas candentes',
+    aiassistant: 'Experto IA',
+    info: 'Guía de vida en Corea',
+    mypage: 'Mi página',
+    login: 'Iniciar sesión',
+    logout: 'Cerrar sesión',
+    search: 'Buscar',
+    profile: 'Perfil',
+    settings: 'Configuración',
+    languageSettings: 'Configuración de idioma',
+    selectLanguage: 'Seleccionar idioma',
+    smallGroups: 'Pequeños grupos',
+    communicationBoard: 'Foro de discusión',
+  },
+  nav: {
+    accountSettings: 'Configuración de cuenta',
+  },
+  auth: {
+    loginWithGoogle: 'Iniciar sesión con Google',
+    loginRequired: 'Inicio de sesión requerido',
+    accessDenied: 'Acceso denegado',
+  },
+  info: {
+    title: 'Información',
+    koreaLifeGuide: 'Guía de vida en Corea',
+    description: 'Proporciona diversa información necesaria para vivir en Corea.',
+    all: 'Todo',
+    education: 'Educación',
+    financeTaxes: 'Finanzas/Impuestos',
+    visaLaw: 'Visado/Ley',
+    shopping: 'Compras',
+    medicalHealth: 'Medicina/Salud',
+    residentialRealestate: 'Vivienda/Inmobiliaria',
+    employmentWorkplace: 'Empleo/Lugar de trabajo',
+    create: 'Crear publicación',
+  },
+  sort: {
+    latest: 'Más recientes',
+    views: 'Más populares',
+  },
+  views: 'Vistas: {{count}}',
+  create: 'Crear publicación',
+  searchPlaceholder: 'Buscar publicaciones...',
+  searchButton: 'Buscar',
+  onboarding: {
+    welcome: 'Bienvenido',
+    next: 'Siguiente',
+    back: 'Atrás',
+    finish: 'Finalizar',
+  },
+  pagination: {
+    prev: 'Anterior',
+    next: 'Siguiente',
+  },
+  noResults: 'No se encontraron resultados.',
+  bookmarkAdded: 'Añadido a marcadores.',
+  bookmarkRemoved: 'Eliminado de marcadores.',
+};
+
+export default es;

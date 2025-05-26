@@ -99,7 +99,7 @@ export default function ChatContent({
     const chatLogPayload = {
       UID: userId,
       ClickPath: location.pathname,
-      TAG: categoryLabel,
+      TAG: null,
       CurrentPath: location.pathname,
       Event: 'chat',
       Content: text,
@@ -130,7 +130,7 @@ export default function ChatContent({
       const chatLogPayload = {
         UID: userId,
         ClickPath: location.pathname,
-        TAG: categoryLabel,
+        TAG: null,
         CurrentPath: location.pathname,
         Event: 'chat',
         Content: text,

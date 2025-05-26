@@ -13,7 +13,7 @@
     'Helvetica Neue',
     Arial,
     sans-serif;
-  /*overflow-y: auto;*/
+  overflow-y: auto;
   position: relative;
 }
 
@@ -28,6 +28,7 @@
   /*margin-top: 64px;  헤더 높이만큼 여백 추가 */
   /*margin-bottom: 120px; /* 푸터 높이만큼 여백 추가 */
   z-index: 1;
+  overflow-y: auto;
 }
 
 /* 봄 테마 색상 변수 */

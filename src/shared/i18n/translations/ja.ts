@@ -1,5 +1,3 @@
-import AiAssistant from '@/tests/unit/componentPageTest/testPages/AiAssistant';
-
 const ja = {
   common: {
     home: 'ホーム',
@@ -15,8 +13,8 @@ const ja = {
     settings: '設定',
     languageSettings: '言語設定',
     selectLanguage: '言語を選択',
-    smallGroups: '소그룹 모임',
-    communicationBoard: '자유 게시판',
+    smallGroups: '少人数グループ',
+    communicationBoard: 'コミュニケーションボード',
   },
   nav: {
     accountSettings: 'アカウント設定',
@@ -26,12 +24,75 @@ const ja = {
     loginRequired: 'ログインが必要です',
     accessDenied: 'アクセスが拒否されました',
   },
+  info: {
+    title: '情報',
+    koreaLifeGuide: '韓国生活ガイド',
+    description: '韓国生活に必要なさまざまな情報を提供します。',
+    all: 'すべて',
+    education: '教育',
+    financeTaxes: '金融／税金',
+    visaLaw: 'ビザ／法律',
+    shopping: 'ショッピング',
+    medicalHealth: '医療／健康',
+    residentialRealestate: '住居／不動産',
+    employmentWorkplace: '雇用／職場',
+    create: '投稿作成',
+  },
+  community: {
+    postType: {
+      all: 'すべて',
+      free: '自由',
+      meeting: 'ミーティング',
+    },
+    search: {
+      title: '検索',
+      placeholder: '検索語を入力してください',
+      type: {
+        title: '検索タイプ',
+        titleContent: 'タイトル+内容',
+        titleOnly: 'タイトル',
+        contentOnly: '内容',
+        author: '作成者',
+      },
+      cancel: '検索をキャンセル',
+      status: '{{term}}"を検索中 {{type}}',
+      noResults: '検索結果が見つかりません',
+    },
+    filter: {
+      title: 'フィルター',
+      category: 'カテゴリー',
+      location: '地域',
+      tag: 'タグ',
+      sort: {
+        title: '並び替え',
+        latest: '最新順',
+        popular: '人気順',
+      },
+    },
+    createPost: '投稿を作成',
+    scrollToTop: 'トップへ',
+  },
+  sort: {
+    latest: '最新',
+    views: '人気順',
+  },
+  views: '閲覧数: {{count}}',
+  create: '投稿作成',
+  searchPlaceholder: '投稿を検索...',
+  searchButton: '検索',
   onboarding: {
     welcome: 'ようこそ',
     next: '次へ',
     back: '戻る',
     finish: '完了',
   },
+  pagination: {
+    prev: '前へ',
+    next: '次へ',
+  },
+  noResults: '結果が見つかりません。',
+  bookmarkAdded: 'ブックマークに追加されました。',
+  bookmarkRemoved: 'ブックマークから削除されました。',
 };
 
 export default ja;

@@ -16,6 +16,8 @@ import { Selection } from '@tiptap-editor/components/tiptap-extension/selection-
 import { ImageUploadNode } from '@tiptap-editor/components/tiptap-node/image-upload-node/image-upload-node-extension';
 import { TrailingNode } from '@tiptap-editor/components/tiptap-extension/trailing-node-extension';
 import { handleImageUpload, MAX_FILE_SIZE } from '@tiptap-editor/lib/tiptap-utils';
+import { useTranslation } from '@/shared/i18n/index';
+import koTranslations from '@/shared/i18n/translations/ko';
 
 // userId 꺼내오는 헬퍼
 export function getUserId(): number | null {
@@ -67,6 +69,7 @@ export default function InfoDetailPage() {
   const navigate = useNavigate();
   const [detail, setDetail] = useState<InfoDetail | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const { t } = useTranslation();
 
   // Tiptap 에디터 설정
   const editor = useEditor({
@@ -128,7 +131,7 @@ export default function InfoDetailPage() {
           TAG: data.category,
           CurrentPath: window.location.pathname,
           Event: 'click',
-          Content: { title: data.title },
+          Content: null,
           Timestamp: new Date().toISOString(),
         };
         sendWebLog({ userId, content: JSON.stringify(logPayload) });
@@ -155,7 +158,7 @@ export default function InfoDetailPage() {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm('정말 이 글을 삭제하시겠습니까?')) return;
+    if (!window.confirm(t('info.deleteConfirm'))) return;
     try {
       const token = localStorage.getItem('auth_token') || '';
       const res = await fetch(`${API_BASE}/information/${id}`, {
@@ -166,7 +169,7 @@ export default function InfoDetailPage() {
       navigate('..');
     } catch (err) {
       console.error('삭제 중 오류 발생:', err);
-      alert('삭제에 실패했습니다.');
+      alert(t('info.deleteFailed'));
     }
   };
 
@@ -181,13 +184,13 @@ export default function InfoDetailPage() {
               onClick={handleEdit}
               className="px-3 py-1 bg-yellow-500 hover:bg-yellow-600 text-white rounded"
             >
-              수정하기
+              {t('info.edit')}
             </button>
             <button
               onClick={handleDelete}
               className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded"
             >
-              삭제하기
+              {t('info.delete')}
             </button>
           </>
         )}
@@ -195,7 +198,7 @@ export default function InfoDetailPage() {
 
       <h1 className="text-2xl font-bold mb-2">{detail.title}</h1>
       <p className="text-sm text-gray-500 mb-4">
-        {detail.userName} · {detail.createdAt} · 조회수 {detail.views}
+        {detail.userName} · {detail.createdAt} · {t('info.view')} {detail.views}
       </p>
 
       <div className="prose">

@@ -359,10 +359,10 @@ const PostCard: React.FC<PostCardProps> = ({ post, hideImage = false, onClick })
       content: JSON.stringify({
         UID: uid,
         ClickPath: location.pathname,
-        TAG: post.category,
+        TAG: post.tags,
         CurrentPath: location.pathname,
         Event: 'click',
-        Content: { title: post.title, content: postContent.content },
+        Content: null,
         Timestamp: new Date().toISOString(),
       }),
     });
