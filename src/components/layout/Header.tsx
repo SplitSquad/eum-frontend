@@ -789,6 +789,16 @@ function Header({
 
                     {isProfileMenuOpen && (
                       <ProfileDropdown season={season}>
+                        {/* 관리자일 때만 보이는 관리자 페이지 버튼 */}
+                        {user?.role === 'ROLE_ADMIN' && (
+                          <ProfileDropdownItem
+                            season={season}
+                            onClick={() => handleMenuItemClick('/adminpage')}
+                          >
+                            <AccountCircleIcon />
+                            관리자 페이지
+                          </ProfileDropdownItem>
+                        )}
                         <ProfileDropdownItem
                           season={season}
                           onClick={() => handleMenuItemClick('/mypage')}

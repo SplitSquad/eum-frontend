@@ -176,6 +176,16 @@ const router = createBrowserRouter([
               </Suspense>
             ),
           },
+          {
+            path: '/adminpage/*',
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <RoleGuard requiredRole="ROLE_ADMIN">
+                  <AdminpageRoutes />
+                </RoleGuard>
+              </Suspense>
+            ),
+          },
         ],
       },
       {
@@ -183,16 +193,6 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<LoadingFallback />}>
             <AccessDeniedPage />
-          </Suspense>
-        ),
-      },
-      {
-        path: '/adminpage/*',
-        element: (
-          <Suspense fallback={<LoadingFallback />}>
-            {/* <AuthGuard> */}
-            <AdminpageRoutes />
-            {/* </AuthGuard> */}
           </Suspense>
         ),
       },

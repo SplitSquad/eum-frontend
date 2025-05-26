@@ -26,6 +26,7 @@ export async function requireAuth({ request }: LoaderFunctionArgs) {
     tries++;
   }
   if (user === undefined || isAuthenticated === undefined || isLoading) {
+    console.log('requireAuth: 인증 상태가 확정되지 않았습니다 에서 걸린 로딩 .');
     return <Loading />;
   }
   if (!isAuthenticated) {
@@ -45,6 +46,7 @@ export async function requireUser({ request }: LoaderFunctionArgs) {
     tries++;
   }
   if (user === undefined || isAuthenticated === undefined || isLoading) {
+    console.log('requireUser: 인증 상태가 확정되지 않았습니다 에서 걸린 로딩');
     return <Loading />;
   }
   if (!isAuthenticated) {
@@ -82,6 +84,7 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
 
   if (isLoading || isChecking || user === undefined || isAuthenticated === undefined) {
     // 인증 확인 중에는 로딩 상태 표시
+    console.log('AuthGuard: 인증 확인 중에는 로딩 상태 표시');
     return <Loading />;
   }
 
@@ -114,25 +117,30 @@ export const GuestGuard = ({ children }: GuestGuardProps) => {
         if (user === undefined && isAuthenticated !== true && !isLoading) {
           await loadUser();
         }
-      } catch (error) {
-        // 인증 상태 확인 실패
       } finally {
         setIsChecking(false);
       }
     };
     checkAuthentication();
   }, [user, isAuthenticated, isLoading, loadUser]);
-  // 인증 상태가 확정되지 않았으면 로딩
-  if (isLoading || isChecking || user === undefined || isAuthenticated === undefined) {
+
+  // 1. 인증 fetch 중이면 로딩
+  if (isLoading || isChecking) {
     return <Loading />;
   }
-  // 이미 로그인했으면 홈 또는 이전 페이지로 리다이렉트
+
+  // 2. 인증 fetch가 끝났는데도 user === undefined && isAuthenticated === false면 비로그인 확정 → 로그인 폼 노출
+  if (user === undefined && isAuthenticated === false && !isLoading) {
+    return <>{children}</>;
+  }
+
+  // 3. 이미 로그인했으면 홈 또는 이전 페이지로 리다이렉트
   if (user !== undefined && isAuthenticated === true) {
     const from = (location.state as any)?.from?.pathname || '/home';
     return <Navigate to={from} replace />;
   }
 
-  // 비로그인 사용자는 자식 컴포넌트 렌더링
+  // 4. 비로그인 사용자는 자식 컴포넌트 렌더링
   return <>{children}</>;
 };
 
