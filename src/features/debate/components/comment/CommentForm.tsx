@@ -68,7 +68,7 @@ const CommentForm: React.FC<CommentFormProps> = ({ debateId, onSuccess }) => {
         userId,
         userName: currentUserName,
         userProfileImage: '', // 프로필 이미지 추가
-        content,
+        content: (stance === 'con' ? '【반대】 ' : '【찬성】 ') + content, // 댓글 내용에 stance 접두사 추가
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         stance: stance || 'pro',
@@ -77,8 +77,7 @@ const CommentForm: React.FC<CommentFormProps> = ({ debateId, onSuccess }) => {
           like: 0,
           dislike: 0,
         },
-        countryCode: 'KR',
-        countryName: '대한민국',
+        // 국가 정보 제거 (요청에 따라)
       };
 
       // 낙관적 UI 업데이트: 임시 댓글을 즉시 표시
@@ -98,6 +97,8 @@ const CommentForm: React.FC<CommentFormProps> = ({ debateId, onSuccess }) => {
       })
         .then(result => {
           console.log('댓글 작성 성공:', result);
+          // 콘솔에 선택한 입장 기록
+          console.log('선택한 입장:', stance);
 
           // UI 갱신을 위한 콜백은 이미 위에서 실행했으므로 여기서는 처리하지 않음
         })
@@ -194,8 +195,8 @@ const CommentForm: React.FC<CommentFormProps> = ({ debateId, onSuccess }) => {
           onClick={handleSubmit}
           className={`
             px-4 py-2 text-white rounded-lg
-            ${isSubmitting ? 'bg-gray-400' : 'bg-primary hover:bg-primary-dark'}
-            transition
+            ${isSubmitting ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'}
+            transition font-medium
           `}
           disabled={isSubmitting}
         >

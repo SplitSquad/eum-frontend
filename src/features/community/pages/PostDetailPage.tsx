@@ -32,6 +32,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import FlagIcon from '@mui/icons-material/Flag'; // 신고 아이콘 추가
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
@@ -47,6 +48,8 @@ import useAuthStore from '../../auth/store/authStore';
 import { usePostReactions } from '../hooks';
 import * as api from '../api/communityApi';
 import { useLanguageContext } from '../../../features/theme/components/LanguageProvider';
+import ReportDialog, { ServiceType, ReportTargetType } from '../../common/components/ReportDialog';
+import { useTranslation } from '../../../shared/i18n';
 
 // 임시 타입 선언 (실제 타입 정의에 맞게 수정 필요)
 type ReactionType = 'LIKE' | 'DISLIKE';
@@ -164,6 +167,7 @@ const CommentCard = styled(Card)({
  * 선택한 게시글의 상세 내용과 댓글을 표시
  */
 const PostDetailPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const { id: postId, postId: postIdAlt } = useParams<{ id?: string; postId?: string }>();
@@ -171,6 +175,33 @@ const PostDetailPage: React.FC = () => {
   const authStore = useAuthStore();
   const currentUser = authStore.user;
   const { currentLanguage } = useLanguageContext();
+
+  // 태그 번역 함수
+  const translateTag = (tagName: string): string => {
+    // 태그 이름을 번역 키로 매핑
+    const tagTranslationMap: Record<string, string> = {
+      '관광/체험': t('community.tags.tourism'),
+      '식도락/맛집': t('community.tags.food'),
+      '교통/이동': t('community.tags.transport'),
+      '숙소/지역정보': t('community.tags.accommodation'),
+      '대사관/응급': t('community.tags.embassy'),
+      '부동산/계약': t('community.tags.realEstate'),
+      '생활환경/편의': t('community.tags.livingEnvironment'),
+      '문화/생활': t('community.tags.culture'),
+      '주거지 관리/유지': t('community.tags.housing'),
+      '학사/캠퍼스': t('community.tags.academic'),
+      '학업지원/시설': t('community.tags.studySupport'),
+      '행정/비자/서류': t('community.tags.visa'),
+      '기숙사/주거': t('community.tags.dormitory'),
+      '이력/채용준비': t('community.tags.career'),
+      '비자/법률/노동': t('community.tags.labor'),
+      '잡페어/네트워킹': t('community.tags.jobFair'),
+      '알바/파트타임': t('community.tags.partTime'),
+      '테스트': t('community.tags.test'),
+    };
+
+    return tagTranslationMap[tagName] || tagName;
+  };
 
   // postId 타입 안전하게 변환
   const numericPostId = actualPostId ? parseInt(actualPostId, 10) : 0;
@@ -180,6 +211,12 @@ const PostDetailPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  // 신고 기능 관련 상태 추가
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+
+  // 사용자가 작성한 게시글 ID 목록
+  const [userPosts, setUserPosts] = useState<number[]>([]);
 
   // communityStore 사용
   const communityStore = useCommunityStore();
@@ -192,18 +229,28 @@ const PostDetailPage: React.FC = () => {
 
   const { handleReaction } = usePostReactions(numericPostId);
 
-  // isState 값을 myReaction으로 변환하는 함수
-  const convertIsStateToMyReaction = (
-    isState?: string | null | undefined
-  ): ReactionType | undefined => {
-    if (!isState) return undefined;
-    if (isState === '좋아요') return 'LIKE';
-    if (isState === '싫어요') return 'DISLIKE';
-    return undefined;
+  // 현재 사용자가 작성한 게시글 목록 가져오기
+  const fetchUserPosts = async () => {
+    // 로그인 상태가 아니면 무시
+    if (!currentUser || !currentUser.userId) return;
+
+    try {
+      // "/community/post/written" API 호출 - 현재 사용자가 작성한 게시글 목록 가져오기
+      const response = await api.getUserPosts(currentUser.userId, 0, 100);
+
+      if (response && response.postList) {
+        // 게시글 ID 목록만 추출하여 저장
+        const postIds = response.postList.map((post: any) => post.postId);
+        console.log('[DEBUG] 사용자 작성 게시글 목록:', postIds);
+        setUserPosts(postIds);
+      }
+    } catch (error) {
+      console.error('[ERROR] 사용자 게시글 목록 로드 실패:', error);
+    }
   };
 
   // 게시글 데이터 로딩
-  const fetchPostData = async () => {
+  const fetchPostData = async (noViewCount: boolean = false) => {
     if (!actualPostId) return;
 
     try {
@@ -224,14 +271,19 @@ const PostDetailPage: React.FC = () => {
         setPost(null);
       }
 
-      console.log('[DEBUG] 게시글 로딩 시작:', { actualPostId, language: currentLanguage });
+      console.log('[DEBUG] 게시글 로딩 시작:', {
+        actualPostId,
+        language: currentLanguage,
+        noViewCount,
+      });
 
       // API에서 직접 데이터를 가져오도록 수정
       const numericPostId = parseInt(actualPostId);
 
       try {
         // fetch 요청에 signal 전달 (필요시 중단 가능)
-        const fetchedPost = await api.getPostById(numericPostId);
+        // noViewCount 파라미터를 전달하여 언어 변경 시 조회수 증가를 방지
+        const fetchedPost = await api.getPostById(numericPostId, signal, noViewCount);
 
         // 요청이 중단되었다면 처리 중단
         if (signal.aborted) {
@@ -278,11 +330,11 @@ const PostDetailPage: React.FC = () => {
         }
 
         console.error('[ERROR] API 호출 실패:', apiError);
-        setError('게시글을 불러오는데 실패했습니다.');
+        setError(t('community.posts.loadFailed'));
       }
     } catch (err: any) {
       console.error('[ERROR] 게시글 로딩 중 오류:', err);
-      setError(err?.message || '게시글을 불러오는데 실패했습니다. 다시 시도해주세요.');
+      setError(err?.message || t('community.posts.loadFailed'));
     } finally {
       // 중단된 요청이 아닌 경우에만 로딩 상태 변경
       if (abortControllerRef.current && !abortControllerRef.current.signal.aborted) {
@@ -294,7 +346,22 @@ const PostDetailPage: React.FC = () => {
 
   // 게시글 로딩 Effect - 게시글 ID 변경 시
   useEffect(() => {
-    fetchPostData();
+    // 리스트에서 왔는지 확인
+    const fromPostList = sessionStorage.getItem('fromPostList') === 'true';
+
+    console.log('[DEBUG] 게시글 상세 페이지 접근 방식:', {
+      fromPostList,
+      noViewCount: fromPostList,
+    });
+
+    // 리스트에서 왔으면 조회수 증가 방지(noViewCount=true), 아니면 조회수 증가
+    fetchPostData(fromPostList);
+
+    // 플래그 초기화
+    sessionStorage.removeItem('fromPostList');
+
+    // 사용자 작성 게시글 목록 갱신 (권한 확인용)
+    fetchUserPosts();
 
     // Clean up 함수
     return () => {
@@ -327,13 +394,23 @@ const PostDetailPage: React.FC = () => {
       const timer = setTimeout(() => {
         if (actualPostId) {
           console.log('[INFO] 언어 변경으로 게시글 새로고침');
-          fetchPostData();
+          // 언어 변경 시에는 조회수를 증가시키지 않음
+          fetchPostData(true);
         }
       }, 100);
 
       return () => clearTimeout(timer);
     }
   }, [currentLanguage, actualPostId]); // 의존성 배열에 필요한 항목 추가
+
+  // 사용자 작성 게시글 목록 가져오기 - 로그인 상태 변경 시
+  useEffect(() => {
+    if (currentUser && currentUser.userId) {
+      fetchUserPosts();
+    } else {
+      setUserPosts([]);
+    }
+  }, [currentUser?.userId]); // 사용자 ID가 변경될 때만 다시 실행
 
   // 게시글 삭제 핸들러
   const handleDeletePost = async () => {
@@ -345,10 +422,10 @@ const PostDetailPage: React.FC = () => {
       console.log('[DEBUG] 게시글 삭제 완료');
       setDeleteDialogOpen(false);
       navigate('/community');
-      enqueueSnackbar('게시글이 삭제되었습니다.', { variant: 'success' });
+      enqueueSnackbar(t('community.posts.deleteSuccess'), { variant: 'success' });
     } catch (error) {
       console.error('[ERROR] 게시글 삭제 실패:', error);
-      enqueueSnackbar('게시글 삭제에 실패했습니다.', { variant: 'error' });
+      enqueueSnackbar(t('community.posts.deleteFailed'), { variant: 'error' });
     }
   };
 
@@ -359,12 +436,12 @@ const PostDetailPage: React.FC = () => {
     }
   };
 
-  const formatDateToAbsolute = (dateString: string) => {
+      const formatDateToAbsolute = (dateString: string) => {
     try {
       return format(new Date(dateString), 'yyyy년 MM월 dd일 HH:mm', { locale: ko });
     } catch (e) {
       console.error('날짜 형식 변환 오류:', e);
-      return '날짜 정보 없음';
+      return t('community.posts.noDate');
     }
   };
 
@@ -372,11 +449,26 @@ const PostDetailPage: React.FC = () => {
     navigate('/community');
   };
 
+  // 신고 다이얼로그 열기
+  const handleOpenReportDialog = () => {
+    if (!post || !post.userId) {
+      console.error('게시글 작성자 정보가 없습니다.');
+      enqueueSnackbar(t('community.posts.noPermission'), { variant: 'error' });
+      return;
+    }
+    setReportDialogOpen(true);
+  };
+
+  // 신고 다이얼로그 닫기
+  const handleCloseReportDialog = () => {
+    setReportDialogOpen(false);
+  };
+
   // 게시글 좋아요/싫어요 핸들러 (직접 구현 - 반응형 UI)
   const handlePostReaction = async (type: 'LIKE' | 'DISLIKE') => {
     if (!post) return;
     if (!currentUser) {
-      enqueueSnackbar('로그인이 필요합니다.', { variant: 'warning' });
+      enqueueSnackbar(t('auth.loginRequired'), { variant: 'warning' });
       return;
     }
 
@@ -455,9 +547,38 @@ const PostDetailPage: React.FC = () => {
     }
   };
 
-  // 현재 사용자가 게시글 작성자인지 확인
-  const isPostAuthor =
-    currentUser && post?.userId?.toString() === (currentUser as any)?.id?.toString();
+  // isState 값을 myReaction으로 변환하는 함수
+  const convertIsStateToMyReaction = (
+    isState?: string | null | undefined
+  ): ReactionType | undefined => {
+    if (!isState) return undefined;
+    if (isState === '좋아요') return 'LIKE';
+    if (isState === '싫어요') return 'DISLIKE';
+    return undefined;
+  };
+
+  // 디버깅 용도의 데이터 로깅
+  console.log('===== 게시글 전체 데이터 =====', post);
+  console.log('===== 사용자 전체 데이터 =====', currentUser);
+  console.log('===== 사용자 작성 게시글 목록 =====', userPosts);
+
+  // 작성자 여부 확인 - 사용자의 작성 게시글 목록에 현재 게시글 ID가 있는지 확인
+  const isPostAuthor = Boolean(post && post.postId && userPosts.includes(post.postId));
+
+  // 관리자 권한 확인
+  const isAdmin = Boolean(currentUser?.role === 'ROLE_ADMIN');
+
+  // 수정/삭제 권한 확인
+  const canEditDelete = isPostAuthor || isAdmin;
+
+  // 디버깅을 위한 권한 상태 로그
+  console.log('===== 권한 확인 결과 =====', {
+    isPostAuthor,
+    isAdmin,
+    canEditDelete,
+    postId: post?.postId,
+    userPosts,
+  });
 
   // 게시글 로딩 중 표시
   if (loading) {
@@ -480,7 +601,7 @@ const PostDetailPage: React.FC = () => {
           <Box mt={4}>
             <Alert severity="error">{error}</Alert>
             <Button startIcon={<ArrowBackIcon />} onClick={handleBack} sx={{ mt: 2 }}>
-              목록으로 돌아가기
+              {t('community.posts.back')}
             </Button>
           </Box>
         </SpringBackground>
@@ -494,9 +615,9 @@ const PostDetailPage: React.FC = () => {
       <Container maxWidth="lg">
         <SpringBackground>
           <Box mt={4}>
-            <Alert severity="warning">게시글이 존재하지 않거나 삭제되었습니다.</Alert>
+            <Alert severity="warning">{t('community.posts.loadFailed')}</Alert>
             <Button startIcon={<ArrowBackIcon />} onClick={handleBack} sx={{ mt: 2 }}>
-              목록으로 돌아가기
+              {t('community.posts.back')}
             </Button>
           </Box>
         </SpringBackground>
@@ -532,8 +653,8 @@ const PostDetailPage: React.FC = () => {
                 <ArrowBackIcon />
               </IconButton>
 
-              {/* 게시글 작성자일 경우 수정/삭제 버튼 표시 */}
-              {isPostAuthor && (
+              {/* 게시글 작성자 또는 관리자일 경우 수정/삭제 버튼 표시 */}
+              {canEditDelete ? (
                 <Box>
                   <Button
                     startIcon={<EditIcon />}
@@ -542,7 +663,7 @@ const PostDetailPage: React.FC = () => {
                     size="small"
                     onClick={handleEditPost}
                   >
-                    수정
+                    {t('community.posts.edit')}
                   </Button>
                   <Button
                     startIcon={<DeleteIcon />}
@@ -551,25 +672,40 @@ const PostDetailPage: React.FC = () => {
                     size="small"
                     onClick={() => setDeleteDialogOpen(true)}
                   >
-                    삭제
+                    {t('community.posts.delete')}
                   </Button>
                 </Box>
+              ) : (
+                /* 신고 버튼 - 작성자가 아닌 로그인한 사용자에게만 표시 */
+                currentUser && (
+                  <Box>
+                    <Button
+                      startIcon={<FlagIcon />}
+                      sx={{ color: '#f57c00', borderColor: '#f57c00' }}
+                      variant="outlined"
+                      size="small"
+                      onClick={handleOpenReportDialog}
+                    >
+                      {t('community.posts.report')}
+                    </Button>
+                  </Box>
+                )
               )}
             </Box>
 
             {/* 게시글 삭제 확인 다이얼로그 */}
             <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-              <DialogTitle>게시글 삭제</DialogTitle>
+              <DialogTitle>{t('community.posts.delete')}</DialogTitle>
               <DialogContent>
-                <Typography>정말로 이 게시글을 삭제하시겠습니까?</Typography>
+                <Typography>{t('community.posts.deleteConfirm')}</Typography>
                 <Typography variant="caption" color="error">
                   삭제된 게시글은 복구할 수 없습니다.
                 </Typography>
               </DialogContent>
               <DialogActions>
-                <Button onClick={() => setDeleteDialogOpen(false)}>취소</Button>
+                <Button onClick={() => setDeleteDialogOpen(false)}>{t('buttons.cancel')}</Button>
                 <Button onClick={handleDeletePost} color="error">
-                  삭제
+                  {t('community.posts.delete')}
                 </Button>
               </DialogActions>
             </Dialog>
@@ -598,9 +734,12 @@ const PostDetailPage: React.FC = () => {
               {/* 태그 표시 */}
               {post.tags && post.tags.length > 0 && (
                 <Box mb={2}>
-                  {post.tags.map((tag: any, index) => (
-                    <StyledChip key={index} label={tag.name || tag} size="small" />
-                  ))}
+                  {post.tags.map((tag: any, index) => {
+                    const tagName = tag.name || tag;
+                    return (
+                      <StyledChip key={index} label={translateTag(tagName)} size="small" />
+                    );
+                  })}
                 </Box>
               )}
             </Box>
@@ -630,7 +769,7 @@ const PostDetailPage: React.FC = () => {
               {post.files && post.files.length > 0 && (
                 <Box mt={3}>
                   <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-                    첨부파일
+                    {t('community.posts.attachFiles')}
                   </Typography>
                   <List dense>
                     {post.files.map((file: any, index) => (
@@ -652,7 +791,7 @@ const PostDetailPage: React.FC = () => {
                                 '&:hover': { textDecoration: 'underline' },
                               }}
                             >
-                              {file.name || `첨부파일 ${index + 1}`}
+                              {file.name || `${t('community.posts.attachFiles')} ${index + 1}`}
                             </Typography>
                           }
                           secondary={file.size ? `${(file.size / 1024).toFixed(1)} KB` : ''}
@@ -681,7 +820,7 @@ const PostDetailPage: React.FC = () => {
                 disabled={post.myReaction === 'DISLIKE'}
                 theme={undefined as any}
               >
-                좋아요 {post.likeCount || 0}
+                {t('community.posts.likePost')} {post.likeCount || 0}
               </ReactionButton>
               <ReactionButton
                 active={post.myReaction === 'DISLIKE'}
@@ -693,13 +832,25 @@ const PostDetailPage: React.FC = () => {
                 disabled={post.myReaction === 'LIKE'}
                 theme={undefined as any}
               >
-                싫어요 {post.dislikeCount || 0}
+                {t('community.posts.dislikePost')} {post.dislikeCount || 0}
               </ReactionButton>
             </Box>
 
             {/* 댓글 섹션 */}
             <Divider sx={{ my: 4 }} />
             <CommentSection postId={numericPostId} />
+
+            {/* 신고 다이얼로그 */}
+            {post && (
+              <ReportDialog
+                open={reportDialogOpen}
+                onClose={handleCloseReportDialog}
+                targetId={post.postId}
+                targetType="POST"
+                serviceType="COMMUNITY"
+                reportedUserId={post.userId || 0}
+              />
+            )}
           </>
         ) : null}
       </Container>

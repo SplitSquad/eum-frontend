@@ -3,6 +3,9 @@ import ModalContent from '@/components/ai/ModalContent';
 import Footer from '@/components/layout/Footer';
 import Header from '@/components/layout/Header';
 import { useModalStore } from '@/shared/store/ModalStore';
+import ChatIcon from '@mui/icons-material/Chat';
+import CloseIcon from '@mui/icons-material/Close';
+import { Container, IconButton } from '@mui/material';
 import { SnackbarProvider } from 'notistack';
 import React, { useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
@@ -135,20 +138,33 @@ const App: React.FC = () => {
           <Header isVisible={isHeaderVisible} />
           <SeasonalBackground>
             <main className="main-content">
-              <div style={{ paddingTop: '2.5rem', height: '100%' }}>
-                <Outlet />
+              <div style={{ paddingTop: '0.5rem', height: '100%' }}>
+                <Container
+                  maxWidth="lg"
+                  sx={{
+                    py: { xs: 2, md: 3 },
+                    px: { xs: 2, md: 3 },
+                    display: 'flex',
+                    flexDirection: 'column',
+                    flexGrow: 1,
+                    position: 'relative',
+                    zIndex: 5,
+                  }}
+                >
+                  <Outlet />
+                </Container>
               </div>
             </main>
             {isModalVisible && isAuthenticated && (
-              <div className="fixed bottom-[170px] right-8 z-[1001]">
+              <div className="fixed bottom-[170px] right-4 md:right-8 z-[1001]">
                 <img
                   ref={btnRef}
                   src={eum2Image}
                   alt="이음이"
                   onClick={onButtonClick}
                   style={{
-                    width: 48,
-                    height: 48,
+                    width: window.innerWidth < 768 ? 44 : 48,
+                    height: window.innerWidth < 768 ? 44 : 48,
                     objectFit: 'contain',
                     cursor: 'pointer',
                     transition: 'transform 0.3s',

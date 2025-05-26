@@ -3,6 +3,7 @@ import { Box, Typography, Container, Button, Paper } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import error404 from '../assets/images/characters/404error.png';
 import styled from '@emotion/styled';
+import { useTranslation } from '../shared/i18n';
 
 /**
  * 404 페이지 컴포넌트
@@ -16,6 +17,7 @@ export const CenteredImg = styled.img`
 `;
 
 const NotFound: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   return (
@@ -39,10 +41,10 @@ const NotFound: React.FC = () => {
         </Typography>
         <CenteredImg src={error404} alt="404" />
         <Typography variant="h4" gutterBottom>
-          페이지를 찾을 수 없습니다
+          {t('notFound.title')}
         </Typography>
         <Typography variant="body1" paragraph color="text.secondary" sx={{ mb: 4 }}>
-          요청하신 페이지가 존재하지 않거나, 이동되었거나, 일시적으로 사용할 수 없습니다.
+          {t('notFound.description')}
         </Typography>
         <Button
           variant="contained"
@@ -54,7 +56,7 @@ const NotFound: React.FC = () => {
             px: 4,
           }}
         >
-          홈으로 돌아가기
+          {t('notFound.goHome')}
         </Button>
       </Paper>
     </Container>

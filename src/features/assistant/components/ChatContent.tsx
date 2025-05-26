@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { fetchChatbotResponse } from '@/features/assistant/api/ChatApi';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { Box, Typography } from '@mui/material';
 
 /**-----------------------------------웹로그 관련------------------------------------ **/
 // userId 꺼내오는 헬퍼
@@ -208,72 +209,55 @@ export default function ChatContent({
   }, [messages, loading]);
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-gray-100">
-      {/* 헤더 영역 */}
-      <div className="px-6 py-4 bg-white border-b">
-        <h1 className="text-2xl font-bold inline">{categoryLabel} AI 비서</h1>
-        <span className="ml-4 text-gray-600">
-          {new Intl.DateTimeFormat('ko-KR', { hour: '2-digit', minute: '2-digit' }).format(
-            new Date()
-          )}
-        </span>
-        <p className="mt-2 text-gray-700">안녕하세요! {categoryLabel} AI 비서입니다.</p>
-        <div className="mt-4 flex flex-wrap gap-2">
-          {['한국에서 필요한 기본 서류는?', '한국에서 일하려면?', '한국어 배우는 방법?'].map(q => (
-            <button
-              key={q}
-              onClick={() => sendMessage(q)}
-              className="px-4 py-1 bg-blue-50 text-blue-600 rounded-full text-sm hover:bg-blue-100"
-            >
-              {q}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* 메시지 리스트 영역 */}
-      <div ref={listRef} className="overflow-auto p-2 space-y-3 bg-gray-50 h-[50vh]">
-        {messages.map(m => (
-          <div
-            key={m.id}
-            className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
-            {m.sender === 'user' ? (
-              <span className="inline-block px-4 py-2 rounded-xl max-w-[70%] break-words bg-blue-500 text-white">
-                {m.text}
-              </span>
-            ) : (
-              <span className="inline-block px-4 py-2 rounded-xl max-w-[70%] whitespace-pre-wrap break-words bg-gray-200 text-gray-800">
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  components={{ p: ({ children }) => <>{children}</> }}
-                  children={m.displayText ?? m.text}
-                />
-              </span>
-            )}
+    <div className="h-full">
+      {/* 카테고리 + 메인 flex (아래에 배치) */}
+      <div className="flex h-[calc(100%-120px)]">
+        {/* 오른쪽: 메인(채팅) */}
+        <main className="flex-1 flex flex-col pl-8">
+          {/* 메시지 리스트 영역 */}
+          <div ref={listRef} className="overflow-auto p-2 space-y-3 bg-gray-50 h-[50vh]">
+            {messages.map(m => (
+              <div
+                key={m.id}
+                className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                {m.sender === 'user' ? (
+                  <span className="inline-block px-4 py-2 rounded-xl max-w-[70%] break-words bg-blue-500 text-white">
+                    {m.text}
+                  </span>
+                ) : (
+                  <span className="inline-block px-4 py-2 rounded-xl max-w-[70%] whitespace-pre-wrap break-words bg-gray-200 text-gray-800">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      components={{ p: ({ children }) => <>{children}</> }}
+                      children={m.displayText ?? m.text}
+                    />
+                  </span>
+                )}
+              </div>
+            ))}
+            {loading && <div className="text-center text-gray-500">답변 중...</div>}
           </div>
-        ))}
-        {loading && <div className="text-center text-gray-500">답변 중...</div>}
-      </div>
-
-      {/* 입력창 영역 */}
-      <div className="px-6 py-4 bg-white border-t flex items-center">
-        <input
-          type="text"
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && !loading && sendMessage()}
-          disabled={loading}
-          className="flex-1 px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring disabled:opacity-50"
-          placeholder="질문을 입력하세요..."
-        />
-        <button
-          onClick={() => sendMessage()}
-          disabled={loading}
-          className="ml-4 px-6 py-2 bg-indigo-600 text-white rounded-full disabled:opacity-50"
-        >
-          전송
-        </button>
+          {/* 입력창 영역 */}
+          <div className="px-6 py-4 bg-white border-t flex items-center">
+            <input
+              type="text"
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && !loading && sendMessage()}
+              disabled={loading}
+              className="flex-1 px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring disabled:opacity-50"
+              placeholder="질문을 입력하세요..."
+            />
+            <button
+              onClick={() => sendMessage()}
+              disabled={loading}
+              className="ml-4 px-6 py-2 bg-indigo-600 text-white rounded-full disabled:opacity-50"
+            >
+              전송
+            </button>
+          </div>
+        </main>
       </div>
     </div>
   );

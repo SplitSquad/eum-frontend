@@ -122,35 +122,436 @@ export const PostApi = {
     try {
       console.log('[DEBUG] getPosts 요청 시작, 원본 파라미터:', params);
 
+      // 카테고리 번역 매핑 (다국어 → 한국어)
+      const categoryMapping: Record<string, string> = {
+        // 영어
+        All: '전체',
+        Free: '자유',
+        Meeting: '모임',
+        Tourism: '관광/체험',
+        Food: '식도락/맛집',
+        Culture: '문화/예술',
+        Sports: '스포츠/레저',
+        Study: '스터디/교육',
+        Business: '비즈니스/네트워킹',
+        Other: '기타',
+        // 스페인어
+        Todos: '전체',
+        Libre_es: '자유',
+        Reunión: '모임',
+        Turismo: '관광/체험',
+        Comida: '식도락/맛집',
+        Cultura_es: '문화/예술',
+        Deportes: '스포츠/레저',
+        Estudio: '스터디/교육',
+        Negocios: '비즈니스/네트워킹',
+        Otro: '기타',
+        // 프랑스어
+        Tout: '전체',
+        Libre_fr: '자유',
+        Réunion: '모임',
+        Tourisme: '관광/체험',
+        Nourriture: '식도락/맛집',
+        Culture_fr: '문화/예술',
+        Sports_fr: '스포츠/레저',
+        Étude: '스터디/교육',
+        Affaires: '비즈니스/네트워킹',
+        Autre: '기타',
+        // 독일어
+        Alle: '전체',
+        Frei: '자유',
+        Treffen: '모임',
+        Tourismus: '관광/체험',
+        Essen: '식도락/맛집',
+        Kultur: '문화/예술',
+        Sport: '스포츠/레저',
+        Studium: '스터디/교육',
+        Geschäft: '비즈니스/네트워킹',
+        Andere: '기타',
+        // 일본어
+        すべて: '전체',
+        自由_ja: '자유',
+        ミーティング: '모임',
+        観光: '관광/체험',
+        グルメ: '식도락/맛집',
+        文化_ja: '문화/예술',
+        スポーツ: '스포츠/레저',
+        勉強: '스터디/교육',
+        ビジネス: '비즈니스/네트워킹',
+        その他: '기타',
+        // 중국어
+        全部: '전체',
+        自由_zh: '자유',
+        聚会: '모임',
+        旅游: '관광/체험',
+        美食: '식도락/맛집',
+        文化_zh: '문화/예술',
+        运动: '스포츠/레저',
+        学习: '스터디/교육',
+        商务: '비즈니스/네트워킹',
+        其他: '기타',
+        // 러시아어
+        Все: '전체',
+        Свободный: '자유',
+        Встреча: '모임',
+        Туризм: '관광/체험',
+        Еда: '식도락/맛집',
+        Культура: '문화/예술',
+        Спорт: '스포츠/레저',
+        Учеба: '스터디/교육',
+        Бизнес: '비즈니스/네트워킹',
+        Другое: '기타',
+      };
+
+      // 지역 번역 매핑 (다국어 → 한국어)
+      const locationMapping: Record<string, string> = {
+        // 영어
+        All: '전체',
+        Seoul: '서울',
+        Busan: '부산',
+        Daegu: '대구',
+        Incheon: '인천',
+        Gwangju: '광주',
+        Daejeon: '대전',
+        Ulsan: '울산',
+        Sejong: '세종',
+        Gyeonggi: '경기',
+        Gangwon: '강원',
+        Chungbuk: '충북',
+        Chungnam: '충남',
+        Jeonbuk: '전북',
+        Jeonnam: '전남',
+        Gyeongbuk: '경북',
+        Gyeongnam: '경남',
+        Jeju: '제주',
+        // 스페인어
+        Todos_es: '전체',
+        Seúl: '서울',
+        Busán: '부산',
+        Daegu_es: '대구',
+        Incheon_es: '인천',
+        Gwangju_es: '광주',
+        Daejeon_es: '대전',
+        Ulsan_es: '울산',
+        Sejong_es: '세종',
+        Gyeonggi_es: '경기',
+        Gangwon_es: '강원',
+        Chungbuk_es: '충북',
+        Chungnam_es: '충남',
+        Jeonbuk_es: '전북',
+        Jeonnam_es: '전남',
+        Gyeongbuk_es: '경북',
+        Gyeongnam_es: '경남',
+        Jeju_es: '제주',
+        // 프랑스어
+        Tous_fr: '전체',
+        Séoul: '서울',
+        Busan_fr: '부산',
+        Daegu_fr: '대구',
+        Incheon_fr: '인천',
+        Gwangju_fr: '광주',
+        Daejeon_fr: '대전',
+        Ulsan_fr: '울산',
+        Sejong_fr: '세종',
+        Gyeonggi_fr: '경기',
+        Gangwon_fr: '강원',
+        Chungbuk_fr: '충북',
+        Chungnam_fr: '충남',
+        Jeonbuk_fr: '전북',
+        Jeonnam_fr: '전남',
+        Gyeongbuk_fr: '경북',
+        Gyeongnam_fr: '경남',
+        Jeju_fr: '제주',
+        // 독일어
+        Alle_de: '전체',
+        Seoul_de: '서울',
+        Busan_de: '부산',
+        Daegu_de: '대구',
+        Incheon_de: '인천',
+        Gwangju_de: '광주',
+        Daejeon_de: '대전',
+        Ulsan_de: '울산',
+        Sejong_de: '세종',
+        Gyeonggi_de: '경기',
+        Gangwon_de: '강원',
+        Chungbuk_de: '충북',
+        Chungnam_de: '충남',
+        Jeonbuk_de: '전북',
+        Jeonnam_de: '전남',
+        Gyeongbuk_de: '경북',
+        Gyeongnam_de: '경남',
+        Jeju_de: '제주',
+        // 일본어
+        すべて_ja: '전체',
+        ソウル: '서울',
+        釜山: '부산',
+        テグ: '대구',
+        仁川: '인천',
+        光州: '광주',
+        大田: '대전',
+        蔚山: '울산',
+        世宗: '세종',
+        京畿: '경기',
+        江原: '강원',
+        忠北: '충북',
+        忠南: '충남',
+        全北: '전북',
+        全南: '전남',
+        慶北: '경북',
+        慶南: '경남',
+        済州: '제주',
+        // 중국어
+        全部_zh: '전체',
+        首尔: '서울',
+        釜山_zh: '부산',
+        大邱: '대구',
+        仁川_zh: '인천',
+        光州_zh: '광주',
+        大田_zh: '대전',
+        蔚山_zh: '울산',
+        世宗_zh: '세종',
+        京畿_zh: '경기',
+        江原_zh: '강원',
+        忠北_zh: '충북',
+        忠南_zh: '충남',
+        全北_zh: '전북',
+        全南_zh: '전남',
+        庆北: '경북',
+        庆南: '경남',
+        济州: '제주',
+        // 러시아어
+        Все_ru: '전체',
+        Сеул: '서울',
+        Пусан: '부산',
+        Тэгу: '대구',
+        Инчхон: '인천',
+        Кванджу: '광주',
+        Тэджон: '대전',
+        Ульсан: '울산',
+        Седжон: '세종',
+        Кёнгги: '경기',
+        Канвон: '강원',
+        Чунбук: '충북',
+        Чуннам: '충남',
+        Чонбук: '전북',
+        Чоннам: '전남',
+        Кёнбук: '경북',
+        Кённам: '경남',
+        Чеджу: '제주',
+      };
+
       // API 파라미터 변환 (백엔드 파라미터명에 맞게 변환)
       const apiParams: Record<string, any> = {
         page: params.page !== undefined ? params.page : 0,
         size: params.size || 6,
-        category: params.category === '전체' ? '전체' : params.category || '전체',
+        category: categoryMapping[params.category || ''] || params.category || '전체',
         sort:
           params.sortBy === 'popular' ? 'views' : params.sortBy === 'oldest' ? 'oldest' : 'latest',
       };
 
+      // postType 번역 매핑 (다국어 → 한국어)
+      const postTypeMapping: Record<string, string> = {
+        // 영어
+        Free: '자유',
+        Meeting: '모임',
+        All: '전체',
+        // 스페인어
+        Libre_es: '자유',
+        Reunión_es: '모임',
+        Todos_postType: '전체',
+        // 프랑스어
+        Libre_fr: '자유',
+        Réunion_fr: '모임',
+        Tout_postType: '전체',
+        // 독일어
+        Frei_de: '자유',
+        Treffen_de: '모임',
+        Alle_postType: '전체',
+        // 일본어
+        自由_postType: '자유',
+        ミーティング_postType: '모임',
+        すべて_postType: '전체',
+        // 중국어
+        自由_postType_zh: '자유',
+        聚会_postType: '모임',
+        全部_postType: '전체',
+        // 러시아어
+        Свободный_ru: '자유',
+        Встреча_ru: '모임',
+        Все_postType: '전체',
+      };
+
       // postType 처리 - 백엔드는 빈 문자열을 허용하지 않음, 항상 값이 있어야 함
-      apiParams.postType = params.postType || '자유';
+      const translatedPostType =
+        postTypeMapping[params.postType || ''] || params.postType || '자유';
+      apiParams.postType = translatedPostType;
 
       // region(지역) 처리 - 자유 게시글이면 무조건 '자유'로, 그렇지 않으면 location 값 사용
       if (apiParams.postType === '자유') {
         apiParams.region = '자유';
       } else {
-        apiParams.region = params.location === '전체' ? '전체' : params.location || '전체';
+        const translatedLocation =
+          locationMapping[params.location || ''] || params.location || '전체';
+        apiParams.region = translatedLocation === '전체' ? '전체' : translatedLocation;
       }
+
+      // 태그 번역 매핑 (다국어 → 한국어)
+      const tagMapping: Record<string, string> = {
+        // 영어
+        Tourism: '관광/체험',
+        Food: '식도락/맛집',
+        Transport: '교통/이동',
+        Accommodation: '숙소/지역정보',
+        Embassy: '대사관/응급',
+        'Real Estate': '부동산/계약',
+        'Living Environment': '생활환경/편의',
+        Culture: '문화/생활',
+        Housing: '주거지 관리/유지',
+        Academic: '학사/캠퍼스',
+        'Study Support': '학업지원/시설',
+        Visa: '행정/비자/서류',
+        Dormitory: '기숙사/주거',
+        Career: '이력/채용준비',
+        Labor: '비자/법률/노동',
+        'Job Fair': '잡페어/네트워킹',
+        'Part Time': '알바/파트타임',
+        // 스페인어
+        Turismo_es: '관광/체험',
+        Comida_es: '식도락/맛집',
+        Transporte: '교통/이동',
+        Alojamiento: '숙소/지역정보',
+        Embajada: '대사관/응급',
+        'Bienes Raíces': '부동산/계약',
+        'Ambiente de Vida': '생활환경/편의',
+        Cultura_es: '문화/생활',
+        Vivienda: '주거지 관리/유지',
+        Académico: '학사/캠퍼스',
+        'Apoyo de Estudio': '학업지원/시설',
+        Visa_es: '행정/비자/서류',
+        Dormitorio: '기숙사/주거',
+        Carrera: '이력/채용준비',
+        Trabajo: '비자/법률/노동',
+        'Feria de Trabajo': '잡페어/네트워킹',
+        'Tiempo Parcial': '알바/파트타임',
+        // 프랑스어
+        Tourisme_fr: '관광/체험',
+        Nourriture_fr: '식도락/맛집',
+        Transport_fr: '교통/이동',
+        Hébergement: '숙소/지역정보',
+        Ambassade: '대사관/응급',
+        Immobilier: '부동산/계약',
+        'Environnement de Vie': '생활환경/편의',
+        Culture_fr: '문화/생활',
+        Logement: '주거지 관리/유지',
+        Académique_fr: '학사/캠퍼스',
+        'Soutien aux Études': '학업지원/시설',
+        Visa_fr: '행정/비자/서류',
+        Dortoir: '기숙사/주거',
+        Carrière: '이력/채용준비',
+        Travail_fr: '비자/법률/노동',
+        "Salon de l'Emploi": '잡페어/네트워킹',
+        'Temps Partiel': '알바/파트타임',
+        // 독일어
+        Tourismus_de: '관광/체험',
+        Essen_de: '식도락/맛집',
+        Transport_de: '교통/이동',
+        Unterkunft: '숙소/지역정보',
+        Botschaft: '대사관/응급',
+        Immobilien: '부동산/계약',
+        Lebensumgebung: '생활환경/편의',
+        Kultur_de: '문화/생활',
+        Wohnen: '주거지 관리/유지',
+        Akademisch: '학사/캠퍼스',
+        Studienunterstützung: '학업지원/시설',
+        Visa_de: '행정/비자/서류',
+        Wohnheim: '기숙사/주거',
+        Karriere_de: '이력/채용준비',
+        Arbeit: '비자/법률/노동',
+        Jobmesse: '잡페어/네트워킹',
+        Teilzeit: '알바/파트타임',
+        // 일본어
+        観光_ja: '관광/체험',
+        グルメ_ja: '식도락/맛집',
+        交通: '교통/이동',
+        宿泊: '숙소/지역정보',
+        大使館: '대사관/응급',
+        不動産: '부동산/계약',
+        生活環境: '생활환경/편의',
+        文化_ja: '문화/생활',
+        住居: '주거지 관리/유지',
+        学術: '학사/캠퍼스',
+        学習支援: '학업지원/시설',
+        ビザ: '행정/비자/서류',
+        寮: '기숙사/주거',
+        キャリア: '이력/채용준비',
+        労働: '비자/법률/노동',
+        ジョブフェア: '잡페어/네트워킹',
+        パートタイム: '알바/파트타임',
+        // 중국어
+        旅游_zh: '관광/체험',
+        美食_zh: '식도락/맛집',
+        交通_zh: '교통/이동',
+        住宿: '숙소/지역정보',
+        大使馆: '대사관/응급',
+        房地产: '부동산/계약',
+        生活环境: '생활환경/편의',
+        文化_zh: '문화/생활',
+        住房: '주거지 관리/유지',
+        学术: '학사/캠퍼스',
+        学习支持: '학업지원/시설',
+        签证: '행정/비자/서류',
+        宿舍: '기숙사/주거',
+        职业: '이력/채용준비',
+        劳动: '비자/법률/노동',
+        招聘会: '잡페어/네트워킹',
+        兼职: '알바/파트타임',
+        // 러시아어
+        Туризм_ru: '관광/체험',
+        Еда_ru: '식도락/맛집',
+        Транспорт: '교통/이동',
+        Жилье: '숙소/지역정보',
+        Посольство: '대사관/응급',
+        Недвижимость: '부동산/계약',
+        'Жизненная Среда': '생활환경/편의',
+        Культура_ru: '문화/생활',
+        'Жилищное Управление': '주거지 관리/유지',
+        Академический: '학사/캠퍼스',
+        'Поддержка Учебы': '학업지원/시설',
+        Виза_ru: '행정/비자/서류',
+        Общежитие: '기숙사/주거',
+        Карьера: '이력/채용준비',
+        Труд: '비자/법률/노동',
+        'Ярмарка Вакансий': '잡페어/네트워킹',
+        'Частичная Занятость': '알바/파트타임',
+      };
 
       // 태그 처리
       if (params.tag && params.tag !== '전체') {
         // 콤마로 분리된 태그 문자열을 배열로 변환
-        const tagsArray = params.tag.split(',').map(tag => tag.trim());
+        const tagsArray = params.tag.split(',').map(tag => {
+          const trimmedTag = tag.trim();
+          // 태그 번역 적용
+          return tagMapping[trimmedTag] || trimmedTag;
+        });
         // 태그 배열을 직접 할당
         apiParams.tags = tagsArray;
 
         // 로그에 태그 정보 명확하게 표시
-        console.log('[DEBUG] 태그 필터링 적용:', { tag: params.tag, tagsArray });
+        console.log('[DEBUG] 태그 필터링 적용:', {
+          원본태그: params.tag,
+          번역태그배열: tagsArray,
+        });
       }
+
+      // 번역 결과 로그
+      console.log('[DEBUG] 파라미터 번역 결과:', {
+        원본카테고리: params.category,
+        번역카테고리: apiParams.category,
+        원본지역: params.location,
+        번역지역: apiParams.region,
+        원본타입: params.postType,
+        번역타입: apiParams.postType,
+      });
 
       // 실제 API 요청 로그
       console.log('[DEBUG] 서버로 전송되는 최종 파라미터:', apiParams);
@@ -242,6 +643,8 @@ export const PostApi = {
             role: 'USER',
           },
           viewCount: post.views || 0,
+          likeCount: post.like || 0,
+          commentCount: post.commentCnt || 0,
           category: post.category || '전체',
           createdAt: post.createdAt || new Date().toISOString(),
           postType: typeof post.postType === 'string' ? toPostType(post.postType) : post.postType,
@@ -601,9 +1004,16 @@ export const PostApi = {
   /**
    * 게시글 상세 조회
    */
-  getPostById: async (postId: number): Promise<Post> => {
+  getPostById: async (
+    postId: number,
+    signal?: AbortSignal,
+    noViewCount: boolean = false
+  ): Promise<Post> => {
     try {
-      const response = await apiClient.get<any>(`${BASE_URL}/${postId}`);
+      // 조회수를 증가시키지 않는 옵션 추가 (언어 변경 시 사용)
+      const url = noViewCount ? `${BASE_URL}/${postId}?noViewCount=true` : `${BASE_URL}/${postId}`;
+
+      const response = await apiClient.get<any>(url, { signal });
 
       // 백엔드 응답 구조와 일치하도록 데이터 변환
       return {
@@ -635,18 +1045,14 @@ export const PostApi = {
 
   /**
    * 게시글 조회수 증가
+   * 참고: 현재 getPostById API 호출 시 백엔드에서 자동으로 조회수가 증가하므로
+   * 이 메서드는 실제로 호출하지 않아야 합니다. noViewCount=true 파라미터를 사용하여
+   * 필요한 경우 조회수 증가를 방지할 수 있습니다.
    */
   increaseViewCount: async (postId: number): Promise<void> => {
-    try {
-      // 조회수 증가 API가 아직 구현되지 않았지만, 추후 구현 시 활성화
-      console.log('조회수 증가 API가 아직 구현되지 않았습니다:', postId);
-      // 실제 API 구현 시 아래 주석을 해제하세요
-      // await apiClient.post(`${BASE_URL}/${postId}/view`);
-      return;
-    } catch (error) {
-      console.error('게시글 조회수 증가 실패:', error);
-      // 핵심 기능에 영향을 주지 않으므로 에러를 throw하지 않음
-    }
+    // 사용하지 않는 함수이지만 호환성을 위해 유지
+    console.log('게시글 조회수는 백엔드에서 자동 증가됩니다. (ID:', postId, ')');
+    return;
   },
 
   /**

@@ -215,6 +215,7 @@ const DebateListPage: React.FC = () => {
   };
 
   const handleCategoryClick = (category: string) => {
+    setSelectedCategory(category);
     // 서버에 API 요청을 보내기 전에 로딩 상태 표시
     fetchDebates(1, 20, category === '전체' ? '' : category);
 

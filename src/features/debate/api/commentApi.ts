@@ -215,8 +215,38 @@ const CommentApi = {
         // 실제 API 응답에 맞게 처리 (commentList 형식)
         const { commentList, total } = response;
         
+        // 원본 데이터를 기록하여 디버깅 돕기
+        console.log('원본 댓글 데이터:', JSON.stringify(commentList, null, 2));
+        
         // 응답 데이터를 프론트엔드 모델로 변환
-        const comments = commentList.map((item: CommentResDto) => mapCommentResToFrontend(item, debateId));
+        const comments = commentList.map((item: CommentResDto) => {
+          // userId 필드를 찾아서 추출
+          const userId = item.userId || 0;
+          
+          // 댓글 내용에서 stance 정보 추출
+          let extractedStance: 'pro' | 'con' | undefined = undefined;
+          let content = item.content || '';
+          
+          if (content.startsWith('【반대】')) {
+            extractedStance = 'con';
+            console.log(`[DEBUG] 댓글 ID ${item.commentId}에서 반대 의견 접두사 발견`);
+          } else if (content.startsWith('【찬성】')) {
+            extractedStance = 'pro';
+            console.log(`[DEBUG] 댓글 ID ${item.commentId}에서 찬성 의견 접두사 발견`);
+          }
+          
+          // 댓글 매핑 전 원본 데이터 로깅
+          console.log(`[DEBUG] 댓글 ID: ${item.commentId}, 작성자 ID: ${userId}, 작성자 이름: ${item.userName}, stance: ${extractedStance || 'pro'}`);
+          
+          // 댓글 매핑 시 추출한 userId와 내용에서 추출한 stance 값 전달
+          const comment = mapCommentResToFrontend({
+            ...item,
+            userId,
+            stance: extractedStance || item.stance  // 내용에서 추출한 stance 값을 우선 사용
+          }, debateId);
+          
+          return comment;
+        });
         
         return {
           comments,
@@ -256,11 +286,18 @@ const CommentApi = {
       // 사용자의 언어 설정 확인
       const userLanguage = localStorage.getItem('userLanguage') || 'ko';
       
+      // stance 값을 콘솔에 출력하여 디버깅
+      console.log('[DEBUG] 댓글 작성 시 선택한 입장(stance):', commentRequest.stance);
+      
+      // stance 정보를 댓글 내용 앞에 추가
+      const stancePrefix = commentRequest.stance === 'con' ? '【반대】 ' : '【찬성】 ';
+      const contentWithStance = stancePrefix + commentRequest.content;
+      
       // 백엔드 API 요청 형식으로 변환
       const requestData: CommentReqDto = {
-        content: commentRequest.content,
+        content: contentWithStance, // stance 정보가 포함된 내용
         debateId: commentRequest.debateId,
-        stance: commentRequest.stance,
+        stance: commentRequest.stance, // 백엔드에서 사용하지 않더라도 보내기
         language: userLanguage // 사용자 언어 설정 동적으로 추가
       };
       
@@ -274,13 +311,34 @@ const CommentApi = {
       
       console.log('댓글 작성 응답:', response);
       
+                        // 디버깅용 로그 추가 (더 자세한 정보로)
+      console.log('[DEBUG] 댓글 원본 응답:', JSON.stringify(response, null, 2));
+      console.log('[DEBUG] 요청에 포함된 stance:', commentRequest.stance);
+      
+      // stance 정보는 이제 댓글 내용에 접두사로 저장되므로 추가 저장 작업이 필요 없음
+      console.log(`[DEBUG] 댓글 접두사에 stance 정보가 포함됨: ${commentRequest.stance}`);
+      
       // 백엔드 응답에 맞게 처리
       if (response && response.commentId) {
-        // 응답 데이터를 프론트엔드 모델로 변환
-        return mapCommentResToFrontend(response, commentRequest.debateId);
+        // stance 필드는 백엔드에 없으므로 클라이언트에서 추가
+        const responseWithStance = {
+          ...response,
+          stance: commentRequest.stance  // 사용자가 직접 선택한 입장 사용
+        };
+        
+        console.log('[DEBUG] 수정된 댓글 응답:', JSON.stringify(responseWithStance, null, 2));
+        
+        return mapCommentResToFrontend(responseWithStance, commentRequest.debateId);
       } else if (response && response.comment) {
         // 다른 응답 형식인 경우
-        return mapCommentResToFrontend(response.comment, commentRequest.debateId);
+        const commentWithStance = {
+          ...response.comment,
+          stance: commentRequest.stance  // 사용자가 직접 선택한 입장 사용
+        };
+        
+        console.log('[DEBUG] 수정된 댓글 응답 (다른 형식):', JSON.stringify(commentWithStance, null, 2));
+        
+        return mapCommentResToFrontend(commentWithStance, commentRequest.debateId);
       }
       
       return null;
@@ -402,10 +460,39 @@ const CommentApi = {
       
       // 백엔드 응답에 맞게 처리
       if (response && response.replyList) {
-        return response.replyList.map((item: ReplyResDto) => mapReplyResToFrontend(item, commentId));
+        // 원본 데이터를 기록하여 디버깅 돕기
+        console.log('원본 답글 데이터:', JSON.stringify(response.replyList, null, 2));
+        
+        return response.replyList.map((item: ReplyResDto) => {
+          // userId 필드를 찾아서 추출
+          const userId = item.userId || 0;
+          
+          // 답글 매핑 전 원본 데이터 로깅
+          console.log(`[DEBUG] 답글 ID: ${item.replyId}, 작성자 ID: ${userId}, 작성자 이름: ${item.userName}`);
+          
+          // 답글 매핑 시 추출한 userId 전달
+          return mapReplyResToFrontend({
+            ...item,
+            userId
+          }, commentId);
+        });
       } else if (response && Array.isArray(response)) {
         // 배열로 응답할 경우
-        return response.map((item: ReplyResDto) => mapReplyResToFrontend(item, commentId));
+        console.log('원본 답글 배열 데이터:', JSON.stringify(response, null, 2));
+        
+        return response.map((item: ReplyResDto) => {
+          // userId 필드를 찾아서 추출
+          const userId = item.userId || 0;
+          
+          // 답글 매핑 전 원본 데이터 로깅
+          console.log(`[DEBUG] 답글 ID: ${item.replyId}, 작성자 ID: ${userId}, 작성자 이름: ${item.userName}`);
+          
+          // 답글 매핑 시 추출한 userId 전달
+          return mapReplyResToFrontend({
+            ...item,
+            userId
+          }, commentId);
+        });
       }
       
       return [];

@@ -35,7 +35,9 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import LoginIcon from '@mui/icons-material/Login';
 import LanguageIcon from '@mui/icons-material/Language';
 import { SUPPORTED_LANGUAGES } from '@/features/onboarding/components/common/LanguageSelector';
+import { getGoogleAuthUrl } from '@/features/auth/api/authApi';
 import { AlarmCenter } from '@/components/notification/AlarmCenter';
+import { InfoIcon } from 'lucide-react';
 
 /**-----------------------------------웹로그 관련------------------------------------ **/
 // userId 꺼내오는 헬퍼
@@ -145,94 +147,21 @@ const seasonalColors: Record<string, SeasonColors> = {
   },
 };
 
-// 스타일드 컴포넌트
+// 스타일드 컴포넌트 - 모바일 최적화
 const StyledAppBar = styled(AppBar)<{ season: string }>`
   background: linear-gradient(to bottom, rgba(235, 245, 255, 0.95), rgba(255, 255, 255, 0.98));
-  );
   box-shadow: none;
   border-bottom: 0px solid rgba(0, 0, 0, 0);
   backdrop-filter: blur(10px);
   color: ${props => seasonalColors[props.season]?.text || '#333333'};
 
   .MuiToolbar-root {
-    min-height: 72px;
-  }
-`;
+    min-height: 64px;
+    padding: 0 16px;
 
-const NavButton = styled(Button)<{ season: string; active: boolean }>`
-  margin: 0 8px;
-  font-weight: ${props => (props.active ? '600' : '400')};
-  color: ${props =>
-    props.active ? seasonalColors[props.season]?.secondary : seasonalColors[props.season]?.text};
-  padding: 6px 16px 2px;
-  position: relative;
-  transition: all 0.3s ease;
-`;
-
-const LoginNavButton = styled(NavButton)`
-  && {
-    font-weight: 700 !important;
-    font-size: 1.1rem !important;
-    color: white !important;
-    background-color: ${props => seasonalColors[props.season]?.primary} !important;
-
-    &:hover {
-      background-color: ${props => seasonalColors[props.season]?.secondary} !important;
-    }
-
-    .MuiButton-startIcon {
-      margin-right: 8px;
-      .MuiSvgIcon-root {
-        font-size: 1.1rem;
-        font-weight: bold;
-      }
-    }
-  }
-`;
-
-const MenuNavButton = styled(NavButton)`
-  && {
-    background: transparent !important;
-    text-transform: none !important;
-    min-width: auto !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    padding: 0 12px 8px !important;
-    margin: 0 4px 0 !important;
-    line-height: 1 !important;
-    height: auto !important;
-    font-weight: 600 !important;
-
-    &:after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 3px;
-      border-radius: 3px;
-      background-color: transparent;
-      transition: all 0.3s ease;
-      opacity: 0;
-    }
-
-    &:hover {
-      background-color: ${props => seasonalColors[props.season]?.hover};
-      border-radius: 4px !important;
-      box-shadow: none !important;
-
-      &:after {
-        background-color: ${props => seasonalColors[props.season]?.secondary};
-        opacity: 0.5;
-      }
-    }
-
-    &:focus {
-      outline: none;
-    }
-
-    &:focus-visible {
-      outline: none;
+    @media (max-width: 768px) {
+      min-height: 56px;
+      padding: 0 12px;
     }
   }
 `;
@@ -249,13 +178,120 @@ const LogoText = styled(Typography)<{ season: string }>`
   -webkit-background-clip: text;
   color: transparent;
   letter-spacing: 1px;
+
+  @media (max-width: 768px) {
+    font-size: 1.3rem;
+  }
+`;
+
+const NavButton = styled(Button)<{ season: string; active: boolean }>`
+  margin: 0 8px;
+  font-weight: ${props => (props.active ? '600' : '400')};
+  color: ${props =>
+    props.active ? seasonalColors[props.season]?.secondary : seasonalColors[props.season]?.text};
+  padding: 8px 16px;
+  position: relative;
+  transition: all 0.3s ease;
+  min-height: 44px; // 터치 친화적 최소 높이
+
+  @media (max-width: 768px) {
+    margin: 0 4px;
+    padding: 6px 12px;
+    font-size: 0.9rem;
+  }
+`;
+
+const MenuNavButton = styled(NavButton)`
+  && {
+    background: transparent !important;
+    text-transform: none !important;
+    min-width: auto !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    padding: 8px 16px !important;
+    margin: 0 4px !important;
+    line-height: 1.2 !important;
+    height: auto !important;
+    font-weight: 600 !important;
+    min-height: 44px;
+
+    &:after {
+      content: '';
+      position: absolute;
+      bottom: 4px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 3px;
+      border-radius: 3px;
+      background-color: ${props => seasonalColors[props.season]?.secondary};
+      transition: all 0.3s ease;
+      opacity: ${props => (props.active ? 1 : 0)};
+    }
+
+    &:hover {
+      background-color: ${props => seasonalColors[props.season]?.hover} !important;
+      border-radius: 8px !important;
+      box-shadow: none !important;
+
+      &:after {
+        width: 80%;
+        opacity: 0.7;
+      }
+    }
+
+    @media (max-width: 768px) {
+      padding: 6px 12px !important;
+      margin: 0 2px !important;
+      font-size: 0.85rem !important;
+      min-height: 40px;
+    }
+  }
+`;
+
+const LoginNavButton = styled(NavButton)`
+  && {
+    font-weight: 700 !important;
+    font-size: 1rem !important;
+    color: white !important;
+    background-color: ${props => seasonalColors[props.season]?.primary} !important;
+    border-radius: 24px !important;
+    padding: 8px 20px !important;
+    min-height: 44px;
+
+    &:hover {
+      background-color: ${props => seasonalColors[props.season]?.secondary} !important;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .MuiButton-startIcon {
+      margin-right: 8px;
+      .MuiSvgIcon-root {
+        font-size: 1.1rem;
+        font-weight: bold;
+      }
+    }
+
+    @media (max-width: 768px) {
+      font-size: 0.9rem !important;
+      padding: 6px 16px !important;
+      min-height: 40px;
+    }
+  }
 `;
 
 const MobileMenuButton = styled(IconButton)<{ season: string }>`
   color: ${props => seasonalColors[props.season]?.text};
+  padding: 12px;
+  margin-left: 8px;
 
   &:hover {
     background-color: ${props => seasonalColors[props.season]?.hover};
+  }
+
+  .MuiSvgIcon-root {
+    font-size: 1.5rem;
   }
 `;
 
@@ -263,29 +299,168 @@ const DrawerHeader = styled(Box)<{ season: string }>`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px;
-  background-color: ${props => seasonalColors[props.season]?.primary};
+  padding: 20px 16px;
+  background: linear-gradient(
+    135deg,
+    ${props => seasonalColors[props.season]?.primary},
+    ${props => seasonalColors[props.season]?.secondary}
+  );
+  color: white;
+  min-height: 80px;
+`;
+
+const DrawerContent = styled(Box)`
+  width: 280px;
+  height: 100%;
+  background-color: #fafafa;
 `;
 
 const DrawerItem = styled(ListItem)<{ season: string; active: boolean }>`
-  margin: 4px 8px;
-  border-radius: 8px;
+  margin: 8px 16px;
+  border-radius: 12px;
   background-color: ${props =>
     props.active ? seasonalColors[props.season]?.hover : 'transparent'};
+  min-height: 56px;
+  transition: all 0.2s ease;
 
   &:hover {
     background-color: ${props => seasonalColors[props.season]?.hover};
+    transform: translateX(4px);
   }
 
   .MuiListItemIcon-root {
     color: ${props =>
       props.active ? seasonalColors[props.season]?.secondary : seasonalColors[props.season]?.text};
+    min-width: 48px;
   }
 
   .MuiListItemText-primary {
     color: ${props =>
       props.active ? seasonalColors[props.season]?.secondary : seasonalColors[props.season]?.text};
     font-weight: ${props => (props.active ? '600' : '400')};
+    font-size: 1rem;
+  }
+`;
+
+const MenuContainer = styled(Box)`
+  display: flex;
+  align-items: center;
+  gap: 0;
+  height: 100%;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+`;
+
+const ProfileSection = styled(Box)<{ season: string }>`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  min-height: 44px;
+
+  &:hover {
+    background-color: ${props => seasonalColors[props.season]?.hover};
+  }
+
+  @media (max-width: 768px) {
+    gap: 8px;
+    padding: 6px 8px;
+    min-height: 40px;
+  }
+`;
+
+const ProfileInfo = styled(Box)`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  @media (max-width: 768px) {
+    display: none; // 모바일에서는 아바타만 표시
+  }
+`;
+
+const ProfileName = styled(Typography)`
+  font-weight: 600;
+  font-size: 0.95rem;
+  line-height: 1.2;
+  color: #333;
+`;
+
+const ProfileDetail = styled(Typography)`
+  font-size: 0.75rem;
+  color: #666666;
+  line-height: 1.2;
+`;
+
+const ProfileRow = styled(Box)`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+const DetailRow = styled(Box)`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+const FlagEmoji = styled.span`
+  font-size: 1rem;
+  line-height: 1.2;
+`;
+
+const ProfileDropdown = styled(Box)<{ season: string }>`
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  min-width: 200px;
+  z-index: 1000;
+  padding: 8px 0;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+`;
+
+const ProfileDropdownItem = styled(Box)<{ season: string }>`
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #666666;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  white-space: nowrap;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 44px;
+
+  .MuiSvgIcon-root {
+    margin-right: 12px;
+    font-size: 1.2rem;
+  }
+
+  &:hover {
+    background-color: ${props => seasonalColors[props.season]?.hover};
+    color: ${props => seasonalColors[props.season]?.text};
+  }
+`;
+
+const UserActionsContainer = styled(Box)`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  @media (max-width: 768px) {
+    gap: 4px;
   }
 `;
 
@@ -379,109 +554,6 @@ const CommunityDropdownItem = styled.div<{ season: string }>`
   }
 `;
 
-const ProfileSection = styled(Box)<{ season: string }>`
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.5rem;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  position: relative;
-`;
-
-const ProfileInfo = styled(Box)`
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-`;
-
-const ProfileName = styled(Typography)`
-  font-weight: 600;
-  font-size: 1.1rem;
-  line-height: 1.2;
-`;
-
-const ProfileDetail = styled(Typography)`
-  font-size: 0.8rem;
-  color: #666666;
-  line-height: 1.2;
-`;
-
-const FlagEmoji = styled.span`
-  font-size: 1.2rem;
-  line-height: 1.2;
-`;
-
-const ProfileRow = styled(Box)`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.1rem;
-`;
-
-const DetailRow = styled(Box)`
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-`;
-
-// 구글 로그인 콜백 타입 정의
-type GoogleLoginCallback = {
-  status: 'redirecting' | 'success' | 'error';
-  error?: any;
-};
-
-const MenuContainer = styled(Box)`
-  display: flex;
-  align-items: flex-end;
-  gap: 0;
-  height: 100%;
-  padding-bottom: 2px;
-  margin-bottom: -2px;
-  position: relative;
-  top: 50%;
-  transform: translateY(50%);
-`;
-
-const ProfileDropdown = styled(Box)<{ season: string }>`
-  position: absolute;
-  top: 100%;
-  right: 0;
-  margin-top: 8px;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  min-width: 200px;
-  z-index: 1000;
-  padding: 4px 0;
-  width: calc(100% - 1rem);
-`;
-
-const ProfileDropdownItem = styled(Box)<{ season: string }>`
-  padding: 0.75rem 1rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: #666666;
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  white-space: nowrap;
-  box-sizing: border-box;
-  width: 100%;
-
-  .MuiSvgIcon-root {
-    margin-right: 12px;
-    font-size: 1.2rem;
-  }
-
-  &:hover {
-    background-color: ${props => seasonalColors[props.season]?.hover};
-    color: ${props => seasonalColors[props.season]?.text};
-  }
-`;
-
 function Header({
   userName = '기본값',
   userCountry = '한국',
@@ -496,8 +568,11 @@ function Header({
   const { t } = useTranslation();
   const { isAuthenticated, user, handleLogout, loadUser } = useAuthStore();
   const theme = useTheme();
-  //const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const isMobile = false;
+
+  // 모바일 감지 수정
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isSmallMobile = useMediaQuery('(max-width: 480px)');
+
   const token = localStorage.getItem('auth_token');
 
   // 인증 상태가 변경될 때마다 사용자 정보 로드
@@ -563,7 +638,7 @@ function Header({
   const handleLogoutClick = () => {
     handleLogout();
     handleProfileMenuClose();
-    navigate('/home');
+    navigate('/google-login');
   };
 
   const handleNavigation = (path: string) => {
@@ -644,16 +719,21 @@ function Header({
   return (
     <header>
       <StyledAppBar season={season} position="sticky">
-        <Toolbar sx={{ minHeight: '72px', position: 'sticky' }}>
+        <Toolbar>
           {/* 로고 - Always visible */}
           <Box
-            sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              cursor: 'pointer',
+              flex: isMobile ? 1 : 'none',
+            }}
             onClick={() => handleMenuClick('/home', '로고')}
           >
             <LogoText season={season}>EUM</LogoText>
           </Box>
 
-          <Box sx={{ flexGrow: 1 }} />
+          {!isMobile && <Box sx={{ flexGrow: 1 }} />}
 
           {/* Only render other components if isVisible is true */}
           {isVisible && (
@@ -739,8 +819,8 @@ function Header({
                 </MenuContainer>
               )}
 
-              {/* 유저 정보 + 알림 */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 4 }}>
+              {/* 유저 액션 컨테이너 */}
+              <UserActionsContainer sx={{ ml: isMobile ? 0 : 4 }}>
                 {/* 프로필 */}
                 {isAuthenticated ? (
                   <Box sx={{ position: 'relative' }} ref={profileMenuRef}>
@@ -749,8 +829,8 @@ function Header({
                         src={user?.profileImagePath || user?.picture}
                         alt={user?.name || 'User'}
                         sx={{
-                          width: 40,
-                          height: 40,
+                          width: isMobile ? 36 : 40,
+                          height: isMobile ? 36 : 40,
                           border: `2px solid ${seasonalColors[season]?.primary}`,
                           cursor: 'pointer',
                         }}
@@ -796,23 +876,26 @@ function Header({
                 )}
 
                 {/* 알림 */}
-                <Box sx={{ ml: 2, mr: 1 }}>
-                  <AlarmCenter />
-                </Box>
-                {/*<Notification items={mockNotifications} />*/}
+                {!isSmallMobile && (
+                  <Box sx={{ ml: isMobile ? 1 : 2, mr: 1 }}>
+                    <AlarmCenter />
+                  </Box>
+                )}
 
-                {/* 언어 선택 */}
-                <IconButton onClick={handleLanguageMenuOpen} sx={{ ml: 0.5 }}>
-                  <LanguageIcon />
-                </IconButton>
+                {/* 언어 선택 - 데스크톱에서만 표시 */}
+                {!isMobile && (
+                  <IconButton onClick={handleLanguageMenuOpen} sx={{ ml: 0.5 }}>
+                    <LanguageIcon />
+                  </IconButton>
+                )}
 
                 {/* 모바일 메뉴 버튼 */}
                 {isMobile && (
-                  <IconButton onClick={toggleDrawer}>
+                  <MobileMenuButton season={season} onClick={toggleDrawer}>
                     <MenuIcon />
-                  </IconButton>
+                  </MobileMenuButton>
                 )}
-              </Box>
+              </UserActionsContainer>
             </>
           )}
 
@@ -837,42 +920,117 @@ function Header({
 
           {/* 모바일 드로어 - Only render if isVisible is true */}
           {isVisible && (
-            <Drawer anchor="right" open={drawerOpen} onClose={toggleDrawer}>
-              <DrawerHeader season={season}>
-                <LogoText season={season}>EUM</LogoText>
-                <IconButton onClick={toggleDrawer}>
-                  <CloseIcon />
-                </IconButton>
-              </DrawerHeader>
-              <List>
-                {navItems.map(item => (
-                  <DrawerItem
-                    key={item.path}
-                    season={season}
-                    active={isActive(item.path)}
-                    onClick={() => handleNavigation(item.path)}
-                  >
-                    <ListItemIcon>{item.icon}</ListItemIcon>
-                    <ListItemText primary={item.name} />
-                  </DrawerItem>
-                ))}
-                <Divider />
-                {isAuthenticated ? (
-                  <DrawerItem season={season} active={false} onClick={handleLogoutClick}>
-                    <ListItemIcon>
-                      <LogoutIcon />
-                    </ListItemIcon>
-                    <ListItemText primary={t('common.logout')} />
-                  </DrawerItem>
-                ) : (
-                  <DrawerItem season={season} active={false} onClick={handleGoogleLogin}>
-                    <ListItemIcon>
-                      <LoginIcon />
-                    </ListItemIcon>
-                    <ListItemText primary={t('common.login')} />
-                  </DrawerItem>
-                )}
-              </List>
+            <Drawer
+              anchor="right"
+              open={drawerOpen}
+              onClose={toggleDrawer}
+              PaperProps={{
+                sx: {
+                  width: 280,
+                  backgroundColor: '#fafafa',
+                },
+              }}
+            >
+              <DrawerContent>
+                <DrawerHeader season={season}>
+                  <LogoText season={season} sx={{ color: 'white' }}>
+                    EUM
+                  </LogoText>
+                  <IconButton onClick={toggleDrawer} sx={{ color: 'white' }}>
+                    <CloseIcon />
+                  </IconButton>
+                </DrawerHeader>
+
+                <Box sx={{ padding: '16px 0' }}>
+                  {/* 사용자 정보 섹션 (로그인된 경우) */}
+                  {isAuthenticated && user && (
+                    <Box sx={{ padding: '16px 24px', borderBottom: '1px solid #e0e0e0', mb: 2 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                        <Avatar
+                          src={user?.profileImagePath || user?.picture}
+                          alt={user?.name || 'User'}
+                          sx={{
+                            width: 48,
+                            height: 48,
+                            border: `2px solid ${seasonalColors[season]?.primary}`,
+                          }}
+                        />
+                        <Box>
+                          <Typography variant="subtitle1" sx={{ fontWeight: 600, color: '#333' }}>
+                            {user?.name || userName}
+                          </Typography>
+                          <Typography variant="caption" sx={{ color: '#666' }}>
+                            {userType} • {userCountry} {flagEmoji}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Box>
+                  )}
+
+                  {/* 네비게이션 메뉴 */}
+                  <List sx={{ padding: 0 }}>
+                    {navItems.map(item => (
+                      <DrawerItem
+                        key={item.path}
+                        season={season}
+                        active={isActive(item.path)}
+                        onClick={() => {
+                          handleNavigation(item.path);
+                          setDrawerOpen(false);
+                        }}
+                      >
+                        <ListItemIcon>{item.icon}</ListItemIcon>
+                        <ListItemText primary={item.name} />
+                      </DrawerItem>
+                    ))}
+
+                    <Divider sx={{ margin: '16px 0' }} />
+
+                    {/* 언어 선택 */}
+                    <DrawerItem season={season} active={false} onClick={handleLanguageMenuOpen}>
+                      <ListItemIcon>
+                        <LanguageIcon />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={`${t('common.language')} (${SUPPORTED_LANGUAGES.find(l => l.code === currentLanguage)?.name || '한국어'})`}
+                      />
+                    </DrawerItem>
+
+                    <Divider sx={{ margin: '16px 0' }} />
+
+                    {/* 로그인/로그아웃 */}
+                    {isAuthenticated ? (
+                      <DrawerItem
+                        season={season}
+                        active={false}
+                        onClick={() => {
+                          handleLogoutClick();
+                          setDrawerOpen(false);
+                        }}
+                      >
+                        <ListItemIcon>
+                          <LogoutIcon />
+                        </ListItemIcon>
+                        <ListItemText primary={t('common.logout')} />
+                      </DrawerItem>
+                    ) : (
+                      <DrawerItem
+                        season={season}
+                        active={false}
+                        onClick={() => {
+                          handleGoogleLogin();
+                          setDrawerOpen(false);
+                        }}
+                      >
+                        <ListItemIcon>
+                          <LoginIcon />
+                        </ListItemIcon>
+                        <ListItemText primary={t('common.login')} />
+                      </DrawerItem>
+                    )}
+                  </List>
+                </Box>
+              </DrawerContent>
             </Drawer>
           )}
         </Toolbar>

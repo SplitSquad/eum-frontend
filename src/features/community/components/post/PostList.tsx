@@ -15,6 +15,25 @@ import { PostSummary, PostType } from '../../types-folder/index';
 // import { PostSummary, PostFilter } from '../../types'; // 타입 import 불가로 임시 주석 처리
 import useCommunityStore from '../../store/communityStore';
 import { usePostStore } from '../../store/postStore';
+import { useTranslation } from '../../../../shared/i18n';
+import { useLanguageStore } from '../../../../features/theme/store/languageStore';
+
+// 임시 타입 선언 (실제 타입 정의에 맞게 수정 필요)
+type PostFilter = {
+  page?: number;
+  size?: number;
+  sort?: string;
+  postType?: PostType | string;
+  region?: string;
+  category?: string;
+  tags?: string[];
+  location?: string;
+  tag?: string;
+  sortBy?: 'latest' | 'popular';
+  searchBy?: string;
+  keyword?: string;
+  resetSearch?: boolean;
+};
 
 // 임시 타입 선언 (실제 타입 정의에 맞게 수정 필요)
 type PostFilter = {
@@ -52,8 +71,9 @@ const PostList: React.FC<PostListProps> = ({
   loading: propLoading,
   error: propError,
   showPagination = true,
-  emptyMessage = '게시글이 없습니다. 첫 번째 게시글을 작성해보세요!',
+  emptyMessage,
 }) => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   // 초기 로드 상태를 추적하는 ref
@@ -72,6 +92,19 @@ const PostList: React.FC<PostListProps> = ({
 
   // 현재 페이지 로컬 상태 (UI 표시용)
   const [currentPage, setCurrentPage] = useState(1);
+
+  // 언어 변경 감지를 위한 상태
+  const { language } = useLanguageStore();
+  const [lastLanguage, setLastLanguage] = useState(language);
+
+  // 언어 변경 시 초기 로드 상태 초기화
+  useEffect(() => {
+    if (language !== lastLanguage) {
+      console.log('[DEBUG] PostList - 언어 변경으로 초기 로드 상태 초기화');
+      hasInitialDataLoaded.current = false;
+      setLastLanguage(language);
+    }
+  }, [language, lastLanguage]);
 
   // 초기 데이터 로드 - 한 번만 실행되도록 수정
   useEffect(() => {
@@ -115,35 +148,39 @@ const PostList: React.FC<PostListProps> = ({
 
   // 페이지 변경 처리
   const handlePageChange = (event: React.ChangeEvent<unknown>, page: number) => {
-    console.log('[DEBUG] 페이지 변경:', page);
+    console.log('[DEBUG] 페이지 변경 요청:', page);
 
-    // 현재 UI 표시용 페이지 업데이트
+    // 외부에서 posts를 받은 경우 페이지네이션 처리 안함
+    if (propPosts) {
+      console.log('[DEBUG] 외부 posts 사용 중, 페이지네이션 무시');
+      return;
+    }
+
+    // 현재 페이지와 같으면 무시
+    if (page === currentPage) {
+      console.log('[DEBUG] 같은 페이지 요청, 무시');
+      return;
+    }
+
+    // UI 상태 즉시 업데이트
     setCurrentPage(page);
 
-    // API 페이지는 0부터 시작
-    const apiPage = page - 1;
+    // 스토어의 필터 업데이트 및 데이터 요청
+    const newFilter = {
+      ...postFilter,
+      page: page - 1, // 0-based로 변환
+    };
 
-    try {
-      // 콘솔에 현재 필터 상태 기록
-      console.log('[DEBUG] 페이지 변경 - 현재 필터 상태:', postFilter);
-
-      // 스토어를 통해 데이터 요청
-      fetchPosts({
-        ...postFilter,
-        page: apiPage,
-        size: 6, // 페이지당 6개 아이템으로 고정
-      });
-
-      // 페이지 변경 후 맨 위로 스크롤
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch (error) {
-      console.error('페이지 변경 중 오류 발생:', error);
-    }
+    console.log('[DEBUG] 새 필터로 데이터 요청:', newFilter);
+    setPostFilter(newFilter);
+    fetchPosts(newFilter);
   };
 
   // 게시글 목록 조회 함수 (필터 변경 시 사용)
   const handleFilterChange = (newFilter: Partial<PostFilter>) => {
-    console.log('필터 변경:', newFilter);
+    console.log('[DEBUG] 필터 변경:', newFilter);
+
+    // 필터 변경 시 첫 페이지로 이동
     (fetchPosts as any)({
       ...postFilter,
       ...newFilter,
@@ -162,25 +199,34 @@ const PostList: React.FC<PostListProps> = ({
   // 이전 게시글 데이터 저장 - 로딩 중에도 이전 데이터 표시
   const [prevPosts, setPrevPosts] = useState<PostSummary[]>([]);
 
-  // 로딩 시작 시 이전 게시글 저장
+  // 로딩 시작 시 이전 게시글 저장 - 언어 변경 시에도 데이터 유지
   useEffect(() => {
     if (!loading && posts.length > 0) {
       setPrevPosts(posts);
     }
   }, [loading, posts]);
 
+  // 언어 변경 시에도 이전 데이터 유지하기 위한 추가 로직
+  useEffect(() => {
+    // 로딩이 시작되었지만 posts가 비어있고 prevPosts가 있는 경우
+    // (언어 변경으로 인한 캐시 초기화 상황)
+    if (loading && posts.length === 0 && prevPosts.length > 0) {
+      console.log('[DEBUG] 언어 변경으로 인한 로딩 중 - 이전 데이터 유지');
+      // prevPosts를 그대로 유지 (업데이트하지 않음)
+    }
+  }, [loading, posts.length, prevPosts.length]);
+
   // 디버깅을 위한 임시 게시글 데이터
   const mockPosts: PostSummary[] = [
     {
       postId: 999,
-      title: '테스트 게시글 (목업)',
-      content:
-        '렌더링 확인용 테스트 게시글입니다. 정상적으로 표시되면 스타일과 레이아웃이 작동하는 것입니다.',
+      title: t('community.posts.testPost'),
+      content: t('community.posts.testPostContent'),
       category: '모임',
-      tags: [{ tagId: 1, name: '테스트', category: '자유' }],
+      tags: [{ tagId: 1, name: t('community.tags.test'), category: '자유' }],
       writer: {
         userId: 1,
-        nickname: '테스트유저',
+        nickname: t('community.posts.testUser'),
         profileImage: '',
         role: 'USER',
       },
@@ -194,17 +240,42 @@ const PostList: React.FC<PostListProps> = ({
   ];
 
   // 실제로 표시할 게시글 결정
-  // 로딩 중이면 이전 게시글 사용, 데이터 없으면 모의 데이터 사용
-  const displayPosts = loading
-    ? prevPosts.length > 0
-      ? prevPosts
-      : posts
-    : posts && posts.length > 0
-      ? posts
-      : mockPosts;
+  // 언어 변경 시에는 항상 기존 데이터를 우선 표시
+  const displayPosts = (() => {
+    // 로딩 중인 경우
+    if (loading) {
+      // 이전 데이터가 있으면 이전 데이터 사용
+      if (prevPosts.length > 0) {
+        return prevPosts;
+      }
+      // 현재 데이터가 있으면 현재 데이터 사용
+      if (posts.length > 0) {
+        return posts;
+      }
+      // 둘 다 없으면 빈 배열
+      return [];
+    }
+
+    // 로딩이 끝난 경우
+    if (posts && posts.length > 0) {
+      return posts;
+    }
+
+    // 새로운 데이터가 없고 이전 데이터가 있으면 이전 데이터 유지
+    if (prevPosts.length > 0) {
+      console.log('[DEBUG] 새 데이터 없음 - 이전 데이터 유지:', prevPosts.length, '개');
+      return prevPosts;
+    }
+
+    // 모든 데이터가 없으면 빈 배열
+    return [];
+  })();
 
   // 로딩 중이지만 표시할 데이터가 있는 경우
   const isDataAvailableDuringLoading = loading && prevPosts.length > 0;
+
+  // 기본 emptyMessage 설정
+  const defaultEmptyMessage = t('community.messages.noPosts');
 
   return (
     <Box sx={{ width: '100%', mb: 4 }}>
@@ -228,10 +299,12 @@ const PostList: React.FC<PostListProps> = ({
         }}
       >
         {loading && !isDataAvailableDuringLoading
-          ? '게시글을 불러오는 중...'
+          ? t('community.messages.loadingPosts')
           : error
-            ? `오류: ${error}`
-            : `총 ${totalItems || displayPosts.length}개의 게시글이 있습니다.`}
+            ? `${t('common.error')}: ${error}`
+            : t('community.messages.totalPosts', {
+                count: (totalItems || displayPosts.length).toString(),
+              })}
       </Typography>
       {/*</Paper>*/}
 
@@ -300,7 +373,7 @@ const PostList: React.FC<PostListProps> = ({
               maxWidth: '80%',
             }}
           >
-            {emptyMessage}
+            {emptyMessage || defaultEmptyMessage}
           </Typography>
         </Box>
       )}
