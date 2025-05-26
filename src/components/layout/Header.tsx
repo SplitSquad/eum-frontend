@@ -38,6 +38,7 @@ import { SUPPORTED_LANGUAGES } from '@/features/onboarding/components/common/Lan
 import { getGoogleAuthUrl } from '@/features/auth/api/authApi';
 import { AlarmCenter } from '@/components/notification/AlarmCenter';
 import { InfoIcon } from 'lucide-react';
+import { shouldForwardProp } from '@mui/system';
 
 /**-----------------------------------웹로그 관련------------------------------------ **/
 // userId 꺼내오는 헬퍼
@@ -161,11 +162,13 @@ const StyledAppBar = styled(AppBar)<{ season: string }>`
   }
 `;
 
-const NavButton = styled(Button)<{ season: string; active: boolean }>`
+const NavButton = styled(Button, {
+  shouldForwardProp: prop => prop !== 'isactive',
+})<{ season: string; isactive: boolean }>`
   margin: 0 8px;
-  font-weight: ${props => (props.active ? '600' : '400')};
+  font-weight: ${props => (props.isactive ? '600' : '400')};
   color: ${props =>
-    props.active ? seasonalColors[props.season]?.secondary : seasonalColors[props.season]?.text};
+    props.isactive ? seasonalColors[props.season]?.secondary : seasonalColors[props.season]?.text};
   padding: 6px 16px 2px;
   position: relative;
   transition: all 0.3s ease;
@@ -278,11 +281,13 @@ const DrawerHeader = styled(Box)<{ season: string }>`
   background-color: ${props => seasonalColors[props.season]?.primary};
 `;
 
-const DrawerItem = styled(ListItem)<{ season: string; active: boolean }>`
+const DrawerItem = styled(ListItem, {
+  shouldForwardProp: prop => prop !== 'isactive',
+})<{ season: string; isactive: boolean }>`
   margin: 4px 8px;
   border-radius: 8px;
   background-color: ${props =>
-    props.active ? seasonalColors[props.season]?.hover : 'transparent'};
+    props.isactive ? seasonalColors[props.season]?.hover : 'transparent'};
 
   &:hover {
     background-color: ${props => seasonalColors[props.season]?.hover};
@@ -290,13 +295,17 @@ const DrawerItem = styled(ListItem)<{ season: string; active: boolean }>`
 
   .MuiListItemIcon-root {
     color: ${props =>
-      props.active ? seasonalColors[props.season]?.secondary : seasonalColors[props.season]?.text};
+      props.isactive
+        ? seasonalColors[props.season]?.secondary
+        : seasonalColors[props.season]?.text};
   }
 
   .MuiListItemText-primary {
     color: ${props =>
-      props.active ? seasonalColors[props.season]?.secondary : seasonalColors[props.season]?.text};
-    font-weight: ${props => (props.active ? '600' : '400')};
+      props.isactive
+        ? seasonalColors[props.season]?.secondary
+        : seasonalColors[props.season]?.text};
+    font-weight: ${props => (props.isactive ? '600' : '400')};
   }
 `;
 
@@ -560,7 +569,7 @@ function Header({
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
-  const isActive = (path: string) =>
+  const isactive = (path: string) =>
     location.pathname === path || location.pathname.startsWith(path + '/');
 
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -681,7 +690,7 @@ function Header({
                         >
                           <MenuNavButton
                             season={season}
-                            active={isActive(item.path)}
+                            isactive={isactive(item.path)}
                             onClick={() =>
                               trackedNavigate(
                                 item.path, // ClickPath
@@ -734,7 +743,7 @@ function Header({
                       ) : (
                         <MenuNavButton
                           season={season}
-                          active={isActive(item.path)}
+                          isactive={isactive(item.path)}
                           onClick={() =>
                             trackedNavigate(
                               item.path, // ClickPath
@@ -780,6 +789,16 @@ function Header({
 
                     {isProfileMenuOpen && (
                       <ProfileDropdown season={season}>
+                        {/* 관리자일 때만 보이는 관리자 페이지 버튼 */}
+                        {user?.role === 'ROLE_ADMIN' && (
+                          <ProfileDropdownItem
+                            season={season}
+                            onClick={() => handleMenuItemClick('/adminpage')}
+                          >
+                            <AccountCircleIcon />
+                            관리자 페이지
+                          </ProfileDropdownItem>
+                        )}
                         <ProfileDropdownItem
                           season={season}
                           onClick={() => handleMenuItemClick('/mypage')}
@@ -800,7 +819,7 @@ function Header({
                     onClick={handleGoogleLogin}
                     startIcon={<LoginIcon />}
                     season={season}
-                    active={false}
+                    isactive={false}
                   >
                     {t('common.login')}
                   </LoginNavButton>
@@ -860,7 +879,7 @@ function Header({
                   <DrawerItem
                     key={item.path}
                     season={season}
-                    active={isActive(item.path)}
+                    isactive={isactive(item.path)}
                     onClick={() => handleNavigation(item.path)}
                   >
                     <ListItemIcon>{item.icon}</ListItemIcon>
@@ -869,14 +888,14 @@ function Header({
                 ))}
                 <Divider />
                 {isAuthenticated ? (
-                  <DrawerItem season={season} active={false} onClick={handleLogoutClick}>
+                  <DrawerItem season={season} isactive={false} onClick={handleLogoutClick}>
                     <ListItemIcon>
                       <LogoutIcon />
                     </ListItemIcon>
                     <ListItemText primary={t('common.logout')} />
                   </DrawerItem>
                 ) : (
-                  <DrawerItem season={season} active={false} onClick={handleGoogleLogin}>
+                  <DrawerItem season={season} isactive={false} onClick={handleGoogleLogin}>
                     <ListItemIcon>
                       <LoginIcon />
                     </ListItemIcon>

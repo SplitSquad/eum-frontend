@@ -20,7 +20,7 @@ const Home: React.FC = () => {
   const { isAuthenticated, user } = useAuthStore();
   const isOnBoardDone = user?.isOnBoardDone;
   const { season } = useThemeStore();
-
+  console.log(user);
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flexGrow: 1 }}>
       {/* 첫 번째 행: 2개 위젯 (UserStatusWidget, UserPreferenceWidget) */}

@@ -48,15 +48,15 @@ const FloatingNav = styled('nav')<{ visible: boolean }>`
   animation: ${props => (props.visible ? fadeIn : fadeOut)} 0.4s both;
 `;
 
-const NavButton = styled('button')<{ active?: boolean }>`
+const NavButton = styled('button')<{ isactive?: boolean }>`
   background: none;
   border: none;
   outline: none;
   cursor: pointer;
   padding: 8px;
   border-radius: 50%;
-  color: ${({ active }) => (active ? '#1976d2' : '#666')};
-  background: ${({ active }) => (active ? 'rgba(25, 118, 210, 0.08)' : 'none')};
+  color: ${({ isactive }) => (isactive ? '#1976d2' : '#666')};
+  background: ${({ isactive }) => (isactive ? 'rgba(25, 118, 210, 0.08)' : 'none')};
   transition:
     background 0.2s,
     color 0.2s;
@@ -129,7 +129,7 @@ const FloatingNavigator = ({ isHeaderVisible }: FloatingNavigatorProps) => {
       {navItems.map(item => (
         <Tooltip key={item.path} title={item.label} placement="right" arrow>
           <NavButton
-            active={location.pathname.startsWith(item.path)}
+            isactive={location.pathname.startsWith(item.path)}
             onClick={() => navigate(item.path)}
             aria-label={item.label}
           >

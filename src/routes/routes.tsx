@@ -5,7 +5,7 @@ import { AuthGuard, GuestGuard, RoleGuard, requireAuth, requireUser } from './gu
 import { OAuthCallbackPage, AccessDeniedPage } from '../features/auth';
 import LoginPage from '../pages/LoginPage';
 import { LanguageProvider } from '../features/theme';
-import AiAssistant from '@/tests/unit/componentPageTest/testPages/AiAssistant';
+import AiAssistant from '@/pages/AiAssistant';
 import SignUpPage from '@/features/auth/pages/SignUpPage';
 import Loading from '@/pages/Loading';
 
@@ -18,8 +18,8 @@ import { DebateRoutes } from '../features/debate';
 
 // 마이페이지 기능 임포트
 import { MypageRoutes } from '../features/mypage';
-import NormalLogin from '@/features/auth/pages/NormalLogin';
 import { InfoRoutes } from '@/features/info/utils';
+import NormalLogin from '@/features/auth/pages/NormalLogin';
 
 // 관리자페이지 기능 임포트
 import { AdminpageRoutes } from '../features/adminpage';
@@ -32,19 +32,6 @@ const AppLayout = lazy(() => import('../app/App'));
 
 // 페이지 컴포넌트 지연 로딩
 const Home = lazy(() => import('../pages/Home'));
-// const Login = lazy(() => import('../pages/Login')); // 주석 처리 (우리 로그인 페이지로 대체)
-// const Community = lazy(() => import('../pages/Community')); // 주석 처리 (features/community로 대체)
-// const CommunityDetail = lazy(() => import('../pages/CommunityDetail')); // 주석 처리 (features/community로 대체)
-/* 아직 구현되지 않은 페이지들 주석 처리
-const Debate = lazy(() => import('../pages/Debate'));
-const DebateDetail = lazy(() => import('../pages/DebateDetail'));
-const Info = lazy(() => import('../pages/Info'));
-const InfoDetail = lazy(() => import('../pages/InfoDetail'));
-const AiAssistant = lazy(() => import('../pages/AiAssistant'));
-// const MyPage = lazy(() => import('../pages/MyPage')); // 새로운 마이페이지 모듈로 대체
-const Search = lazy(() => import('../pages/Search'));
-const Onboarding = lazy(() => import('../pages/Onboarding'));
-*/
 const NotFound = lazy(() => import('../pages/NotFound'));
 const Init = lazy(() => import('../pages/LoadingOverLay'));
 
@@ -132,17 +119,21 @@ const router = createBrowserRouter([
           {
             path: '/home',
             element: (
-              <Suspense fallback={<LoadingFallback />}>
-                <Home />
-              </Suspense>
+              <AuthGuard>
+                <Suspense fallback={<LoadingFallback />}>
+                  <Home />
+                </Suspense>
+              </AuthGuard>
             ),
           },
           {
             path: '/dashboard',
             element: (
-              <Suspense fallback={<LoadingFallback />}>
-                <Home />
-              </Suspense>
+              <AuthGuard>
+                <Suspense fallback={<LoadingFallback />}>
+                  <Home />
+                </Suspense>
+              </AuthGuard>
             ),
           },
           {
@@ -185,6 +176,16 @@ const router = createBrowserRouter([
               </Suspense>
             ),
           },
+          {
+            path: '/adminpage/*',
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <RoleGuard requiredRole="ROLE_ADMIN">
+                  <AdminpageRoutes />
+                </RoleGuard>
+              </Suspense>
+            ),
+          },
         ],
       },
       {
@@ -192,16 +193,6 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<LoadingFallback />}>
             <AccessDeniedPage />
-          </Suspense>
-        ),
-      },
-      {
-        path: '/adminpage/*',
-        element: (
-          <Suspense fallback={<LoadingFallback />}>
-            {/* <AuthGuard> */}
-            <AdminpageRoutes />
-            {/* </AuthGuard> */}
           </Suspense>
         ),
       },

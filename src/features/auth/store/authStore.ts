@@ -27,14 +27,14 @@ export interface User {
  * TODO: 상훈님이랑 협의하여 전역 상태 관리 방식으로 리팩토링 필요
  */
 interface AuthState {
-  isAuthenticated: boolean;
-  user: User | null;
+  isAuthenticated: boolean | undefined;
+  user: User | undefined;
   token: string | null;
   isLoading: boolean;
   error: string | null;
 
   // 액션
-  setUser: (user: User | null) => void;
+  setUser: (user: User | undefined) => void;
   setToken: (token: string | null) => void;
   setAuthenticated: (isAuthenticated: boolean) => void;
   setLoading: (isLoading: boolean) => void;
@@ -84,8 +84,8 @@ const getUserIdFromToken = (token: string): number => {
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
-      isAuthenticated: false,
-      user: null,
+      isAuthenticated: undefined,
+      user: undefined,
       token: null,
       isLoading: false,
       error: null,
@@ -334,7 +334,7 @@ export const useAuthStore = create<AuthState>()(
         // 상태 초기화
         set({
           isAuthenticated: false,
-          user: null,
+          user: undefined,
           token: null,
           error: null,
         });
@@ -349,6 +349,13 @@ export const useAuthStore = create<AuthState>()(
         user: state.user,
         token: state.token,
       }),
+      // hydration 후 토큰 없으면 인증 해제
+      onRehydrateStorage: () => state => {
+        const storedToken = getToken() || localStorage.getItem('auth_token');
+        if (!storedToken) {
+          state?.clearAuthState();
+        }
+      },
     }
   )
 );

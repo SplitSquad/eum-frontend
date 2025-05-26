@@ -6,6 +6,7 @@ import Slide1 from '@/components/loading/Slide1';
 import Slide2 from '@/components/loading/Slide2';
 import Slide3 from '@/components/loading/Slide3';
 import LoadingAnimation from '../components/feedback/LoadingAnimation';
+import { useAuthStore } from '@/features/auth';
 
 type Props = {
   isLoaded?: boolean;
@@ -16,14 +17,21 @@ const LoadingOverlay = ({ isLoaded = true }: Props) => {
   const { currentIndex, hasCompletedAll } = useIntroSlider(isLoaded, totalSlides);
   const navigate = useNavigate();
   const [doorsOpen, setDoorsOpen] = useState(false);
+  const { isAuthenticated, isLoading, user } = useAuthStore();
 
-  // 조건: 로딩 완료 && 슬라이드 전부 돌았으면 로그인 화면으로 이동
+  // 조건: 로딩 완료 && 슬라이드 전부 돌았으면 로그인 상태에 따라 분기
   useEffect(() => {
     if (hasCompletedAll) {
-      const timeout = setTimeout(() => navigate('/home'), 800);
+      const timeout = setTimeout(() => {
+        if (isAuthenticated) {
+          navigate('/home');
+        } else {
+          navigate('/google-login');
+        }
+      }, 800);
       return () => clearTimeout(timeout);
     }
-  }, [hasCompletedAll, navigate]);
+  }, [hasCompletedAll, isAuthenticated, isLoading, user, navigate]);
 
   useEffect(() => {}, [isLoaded]);
 

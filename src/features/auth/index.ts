@@ -7,7 +7,7 @@ export { default as GoogleLoginButton } from './components/GoogleLoginButton';
 
 // 페이지
 //export { default as LoginPage } from '../../pages/LoginPage';
-export { default as AccessDeniedPage } from './components/AccessDeniedPage';
+export { default as AccessDeniedPage } from '../../pages/AccessDeniedPage';
 export { default as OAuthCallbackPage } from './pages/OAuthCallbackPage';
 
 // 상태 관리

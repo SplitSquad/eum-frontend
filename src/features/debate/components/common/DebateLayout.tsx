@@ -3,13 +3,6 @@ import { Box, Container, styled, Typography, useTheme, useMediaQuery } from '@mu
 import Header, { HeaderProps } from './Header';
 import Toast from './Toast';
 
-const LayoutRoot = styled(Box)({
-  display: 'flex',
-  flexDirection: 'column',
-  minHeight: '20vh',
-  height: 'auto',
-});
-
 const LayoutContent = styled(Box)({
   display: 'flex',
   flex: 1,
