@@ -52,7 +52,8 @@ const ko = {
     finish: '완료',
     saving: '저장 중...',
     languageAbility: '언어 능력',
-    languageAbilityDescription: '한국어 구사 능력을 선택해주세요. 언어 능력에 따라 여행 가이드와 번역 지원을 제공해드립니다.',
+    languageAbilityDescription:
+      '한국어 구사 능력을 선택해주세요. 언어 능력에 따라 여행 가이드와 번역 지원을 제공해드립니다.',
     languageLevel: {
       basic: '기본',
       basicDescription: '인사와 간단한 표현 가능',
@@ -61,7 +62,8 @@ const ko = {
       advanced: '고급',
       advancedDescription: '대부분의 상황에서 자연스러운 대화 가능',
     },
-    languageNote: '한국어 실력이 없어도 괜찮습니다. 여행에 필요한 번역 및 언어 지원 정보를 제공해드립니다.',
+    languageNote:
+      '한국어 실력이 없어도 괜찮습니다. 여행에 필요한 번역 및 언어 지원 정보를 제공해드립니다.',
   },
   buttons: {
     next: '다음',
@@ -245,7 +247,7 @@ const ko = {
     },
     analysis: {
       community: '커뮤니티 취향 분석',
-      debate: '토론 관심사 분석', 
+      debate: '토론 관심사 분석',
       info: '정보 관심분야 분석',
       default: '나의 취향 분석',
       recentActivity: '최근 3개월 활동 기준',
@@ -388,7 +390,8 @@ const ko = {
       postTypeRequired: '게시글 유형을 선택하세요',
       categoryRequired: '카테고리를 선택하세요',
       testPost: '테스트 게시글 (목업)',
-      testPostContent: '렌더링 확인용 테스트 게시글입니다. 정상적으로 표시되면 스타일과 레이아웃이 작동하는 것입니다.',
+      testPostContent:
+        '렌더링 확인용 테스트 게시글입니다. 정상적으로 표시되면 스타일과 레이아웃이 작동하는 것입니다.',
       testUser: '테스트유저',
       noDate: '날짜 없음',
     },
@@ -596,7 +599,8 @@ const ko = {
   },
   report: {
     title: '콘텐츠 신고하기',
-    description: '신고 사유를 선택하고 추가 설명을 입력해주세요. 허위 신고의 경우 서비스 이용에 제한이 있을 수 있습니다.',
+    description:
+      '신고 사유를 선택하고 추가 설명을 입력해주세요. 허위 신고의 경우 서비스 이용에 제한이 있을 수 있습니다.',
     reasonLabel: '신고 사유',
     reasonRequired: '신고 사유를 선택해주세요',
     additionalDescription: '추가 설명 (선택사항)',
@@ -615,6 +619,47 @@ const ko = {
       illegal: '불법 정보',
       other: '기타',
     },
+  },
+  info: {
+    title: '정보',
+    koreaLifeGuide: '한국 생활 가이드',
+    description: '한국 생활에 필요한 다양한 정보를 제공합니다.',
+    all: '전체',
+    education: '교육',
+    financeTaxes: '금융/세금',
+    visaLaw: '비자/법률',
+    shopping: '쇼핑',
+    medicalHealth: '의료/건강',
+    residentialRealestate: '주거/부동산',
+    employmentWorkplace: '취업/직장',
+    create: '작성하기',
+    infoCreate: '정보 작성하기',
+    infoEdit: '정보 수정하기',
+    titlePlaceholder: '제목을 입력하세요.',
+    categoryPlaceholder: '카테고리를 선택하세요.',
+    edit: '수정하기',
+    editFailed: '수정을 실패했습니다.',
+    createFailed: '작성을 실패했습니다.',
+    view: '조회수',
+    delete: '삭제하기',
+    deleteFailed: '삭제를 실패했습니다.',
+    deleteConfirm: '정말 삭제하시겠습니까?',
+    transportation: '교통',
+    sort: {
+      latest: '최신순',
+      views: '인기순',
+    },
+    views: '조회수: {{count}}',
+    searchPlaceholder: '제목을 검색하세요.',
+    searchButton: '검색',
+  },
+  sort: {
+    latest: '최신순',
+    views: '인기순',
+  },
+  pagination: {
+    prev: '이전',
+    next: '다음',
   },
 };
 

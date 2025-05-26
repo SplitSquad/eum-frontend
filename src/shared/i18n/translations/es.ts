@@ -40,9 +40,11 @@ const es = {
     loginWithGoogleButton: 'Iniciar sesión con cuenta de Google',
     loginWithGeneral: 'Iniciar sesión con cuenta general',
     loginError: 'Ocurrió un error durante el procesamiento del inicio de sesión',
-    googleLoginError: 'Ocurrió un error durante el inicio de sesión de Google. Por favor, inténtalo de nuevo',
+    googleLoginError:
+      'Ocurrió un error durante el inicio de sesión de Google. Por favor, inténtalo de nuevo',
     invalidLoginInfo: 'La información de inicio de sesión es inválida',
-    termsAgreement: 'Al iniciar sesión, aceptas los Términos de Servicio y la Política de Privacidad',
+    termsAgreement:
+      'Al iniciar sesión, aceptas los Términos de Servicio y la Política de Privacidad',
     springMemories: 'Recuerdos de primavera',
   },
   onboarding: {
@@ -52,7 +54,8 @@ const es = {
     finish: 'Finalizar',
     saving: 'Guardando...',
     languageAbility: 'Habilidad lingüística',
-    languageAbilityDescription: 'Por favor seleccione su nivel de coreano. Proporcionaremos guías de viaje y soporte de traducción basado en sus habilidades lingüísticas.',
+    languageAbilityDescription:
+      'Por favor seleccione su nivel de coreano. Proporcionaremos guías de viaje y soporte de traducción basado en sus habilidades lingüísticas.',
     languageLevel: {
       basic: 'Básico',
       basicDescription: 'Puede manejar saludos y expresiones simples',
@@ -61,7 +64,8 @@ const es = {
       advanced: 'Avanzado',
       advancedDescription: 'Puede manejar conversaciones naturales en la mayoría de situaciones',
     },
-    languageNote: 'Está bien si no hablas coreano. Proporcionaremos información de traducción y soporte de idioma necesaria para el viaje.',
+    languageNote:
+      'Está bien si no hablas coreano. Proporcionaremos información de traducción y soporte de idioma necesaria para el viaje.',
   },
   buttons: {
     next: 'Siguiente',
@@ -109,7 +113,8 @@ const es = {
   },
   notFound: {
     title: 'Página no encontrada',
-    description: 'La página solicitada no existe, ha sido movida o está temporalmente no disponible.',
+    description:
+      'La página solicitada no existe, ha sido movida o está temporalmente no disponible.',
     goHome: 'Volver al inicio',
   },
   dashboard: {
@@ -590,7 +595,8 @@ const es = {
   },
   report: {
     title: 'Reportar Contenido',
-    description: 'Por favor selecciona una razón para reportar y proporciona detalles adicionales. Los reportes falsos pueden resultar en restricciones del servicio.',
+    description:
+      'Por favor selecciona una razón para reportar y proporciona detalles adicionales. Los reportes falsos pueden resultar en restricciones del servicio.',
     reasonLabel: 'Razón del Reporte',
     reasonRequired: 'Por favor selecciona una razón para el reporte',
     additionalDescription: 'Descripción Adicional (Opcional)',
@@ -610,6 +616,38 @@ const es = {
       other: 'Otro',
     },
   },
+  info: {
+    koreaLifeGuide: 'Guía de Vida en Corea',
+    searchPlaceholder: 'Ingrese término de búsqueda',
+    view: 'Ver',
+    sort: {
+      latest: 'Más reciente',
+      views: 'Más visto',
+    },
+    views: 'Vistas: {{count}}',
+    create: 'Escribir publicación',
+    all: 'Todo',
+    education: 'Educación',
+    financeTaxes: 'Finanzas/Impuestos',
+    visaLaw: 'Visado/Ley',
+    shopping: 'Compras',
+    medicalHealth: 'Medicina/Salud',
+    residentialRealestate: 'Vivienda/Inmobiliaria',
+    employmentWorkplace: 'Empleo/Lugar de trabajo',
+    transportation: 'Transporte',
+  },
+  sort: {
+    latest: 'Más recientes',
+    views: 'Más populares',
+  },
+  views: 'Vistas: {{count}}',
+  create: 'Crear publicación',
+  searchPlaceholder: 'Buscar publicaciones...',
+  searchButton: 'Buscar',
+  pagination: {
+    prev: 'Anterior',
+    next: 'Siguiente',
+  },
 };
 
-export default es; 
+export default es;

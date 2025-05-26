@@ -1,3 +1,5 @@
+import { tr } from 'date-fns/locale';
+
 const zh = {
   common: {
     home: '首页',
@@ -52,7 +54,8 @@ const zh = {
     finish: '完成',
     saving: '保存中...',
     languageAbility: '语言能力',
-    languageAbilityDescription: '请选择您的韩语水平。我们将根据您的语言能力提供旅游指南和翻译支持。',
+    languageAbilityDescription:
+      '请选择您的韩语水平。我们将根据您的语言能力提供旅游指南和翻译支持。',
     languageLevel: {
       basic: '基础',
       basicDescription: '能够处理问候和简单表达',
@@ -593,6 +596,38 @@ const zh = {
       illegal: '非法信息',
       other: '其他',
     },
+  },
+  info: {
+    koreaLifeGuide: '韩国生活指南',
+    searchPlaceholder: '输入搜索词',
+    view: '查看',
+    sort: {
+      latest: '最新',
+      views: '最多浏览',
+    },
+    views: '浏览数：{{count}}',
+    create: '写文章',
+    all: '全部',
+    education: '教育',
+    financeTaxes: '金融/税务',
+    visaLaw: '签证/法律',
+    shopping: '购物',
+    medicalHealth: '医疗/健康',
+    residentialRealestate: '居住/房地产',
+    employmentWorkplace: '就业/职场',
+    transportation: '交通',
+  },
+  sort: {
+    latest: '最新',
+    views: '最受欢迎',
+  },
+  views: '浏览量: {{count}}',
+  create: '写文章',
+  searchPlaceholder: '搜索帖子...',
+  searchButton: '搜索',
+  pagination: {
+    prev: '上一页',
+    next: '下一页',
   },
 };
 

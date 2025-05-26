@@ -1,3 +1,5 @@
+import { tr } from 'date-fns/locale';
+
 const ja = {
   common: {
     home: 'ホーム',
@@ -52,7 +54,8 @@ const ja = {
     finish: '完了',
     saving: '保存中...',
     languageAbility: '言語能力',
-    languageAbilityDescription: '韓国語のレベルを選択してください。言語能力に応じて旅行ガイドと翻訳サポートを提供いたします。',
+    languageAbilityDescription:
+      '韓国語のレベルを選択してください。言語能力に応じて旅行ガイドと翻訳サポートを提供いたします。',
     languageLevel: {
       basic: '基本',
       basicDescription: '挨拶と簡単な表現ができる',
@@ -61,7 +64,8 @@ const ja = {
       advanced: '上級',
       advancedDescription: 'ほとんどの状況で自然な会話ができる',
     },
-    languageNote: '韓国語ができなくても大丈夫です。旅行に必要な翻訳と言語サポート情報を提供いたします。',
+    languageNote:
+      '韓国語ができなくても大丈夫です。旅行に必要な翻訳と言語サポート情報を提供いたします。',
   },
   buttons: {
     next: '次へ',
@@ -574,7 +578,8 @@ const ja = {
   },
   report: {
     title: 'コンテンツを報告',
-    description: '報告理由を選択し、追加の詳細を入力してください。虚偽の報告はサービス利用に制限がかかる場合があります。',
+    description:
+      '報告理由を選択し、追加の詳細を入力してください。虚偽の報告はサービス利用に制限がかかる場合があります。',
     reasonLabel: '報告理由',
     reasonRequired: '報告理由を選択してください',
     additionalDescription: '追加説明（任意）',
@@ -593,6 +598,38 @@ const ja = {
       illegal: '違法情報',
       other: 'その他',
     },
+  },
+  info: {
+    koreaLifeGuide: '韓国生活ガイド',
+    searchPlaceholder: '検索語を入力',
+    view: '閲覧',
+    sort: {
+      latest: '最新順',
+      views: '閲覧数順',
+    },
+    views: '閲覧数: {{count}}',
+    create: '投稿する',
+    all: 'すべて',
+    education: '教育',
+    financeTaxes: '金融／税金',
+    visaLaw: 'ビザ／法律',
+    shopping: 'ショッピング',
+    medicalHealth: '医療／健康',
+    residentialRealestate: '住居／不動産',
+    employmentWorkplace: '雇用／職場',
+    transportation: '交通',
+  },
+  sort: {
+    latest: '最新',
+    views: '人気順',
+  },
+  views: '閲覧数: {{count}}',
+  create: '投稿作成',
+  searchPlaceholder: '投稿を検索...',
+  searchButton: '検索',
+  pagination: {
+    prev: '前へ',
+    next: '次へ',
   },
 };
 

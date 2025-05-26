@@ -1,3 +1,6 @@
+import { tr } from 'date-fns/locale';
+import { t } from 'i18next';
+
 const de = {
   common: {
     home: 'Startseite',
@@ -42,7 +45,8 @@ const de = {
     loginError: 'Fehler bei der Anmeldeverarbeitung',
     googleLoginError: 'Fehler bei der Google-Anmeldung. Bitte versuchen Sie es erneut',
     invalidLoginInfo: 'Anmeldeinformationen sind ungültig',
-    termsAgreement: 'Durch die Anmeldung stimmen Sie den Nutzungsbedingungen und der Datenschutzrichtlinie zu',
+    termsAgreement:
+      'Durch die Anmeldung stimmen Sie den Nutzungsbedingungen und der Datenschutzrichtlinie zu',
     springMemories: 'Frühlingserinnerungen',
   },
   onboarding: {
@@ -52,7 +56,8 @@ const de = {
     finish: 'Fertig',
     saving: 'Speichert...',
     languageAbility: 'Sprachfähigkeit',
-    languageAbilityDescription: 'Bitte wählen Sie Ihre koreanischen Sprachkenntnisse aus. Wir bieten Reiseführer und Übersetzungsunterstützung basierend auf Ihren Sprachfähigkeiten.',
+    languageAbilityDescription:
+      'Bitte wählen Sie Ihre koreanischen Sprachkenntnisse aus. Wir bieten Reiseführer und Übersetzungsunterstützung basierend auf Ihren Sprachfähigkeiten.',
     languageLevel: {
       basic: 'Grundlagen',
       basicDescription: 'Kann Begrüßungen und einfache Ausdrücke verwenden',
@@ -61,7 +66,8 @@ const de = {
       advanced: 'Fortgeschritten',
       advancedDescription: 'Kann in den meisten Situationen natürliche Gespräche führen',
     },
-    languageNote: 'Es ist in Ordnung, wenn Sie kein Koreanisch sprechen. Wir stellen Übersetzungs- und Sprachunterstützung für Ihre Reise zur Verfügung.',
+    languageNote:
+      'Es ist in Ordnung, wenn Sie kein Koreanisch sprechen. Wir stellen Übersetzungs- und Sprachunterstützung für Ihre Reise zur Verfügung.',
   },
   buttons: {
     next: 'Weiter',
@@ -109,7 +115,8 @@ const de = {
   },
   notFound: {
     title: 'Seite nicht gefunden',
-    description: 'Die angeforderte Seite existiert nicht, wurde verschoben oder ist vorübergehend nicht verfügbar.',
+    description:
+      'Die angeforderte Seite existiert nicht, wurde verschoben oder ist vorübergehend nicht verfügbar.',
     goHome: 'Zurück zur Startseite',
   },
   dashboard: {
@@ -555,7 +562,8 @@ const de = {
         loading: 'Bilder werden geladen...',
         error: 'Fehler beim Laden der Bilder',
         noResults: 'Keine Suchergebnisse',
-        apiKeyMissing: 'Unsplash API-Schlüssel nicht konfiguriert. Beispielbilder werden angezeigt.',
+        apiKeyMissing:
+          'Unsplash API-Schlüssel nicht konfiguriert. Beispielbilder werden angezeigt.',
       },
     },
     youtubeGallery: {
@@ -585,7 +593,8 @@ const de = {
   },
   report: {
     title: 'Inhalt Melden',
-    description: 'Bitte wählen Sie einen Grund für die Meldung und geben Sie zusätzliche Details an. Falsche Meldungen können zu Servicebeschränkungen führen.',
+    description:
+      'Bitte wählen Sie einen Grund für die Meldung und geben Sie zusätzliche Details an. Falsche Meldungen können zu Servicebeschränkungen führen.',
     reasonLabel: 'Meldegrund',
     reasonRequired: 'Bitte wählen Sie einen Meldegrund',
     additionalDescription: 'Zusätzliche Beschreibung (Optional)',
@@ -594,7 +603,8 @@ const de = {
     submit: 'Melden',
     submitting: 'Verarbeitung...',
     success: 'Die Meldung wurde eingereicht',
-    error: 'Ein Fehler ist bei der Verarbeitung der Meldung aufgetreten. Bitte versuchen Sie es erneut.',
+    error:
+      'Ein Fehler ist bei der Verarbeitung der Meldung aufgetreten. Bitte versuchen Sie es erneut.',
     loginRequired: 'Anmeldung ist für diese Funktion erforderlich.',
     reasons: {
       inappropriate: 'Unangemessener Inhalt',
@@ -605,6 +615,30 @@ const de = {
       other: 'Andere',
     },
   },
+  info: {
+    koreaLifeGuide: 'Korea Lebensführer',
+    searchPlaceholder: 'Suchbegriff eingeben',
+    view: 'Anzeigen',
+    sort: {
+      latest: 'Neueste',
+      views: 'Meist angesehen',
+    },
+    views: 'Aufrufe: {{count}}',
+    create: 'Beitrag schreiben',
+    all: 'Alle',
+    education: 'Bildung',
+    financeTaxes: 'Finanzen/Steuern',
+    visaLaw: 'Visum/Recht',
+    shopping: 'Einkaufen',
+    medicalHealth: 'Medizin/Gesundheit',
+    residentialRealestate: 'Wohnen/Immobilien',
+    employmentWorkplace: 'Beschäftigung/Arbeitsplatz',
+    transportation: 'Transport',
+  },
+  pagination: {
+    prev: 'Zurück',
+    next: 'Weiter',
+  },
 };
 
-export default de; 
+export default de;

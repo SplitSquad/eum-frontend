@@ -35,23 +35,6 @@ type PostFilter = {
   resetSearch?: boolean;
 };
 
-// 임시 타입 선언 (실제 타입 정의에 맞게 수정 필요)
-type PostFilter = {
-  page?: number;
-  size?: number;
-  sort?: string;
-  postType?: PostType | string;
-  region?: string;
-  category?: string;
-  tags?: string[];
-  location?: string;
-  tag?: string;
-  sortBy?: 'latest' | 'popular';
-  searchBy?: string;
-  keyword?: string;
-  resetSearch?: boolean;
-};
-
 interface PostListProps {
   title?: string;
   posts?: PostSummary[];

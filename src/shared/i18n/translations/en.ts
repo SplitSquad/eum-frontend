@@ -1,3 +1,5 @@
+import { tr } from 'date-fns/locale';
+
 const en = {
   common: {
     home: 'Home',
@@ -52,7 +54,8 @@ const en = {
     finish: 'Finish',
     saving: 'Saving...',
     languageAbility: 'Language Ability',
-    languageAbilityDescription: 'Please select your Korean language proficiency. We will provide travel guides and translation support based on your language ability.',
+    languageAbilityDescription:
+      'Please select your Korean language proficiency. We will provide travel guides and translation support based on your language ability.',
     languageLevel: {
       basic: 'Basic',
       basicDescription: 'Can handle greetings and simple expressions',
@@ -61,7 +64,8 @@ const en = {
       advanced: 'Advanced',
       advancedDescription: 'Can handle natural conversations in most situations',
     },
-    languageNote: 'It\'s okay if you don\'t speak Korean. We will provide translation and language support information needed for travel.',
+    languageNote:
+      "It's okay if you don't speak Korean. We will provide translation and language support information needed for travel.",
   },
   buttons: {
     next: 'Next',
@@ -109,7 +113,8 @@ const en = {
   },
   notFound: {
     title: 'Page Not Found',
-    description: 'The page you requested does not exist, has been moved, or is temporarily unavailable.',
+    description:
+      'The page you requested does not exist, has been moved, or is temporarily unavailable.',
     goHome: 'Go Back Home',
   },
   dashboard: {
@@ -152,7 +157,7 @@ const en = {
       activeStatus: 'Active',
       noActivity: 'No recent activity',
       newBadgeEarned: 'New Badge Earned',
-      weatherBasedRecommendations: 'Activities perfect for today\'s weather',
+      weatherBasedRecommendations: "Activities perfect for today's weather",
       moreRecommendations: 'View More Recommendations',
       notificationSettings: 'Notification Settings',
       notificationDescription: 'Receive important events and notifications',
@@ -388,7 +393,8 @@ const en = {
       postTypeRequired: 'Select post type',
       categoryRequired: 'Select category',
       testPost: 'Test Post (Mock)',
-      testPostContent: 'This is a test post for rendering verification. If displayed correctly, styles and layout are working.',
+      testPostContent:
+        'This is a test post for rendering verification. If displayed correctly, styles and layout are working.',
       testUser: 'Test User',
       noDate: 'No date',
     },
@@ -596,7 +602,8 @@ const en = {
   },
   report: {
     title: 'Report Content',
-    description: 'Please select a reason for reporting and provide additional details. False reports may result in service restrictions.',
+    description:
+      'Please select a reason for reporting and provide additional details. False reports may result in service restrictions.',
     reasonLabel: 'Report Reason',
     reasonRequired: 'Please select a report reason',
     additionalDescription: 'Additional Description (Optional)',
@@ -615,6 +622,37 @@ const en = {
       illegal: 'Illegal Information',
       other: 'Other',
     },
+  },
+  info: {
+    koreaLifeGuide: 'Korean Life Guide',
+    searchPlaceholder: 'Enter search term',
+    view: 'View',
+    sort: {
+      latest: 'Latest',
+      views: 'Most Viewed',
+    },
+    views: 'Views: {{count}}',
+    create: 'Write Post',
+    all: 'All',
+    education: 'Education',
+    financeTaxes: 'Finance/Taxes',
+    visaLaw: 'Visa/Law',
+    shopping: 'Shopping',
+    medicalHealth: 'Medical/Health',
+    residentialRealestate: 'Residential/Real Estate',
+    employmentWorkplace: 'Employment/Workplace',
+    transportation: 'Transportation',
+  },
+  sort: {
+    latest: 'Latest',
+    views: 'Most Popular',
+  },
+  create: 'Create Post',
+  searchPlaceholder: 'Search posts...',
+  searchButton: 'Search',
+  pagination: {
+    prev: 'Previous',
+    next: 'Next',
   },
 };
 

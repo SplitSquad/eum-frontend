@@ -1,3 +1,6 @@
+import { tr } from 'date-fns/locale';
+import { t } from 'i18next';
+
 const fr = {
   common: {
     home: 'Accueil',
@@ -39,10 +42,11 @@ const fr = {
     loginDescription: 'Connectez-vous facilement avec votre compte Google',
     loginWithGoogleButton: 'Se connecter avec un compte Google',
     loginWithGeneral: 'Se connecter avec un compte général',
-    loginError: 'Une erreur s\'est produite lors du traitement de la connexion',
-    googleLoginError: 'Une erreur s\'est produite lors de la connexion Google. Veuillez réessayer',
+    loginError: "Une erreur s'est produite lors du traitement de la connexion",
+    googleLoginError: "Une erreur s'est produite lors de la connexion Google. Veuillez réessayer",
     invalidLoginInfo: 'Les informations de connexion sont invalides',
-    termsAgreement: 'En vous connectant, vous acceptez les Conditions d\'utilisation et la Politique de confidentialité',
+    termsAgreement:
+      "En vous connectant, vous acceptez les Conditions d'utilisation et la Politique de confidentialité",
     springMemories: 'Souvenirs de printemps',
   },
   onboarding: {
@@ -52,16 +56,19 @@ const fr = {
     finish: 'Terminer',
     saving: 'Enregistrement...',
     languageAbility: 'Capacité linguistique',
-    languageAbilityDescription: 'Veuillez sélectionner votre niveau de coréen. Nous fournirons des guides de voyage et un support de traduction basés sur vos capacités linguistiques.',
+    languageAbilityDescription:
+      'Veuillez sélectionner votre niveau de coréen. Nous fournirons des guides de voyage et un support de traduction basés sur vos capacités linguistiques.',
     languageLevel: {
       basic: 'Débutant',
       basicDescription: 'Peut gérer les salutations et expressions simples',
       intermediate: 'Intermédiaire',
-      intermediateDescription: 'Peut gérer les conversations quotidiennes et la communication simple',
+      intermediateDescription:
+        'Peut gérer les conversations quotidiennes et la communication simple',
       advanced: 'Avancé',
       advancedDescription: 'Peut gérer des conversations naturelles dans la plupart des situations',
     },
-    languageNote: 'Ce n\'est pas grave si vous ne parlez pas coréen. Nous fournirons des informations de traduction et de support linguistique nécessaires pour le voyage.',
+    languageNote:
+      "Ce n'est pas grave si vous ne parlez pas coréen. Nous fournirons des informations de traduction et de support linguistique nécessaires pour le voyage.",
   },
   buttons: {
     next: 'Suivant',
@@ -91,14 +98,14 @@ const fr = {
     invalidFormat: 'Format invalide',
     tooShort: 'Trop court',
     tooLong: 'Trop long',
-    emailInvalid: 'Format d\'email invalide',
+    emailInvalid: "Format d'email invalide",
     passwordTooWeak: 'Le mot de passe est trop faible',
     confirmPassword: 'Confirmer le mot de passe',
     passwordMismatch: 'Les mots de passe ne correspondent pas',
   },
   messages: {
     saveSuccess: 'Enregistré avec succès',
-    saveFailed: 'Échec de l\'enregistrement',
+    saveFailed: "Échec de l'enregistrement",
     deleteSuccess: 'Supprimé avec succès',
     deleteFailed: 'Échec de la suppression',
     updateSuccess: 'Mis à jour avec succès',
@@ -109,8 +116,9 @@ const fr = {
   },
   notFound: {
     title: 'Page non trouvée',
-    description: 'La page demandée n\'existe pas, a été déplacée ou est temporairement indisponible.',
-    goHome: 'Retour à l\'accueil',
+    description:
+      "La page demandée n'existe pas, a été déplacée ou est temporairement indisponible.",
+    goHome: "Retour à l'accueil",
   },
   dashboard: {
     greeting: {
@@ -127,7 +135,7 @@ const fr = {
     achievements: {
       explorer: 'Explorateur',
       explorerDescription: '10+ nouveaux lieux visités',
-      today: 'Aujourd\'hui',
+      today: "Aujourd'hui",
     },
     weather: {
       current: 'Météo actuelle',
@@ -145,14 +153,14 @@ const fr = {
     userStatus: {
       level: 'Niveau',
       experience: 'Expérience',
-      nextLevel: 'Jusqu\'au prochain niveau',
+      nextLevel: "Jusqu'au prochain niveau",
       recentAchievement: 'Réalisation récente',
       recentActivity: 'Activité récente',
       continuousDays: ' jours consécutifs',
       activeStatus: 'Actif',
       noActivity: 'Aucune activité récente',
       newBadgeEarned: 'Nouveau badge obtenu',
-      weatherBasedRecommendations: 'Activités parfaites pour le temps d\'aujourd\'hui',
+      weatherBasedRecommendations: "Activités parfaites pour le temps d'aujourd'hui",
       moreRecommendations: 'Voir plus de recommandations',
       notificationSettings: 'Paramètres de notification',
       notificationDescription: 'Recevoir des événements importants et des notifications',
@@ -168,7 +176,7 @@ const fr = {
         movieDescription: 'Recommandations de contenu populaire OTT',
         cookingChallenge: 'Défi culinaire',
         cookingDescription: 'Recettes parfaites pour les jours de pluie',
-        exhibitionVisit: 'Visite d\'exposition',
+        exhibitionVisit: "Visite d'exposition",
         exhibitionDescription: 'Informations sur les expositions en cours',
         cafeVisit: 'Visite de café',
         cafeDescription: 'Recommandations de cafés atmosphériques',
@@ -194,7 +202,7 @@ const fr = {
       saturday: 'Sam',
     },
     dateLabels: {
-      today: 'Aujourd\'hui',
+      today: "Aujourd'hui",
       tomorrow: 'Demain',
       dayAfterTomorrow: 'Après-demain',
       daysLater: 'Dans {{days}} jours',
@@ -202,9 +210,9 @@ const fr = {
     },
     events: {
       addEvent: 'Ajouter un événement',
-      editEvent: 'Modifier l\'événement',
-      deleteEvent: 'Supprimer l\'événement',
-      eventTitle: 'Titre de l\'événement',
+      editEvent: "Modifier l'événement",
+      deleteEvent: "Supprimer l'événement",
+      eventTitle: "Titre de l'événement",
       location: 'Lieu',
       description: 'Description',
       startTime: 'Heure de début',
@@ -218,13 +226,13 @@ const fr = {
       syncSuccess: 'Synchronisation terminée',
       syncFailed: 'Échec de la synchronisation',
       calendarAndSchedule: 'Calendrier et horaire',
-      goToToday: 'Aller à aujourd\'hui',
+      goToToday: "Aller à aujourd'hui",
       googleCalendarSync: 'Synchroniser avec Google Agenda',
       googleCalendarSynced: 'Google Agenda synchronisé',
       newScheduleAdd: 'Ajouter un nouvel horaire',
       noScheduledEvents: 'Aucun événement programmé',
       allEventsNotificationSet: 'Les notifications sont définies pour tous les événements',
-      eventEditTitle: 'Modifier l\'événement',
+      eventEditTitle: "Modifier l'événement",
       newEventTitle: 'Ajouter un nouvel événement',
       deleteConfirm: 'Êtes-vous sûr de vouloir supprimer cet événement?',
       timeInfoNotAvailable: 'Informations de temps non disponibles',
@@ -233,7 +241,7 @@ const fr = {
     navigation: {
       previousMonth: 'Mois précédent',
       nextMonth: 'Mois suivant',
-      goToToday: 'Aller à aujourd\'hui',
+      goToToday: "Aller à aujourd'hui",
     },
   },
   userPreference: {
@@ -246,12 +254,12 @@ const fr = {
     analysis: {
       community: 'Analyse des préférences communautaires',
       debate: 'Analyse des intérêts de débat',
-      info: 'Analyse des intérêts d\'information',
+      info: "Analyse des intérêts d'information",
       default: 'Mon analyse de préférences',
-      recentActivity: 'Basé sur l\'activité des 3 derniers mois',
+      recentActivity: "Basé sur l'activité des 3 derniers mois",
     },
     categories: {
-      title: 'Catégories d\'intérêt',
+      title: "Catégories d'intérêt",
       noData: 'Aucune donnée disponible',
     },
     keywords: {
@@ -311,9 +319,9 @@ const fr = {
       studySupport: 'Soutien aux études/Installations',
       visa: 'Administration/Visa/Documents',
       dormitory: 'Dortoir/Logement',
-      career: 'Carrière/Préparation à l\'emploi',
+      career: "Carrière/Préparation à l'emploi",
       labor: 'Visa/Légal/Travail',
-      jobFair: 'Salon de l\'emploi/Réseautage',
+      jobFair: "Salon de l'emploi/Réseautage",
       partTime: 'Travail à temps partiel',
     },
     messages: {
@@ -330,7 +338,7 @@ const fr = {
       showFilters: 'Afficher les filtres',
       hideFilters: 'Masquer les filtres',
       scrollToTop: 'Faire défiler vers le haut',
-      authorSearch: 'Recherche d\'auteur',
+      authorSearch: "Recherche d'auteur",
     },
     posts: {
       title: 'Titre de publication',
@@ -338,8 +346,8 @@ const fr = {
       author: 'Auteur',
       createdAt: 'Date de création',
       viewCount: 'Vues',
-      likeCount: 'J\'aime',
-      dislikeCount: 'Je n\'aime pas',
+      likeCount: "J'aime",
+      dislikeCount: "Je n'aime pas",
       commentCount: 'Commentaires',
       category: 'Catégorie',
       tags: 'Étiquettes',
@@ -347,8 +355,8 @@ const fr = {
       edit: 'Modifier',
       delete: 'Supprimer',
       report: 'Signaler',
-      likePost: 'J\'aime',
-      dislikePost: 'Je n\'aime pas',
+      likePost: "J'aime",
+      dislikePost: "Je n'aime pas",
       share: 'Partager',
       bookmark: 'Marque-page',
       back: 'Retour',
@@ -361,7 +369,7 @@ const fr = {
       deleteSuccess: 'Publication supprimée',
       deleteFailed: 'Échec de la suppression de la publication',
       saveSuccess: 'Publication enregistrée',
-      saveFailed: 'Échec de l\'enregistrement de la publication',
+      saveFailed: "Échec de l'enregistrement de la publication",
       loadFailed: 'Échec du chargement de la publication',
       noPermission: 'Aucune autorisation',
       attachFiles: 'Joindre des fichiers',
@@ -398,12 +406,12 @@ const fr = {
       deleteSuccess: 'Commentaire supprimé',
       deleteFailed: 'Échec de la suppression du commentaire',
       saveSuccess: 'Commentaire enregistré',
-      saveFailed: 'Échec de l\'enregistrement du commentaire',
+      saveFailed: "Échec de l'enregistrement du commentaire",
       loadFailed: 'Échec du chargement des commentaires',
       anonymous: 'Anonyme',
       reply: 'Répondre',
-      likeComment: 'J\'aime',
-      dislikeComment: 'Je n\'aime pas',
+      likeComment: "J'aime",
+      dislikeComment: "Je n'aime pas",
       report: 'Signaler',
       moreComments: 'Plus de commentaires',
       loadingComments: 'Chargement des commentaires...',
@@ -455,7 +463,7 @@ const fr = {
       leaveFailed: 'Échec de quitter le groupe',
       groupFull: 'Le groupe est complet',
       alreadyJoined: 'Vous avez déjà rejoint ce groupe',
-      notMember: 'Vous n\'êtes pas membre du groupe',
+      notMember: "Vous n'êtes pas membre du groupe",
     },
   },
   widgets: {
@@ -479,7 +487,7 @@ const fr = {
         refresh: 'Actualiser',
         filter: 'Filtrer',
         viewMore: 'Voir plus',
-        like: 'J\'aime',
+        like: "J'aime",
         comment: 'Commentaire',
         view: 'Voir',
         bookmark: 'Marque-page',
@@ -491,8 +499,8 @@ const fr = {
         error: 'Échec du chargement des données',
       },
       debate: {
-        agree: 'D\'accord',
-        disagree: 'Pas d\'accord',
+        agree: "D'accord",
+        disagree: "Pas d'accord",
         ratio: 'Ratio',
       },
     },
@@ -527,35 +535,35 @@ const fr = {
         distance: 'Distance',
         duration: 'Durée',
         error: 'Itinéraire non trouvé',
-        calculating: 'Calcul de l\'itinéraire...',
+        calculating: "Calcul de l'itinéraire...",
       },
       messages: {
         loading: 'Chargement de la carte...',
         error: 'Échec du chargement de la carte',
-        locationError: 'Impossible d\'obtenir la position',
+        locationError: "Impossible d'obtenir la position",
         noResults: 'Aucun résultat de recherche',
       },
     },
     imageGallery: {
-      title: 'Galerie d\'images recommandées',
+      title: "Galerie d'images recommandées",
       search: {
         placeholder: 'Rechercher des images (ex: Séoul, océan, nourriture)',
         button: 'Rechercher',
       },
       actions: {
-        like: 'J\'aime',
+        like: "J'aime",
         download: 'Télécharger',
         view: 'Voir',
       },
       info: {
         photographer: 'Par',
-        poweredBy: 'Fourni par l\'API Unsplash',
+        poweredBy: "Fourni par l'API Unsplash",
       },
       messages: {
         loading: 'Chargement des images...',
         error: 'Échec du chargement des images',
         noResults: 'Aucun résultat de recherche',
-        apiKeyMissing: 'Clé API Unsplash non configurée. Images d\'exemple affichées.',
+        apiKeyMissing: "Clé API Unsplash non configurée. Images d'exemple affichées.",
       },
     },
     youtubeGallery: {
@@ -565,14 +573,14 @@ const fr = {
         button: 'Rechercher',
       },
       actions: {
-        like: 'J\'aime',
+        like: "J'aime",
         play: 'Lire',
         close: 'Fermer',
       },
       info: {
         views: 'vues',
         channel: 'Chaîne',
-        poweredBy: 'Fourni par l\'API YouTube Data',
+        poweredBy: "Fourni par l'API YouTube Data",
       },
       messages: {
         loading: 'Chargement des vidéos...',
@@ -585,7 +593,8 @@ const fr = {
   },
   report: {
     title: 'Signaler le Contenu',
-    description: 'Veuillez sélectionner une raison pour signaler et fournir des détails supplémentaires. Les faux signalements peuvent entraîner des restrictions de service.',
+    description:
+      'Veuillez sélectionner une raison pour signaler et fournir des détails supplémentaires. Les faux signalements peuvent entraîner des restrictions de service.',
     reasonLabel: 'Raison du Signalement',
     reasonRequired: 'Veuillez sélectionner une raison pour le signalement',
     additionalDescription: 'Description Supplémentaire (Optionnel)',
@@ -594,17 +603,49 @@ const fr = {
     submit: 'Signaler',
     submitting: 'Traitement en cours...',
     success: 'Le signalement a été soumis',
-    error: 'Une erreur s\'est produite lors du traitement du signalement. Veuillez réessayer.',
+    error: "Une erreur s'est produite lors du traitement du signalement. Veuillez réessayer.",
     loginRequired: 'La connexion est requise pour cette fonctionnalité.',
     reasons: {
       inappropriate: 'Contenu Inapproprié',
       spam: 'Spam / Publicité',
-      copyright: 'Violation du Droit d\'Auteur',
+      copyright: "Violation du Droit d'Auteur",
       personal_attack: 'Attaque Personnelle / Discours de Haine',
       illegal: 'Information Illégale',
       other: 'Autre',
     },
   },
+  info: {
+    koreaLifeGuide: 'Guide de Vie en Corée',
+    searchPlaceholder: 'Entrez un terme de recherche',
+    view: 'Voir',
+    sort: {
+      latest: 'Plus récent',
+      views: 'Plus vus',
+    },
+    views: 'Vues : {{count}}',
+    create: 'Écrire un article',
+    all: 'Tout',
+    education: 'Éducation',
+    financeTaxes: 'Finance/Taxes',
+    visaLaw: 'Visa/Droit',
+    shopping: 'Shopping',
+    medicalHealth: 'Santé',
+    residentialRealestate: 'Logement/Immobilier',
+    employmentWorkplace: 'Emploi/Lieu de travail',
+    transportation: 'Transport',
+  },
+  sort: {
+    latest: 'Derniers',
+    views: 'Les plus populaires',
+  },
+  views: 'Vues : {{count}}',
+  create: 'Créer un post',
+  searchPlaceholder: 'Rechercher des publications...',
+  searchButton: 'Rechercher',
+  pagination: {
+    prev: 'Précédent',
+    next: 'Suivant',
+  },
 };
 
-export default fr; 
+export default fr;
