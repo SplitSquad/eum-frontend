@@ -40,17 +40,12 @@ export async function requireUser({ request }: LoaderFunctionArgs) {
 
   // 인증 상태가 확정될 때까지 대기
   let tries = 0;
-  while ((user === undefined || isAuthenticated === undefined || isLoading) && tries < 100) {
-    await new Promise(res => setTimeout(res, 50));
+  while ((user === undefined || isAuthenticated === undefined || isLoading) && tries < 5) {
+    await new Promise(res => setTimeout(res, 10));
     ({ isAuthenticated, user, isLoading } = useAuthStore.getState());
     tries++;
   }
-  if (user === undefined || isAuthenticated === undefined || isLoading) {
-    console.log('requireUser: 인증 상태가 확정되지 않았습니다 에서 걸린 로딩');
-    return <Loading />;
-  }
   if (!isAuthenticated) {
-    // 로그인 안 된 유저는 구글 로그인 페이지로
     const url = new URL(request.url);
     return redirect(`/google-login?from=${encodeURIComponent(url.pathname)}`);
   }

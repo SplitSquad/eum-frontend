@@ -192,3 +192,32 @@ body {
 .modal-toggle-img:hover {
   transform: scale(1.2);
 }
+
+/* Eumi fade-in-up animation */
+.eumi-fade-in-up {
+  opacity: 0;
+  transform: translateY(40px) scale(0.9);
+  transition:
+    opacity 0.5s,
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.eumi-fade-in-up.eumi-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1.08);
+}
+
+/* Eumi hover floating animation */
+@keyframes eumi-float {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+.eumi-hover-float:hover {
+  animation: eumi-float 1.2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
