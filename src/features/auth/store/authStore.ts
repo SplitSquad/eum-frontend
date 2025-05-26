@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { checkAuthStatus, logout } from '../api/authApi'; // 실제 구글 인증 API
-import { getToken, setToken, removeToken } from '../tokenUtils';
+import { getToken, setToken, removeToken, getValidToken, isTokenExpired } from '../tokenUtils';
 
 /**
  * 사용자 타입 정의
@@ -233,9 +233,10 @@ export const useAuthStore = create<AuthState>()(
         try {
           set({ isLoading: true });
 
-          // 토큰이 없으면 인증 상태가 아님
-          const storedToken = localStorage.getItem('auth_token');
-          if (!storedToken) {
+          // 유효한 토큰이 없으면 인증 상태 정리
+          const validToken = getValidToken();
+          if (!validToken) {
+            console.log('authStore.loadUser: 유효한 토큰이 없어 인증 상태를 정리합니다.');
             get().clearAuthState();
             return;
           }
@@ -274,15 +275,15 @@ export const useAuthStore = create<AuthState>()(
             set({
               user: normalizedUserData,
               isAuthenticated: true,
-              token: storedToken,
+              token: validToken,
             });
           } catch (apiError) {
             console.warn('API에서 사용자 정보 가져오기 실패, 토큰에서 정보 추출 시도:', apiError);
 
             // API 호출 실패 시 토큰에서 직접 정보 추출
             try {
-              // JWT 토큰 디코딩
-              const payload = JSON.parse(atob(storedToken.split('.')[1]));
+                          // JWT 토큰 디코딩
+            const payload = JSON.parse(atob(validToken.split('.')[1]));
               const userId = payload.userId || 0;
               const role = payload.role || 'ROLE_USER';
               const name = payload.name || ''; // 이름 정보도 추출
@@ -307,7 +308,7 @@ export const useAuthStore = create<AuthState>()(
               set({
                 user: extractedUser,
                 isAuthenticated: true,
-                token: storedToken,
+                token: validToken,
               });
             } catch (tokenError) {
               console.error('토큰 디코딩 실패, 인증 상태 초기화:', tokenError);
