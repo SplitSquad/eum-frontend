@@ -76,13 +76,8 @@ const KakaoMapWidget: React.FC = () => {
   const [userMarker, setUserMarker] = useState<any>(null);
   const [isMapModalOpen, setIsMapModalOpen] = useState<boolean>(false);
 
-  // 길찾기 관련 상태 추가
-  const [isRouteMode, setIsRouteMode] = useState<boolean>(false);
+  // 선택된 장소 상태
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
-  const [routeInfo, setRouteInfo] = useState<{ distance: string; duration: string } | null>(null);
-  const [routeError, setRouteError] = useState<string | null>(null);
-  const [routePolyline, setRoutePolyline] = useState<any>(null);
-  const [travelMode, setTravelMode] = useState<'TRANSIT' | 'WALKING'>('TRANSIT');
 
   // 관심 장소 카테고리
   const categories = [
@@ -333,10 +328,18 @@ const KakaoMapWidget: React.FC = () => {
         // 길찾기 함수 설정
         window.kakaoMapDirections = (placeId: string) => {
           const place = places.find(p => p.id === placeId);
-          if (!place || !place.latitude || !place.longitude) return;
+          if (!place || !place.latitude || !place.longitude || !userLocation) return;
 
-          setSelectedPlace(place);
-          setIsRouteMode(true);
+          // 직접 길찾기 페이지로 이동
+          const url = getKakaoMapDirectionsUrl(
+            '내 위치',
+            userLocation.latitude,
+            userLocation.longitude,
+            place.name,
+            place.latitude,
+            place.longitude
+          );
+          window.open(url, '_blank', 'noopener,noreferrer');
         };
 
         // 스타일 적용 (지연 적용)
@@ -377,16 +380,8 @@ const KakaoMapWidget: React.FC = () => {
           window.kakao.maps.event.removeListener(fullMap, 'tilesloaded');
           window.kakao.maps.event.removeListener(fullMap, 'idle');
 
-          // 경로 폴리라인 제거
-          if (routePolyline) {
-            routePolyline.setMap(null);
-          }
-
-          // 길찾기 모드 초기화
-          setIsRouteMode(false);
+          // 선택된 장소 초기화
           setSelectedPlace(null);
-          setRouteInfo(null);
-          setRouteError(null);
         } catch (error) {
           console.error('이벤트 리스너 제거 실패:', error);
         }
@@ -394,18 +389,16 @@ const KakaoMapWidget: React.FC = () => {
     };
   }, [isMapModalOpen, userLocation, places]);
 
-  // 길찾기 모드가 변경될 때마다 실행
+  // 선택된 장소가 변경될 때 지도 중심 이동
   useEffect(() => {
-    if (!isRouteMode || !selectedPlace || !fullMap || !userLocation) return;
+    if (!selectedPlace || !fullMap) return;
 
-    // 길찾기 실행
-    drawRoute(
-      fullMap,
-      { lat: userLocation.latitude, lng: userLocation.longitude },
-      { lat: selectedPlace.latitude || 0, lng: selectedPlace.longitude || 0 },
-      selectedPlace.name
-    );
-  }, [isRouteMode, selectedPlace, fullMap, userLocation, travelMode]);
+    if (selectedPlace.latitude && selectedPlace.longitude) {
+      const position = new window.kakao.maps.LatLng(selectedPlace.latitude, selectedPlace.longitude);
+      fullMap.setCenter(position);
+      fullMap.setLevel(3);
+    }
+  }, [selectedPlace, fullMap]);
 
   // 새로고침 버튼 핸들러 추가
   const handleRefresh = useCallback(() => {
@@ -890,8 +883,8 @@ const KakaoMapWidget: React.FC = () => {
 
   // 지도 모달 닫기
   const closeMapModal = () => {
-    // 길찾기 모드 종료
-    handleExitRouteMode();
+    // 선택된 장소 초기화
+    setSelectedPlace(null);
 
     // 모달 닫기
     setIsMapModalOpen(false);
@@ -952,189 +945,19 @@ const KakaoMapWidget: React.FC = () => {
     return newMarkers;
   };
 
-  // 길찾기 경로 그리기 함수
-  const drawRoute = (
-    mapInstance: any,
-    origin: { lat: number; lng: number },
-    destination: { lat: number; lng: number },
-    destinationName: string
-  ) => {
-    if (!mapInstance || !window.kakao) return;
-
-    const kakaoMaps = window.kakao.maps;
-
-    // 기존 경로 제거
-    if (routePolyline) {
-      routePolyline.setMap(null);
+  // 간단한 길찾기 링크 생성 함수
+  const handleDirections = (place: Place) => {
+    if (userLocation && place.latitude && place.longitude) {
+      const url = getKakaoMapDirectionsUrl(
+        '내 위치',
+        userLocation.latitude,
+        userLocation.longitude,
+        place.name,
+        place.latitude,
+        place.longitude
+      );
+      window.open(url, '_blank', 'noopener,noreferrer');
     }
-
-    setRouteError(null);
-    setRouteInfo(null);
-
-    try {
-      // Directions 서비스 사용 전 검증
-      if (!kakaoMaps.services || !kakaoMaps.services.Directions) {
-        throw new Error(
-          '카카오맵 Directions API를 사용할 수 없습니다. 라이브러리가 로드되지 않았습니다.'
-        );
-      }
-
-      // 지도 레벨 조정
-      mapInstance.setLevel(5);
-
-      // 출발지와 도착지 좌표
-      const startPoint = new kakaoMaps.LatLng(origin.lat, origin.lng);
-      const endPoint = new kakaoMaps.LatLng(destination.lat, destination.lng);
-
-      // 지도 중심 위치 업데이트 (출발지와 도착지 중간 지점)
-      const bounds = new kakaoMaps.LatLngBounds();
-      bounds.extend(startPoint);
-      bounds.extend(endPoint);
-      mapInstance.setBounds(bounds);
-
-      // 직선 거리 계산 (백업용)
-      const distanceInMeters = kakaoMaps.geometry.getDistance(startPoint, endPoint);
-      const directDistance = (distanceInMeters / 1000).toFixed(1);
-
-      try {
-        // 경로 서비스 객체 생성
-        const directions = new kakaoMaps.services.Directions();
-
-        // 경로 옵션 (대중교통/보행자)
-        const directionOptions = {
-          origin: {
-            x: origin.lng,
-            y: origin.lat,
-          },
-          destination: {
-            x: destination.lng,
-            y: destination.lat,
-          },
-          // 이동수단 모드 설정 (travelMode 상태에 따라 결정)
-          waypoints: [],
-          priority: 'RECOMMEND', // 추천 경로
-          // 도보 또는 대중교통 모드 사용
-          // TRANSIT: 대중교통, WALKING: 도보
-          mode: travelMode,
-        };
-
-        // 경로 검색 요청
-        directions.route(directionOptions, (result: any, status: any) => {
-          console.log('경로 검색 결과 상태:', status);
-          console.log('경로 검색 결과:', result);
-
-          if (
-            status === kakaoMaps.services.Status.OK &&
-            result &&
-            result.routes &&
-            result.routes.length > 0
-          ) {
-            const firstRoute = result.routes[0];
-
-            // 경로 정보 표시
-            const totalDistance = (firstRoute.summary.distance / 1000).toFixed(1); // km 단위로 변환
-            const totalDuration = Math.round(firstRoute.summary.duration / 60); // 분 단위로 변환
-
-            setRouteInfo({
-              distance: `${totalDistance}km`,
-              duration: `${totalDuration}분`,
-            });
-
-            // 경로 그리기
-            const path: any[] = [];
-            firstRoute.sections.forEach((section: any) => {
-              section.roads.forEach((road: any) => {
-                road.vertexes.forEach((vertex: number, index: number) => {
-                  if (index % 2 === 0) {
-                    const lat = road.vertexes[index + 1];
-                    const lng = vertex;
-                    path.push(new kakaoMaps.LatLng(lat, lng));
-                  }
-                });
-              });
-            });
-
-            // 폴리라인 그리기
-            const polyline = new kakaoMaps.Polyline({
-              path: path,
-              strokeWeight: 5,
-              strokeColor: '#1976d2',
-              strokeStyle: 'solid',
-              strokeOpacity: 0.7,
-            });
-
-            polyline.setMap(mapInstance);
-            setRoutePolyline(polyline);
-          } else {
-            console.error('길찾기 실패:', status);
-            setRouteError('경로를 찾을 수 없습니다. 직선 거리를 표시합니다.');
-
-            // 대체 방법: 직선 경로 표시
-            const polyline = new kakaoMaps.Polyline({
-              path: [
-                new kakaoMaps.LatLng(origin.lat, origin.lng),
-                new kakaoMaps.LatLng(destination.lat, destination.lng),
-              ],
-              strokeWeight: 5,
-              strokeColor: '#ff6b6b',
-              strokeStyle: 'dashed',
-              strokeOpacity: 0.7,
-            });
-
-            polyline.setMap(mapInstance);
-            setRoutePolyline(polyline);
-
-            // 거리 직접 계산 (직선 거리)
-            setRouteInfo({
-              distance: `약 ${directDistance}km (직선 거리)`,
-              duration: '예상 불가',
-            });
-          }
-        });
-      } catch (dirError) {
-        console.error('Directions API 호출 오류:', dirError);
-        setRouteError('경로 서비스 호출 실패. 직선 거리를 표시합니다.');
-
-        // 오류 발생 시 직선 경로로 대체
-        const polyline = new kakaoMaps.Polyline({
-          path: [
-            new kakaoMaps.LatLng(origin.lat, origin.lng),
-            new kakaoMaps.LatLng(destination.lat, destination.lng),
-          ],
-          strokeWeight: 5,
-          strokeColor: '#ff6b6b',
-          strokeStyle: 'dashed',
-          strokeOpacity: 0.7,
-        });
-
-        polyline.setMap(mapInstance);
-        setRoutePolyline(polyline);
-
-        // 직선 거리 표시
-        setRouteInfo({
-          distance: `약 ${directDistance}km (직선 거리)`,
-          duration: '예상 불가',
-        });
-      }
-    } catch (error) {
-      console.error('길찾기 경로 그리기 실패:', error);
-      setRouteError('경로를 그리는데 실패했습니다.');
-    }
-  };
-
-  // 길찾기 모드 종료
-  const handleExitRouteMode = () => {
-    // 경로 제거
-    if (routePolyline && fullMap) {
-      routePolyline.setMap(null);
-    }
-
-    // 상태 초기화
-    setRoutePolyline(null);
-    setIsRouteMode(false);
-    setSelectedPlace(null);
-    setRouteInfo(null);
-    setRouteError(null);
   };
 
   return (
@@ -1462,23 +1285,22 @@ const KakaoMapWidget: React.FC = () => {
                         color: getCategoryColor(place.category),
                       }}
                     />
-                    {selectedPlace?.id === place.id && (
-                      <IconButton
-                        size="small"
-                        onClick={e => {
-                          e.stopPropagation();
-                          setIsRouteMode(true);
-                        }}
-                        sx={{
-                          p: 0.5,
-                          bgcolor: 'primary.light',
-                          color: 'white',
-                          '&:hover': { bgcolor: 'primary.main' },
-                        }}
-                      >
-                        <DirectionsIcon fontSize="small" />
-                      </IconButton>
-                    )}
+                    <IconButton
+                      size="small"
+                      onClick={e => {
+                        e.stopPropagation();
+                        handleDirections(place);
+                      }}
+                      sx={{
+                        p: 0.5,
+                        bgcolor: 'primary.light',
+                        color: 'white',
+                        '&:hover': { bgcolor: 'primary.main' },
+                      }}
+                      title="길찾기"
+                    >
+                      <DirectionsIcon fontSize="small" />
+                    </IconButton>
                   </Box>
                 </Box>
               ))
@@ -1520,130 +1342,13 @@ const KakaoMapWidget: React.FC = () => {
           <Box
             sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}
           >
-            {isRouteMode ? (
-              <>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <IconButton size="small" onClick={handleExitRouteMode}>
-                    <ArrowBackIcon />
-                  </IconButton>
-                  <Typography variant="h6">{selectedPlace?.name || '장소'} 길찾기</Typography>
-                </Box>
-
-                {/* 도보/대중교통 선택 버튼 그룹 추가 */}
-                <Box sx={{ display: 'flex', alignItems: 'center', mr: 'auto', ml: 2 }}>
-                  <Button
-                    variant={travelMode === 'WALKING' ? 'contained' : 'outlined'}
-                    size="small"
-                    startIcon={<DirectionsWalkIcon fontSize="small" />}
-                    onClick={() => {
-                      setTravelMode('WALKING');
-                      // 도보 모드로 경로 다시 그리기
-                      if (
-                        userLocation &&
-                        selectedPlace &&
-                        selectedPlace.latitude &&
-                        selectedPlace.longitude
-                      ) {
-                        drawRoute(
-                          fullMap,
-                          { lat: userLocation.latitude, lng: userLocation.longitude },
-                          { lat: selectedPlace.latitude, lng: selectedPlace.longitude },
-                          selectedPlace.name
-                        );
-                      }
-                    }}
-                    sx={{
-                      borderRadius: '4px 0 0 4px',
-                      textTransform: 'none',
-                      fontSize: '0.75rem',
-                      height: 32,
-                      px: 1,
-                    }}
-                  >
-                    도보
-                  </Button>
-                  <Button
-                    variant={travelMode === 'TRANSIT' ? 'contained' : 'outlined'}
-                    size="small"
-                    startIcon={<DirectionsCarIcon fontSize="small" />}
-                    onClick={() => {
-                      setTravelMode('TRANSIT');
-                      // 대중교통 모드로 경로 다시 그리기
-                      if (
-                        userLocation &&
-                        selectedPlace &&
-                        selectedPlace.latitude &&
-                        selectedPlace.longitude
-                      ) {
-                        drawRoute(
-                          fullMap,
-                          { lat: userLocation.latitude, lng: userLocation.longitude },
-                          { lat: selectedPlace.latitude, lng: selectedPlace.longitude },
-                          selectedPlace.name
-                        );
-                      }
-                    }}
-                    sx={{
-                      borderRadius: '0 4px 4px 0',
-                      textTransform: 'none',
-                      fontSize: '0.75rem',
-                      height: 32,
-                      px: 1,
-                    }}
-                  >
-                    차량/대중교통
-                  </Button>
-                </Box>
-
-                {routeInfo && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Typography variant="body2">
-                      <DirectionsIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 0.5 }} />
-                      거리: {routeInfo.distance} (예상 시간: {routeInfo.duration})
-                    </Typography>
-
-                    {/* 카카오맵 길찾기 버튼 추가 */}
-                    {selectedPlace && userLocation && (
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        color="primary"
-                        startIcon={<OpenInNewIcon fontSize="small" />}
-                        onClick={() => {
-                          if (
-                            selectedPlace &&
-                            userLocation &&
-                            selectedPlace.latitude &&
-                            selectedPlace.longitude
-                          ) {
-                            const url = getKakaoMapDirectionsUrl(
-                              '내 위치',
-                              userLocation.latitude,
-                              userLocation.longitude,
-                              selectedPlace.name,
-                              selectedPlace.latitude,
-                              selectedPlace.longitude
-                            );
-                            window.open(url, '_blank', 'noopener,noreferrer');
-                          }
-                        }}
-                        sx={{ borderRadius: 1.5, textTransform: 'none', fontSize: '0.8rem' }}
-                      >
-                        카카오맵에서 길찾기
-                      </Button>
-                    )}
-                  </Box>
-                )}
-              </>
-            ) : (
-              <Typography variant="h6">지도 보기</Typography>
-            )}
+            <Typography variant="h6">지도 보기</Typography>
             <IconButton onClick={closeMapModal}>
               <CloseIcon />
             </IconButton>
           </Box>
 
-          {routeError && (
+          {error && (
             <Alert
               severity="warning"
               sx={{ mb: 2 }}
@@ -1674,12 +1379,12 @@ const KakaoMapWidget: React.FC = () => {
                       }
                     }}
                   >
-                    카카오맵에서 열기
+                    길찾기
                   </Button>
                 )
               }
             >
-              {routeError}
+              {error}
             </Alert>
           )}
 
