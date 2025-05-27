@@ -673,7 +673,7 @@ const de = {
     commentSection: 'Bitte respektiere die unterschiedlichen Meinungen.',
     currentVote: 'Gewählte Position',
     commentGuide:
-      'Klicke zuerst auf „Abstimmen“, um deine Stimme abzugeben; dein Eintrag erscheint dann im Kommentarbereich.',
+      'Klicke zuerst auf "Abstimmen", um deine Stimme abzugeben; dein Eintrag erscheint dann im Kommentarbereich.',
     name: 'Debatte',
     comment: {
       empty: 'Noch keine Kommentare. Sei der Erste und hinterlasse einen Kommentar!',
@@ -791,45 +791,6 @@ const de = {
     },
   },
 
-  aiAssistant: {
-    title: 'Korea Lebenshelfer',
-    subtitle: 'Ihr KI-Experte für das Leben in Korea',
-    greeting: 'Hallo! Ich bin Ihr KI-Experte für {{category}}.',
-    categories: {
-      all: '🌏 Alle',
-      visa: '📑 Visum',
-      social: '🏛 Soziale Sicherheit',
-      tax: '💰 Steuern/Finanzen',
-      health: '🚑 Gesundheit',
-      employment: '💼 Job',
-      life: '👨‍👩‍👧 Alltag',
-    },
-    sidebar: {
-      title: '📚 Themenauswahl',
-      autoSelectInfo: 'Stellen Sie eine Frage, das Thema wählt sich automatisch',
-    },
-    chat: {
-      title: '💬 Chatten',
-      currentField: '{{category}}',
-      placeholder: 'Fragen Sie mich…',
-      send: 'Senden',
-      sending: 'Wird gesendet…',
-      loading: 'Antwort wird vorbereitet…',
-      initialMessage: 'Wie kann ich helfen?',
-      aiExpert: 'KI-Experte',
-      justNow: 'gerade eben',
-    },
-    suggestions: [
-      'Welche Dokumente brauche ich in Korea?',
-      'Wie finde ich einen Job in Korea?',
-      'Wie lerne ich am besten Koreanisch?',
-    ],
-    errors: {
-      responseError: 'Fehler bei der Antwort.',
-      networkError: 'Netzwerk prüfen.',
-      loginRequired: 'Login erforderlich.',
-    },
-  },
   aiAssistant: {
     title: 'Korea Leben Assistent',
     subtitle: 'Korea Lebensführer mit KI-Experte',

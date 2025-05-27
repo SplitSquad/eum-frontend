@@ -782,42 +782,6 @@ const ja = {
       koreanLearning: '韓国語学習：1345 (多文化家庭支援センター)',
     },
   },
-
-  aiAssistant: {
-    title: '韓国生活アシスタント',
-    subtitle: 'AI専門家が案内する韓国生活',
-    greeting: 'こんにちは！{{category}}のAI専門家です。',
-    categories: {
-      all: '🌏 全て',
-      visa: '📑 ビザ',
-      social: '🏛 社会保障',
-      tax: '💰 税金・金融',
-      health: '🚑 医療・健康',
-      employment: '💼 求職',
-      life: '👨‍👩‍👧 生活',
-    },
-    sidebar: {
-      title: '📚 分野別ガイド',
-      autoSelectInfo: '質問すると自動で分野が選択されます',
-    },
-    chat: {
-      title: '💬 チャット',
-      currentField: '{{category}}',
-      placeholder: '何でも聞いてください…',
-      send: '送信',
-      sending: '送信中…',
-      loading: '回答を準備中…',
-      initialMessage: 'ご用件は何ですか？',
-      aiExpert: 'AI専門家',
-      justNow: 'たった今',
-    },
-    suggestions: ['韓国で必要な書類は？', '韓国で働くには？', '韓国語を学ぶ良い方法は？'],
-    errors: {
-      responseError: '応答中にエラーが発生しました。',
-      networkError: 'ネットワーク接続を確認してください。',
-      loginRequired: 'ログインが必要です。',
-    },
-  },
   aiAssistant: {
     title: '韓国生活アシスタント',
     subtitle: 'AI専門家と一緒に韓国生活ガイド',

@@ -809,45 +809,6 @@ const en = {
 
   aiAssistant: {
     title: 'Korea Life Assistant',
-    subtitle: 'Your AI expert for living in Korea',
-    greeting: 'Hello! I am your AI expert in {{category}}.',
-    categories: {
-      all: '🌏 All',
-      visa: '📑 Visa',
-      social: '🏛 Social Security',
-      tax: '💰 Tax/Finance',
-      health: '🚑 Health',
-      employment: '💼 Jobs',
-      life: '👨‍👩‍👧 Lifestyle',
-    },
-    sidebar: {
-      title: '📚 Guide by Topic',
-      autoSelectInfo: 'Ask a question and the topic will auto-select',
-    },
-    chat: {
-      title: '💬 Chat',
-      currentField: '{{category}}',
-      placeholder: 'Ask anything... ',
-      send: 'Send',
-      sending: 'Sending...',
-      loading: 'Preparing answer...',
-      initialMessage: 'How can I help you?',
-      aiExpert: 'AI Expert',
-      justNow: 'just now',
-    },
-    suggestions: [
-      'What basic documents do I need in Korea?',
-      'How can I work in Korea?',
-      'What is a good way to learn Korean?',
-    ],
-    errors: {
-      responseError: 'An error occurred while responding.',
-      networkError: 'Please check your network connection.',
-      loginRequired: 'Login is required.',
-    },
-  },
-  aiAssistant: {
-    title: 'Korea Life Assistant',
     subtitle: 'Korea Life Guide with AI Expert',
     greeting: 'Hello! I am an AI expert in {{category}} field.',
     categories: {
