@@ -196,3 +196,17 @@ export const uploadInfoImage = async (
     xhr.send(formData);
   });
 };
+
+export const getRecommendations = async (): Promise<any> => {
+  const res = await apiClient.get('/information/recommendations');
+  return res;
+};
+
+// Default export 객체 생성
+const infoApi = {
+  getInfoDetail,
+  deleteInfo,
+  getRecommendations,
+};
+
+export default infoApi;

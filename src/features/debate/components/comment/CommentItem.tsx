@@ -46,6 +46,7 @@ import ReportDialog, {
   ReportTargetType,
   ServiceType,
 } from '../../../common/components/ReportDialog';
+import { useTranslation } from '@/shared/i18n';
 
 interface CommentItemProps {
   comment: DebateComment;
@@ -466,6 +467,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
 
   // 안전하게 댓글 목록 가져오기
   const commentReplies = replies && id && replies[id] ? replies[id] : [];
+  const { t } = useTranslation();
 
   return (
     <StyledCard variant="outlined" onClick={handleCardClick}>
@@ -631,7 +633,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
             onClick={handleReplyClick}
             color={showReplyForm ? 'secondary' : 'primary'}
           >
-            {showReplyForm ? '취소' : '답글 작성'}
+            {showReplyForm ? t('debate.reply.cancel') : t('debate.reply.add')}
           </ActionButton>
 
           {replyCount > 0 && (
@@ -711,13 +713,13 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
           ) : replyCount > 0 ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 2 }}>
               <Typography variant="body2" color="text.secondary">
-                답글을 불러오는 중...
+                {t('debate.reply.callingReplies')}
               </Typography>
             </Box>
           ) : (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 2 }}>
               <Typography variant="body2" color="text.secondary">
-                등록된 답글이 없습니다
+                {t('debate.reply.noReplies')}
               </Typography>
             </Box>
           )}

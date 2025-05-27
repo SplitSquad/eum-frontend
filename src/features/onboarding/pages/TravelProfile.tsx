@@ -34,6 +34,7 @@ import OnboardingLayout from '../components/common/OnboardingLayout';
 import FormButtons from '../components/common/FormButtons';
 import CommonStep, { CommonStepType, LanguageData, EmergencyData } from './CommonSteps';
 import { useThemeStore } from '../../theme/store/themeStore';
+import { useTranslation } from '../../../shared/i18n';
 import { saveOnboardingData } from '../api/onboardingApi';
 import { koreanCities, koreanTouristAttractions } from '../data/koreaData';
 import { motion } from 'framer-motion';
@@ -239,6 +240,7 @@ const travelCompanionsOptions = [
  */
 const TravelProfile: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { season } = useThemeStore();
@@ -1306,13 +1308,12 @@ const TravelProfile: React.FC = () => {
                 <TranslateIcon />
               </Avatar>
               <Typography variant="h5" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                언어 능력
+                {t('onboarding.languageAbility')}
               </Typography>
             </Box>
 
             <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
-              한국어 구사 능력을 선택해주세요. 언어 능력에 따라 여행 가이드와 번역 지원을
-              제공해드립니다.
+              {t('onboarding.languageAbilityDescription')}
             </Typography>
 
             <Box
@@ -1324,16 +1325,16 @@ const TravelProfile: React.FC = () => {
               }}
             >
               {[
-                { value: 'basic', label: '기본', description: '인사와 간단한 표현 가능' },
+                { value: 'basic', label: t('onboarding.languageLevel.basic'), description: t('onboarding.languageLevel.basicDescription') },
                 {
                   value: 'intermediate',
-                  label: '중급',
-                  description: '일상 대화와 간단한 의사소통 가능',
+                  label: t('onboarding.languageLevel.intermediate'),
+                  description: t('onboarding.languageLevel.intermediateDescription'),
                 },
                 {
                   value: 'advanced',
-                  label: '고급',
-                  description: '대부분의 상황에서 자연스러운 대화 가능',
+                  label: t('onboarding.languageLevel.advanced'),
+                  description: t('onboarding.languageLevel.advancedDescription'),
                 },
               ].map(option => {
                 const isSelected = formData.language.koreanLevel === option.value;
@@ -1423,8 +1424,7 @@ const TravelProfile: React.FC = () => {
                 display: 'block',
               }}
             >
-              한국어 실력이 없어도 괜찮습니다. 여행에 필요한 번역 및 언어 지원 정보를
-              제공해드립니다.
+              {t('onboarding.languageNote')}
             </Typography>
           </StyledPaper>
         );
