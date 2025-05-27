@@ -139,16 +139,6 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // 이미 로그인되어 있으면 메인 페이지로 리디렉션
-  /*
-  useEffect(() => {
-    // sessionStorage에도 토큰이 있으면 로그인 상태로 간주
-    const token = sessionStorage.getItem('auth_token');
-    if (isAuthenticated || token) {
-      navigate('/home');
-    }
-  }, [isAuthenticated, navigate]);
-*/
   const handleLoginClick = async () => {
     setLoading(true);
     try {
@@ -161,13 +151,11 @@ const LoginPage: React.FC = () => {
       const updatedUser = useAuthStore.getState().user;
       setLoading(false);
       // 온보딩 여부에 따라 라우팅
-      setTimeout(() => {
-        if (updatedUser?.isNewUser || !updatedUser?.isOnBoardDone) {
-          navigate('/onboarding');
-        } else {
-          navigate('/home');
-        }
-      }, 1000);
+      if (!updatedUser?.isOnBoardDone) {
+        navigate('/onboarding');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err: any) {
       setLoading(false);
       setError(err.message || '로그인 중 오류가 발생했습니다.');
@@ -176,6 +164,12 @@ const LoginPage: React.FC = () => {
 
   const handleSignupClick = () => {
     navigate('/signup');
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !loading) {
+      handleLoginClick();
+    }
   };
 
   return (
@@ -228,6 +222,8 @@ const LoginPage: React.FC = () => {
                     transform: 'scale(1.02)',
                   },
                 }}
+                onKeyDown={handleKeyDown}
+                tabIndex={0}
               >
                 {/*아이디 비밀번호 입력 영역*/}
                 <LoginInputs id={id} setId={setId} password={password} setPassword={setPassword} />

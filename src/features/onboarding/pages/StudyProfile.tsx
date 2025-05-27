@@ -45,6 +45,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import VisaIcon from '@mui/icons-material/DocumentScanner';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
+import { useAuthStore } from '@/features/auth/store/authStore';
 
 // 스타일링된 컴포넌트
 const StyledPaper = styled(Paper)(({ theme }) => ({
@@ -449,8 +450,11 @@ const StudyProfile: React.FC = () => {
         // 에러를 throw하지 않고 계속 진행
       }
 
+      // store의 사용자 정보 최신화
+      await useAuthStore.getState().loadUser();
+
       // 메인 페이지로 이동
-      navigate('/home');
+      navigate('/dashboard');
     } catch (error) {
       console.error('온보딩 데이터 저장 실패:', error);
     } finally {

@@ -113,19 +113,21 @@ const StyledChip = styled(Chip)(({ theme }) => ({
   },
 }));
 
-const ReactionButton = styled(Button)(({ theme, active }: { theme: any; active: boolean }) => ({
-  backgroundColor: active ? 'rgba(255, 170, 165, 0.4)' : 'transparent',
+const ReactionButton = styled(Button)(({ theme, isactive }: { theme: any; isactive: boolean }) => ({
+  backgroundColor: isactive ? 'rgba(255, 170, 165, 0.4)' : 'transparent',
   border: '1px solid rgba(255, 170, 165, 0.5)',
   borderRadius: '20px',
-  color: active ? '#FF6B6B' : '#666',
-  fontWeight: active ? 600 : 400,
+  color: isactive ? '#FF6B6B' : '#666',
+  fontWeight: isactive ? 600 : 400,
   fontSize: '0.85rem',
   padding: '4px 10px',
-  boxShadow: active ? '0 2px 5px rgba(255, 107, 107, 0.2)' : 'none',
+  boxShadow: isactive ? '0 2px 5px rgba(255, 107, 107, 0.2)' : 'none',
   transition: 'all 0.2s ease-in-out',
   '&:hover': {
-    backgroundColor: active ? 'rgba(255, 170, 165, 0.5)' : 'rgba(255, 170, 165, 0.3)',
-    boxShadow: active ? '0 3px 8px rgba(255, 107, 107, 0.3)' : '0 2px 5px rgba(255, 107, 107, 0.1)',
+    backgroundColor: isactive ? 'rgba(255, 170, 165, 0.5)' : 'rgba(255, 170, 165, 0.3)',
+    boxShadow: isactive
+      ? '0 3px 8px rgba(255, 107, 107, 0.3)'
+      : '0 2px 5px rgba(255, 107, 107, 0.1)',
   },
   '&.Mui-disabled': {
     backgroundColor: 'rgba(0, 0, 0, 0.05)',
@@ -446,12 +448,12 @@ const PostDetailPage: React.FC = () => {
     try {
       // 현재 반응 상태 확인
       const currentReaction = post.myReaction;
-      const isActive = currentReaction === type;
+      const isactive = currentReaction === type;
 
       console.log(`[DEBUG] 게시글 반응 처리 - 현재 상태: ${currentReaction}, 요청 타입: ${type}`);
 
       // 낙관적 UI 업데이트 (API 응답 전에 UI 먼저 업데이트)
-      if (isActive) {
+      if (isactive) {
         // 같은 버튼 다시 클릭: 반응 취소
         setPost(prev => {
           if (!prev) return prev;
@@ -494,7 +496,7 @@ const PostDetailPage: React.FC = () => {
       if (response && post) {
         // 백엔드가 isState를 반환하지 않으므로 클라이언트에서 myReaction 유지
         // 사용자가 방금 수행한 작업에 따라 myReaction 결정
-        const newMyReaction = isActive ? undefined : type;
+        const newMyReaction = isactive ? undefined : type;
 
         setPost(prev => {
           if (!prev) return prev;
@@ -781,7 +783,7 @@ const PostDetailPage: React.FC = () => {
               sx={{ maxWidth: 500, mx: 'auto' }}
             >
               <ReactionButton
-                active={post.myReaction === 'LIKE'}
+                isactive={post.myReaction === 'LIKE'}
                 startIcon={post.myReaction === 'LIKE' ? <ThumbUpIcon /> : <ThumbUpOutlinedIcon />}
                 onClick={() => handlePostReaction('LIKE')}
                 fullWidth
@@ -791,7 +793,7 @@ const PostDetailPage: React.FC = () => {
                 좋아요 {post.likeCount || 0}
               </ReactionButton>
               <ReactionButton
-                active={post.myReaction === 'DISLIKE'}
+                isactive={post.myReaction === 'DISLIKE'}
                 startIcon={
                   post.myReaction === 'DISLIKE' ? <ThumbDownIcon /> : <ThumbDownOutlinedIcon />
                 }

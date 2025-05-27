@@ -1,5 +1,11 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { setToken, getToken, removeToken } from '../features/auth/tokenUtils';
+import {
+  setToken,
+  getToken,
+  removeToken,
+  getValidToken,
+  isTokenExpired,
+} from '../features/auth/tokenUtils';
 import { env, isDevelopment } from './env';
 
 /**
@@ -108,11 +114,15 @@ const clearAuthData = () => {
  */
 axiosInstance.interceptors.request.use(
   config => {
-    const token = getToken();
+    // 유효한 토큰만 헤더에 추가
+    const token = getValidToken();
     const userEmail = localStorage.getItem('userEmail');
 
     if (token) {
       config.headers['Authorization'] = token;
+    } else {
+      // 토큰이 유효하지 않으면 Authorization 헤더 제거
+      delete config.headers['Authorization'];
     }
 
     if (userEmail) {
@@ -121,6 +131,7 @@ axiosInstance.interceptors.request.use(
 
     if (isDevelopment) {
       console.log('Request:', config.method?.toUpperCase(), config.url);
+      console.log('Token valid:', !!token);
     }
 
     return config;
@@ -185,7 +196,11 @@ axiosInstance.interceptors.response.use(
 
               // 로그인 페이지로 이동 전에 플래그 리셋
               isRefreshing = false;
-              window.location.href = '/google-login';
+
+              // 무한 리다이렉트 방지
+              if (!window.location.pathname.includes('/google-login')) {
+                window.location.href = '/google-login';
+              }
               return Promise.reject(error);
             }
           } catch (refreshError) {
@@ -193,7 +208,11 @@ axiosInstance.interceptors.response.use(
             clearAuthData();
 
             isRefreshing = false;
-            window.location.href = '/google-login';
+
+            // 무한 리다이렉트 방지
+            if (!window.location.pathname.includes('/google-login')) {
+              window.location.href = '/google-login';
+            }
             return Promise.reject(error);
           }
         } else if (requestUrl !== '/auth/refresh' && isRefreshing) {
@@ -213,7 +232,11 @@ axiosInstance.interceptors.response.use(
           // 토큰 갱신 API 자체가 401 반환 시
           console.error('인증 오류 (401): 토큰 갱신 불가, 로그인 필요');
           clearAuthData();
-          window.location.href = '/google-login';
+
+          // 무한 리다이렉트 방지: 현재 페이지가 로그인 페이지가 아닌 경우에만 리다이렉트
+          if (!window.location.pathname.includes('/google-login')) {
+            window.location.href = '/google-login';
+          }
           return Promise.reject(error);
         }
       }

@@ -88,7 +88,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
   const [repliesVisible, setRepliesVisible] = useState(true);
   const [editMode, setEditMode] = useState(false);
   const [editedContent, setEditedContent] = useState(comment.content);
-  
+
   // 신고 다이얼로그 관련 상태
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
 
@@ -105,6 +105,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
     ((comment.writer as any)?.id ?? (comment.writer as any)?.userId)?.toString();
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+    console.log('handleMenuClick 실행됨', isCommentAuthor);
     setAnchorEl(event.currentTarget);
   };
 
@@ -154,6 +155,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
   const handleEditStart = () => {
     setEditMode(true);
     setEditedContent(comment.content);
+    console.log('handleEditStart', comment.content);
     handleMenuClose();
   };
 
@@ -176,7 +178,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
   const handleReplyFormClose = () => {
     setShowReplyForm(false);
   };
-  
+
   // 신고 다이얼로그 열기
   const handleOpenReportDialog = () => {
     if (!comment.writer?.userId) {
@@ -341,12 +343,12 @@ const CommentItem: React.FC<CommentItemProps> = ({
               '&:hover': {
                 backgroundColor: 'rgba(255, 170, 165, 0.2)',
               },
-              mr: 1
+              mr: 1,
             }}
           >
             답글 작성 {comment.replies?.length ? `(${comment.replies.length})` : ''}
           </ActionButton>
-          
+
           {/* 신고 버튼 - 작성자가 아닌 경우에만 표시 */}
           {currentUser && !isCommentAuthor && (
             <ActionButton
@@ -395,14 +397,14 @@ const CommentItem: React.FC<CommentItemProps> = ({
           </Collapse>
         </>
       )}
-      
+
       {/* 신고 다이얼로그 */}
       {comment.writer?.userId && (
         <ReportDialog
           open={reportDialogOpen}
           onClose={handleCloseReportDialog}
           targetId={comment.commentId}
-          targetType={isReply ? "REPLY" : "COMMENT"}
+          targetType={isReply ? 'REPLY' : 'COMMENT'}
           serviceType="COMMUNITY"
           reportedUserId={Number(comment.writer.userId)}
         />

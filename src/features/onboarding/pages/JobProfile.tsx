@@ -23,7 +23,7 @@ import {
   styled,
   Button,
   IconButton,
-  Theme
+  Theme,
 } from '@mui/material';
 import OnboardingLayout from '../components/common/OnboardingLayout';
 import FormButtons from '../components/common/FormButtons';
@@ -46,6 +46,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import VisaIcon from '@mui/icons-material/DocumentScanner';
 import PaymentsIcon from '@mui/icons-material/Payments';
+import { useAuthStore } from '@/features/auth/store/authStore';
 
 // 스타일링된 컴포넌트
 const StyledPaper = styled(Paper)(({ theme }) => ({
@@ -76,19 +77,23 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
   },
 }));
 
-const GradientButton = styled(Button)(({ theme, gradientcolors }: { theme: Theme, gradientcolors?: string }) => ({
-  background: gradientcolors || `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${alpha(theme.palette.primary.main, 0.8)} 100%)`,
-  color: '#fff',
-  fontWeight: 600,
-  padding: theme.spacing(1.2, 3),
-  borderRadius: theme.spacing(6),
-  boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
-  '&:hover': {
-    boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
-  },
-}));
+const GradientButton = styled(Button)(
+  ({ theme, gradientcolors }: { theme: Theme; gradientcolors?: string }) => ({
+    background:
+      gradientcolors ||
+      `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${alpha(theme.palette.primary.main, 0.8)} 100%)`,
+    color: '#fff',
+    fontWeight: 600,
+    padding: theme.spacing(1.2, 3),
+    borderRadius: theme.spacing(6),
+    boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
+    '&:hover': {
+      boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
+    },
+  })
+);
 
-const StepIcon = styled(Box)(({ theme, color = '#1976d2' }: { theme: Theme, color?: string }) => ({
+const StepIcon = styled(Box)(({ theme, color = '#1976d2' }: { theme: Theme; color?: string }) => ({
   width: 50,
   height: 50,
   borderRadius: '50%',
@@ -102,12 +107,14 @@ const StepIcon = styled(Box)(({ theme, color = '#1976d2' }: { theme: Theme, colo
   fontSize: '1.5rem',
 }));
 
-const StepConnector = styled(Box)(({ theme, active = false }: { theme: Theme, active?: boolean }) => ({
-  height: 3,
-  backgroundColor: active ? theme.palette.primary.main : theme.palette.grey[300],
-  width: '100%',
-  transition: 'background-color 0.3s ease',
-}));
+const StepConnector = styled(Box)(
+  ({ theme, active = false }: { theme: Theme; active?: boolean }) => ({
+    height: 3,
+    backgroundColor: active ? theme.palette.primary.main : theme.palette.grey[300],
+    width: '100%',
+    transition: 'background-color 0.3s ease',
+  })
+);
 
 const AnimatedBackground = styled(Box)(({ theme }) => ({
   position: 'absolute',
@@ -135,23 +142,23 @@ interface JobProfileData {
   nationality: string;
   country: string;
   uiLanguage: string;
-  
+
   // 직업 정보
   jobField: string;
   workExperience: string;
   desiredPosition: string;
   visaType: string;
-  
+
   // 취업 날짜 및 기간
   startDate: string;
   endDate: string;
   employmentDuration: string;
-  
+
   // 희망 조건
   desiredSalary: string;
   desiredLocations: string[];
   desiredWorkingHours: string;
-  
+
   // 공통 섹션 데이터
   language: LanguageData;
   emergencyInfo: EmergencyData;
@@ -248,14 +255,14 @@ const JobProfile: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { season } = useThemeStore();
-  
+
   // 현재 스텝
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 시/도 목록 (select box용)
   const cityProvinceList = Object.keys(koreanAdministrativeDivisions);
-  
+
   // 데이터 스테이트
   const [formData, setFormData] = useState<JobProfileData>({
     name: '',
@@ -264,20 +271,20 @@ const JobProfile: React.FC = () => {
     nationality: '',
     country: '',
     uiLanguage: 'ko',
-    
+
     jobField: '',
     workExperience: '',
     desiredPosition: '',
     visaType: '',
-    
+
     startDate: '',
     endDate: '',
     employmentDuration: '',
-    
+
     desiredSalary: '',
     desiredLocations: [],
     desiredWorkingHours: '',
-    
+
     // 공통 섹션 초기화
     language: { koreanLevel: 'basic' },
     emergencyInfo: {
@@ -288,20 +295,25 @@ const JobProfile: React.FC = () => {
     },
     interests: [],
   });
-  
+
   // 계절에 따른 색상 가져오기
   const getColorByTheme = () => {
     switch (season) {
-      case 'spring': return '#FFAAA5';
-      case 'summer': return '#77AADD';
-      case 'autumn': return '#E8846B';
-      case 'winter': return '#8795B5';
-      default: return '#FFAAA5';
+      case 'spring':
+        return '#FFAAA5';
+      case 'summer':
+        return '#77AADD';
+      case 'autumn':
+        return '#E8846B';
+      case 'winter':
+        return '#8795B5';
+      default:
+        return '#FFAAA5';
     }
   };
 
   const primaryColor = getColorByTheme();
-  
+
   // 스텝 라벨 정의
   const stepLabels = [
     '취업자 세부 프로필',
@@ -312,7 +324,7 @@ const JobProfile: React.FC = () => {
     '관심사 선택',
     '응급 상황 설정',
   ];
-  
+
   // 스텝 아이콘 정의
   const stepIcons = [
     <PersonIcon />,
@@ -323,22 +335,28 @@ const JobProfile: React.FC = () => {
     <FavoriteIcon />,
     <HealthAndSafetyIcon />,
   ];
-  
+
   // 총 스텝 수
   const totalSteps = stepLabels.length;
-  
+
   // 현재 스텝에 해당하는 공통 컴포넌트 타입
   const getCommonStepType = (): CommonStepType | null => {
     switch (currentStep) {
-      case 5: return 'language';
-      case 6: return 'interests';
-      case 7: return 'emergency';
-      default: return null;
+      case 5:
+        return 'language';
+      case 6:
+        return 'interests';
+      case 7:
+        return 'emergency';
+      default:
+        return null;
     }
   };
-  
+
   // 입력값 변경 핸들러
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>
+  ) => {
     const { name, value } = e.target;
     if (name) {
       setFormData(prev => ({
@@ -347,7 +365,7 @@ const JobProfile: React.FC = () => {
       }));
     }
   };
-  
+
   // 불리언 값 변경 핸들러
   const handleBooleanChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target;
@@ -356,7 +374,7 @@ const JobProfile: React.FC = () => {
       [name]: checked,
     }));
   };
-  
+
   // 언어 데이터 변경 핸들러
   const handleLanguageChange = (data: LanguageData) => {
     setFormData(prev => ({
@@ -364,7 +382,7 @@ const JobProfile: React.FC = () => {
       language: data,
     }));
   };
-  
+
   // 응급 정보 변경 핸들러
   const handleEmergencyChange = (data: EmergencyData) => {
     setFormData(prev => ({
@@ -372,7 +390,7 @@ const JobProfile: React.FC = () => {
       emergencyInfo: data,
     }));
   };
-  
+
   // 관심사 변경 핸들러
   const handleInterestsChange = (interests: string[]) => {
     setFormData(prev => ({
@@ -380,7 +398,7 @@ const JobProfile: React.FC = () => {
       interests,
     }));
   };
-  
+
   // 다음 단계로 이동
   const handleNext = () => {
     if (currentStep < totalSteps) {
@@ -389,7 +407,7 @@ const JobProfile: React.FC = () => {
       handleSubmit();
     }
   };
-  
+
   // 이전 단계로 이동
   const handleBack = () => {
     if (currentStep > 1) {
@@ -398,11 +416,11 @@ const JobProfile: React.FC = () => {
       navigate('/onboarding');
     }
   };
-  
+
   // 폼 제출 처리
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    
+
     try {
       // 필수 필드 검증
       if (!formData.nationality && !formData.country) {
@@ -416,14 +434,14 @@ const JobProfile: React.FC = () => {
         setIsSubmitting(false);
         return;
       }
-      
+
       // 백엔드에 전달할 데이터 객체 생성
       const onboardingData = {
         // 백엔드 필수 필드에 매핑될 데이터
         country: formData.nationality || formData.country, // nation 필드로 매핑
         gender: formData.gender, // gender 필드로 매핑
         uiLanguage: formData.uiLanguage || 'ko', // language 필드로 매핑
-        
+
         // 상세 정보 (onBoardingPreference JSON으로 저장됨)
         name: formData.name,
         age: formData.age,
@@ -431,13 +449,13 @@ const JobProfile: React.FC = () => {
         workExperience: formData.workExperience,
         desiredPosition: formData.desiredPosition,
         visaType: formData.visaType,
-        
+
         // 공통 정보
         language: formData.language,
         emergencyInfo: formData.emergencyInfo,
         interests: formData.interests,
       };
-      
+
       try {
         // 백엔드에 데이터 저장 (visit purpose: job)
         await saveOnboardingData('job', onboardingData);
@@ -448,20 +466,23 @@ const JobProfile: React.FC = () => {
         console.warn('온보딩 데이터 저장 실패. 테스트 모드에서는 무시합니다:', saveError);
         // 에러를 throw하지 않고 계속 진행
       }
-      
+
+      // store의 사용자 정보 최신화
+      await useAuthStore.getState().loadUser();
+
       // 메인 페이지로 이동
-      navigate('/home');
+      navigate('/dashboard');
     } catch (error) {
       console.error('온보딩 데이터 저장 실패:', error);
     } finally {
       setIsSubmitting(false);
     }
   };
-  
+
   // 현재 단계에 따른 폼 렌더링
   const renderFormByStep = () => {
     const commonStepType = getCommonStepType();
-    
+
     if (commonStepType) {
       return (
         <CommonStep
@@ -475,19 +496,19 @@ const JobProfile: React.FC = () => {
         />
       );
     }
-    
+
     switch (currentStep) {
       case 1: // 취업자 세부 프로필
         return (
           <StyledPaper elevation={0} sx={{ p: 4 }}>
             <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
               <Avatar
-                sx={{ 
-                  bgcolor: alpha(primaryColor, 0.2), 
+                sx={{
+                  bgcolor: alpha(primaryColor, 0.2),
                   color: primaryColor,
                   width: 48,
                   height: 48,
-                  mr: 2
+                  mr: 2,
                 }}
               >
                 <PersonIcon />
@@ -496,13 +517,15 @@ const JobProfile: React.FC = () => {
                 취업자 세부 프로필
               </Typography>
             </Box>
-            
-            <Box sx={{ 
-              display: 'grid', 
-              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
-              gap: 3,
-              mb: 2 
-            }}>
+
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+                gap: 3,
+                mb: 2,
+              }}
+            >
               <StyledTextField
                 label="이름"
                 name="name"
@@ -519,15 +542,15 @@ const JobProfile: React.FC = () => {
                   ),
                 }}
               />
-              
+
               <Box>
                 <FormControl component="fieldset" fullWidth>
-                  <FormLabel 
-                    id="gender-label" 
-                    sx={{ 
+                  <FormLabel
+                    id="gender-label"
+                    sx={{
                       color: 'text.secondary',
                       '&.Mui-focused': { color: primaryColor },
-                      mb: 1
+                      mb: 1,
                     }}
                   >
                     성별
@@ -539,53 +562,55 @@ const JobProfile: React.FC = () => {
                     value={formData.gender}
                     onChange={handleInputChange}
                   >
-                    <FormControlLabel 
-                      value="male" 
+                    <FormControlLabel
+                      value="male"
                       control={
-                        <Radio 
-                          sx={{ 
+                        <Radio
+                          sx={{
                             color: theme.palette.grey[400],
                             '&.Mui-checked': { color: primaryColor },
-                          }} 
+                          }}
                         />
-                      } 
-                      label="남성" 
+                      }
+                      label="남성"
                     />
-                    <FormControlLabel 
-                      value="female" 
+                    <FormControlLabel
+                      value="female"
                       control={
-                        <Radio 
-                          sx={{ 
+                        <Radio
+                          sx={{
                             color: theme.palette.grey[400],
                             '&.Mui-checked': { color: primaryColor },
-                          }} 
+                          }}
                         />
-                      } 
-                      label="여성" 
+                      }
+                      label="여성"
                     />
-                    <FormControlLabel 
-                      value="other" 
+                    <FormControlLabel
+                      value="other"
                       control={
-                        <Radio 
-                          sx={{ 
+                        <Radio
+                          sx={{
                             color: theme.palette.grey[400],
                             '&.Mui-checked': { color: primaryColor },
-                          }} 
+                          }}
                         />
-                      } 
-                      label="기타" 
+                      }
+                      label="기타"
                     />
                   </RadioGroup>
                 </FormControl>
               </Box>
             </Box>
-            
-            <Box sx={{ 
-              display: 'grid', 
-              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
-              gap: 3,
-              mb: 2 
-            }}>
+
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+                gap: 3,
+                mb: 2,
+              }}
+            >
               <StyledTextField
                 label="나이"
                 name="age"
@@ -595,7 +620,7 @@ const JobProfile: React.FC = () => {
                 color="primary"
                 type="number"
               />
-              
+
               <StyledTextField
                 label="국적"
                 name="nationality"
@@ -605,12 +630,14 @@ const JobProfile: React.FC = () => {
                 color="primary"
               />
             </Box>
-            
-            <Box sx={{ 
-              display: 'grid', 
-              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
-              gap: 3
-            }}>
+
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+                gap: 3,
+              }}
+            >
               <StyledTextField
                 select
                 label="UI 언어 선택"
@@ -628,7 +655,7 @@ const JobProfile: React.FC = () => {
                   ),
                 }}
               >
-                {uiLanguageOptions.map((option) => (
+                {uiLanguageOptions.map(option => (
                   <MenuItem key={option.code} value={option.code}>
                     {option.name}
                   </MenuItem>
@@ -637,18 +664,18 @@ const JobProfile: React.FC = () => {
             </Box>
           </StyledPaper>
         );
-        
+
       case 2: // 직업 상세 정보
         return (
           <StyledPaper elevation={0} sx={{ p: 4 }}>
             <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
               <Avatar
-                sx={{ 
-                  bgcolor: alpha(primaryColor, 0.2), 
+                sx={{
+                  bgcolor: alpha(primaryColor, 0.2),
                   color: primaryColor,
                   width: 48,
                   height: 48,
-                  mr: 2
+                  mr: 2,
                 }}
               >
                 <WorkIcon />
@@ -657,7 +684,7 @@ const JobProfile: React.FC = () => {
                 직업 상세 정보
               </Typography>
             </Box>
-            
+
             <Box sx={{ mb: 3 }}>
               <StyledTextField
                 select
@@ -677,14 +704,14 @@ const JobProfile: React.FC = () => {
                   ),
                 }}
               >
-                {jobFieldOptions.map((option) => (
+                {jobFieldOptions.map(option => (
                   <MenuItem key={option.code} value={option.code}>
                     {option.name}
                   </MenuItem>
                 ))}
               </StyledTextField>
             </Box>
-            
+
             <Box sx={{ mb: 3 }}>
               <StyledTextField
                 select
@@ -709,7 +736,7 @@ const JobProfile: React.FC = () => {
                 <MenuItem value="expert">전문가 (10년 이상)</MenuItem>
               </StyledTextField>
             </Box>
-            
+
             <Box sx={{ mb: 3 }}>
               <StyledTextField
                 label="희망 직무/포지션"
@@ -728,7 +755,7 @@ const JobProfile: React.FC = () => {
                 }}
               />
             </Box>
-            
+
             <Box sx={{ mt: 3 }}>
               <StyledTextField
                 select
@@ -746,7 +773,7 @@ const JobProfile: React.FC = () => {
                   ),
                 }}
               >
-                {visaTypeOptions.map((option) => (
+                {visaTypeOptions.map(option => (
                   <MenuItem key={option.code} value={option.code}>
                     {option.name}
                   </MenuItem>
@@ -755,18 +782,18 @@ const JobProfile: React.FC = () => {
             </Box>
           </StyledPaper>
         );
-      
+
       case 3: // 취업 날짜 및 기간
         return (
           <StyledPaper elevation={0} sx={{ p: 4 }}>
             <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
               <Avatar
-                sx={{ 
-                  bgcolor: alpha(primaryColor, 0.2), 
+                sx={{
+                  bgcolor: alpha(primaryColor, 0.2),
                   color: primaryColor,
                   width: 48,
                   height: 48,
-                  mr: 2
+                  mr: 2,
                 }}
               >
                 <CalendarTodayIcon />
@@ -775,14 +802,14 @@ const JobProfile: React.FC = () => {
                 취업 날짜 및 기간
               </Typography>
             </Box>
-            
+
             <Box sx={{ mb: 4 }}>
-              <Typography 
-                variant="subtitle2" 
-                sx={{ 
-                  mb: 1, 
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  mb: 1,
                   color: 'text.secondary',
-                  fontWeight: 500
+                  fontWeight: 500,
                 }}
               >
                 희망 근무 기간을 선택해주세요
@@ -812,22 +839,22 @@ const JobProfile: React.FC = () => {
                 <MenuItem value="permanent">정규직 (무기한)</MenuItem>
               </StyledTextField>
             </Box>
-            
-            <Box 
-              sx={{ 
-                display: 'grid', 
-                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
+
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
                 gap: 3,
-                mb: 4
+                mb: 4,
               }}
             >
               <Box>
-                <Typography 
-                  variant="subtitle2" 
-                  sx={{ 
-                    mb: 1, 
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    mb: 1,
                     color: 'text.secondary',
-                    fontWeight: 500
+                    fontWeight: 500,
                   }}
                 >
                   근무 시작 희망일
@@ -850,14 +877,14 @@ const JobProfile: React.FC = () => {
                   }}
                 />
               </Box>
-              
+
               <Box>
-                <Typography 
-                  variant="subtitle2" 
-                  sx={{ 
-                    mb: 1, 
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    mb: 1,
                     color: 'text.secondary',
-                    fontWeight: 500
+                    fontWeight: 500,
                   }}
                 >
                   근무 종료 예정일 (정규직은 비워두세요)
@@ -881,14 +908,14 @@ const JobProfile: React.FC = () => {
                 />
               </Box>
             </Box>
-            
+
             <Box sx={{ mb: 2 }}>
-              <Typography 
-                variant="subtitle2" 
-                sx={{ 
-                  mb: 1, 
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  mb: 1,
                   color: 'text.secondary',
-                  fontWeight: 500
+                  fontWeight: 500,
                 }}
               >
                 희망 근무 시간
@@ -918,18 +945,18 @@ const JobProfile: React.FC = () => {
             </Box>
           </StyledPaper>
         );
-        
+
       case 4: // 희망 조건
         return (
           <StyledPaper elevation={0} sx={{ p: 4 }}>
             <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
               <Avatar
-                sx={{ 
-                  bgcolor: alpha(primaryColor, 0.2), 
+                sx={{
+                  bgcolor: alpha(primaryColor, 0.2),
                   color: primaryColor,
                   width: 48,
                   height: 48,
-                  mr: 2
+                  mr: 2,
                 }}
               >
                 <BusinessIcon />
@@ -938,14 +965,14 @@ const JobProfile: React.FC = () => {
                 희망 근무 조건
               </Typography>
             </Box>
-            
+
             <Box sx={{ mb: 4 }}>
-              <Typography 
-                variant="subtitle2" 
-                sx={{ 
-                  mb: 1, 
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  mb: 1,
                   color: 'text.secondary',
-                  fontWeight: 500
+                  fontWeight: 500,
                 }}
               >
                 희망 근무 지역
@@ -958,7 +985,7 @@ const JobProfile: React.FC = () => {
                 onChange={(event, newValue) => {
                   setFormData(prev => ({
                     ...prev,
-                    desiredLocations: newValue
+                    desiredLocations: newValue,
                   }));
                 }}
                 renderTags={(value, getTagProps) =>
@@ -981,7 +1008,7 @@ const JobProfile: React.FC = () => {
                     />
                   ))
                 }
-                renderInput={(params) => (
+                renderInput={params => (
                   <StyledTextField
                     {...params}
                     label="희망 근무 지역"
@@ -1001,18 +1028,18 @@ const JobProfile: React.FC = () => {
                   />
                 )}
               />
-              <Typography 
-                variant="caption" 
-                sx={{ 
+              <Typography
+                variant="caption"
+                sx={{
                   color: 'text.secondary',
                   display: 'block',
-                  mt: 1
+                  mt: 1,
                 }}
               >
                 최소 1개 이상의 지역을 선택해주세요.
               </Typography>
             </Box>
-            
+
             <Box sx={{ mb: 3 }}>
               <StyledTextField
                 label="희망 연봉/급여"
@@ -1033,12 +1060,12 @@ const JobProfile: React.FC = () => {
             </Box>
           </StyledPaper>
         );
-        
+
       default:
         return null;
     }
   };
-  
+
   // 배경 애니메이션용 원 위치 생성
   const circleVariants = {
     animate: (i: number) => ({
@@ -1046,12 +1073,12 @@ const JobProfile: React.FC = () => {
       transition: {
         duration: 4 + i,
         repeat: Infinity,
-        ease: "easeInOut",
-        delay: i * 0.3
-      }
-    })
+        ease: 'easeInOut',
+        delay: i * 0.3,
+      },
+    }),
   };
-  
+
   // 커스텀 스텝 표시
   const renderCustomStepper = () => {
     return (
@@ -1071,9 +1098,9 @@ const JobProfile: React.FC = () => {
         {stepLabels.map((label, index) => {
           const isActive = currentStep === index + 1;
           const isCompleted = currentStep > index + 1;
-          
+
           return (
-            <Box 
+            <Box
               key={index}
               sx={{
                 display: 'flex',
@@ -1094,12 +1121,11 @@ const JobProfile: React.FC = () => {
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center',
-                  background: isActive || isCompleted 
-                    ? `linear-gradient(135deg, ${primaryColor} 0%, ${alpha(primaryColor, 0.8)} 100%)`
-                    : theme.palette.grey[200],
-                  boxShadow: isActive 
-                    ? `0 4px 12px ${alpha(primaryColor, 0.3)}`
-                    : 'none',
+                  background:
+                    isActive || isCompleted
+                      ? `linear-gradient(135deg, ${primaryColor} 0%, ${alpha(primaryColor, 0.8)} 100%)`
+                      : theme.palette.grey[200],
+                  boxShadow: isActive ? `0 4px 12px ${alpha(primaryColor, 0.3)}` : 'none',
                   mb: 1,
                   transition: 'all 0.3s ease',
                   transform: isActive ? 'scale(1.1)' : 'scale(1)',
@@ -1112,7 +1138,7 @@ const JobProfile: React.FC = () => {
                   <Typography sx={{ fontWeight: 600 }}>{index + 1}</Typography>
                 )}
               </Box>
-              
+
               <Typography
                 variant="caption"
                 sx={{
@@ -1132,7 +1158,7 @@ const JobProfile: React.FC = () => {
       </Box>
     );
   };
-  
+
   // 다음 버튼 비활성화 여부 확인
   const isNextDisabled = () => {
     switch (currentStep) {
@@ -1154,7 +1180,7 @@ const JobProfile: React.FC = () => {
         return false;
     }
   };
-  
+
   return (
     <Box
       sx={{
@@ -1187,34 +1213,34 @@ const JobProfile: React.FC = () => {
           />
         ))}
       </AnimatedBackground>
-      
+
       <Container maxWidth="md" sx={{ py: 2, zIndex: 1, width: '100%' }}>
         {/* 헤더 */}
-        <Box 
-          sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
             mb: 4,
             mt: 2,
           }}
         >
-          <IconButton 
+          <IconButton
             onClick={handleBack}
-            sx={{ 
+            sx={{
               mr: 2,
               color: 'text.secondary',
-              '&:hover': { color: primaryColor }
+              '&:hover': { color: primaryColor },
             }}
           >
             <ArrowBackIcon />
           </IconButton>
-          
+
           <Box>
-            <Typography 
-              variant="h4" 
-              component="h1" 
-              sx={{ 
-                fontWeight: 600, 
+            <Typography
+              variant="h4"
+              component="h1"
+              sx={{
+                fontWeight: 600,
                 color: 'text.primary',
                 fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' },
                 letterSpacing: '-0.01em',
@@ -1222,9 +1248,9 @@ const JobProfile: React.FC = () => {
             >
               취업 프로필 설정
             </Typography>
-            <Typography 
-              variant="body2" 
-              sx={{ 
+            <Typography
+              variant="body2"
+              sx={{
                 color: 'text.secondary',
                 opacity: 0.85,
               }}
@@ -1233,10 +1259,10 @@ const JobProfile: React.FC = () => {
             </Typography>
           </Box>
         </Box>
-        
+
         {/* 스텝퍼 */}
         {renderCustomStepper()}
-        
+
         {/* 메인 콘텐츠 */}
         <motion.div
           key={currentStep}
@@ -1247,11 +1273,11 @@ const JobProfile: React.FC = () => {
         >
           {renderFormByStep()}
         </motion.div>
-        
+
         {/* 버튼 */}
-        <Box 
-          sx={{ 
-            display: 'flex', 
+        <Box
+          sx={{
+            display: 'flex',
             justifyContent: 'space-between',
             mt: 4,
             mb: 6,
@@ -1276,7 +1302,7 @@ const JobProfile: React.FC = () => {
           >
             이전
           </Button>
-          
+
           <Button
             variant="contained"
             onClick={currentStep === totalSteps ? handleSubmit : handleNext}
@@ -1306,4 +1332,4 @@ const JobProfile: React.FC = () => {
   );
 };
 
-export default JobProfile; 
+export default JobProfile;
