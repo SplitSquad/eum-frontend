@@ -116,7 +116,7 @@ const FloatingNavigator = ({ isHeaderVisible }: FloatingNavigatorProps) => {
   }
 
   const navItems = [
-    { label: t('common.home'), icon: <HomeIcon />, path: '/home' },
+    { label: t('common.home'), icon: <HomeIcon />, path: '/dashboard' },
     { label: t('common.community'), icon: <ForumIcon />, path: '/community' },
     { label: t('common.info'), icon: <ForumIcon />, path: '/info' },
     { label: t('common.debate'), icon: <FireIcon>🔥</FireIcon>, path: '/debate' },

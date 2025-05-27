@@ -11,13 +11,13 @@ import { Outlet } from 'react-router-dom';
 import eum2Image from '@/assets/images/characters/이음이.png';
 import '../../app/App.css';
 import { Container } from '@mui/material';
+import useLayoutVisibility from './useLayoutVisibility';
 
 export default function AppLayout() {
   const { isModalOpen, content, position, openModal, closeModal } = useModalStore();
   const { isAuthenticated, loadUser } = useAuthStore();
   const btnRef = useRef<HTMLImageElement>(null);
-  const [isHeaderVisible, setIsHeaderVisible] = React.useState(true);
-  const [isModalVisible, setIsModalVisible] = React.useState(true);
+  const { isHeaderVisible, isModalVisible } = useLayoutVisibility();
 
   // 기존의 updateVisibility, useEffect 등은 필요에 따라 커스텀 훅으로 분리 가능
   // 여기서는 간단히 유지

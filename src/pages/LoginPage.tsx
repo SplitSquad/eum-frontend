@@ -81,7 +81,7 @@ const LoginPage: React.FC = () => {
 
     // 인증 상태가 true이고 토큰이 있으면 홈으로 이동
     if (isAuthenticated && token) {
-      navigate('/home');
+      navigate('/dashboard');
     }
   }, [isAuthenticated, user, token, navigate]);
 
@@ -110,7 +110,7 @@ const LoginPage: React.FC = () => {
       handleLogin(token, user);
 
       // 홈페이지로 리디렉션
-      navigate('/home');
+      navigate('/dashboard');
     } catch (err) {
       setError('로그인 처리 중 오류가 발생했습니다.');
       console.error('로그인 처리 실패:', err);

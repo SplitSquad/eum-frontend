@@ -471,7 +471,7 @@ const JobProfile: React.FC = () => {
       await useAuthStore.getState().loadUser();
 
       // 메인 페이지로 이동
-      navigate('/home');
+      navigate('/dashboard');
     } catch (error) {
       console.error('온보딩 데이터 저장 실패:', error);
     } finally {

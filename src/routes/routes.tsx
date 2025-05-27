@@ -8,7 +8,7 @@ import { LanguageProvider } from '../features/theme';
 import AiAssistant from '@/pages/AiAssistant';
 import SignUpPage from '@/features/auth/pages/SignUpPage';
 import Loading from '@/pages/Loading';
-
+import Welcome from '@/pages/Welcome';
 // 커뮤니티 기능 임포트
 // import { PostListPage, PostDetailPage, PostCreatePage } from '../features/community/pages';
 import { CommunityRoutes } from '../features/community';
@@ -58,6 +58,16 @@ const router = createBrowserRouter([
           <Suspense fallback={<LoadingFallback />}>
             <Init isLoaded={false} />
           </Suspense>
+        ),
+      },
+      {
+        path: '/home',
+        element: (
+          <GuestGuard>
+            <Suspense fallback={<LoadingFallback />}>
+              <Welcome />
+            </Suspense>
+          </GuestGuard>
         ),
       },
       {
@@ -116,16 +126,6 @@ const router = createBrowserRouter([
       {
         loader: requireUser,
         children: [
-          {
-            path: '/home',
-            element: (
-              <AuthGuard>
-                <Suspense fallback={<LoadingFallback />}>
-                  <Home />
-                </Suspense>
-              </AuthGuard>
-            ),
-          },
           {
             path: '/dashboard',
             element: (

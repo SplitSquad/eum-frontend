@@ -112,7 +112,7 @@ const OAuthCallbackPage: React.FC = () => {
               navigate('/onboarding');
             } else {
               // 기존 사용자는 홈페이지로
-              navigate('/home');
+              navigate('/dashboard');
             }
           } else {
             console.error('로그인 실패: 유저 정보가 없음');

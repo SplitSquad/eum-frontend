@@ -337,7 +337,7 @@ function logMenuClick(menuName: string, currentPath: string, clickPath: string) 
 
 // 네비게이션 항목 정의
 const getNavItems = (t: (key: string) => string) => [
-  { name: t('common.home'), path: '/home', icon: <HomeIcon /> },
+  { name: t('common.home'), path: '/dashboard', icon: <HomeIcon /> },
   { name: t('common.info'), path: '/info', icon: <ForumIcon /> },
   {
     name: t('common.community'),
