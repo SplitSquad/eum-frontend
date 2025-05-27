@@ -54,7 +54,7 @@ export default function InfoDetailPage() {
 
   return (
     <div className="h-auto w-auto bg-[rgba(255,255,255,0.95)] backdrop-blur-md mb-4">
-      <InfoDetailHeader onEdit={handleEdit} onDelete={handleDelete} />
+      <InfoDetailHeader onEdit={handleEdit} onDelete={handleDelete} onBack={() => navigate(-1)} />
       <Divider sx={{ borderColor: '#e0e0e0' }} />
       <InfoDetailBody />
     </div>

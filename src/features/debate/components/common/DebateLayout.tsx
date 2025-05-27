@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Container, styled, Typography, useTheme, useMediaQuery } from '@mui/material';
 import Header, { HeaderProps } from './Header';
 import Toast from './Toast';
+import PageHeaderText from '@/components/layout/PageHeaderText';
 
 const LayoutContent = styled(Box)({
   display: 'flex',
@@ -54,28 +55,8 @@ const DebateLayout: React.FC<DebateLayoutProps> = ({
   return (
     <div>
       {/* 페이지 헤더 */}
-      <Box
-        sx={{
-          mb: 3,
-          display: 'flex',
-          flexDirection: isMobile ? 'column' : 'row',
-          justifyContent: 'space-between',
-          alignItems: isMobile ? 'flex-start' : 'center',
-          gap: 2,
-        }}
-      >
-        <Typography
-          variant={isMobile ? 'h5' : 'h4'}
-          component="h1"
-          sx={{
-            fontWeight: 600,
-            color: '#555',
-            fontFamily: '"Noto Sans KR", sans-serif',
-          }}
-        >
-          토론 게시판
-        </Typography>
-      </Box>
+      <PageHeaderText isMobile={isMobile}>토론 게시판</PageHeaderText>
+
       <LayoutContent>
         {showSidebar && sidebar && <Sidebar>{sidebar}</Sidebar>}
         <Main>{children}</Main>
