@@ -69,9 +69,10 @@ body,
 /* 텍스트 스타일 */
 .tiptap.ProseMirror {
   font-family: 'DM Sans', sans-serif;
-  padding: 2rem 2rem; // 내부 패딩 (적당한 여백)
+  padding: 1.25rem 1.25rem; // 내부 패딩 (절반으로 줄임)
+  background: transparent;
 
   @media screen and (max-width: 480px) {
-    padding: 1rem 1.5rem;
+    padding: 0.5rem 0.75rem;
   }
 }

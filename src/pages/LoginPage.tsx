@@ -10,11 +10,25 @@ import {
   useTheme,
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import GoogleLoginButton from '../features/auth/components/GoogleLoginButton';
 import useAuthStore from '../features/auth/store/authStore';
 import LoginButton from '../features/auth/components/LoginButton';
-import { useTranslation } from '../shared/i18n';
+import { useSnackbar } from 'notistack';
+
+const TransparentSnackbar = styled('div')(() => ({
+  borderRadius: 10,
+  padding: '10px 16px',
+  fontWeight: 600,
+  fontSize: '0.95rem',
+  color: '#fff',
+  background: 'rgba(255,182,193,0.85)', // 반투명 분홍색
+  boxShadow: '0 4px 16px rgba(255, 170, 165, 0.15)',
+  display: 'flex',
+  alignItems: 'center',
+  gap: 12,
+}));
+
 // 로그인 카드 스타일
 const LoginCard = styled(Paper)`
   padding: 2rem;
@@ -52,21 +66,36 @@ const Subtitle = styled(Typography)`
  * 봄 테마를 적용한 디자인으로 구글 로그인 기능 제공
  */
 const LoginPage: React.FC = () => {
-  const { t } = useTranslation();
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const { isAuthenticated, handleLogin } = useAuthStore();
+  const { isAuthenticated, user, token, handleLogin } = useAuthStore();
   const [error, setError] = useState<string | null>(null);
+  const [qs] = useSearchParams();
+  const { enqueueSnackbar } = useSnackbar();
 
   // 이미 로그인되어 있으면 메인 페이지로 리디렉션
   useEffect(() => {
-    // sessionStorage에도 토큰이 있으면 로그인 상태로 간주
-    const token = sessionStorage.getItem('auth_token');
-    if (isAuthenticated || token) {
-      navigate('/home');
+    // 인증 상태가 확정되지 않았으면 대기
+    if (isAuthenticated === undefined || user === undefined) return;
+
+    // 인증 상태가 true이고 토큰이 있으면 홈으로 이동
+    if (isAuthenticated && token) {
+      navigate('/dashboard');
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, user, token, navigate]);
+
+  useEffect(() => {
+    if (qs.has('from')) {
+      enqueueSnackbar('로그인 후 서비스 이용이 가능합니다.', {
+        variant: 'warning',
+        autoHideDuration: 1500,
+        content: (key, message) => (
+          <TransparentSnackbar id={key as string}>{message}</TransparentSnackbar>
+        ),
+      });
+    }
+  }, [qs, enqueueSnackbar]);
 
   const handleLoginSuccess = (response: any) => {
     try {
@@ -74,22 +103,22 @@ const LoginPage: React.FC = () => {
       const { token, user } = response;
 
       if (!token || !user) {
-        throw new Error(t('auth.invalidLoginInfo'));
+        throw new Error('로그인 정보가 올바르지 않습니다.');
       }
 
       // 전역 상태에 로그인 정보 저장
       handleLogin(token, user);
 
       // 홈페이지로 리디렉션
-      navigate('/home');
+      navigate('/dashboard');
     } catch (err) {
-      setError(t('auth.loginError'));
+      setError('로그인 처리 중 오류가 발생했습니다.');
       console.error('로그인 처리 실패:', err);
     }
   };
 
   const handleLoginError = (error: any) => {
-    setError(t('auth.googleLoginError'));
+    setError('구글 로그인 중 오류가 발생했습니다. 다시 시도해주세요.');
     console.error('구글 로그인 오류:', error);
   };
 
@@ -118,13 +147,13 @@ const LoginPage: React.FC = () => {
                   fontFamily: '"Roboto", "Noto Sans KR", sans-serif',
                 }}
               >
-                {t('auth.springMemories')}
+                봄날의 기억
               </Typography>
             </LogoContainer>
 
-            <PageTitle variant={isMobile ? 'h5' : 'h4'}>{t('auth.welcome')}</PageTitle>
+            <PageTitle variant={isMobile ? 'h5' : 'h4'}>환영합니다</PageTitle>
 
-            <Subtitle variant="body1">{t('auth.loginDescription')}</Subtitle>
+            <Subtitle variant="body1">구글 계정으로 간편하게 로그인하세요</Subtitle>
 
             {error && (
               <Box mb={3}>
@@ -153,14 +182,14 @@ const LoginPage: React.FC = () => {
               <GoogleLoginButton
                 onSuccess={handleLoginSuccess}
                 onError={handleLoginError}
-                buttonText={t('auth.loginWithGoogleButton')}
+                buttonText="구글 계정으로 로그인"
               />
-              <LoginButton buttonText={t('auth.loginWithGeneral')} />
+              <LoginButton buttonText="일반 계정으로 로그인" />
             </Box>
 
             <Box mt={4}>
               <Typography variant="caption" color="textSecondary">
-                {t('auth.termsAgreement')}
+                로그인 시 서비스 이용약관 및 개인정보 처리방침에 동의하게 됩니다.
               </Typography>
             </Box>
           </LoginCard>

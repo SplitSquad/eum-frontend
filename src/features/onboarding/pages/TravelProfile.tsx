@@ -38,6 +38,7 @@ import { useTranslation } from '../../../shared/i18n';
 import { saveOnboardingData } from '../api/onboardingApi';
 import { koreanCities, koreanTouristAttractions } from '../data/koreaData';
 import { motion } from 'framer-motion';
+import { useAuthStore } from '../../auth/store/authStore';
 
 // 아이콘 임포트
 import PersonIcon from '@mui/icons-material/Person';
@@ -442,8 +443,11 @@ const TravelProfile: React.FC = () => {
         // 에러를 throw하지 않고 계속 진행
       }
 
+      // store의 사용자 정보 최신화
+      await useAuthStore.getState().loadUser();
+
       // 메인 페이지로 이동
-      navigate('/home');
+      navigate('/dashboard');
     } catch (error) {
       console.error('온보딩 데이터 저장 실패:', error);
     } finally {
