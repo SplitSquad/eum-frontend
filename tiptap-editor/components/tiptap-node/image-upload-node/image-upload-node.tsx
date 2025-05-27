@@ -21,13 +21,14 @@ interface UploadOptions {
     file: File,
     onProgress: (event: { progress: number }) => void,
     signal: AbortSignal
-  ) => Promise<string>;
+  ) => Promise<string | { url?: string; data?: { url?: string } }>;
   onSuccess?: (url: string) => void;
   onError?: (error: Error) => void;
 }
 
 function useFileUpload(options: UploadOptions) {
   const [fileItem, setFileItem] = React.useState<FileItem | null>(null);
+  const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
 
   const uploadFile = async (file: File): Promise<string | null> => {
     if (file.size > options.maxSize) {
@@ -68,21 +69,20 @@ function useFileUpload(options: UploadOptions) {
         },
         abortController.signal
       );
-
       if (!url) throw new Error('Upload failed: No URL returned');
-
+      setPreviewUrl(url as string);
       if (!abortController.signal.aborted) {
         setFileItem(prev => {
           if (!prev) return null;
           return {
             ...prev,
             status: 'success',
-            url,
+            url: url as string,
             progress: 100,
           };
         });
-        options.onSuccess?.(url);
-        return url;
+        options.onSuccess?.(url as string);
+        return url as string;
       }
 
       return null;
@@ -140,6 +140,7 @@ function useFileUpload(options: UploadOptions) {
     fileItem,
     uploadFiles,
     clearFileItem,
+    previewUrl,
   };
 }
 
@@ -242,6 +243,7 @@ interface ImageUploadPreviewProps {
   progress: number;
   status: 'uploading' | 'success' | 'error';
   onRemove: () => void;
+  previewUrl?: string;
 }
 
 const ImageUploadPreview: React.FC<ImageUploadPreviewProps> = ({
@@ -249,6 +251,7 @@ const ImageUploadPreview: React.FC<ImageUploadPreviewProps> = ({
   progress,
   status,
   onRemove,
+  previewUrl,
 }) => {
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
@@ -257,6 +260,8 @@ const ImageUploadPreview: React.FC<ImageUploadPreviewProps> = ({
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
   };
+
+  console.log('ImageUploadPreview', { previewUrl, status, file });
 
   return (
     <div className="tiptap-image-upload-preview">
@@ -289,6 +294,15 @@ const ImageUploadPreview: React.FC<ImageUploadPreviewProps> = ({
           </button>
         </div>
       </div>
+      {status === 'success' && previewUrl && (
+        <div className="tiptap-image-upload-img-preview">
+          <img
+            src={previewUrl}
+            alt="업로드 이미지 미리보기"
+            style={{ maxWidth: '100%', maxHeight: 200, marginTop: 8, borderRadius: 8 }}
+          />
+        </div>
+      )}
     </div>
   );
 };
@@ -328,7 +342,7 @@ export const ImageUploadNode: React.FC<NodeViewProps> = props => {
     onError: extension.options.onError,
   };
 
-  const { fileItem, uploadFiles, clearFileItem } = useFileUpload(uploadOptions);
+  const { fileItem, uploadFiles, clearFileItem, previewUrl } = useFileUpload(uploadOptions);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -381,6 +395,7 @@ export const ImageUploadNode: React.FC<NodeViewProps> = props => {
           progress={fileItem.progress}
           status={fileItem.status}
           onRemove={clearFileItem}
+          previewUrl={previewUrl ?? undefined}
         />
       )}
 

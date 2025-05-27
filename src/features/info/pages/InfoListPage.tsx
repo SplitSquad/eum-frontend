@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from '../../../shared/i18n';
-import { useInfoStore } from '@/features/info/store/InfoStroe';
+import { useInfoStore } from '@/features/info/store/infoStroe';
 import {
   Typography,
   useTheme,
@@ -408,7 +408,7 @@ export default function InfoListPage() {
                         <h3 className="font-medium text-gray-900 mb-1">{category.label}</h3>
                         <p className="text-sm text-gray-500">
                           {t('infoPage.content.postsCount', {
-                            count: categoryCounts[category.key] || 0,
+                            count: String(categoryCounts[category.key] || 0),
                           })}
                         </p>
                       </div>

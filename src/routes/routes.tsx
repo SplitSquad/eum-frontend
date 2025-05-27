@@ -180,9 +180,7 @@ const router = createBrowserRouter([
             path: '/adminpage/*',
             element: (
               <Suspense fallback={<LoadingFallback />}>
-                <RoleGuard requiredRole="ROLE_ADMIN">
-                  <AdminpageRoutes />
-                </RoleGuard>
+                <AdminpageRoutes />
               </Suspense>
             ),
           },
