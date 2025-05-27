@@ -700,6 +700,45 @@ const de = {
       koreanLearning: 'Koreanisch lernen: 1345 (Multikulturelle Familien-Unterstützungszentrum)',
     },
   },
+  aiAssistant: {
+    title: 'Korea Leben Assistent',
+    subtitle: 'Korea Lebensführer mit KI-Experte',
+    greeting: 'Hallo! Ich bin ein KI-Experte im Bereich {{category}}.',
+    categories: {
+      all: '🌏 Alle',
+      visa: '📑 Visa/Rechtlich',
+      social: '🏛 Sozialversicherung',
+      tax: '💰 Steuern/Finanzen',
+      health: '🚑 Medizin/Gesundheit',
+      employment: '💼 Beschäftigung/Arbeit',
+      life: '👨‍👩‍👧 Alltag',
+    },
+    sidebar: {
+      title: '📚 Kategorienführer',
+      autoSelectInfo: 'Kategorien werden automatisch basierend auf Ihren Fragen ausgewählt',
+    },
+    chat: {
+      title: '💬 Schriftliche Unterhaltung',
+      currentField: '{{category}} Bereich',
+      placeholder: 'Fragen Sie gerne alles...',
+      send: 'Senden',
+      sending: 'Wird gesendet...',
+      loading: 'Antwort wird vorbereitet...',
+      initialMessage: 'Wie kann ich Ihnen helfen?',
+      aiExpert: 'KI-Experte',
+      justNow: 'Gerade eben',
+    },
+    suggestions: [
+      'Welche Grunddokumente brauche ich in Korea?',
+      'Wie kann ich in Korea arbeiten?',
+      'Was sind gute Wege, Koreanisch zu lernen?',
+    ],
+    errors: {
+      responseError: 'Ein Fehler ist beim Antworten aufgetreten.',
+      networkError: 'Bitte überprüfen Sie Ihre Netzwerkverbindung.',
+      loginRequired: 'Anmeldung ist für diese Funktion erforderlich.',
+    },
+  },
 };
 
 export default de; 

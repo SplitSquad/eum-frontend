@@ -705,6 +705,45 @@ const es = {
       koreanLearning: 'Aprendizaje de coreano: 1345 (Centro de apoyo a familias multiculturales)',
     },
   },
+  aiAssistant: {
+    title: 'Asistente de Vida en Corea',
+    subtitle: 'Guía de Vida en Corea con Experto IA',
+    greeting: '¡Hola! Soy un experto en IA en el campo de {{category}}.',
+    categories: {
+      all: '🌏 Todo',
+      visa: '📑 Visa/Legal',
+      social: '🏛 Seguridad Social',
+      tax: '💰 Impuestos/Finanzas',
+      health: '🚑 Médico/Salud',
+      employment: '💼 Empleo/Trabajo',
+      life: '👨‍👩‍👧 Vida Diaria',
+    },
+    sidebar: {
+      title: '📚 Guía por Categorías',
+      autoSelectInfo: 'Las categorías se seleccionan automáticamente según sus preguntas',
+    },
+    chat: {
+      title: '💬 Conversación Escrita',
+      currentField: 'Campo {{category}}',
+      placeholder: 'Siéntase libre de preguntar cualquier cosa...',
+      send: 'Enviar',
+      sending: 'Enviando...',
+      loading: 'Preparando respuesta...',
+      initialMessage: '¿Cómo puedo ayudarte?',
+      aiExpert: 'Experto IA',
+      justNow: 'Ahora mismo',
+    },
+    suggestions: [
+      '¿Qué documentos básicos necesito en Corea?',
+      '¿Cómo puedo trabajar en Corea?',
+      '¿Cuáles son las buenas formas de aprender coreano?',
+    ],
+    errors: {
+      responseError: 'Ocurrió un error al responder.',
+      networkError: 'Por favor, verifique su conexión de red.',
+      loginRequired: 'Se requiere iniciar sesión para esta función.',
+    },
+  },
 };
 
 export default es; 

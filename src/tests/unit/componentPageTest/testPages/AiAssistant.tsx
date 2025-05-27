@@ -1,20 +1,23 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Container from '@mui/material/Container';
 import CategorySidebar, { Category } from '@/features/assistant/components/ChatCategory';
 import ChatContent from '@/features/assistant/components/ChatContent';
 import { Box, Typography } from '@mui/material';
+import { useTranslation } from '../../../../shared/i18n';
+import { useLanguageStore } from '@/features/theme/store/languageStore';
+import { useAiAssistantStore } from '@/features/assistant/store/aiAssistantStore';
 
 // Chatbot에서 다룰 각 정보 분류(카테고리)를 여기서 정의
-const categories: Category[] = [
-  { key: 'all', label: '🌏 전체' },
-  { key: 'visa', label: '📑 체류자격/비자' },
-  { key: 'social', label: '🏛 사회보장제도' },
-  { key: 'tax', label: '💰 세금/금융' },
-  { key: 'health', label: '🚑 의료/건강' },
-  { key: 'employment', label: '💼 구인/구직' },
-  { key: 'life', label: '👨‍👩‍👧 일상생활' },
+const getCategoriesWithTranslation = (t: any): Category[] => [
+  { key: 'all', label: t('aiAssistant.categories.all') },
+  { key: 'visa', label: t('aiAssistant.categories.visa') },
+  { key: 'social', label: t('aiAssistant.categories.social') },
+  { key: 'tax', label: t('aiAssistant.categories.tax') },
+  { key: 'health', label: t('aiAssistant.categories.health') },
+  { key: 'employment', label: t('aiAssistant.categories.employment') },
+  { key: 'life', label: t('aiAssistant.categories.life') },
 ];
 
 /**
@@ -23,10 +26,19 @@ const categories: Category[] = [
  */
 
 export default function AiAssistant() {
-  // 현재 선택된 카테고리 키를 상태로 관리
-  const [selectedKey, setSelectedKey] = useState<string>('all'); // default는 전체로 설정
+  const { t } = useTranslation();
+  const { language } = useLanguageStore();
+  const { 
+    selectedCategory, 
+    setSelectedCategory,
+    forceRefresh 
+  } = useAiAssistantStore();
+  
+  // 번역된 카테고리 목록 생성
+  const categories = getCategoriesWithTranslation(t);
+  
   // 선택된 key에 해당하는 카테고리 객체를 찾도록 구현
-  const selected = categories.find(c => c.key === selectedKey)!;
+  const selected = categories.find(c => c.key === selectedCategory)!;
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -94,7 +106,7 @@ export default function AiAssistant() {
                   letterSpacing: '0.1em'
                 }}
               >
-                智慧問答所
+                {t('aiAssistant.title')}
               </h1>
               <p 
                 className="text-lg opacity-90"
@@ -104,7 +116,7 @@ export default function AiAssistant() {
                   letterSpacing: '0.05em'
                 }}
               >
-                AI 전문가와 함께하는 한국생활 길잡이
+                {t('aiAssistant.subtitle')}
               </p>
             </div>
           </div>
@@ -141,17 +153,13 @@ export default function AiAssistant() {
                 fontWeight: '500'
               }}
             >
-              안녕하세요! {selected.label} 분야의 AI 전문가입니다.
+              {t('aiAssistant.greeting', { category: selected.label })}
             </p>
           </div>
 
           {/* 추천 질문 버튼들 */}
           <div className="flex flex-wrap justify-center gap-3 mt-6 max-w-4xl mx-auto px-4">
-            {[
-              '한국에서 필요한 기본 서류는?', 
-              '한국에서 일하려면 어떻게 해야 하나요?', 
-              '한국어 배우는 좋은 방법이 있을까요?'
-            ].map((question, index) => (
+            {t('aiAssistant.suggestions').map((question: string, index: number) => (
               <button
                 key={question}
                 className="group relative overflow-hidden transition-all duration-300 hover:scale-105"
@@ -187,12 +195,12 @@ export default function AiAssistant() {
         <div className="flex gap-8 max-w-7xl mx-auto px-6 pb-8">
           {/* 왼쪽 사이드바 - 카테고리 */}
           <div className="w-80">
-            <CategorySidebar categories={categories} selectedKey={selectedKey} />
+            <CategorySidebar categories={categories} selectedKey={selectedCategory} />
           </div>
 
           {/* 오른쪽 채팅 영역 */}
           <div className="flex-1">
-            <ChatContent categoryLabel={selected.label} onCategoryChange={setSelectedKey} />
+            <ChatContent categoryLabel={selected.label} onCategoryChange={setSelectedCategory} />
           </div>
         </div>
       </div>

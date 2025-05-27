@@ -711,6 +711,45 @@ const ko = {
       koreanLearning: '한국어 학습: 1345 (다문화가족지원센터)',
     },
   },
+  aiAssistant: {
+    title: '한국생활 도우미',
+    subtitle: 'AI 전문가와 함께하는 한국생활 길잡이',
+    greeting: '안녕하세요! {{category}} 분야의 AI 전문가입니다.',
+    categories: {
+      all: '🌏 전체',
+      visa: '📑 체류자격/비자',
+      social: '🏛 사회보장제도',
+      tax: '💰 세금/금융',
+      health: '🚑 의료/건강',
+      employment: '💼 구인/구직',
+      life: '👨‍👩‍👧 일상생활',
+    },
+    sidebar: {
+      title: '📚 분야별 안내',
+      autoSelectInfo: '질문하시면 자동으로 분야가 선택됩니다',
+    },
+    chat: {
+      title: '💬 필담 나누기',
+      currentField: '{{category}} 분야',
+      placeholder: '궁금한 것을 자유롭게 물어보세요...',
+      send: '전송',
+      sending: '전송 중...',
+      loading: '답변을 준비하고 있습니다...',
+      initialMessage: '무엇을 도와드릴까요?',
+      aiExpert: 'AI 전문가',
+      justNow: '방금 전',
+    },
+    suggestions: [
+      '한국에서 필요한 기본 서류는?',
+      '한국에서 일하려면 어떻게 해야 하나요?',
+      '한국어 배우는 좋은 방법이 있을까요?',
+    ],
+    errors: {
+      responseError: '응답 중 오류가 발생했습니다.',
+      networkError: '네트워크 연결을 확인해주세요.',
+      loginRequired: '로그인이 필요한 기능입니다.',
+    },
+  },
 };
 
 export default ko;

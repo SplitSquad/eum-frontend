@@ -5,6 +5,9 @@ import { fetchChatbotResponse } from '@/features/assistant/api/ChatApi';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Box, Typography } from '@mui/material';
+import { useTranslation } from '../../../shared/i18n';
+import { useLanguageStore } from '@/features/theme/store/languageStore';
+import { useAiAssistantStore } from '@/features/assistant/store/aiAssistantStore';
 
 /**-----------------------------------웹로그 관련------------------------------------ **/
 // userId 꺼내오는 헬퍼
@@ -72,19 +75,44 @@ export default function ChatContent({
   categoryLabel = '전체',
   onCategoryChange,
 }: ChatContentProps) {
-  // 메시지 목록, 초기 봇 메시지 포함
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: Date.now(),
-      sender: 'bot',
-      text: '무엇을 도와드릴까요?',
-      displayText: '무엇을 도와드릴까요?',
-      isTyping: false,
-    },
-  ]);
+  const { t } = useTranslation();
+  const { language } = useLanguageStore();
+  const { messages, setMessages, loading, setLoading, forceRefresh } = useAiAssistantStore();
+  
   const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
+  
+  // 컴포넌트 마운트 시 초기 메시지가 없으면 설정
+  useEffect(() => {
+    if (messages.length === 0) {
+      console.log('[ChatContent] 초기 메시지 설정');
+      const initialMessage = {
+        id: Date.now(),
+        sender: 'bot' as const,
+        text: t('aiAssistant.chat.initialMessage'),
+        displayText: t('aiAssistant.chat.initialMessage'),
+        isTyping: false,
+      };
+      setMessages([initialMessage]);
+    }
+  }, [messages.length, t]); // setMessages 제거
+
+  // 언어 변경 감지 시 메시지 초기화
+  const prevLanguageRef = useRef(language);
+  useEffect(() => {
+    if (prevLanguageRef.current !== language) {
+      console.log('[ChatContent] 언어 변경 감지, 메시지 초기화:', prevLanguageRef.current, '->', language);
+      const initialMessage = {
+        id: Date.now(),
+        sender: 'bot' as const,
+        text: t('aiAssistant.chat.initialMessage'),
+        displayText: t('aiAssistant.chat.initialMessage'),
+        isTyping: false,
+      };
+      setMessages([initialMessage]);
+      prevLanguageRef.current = language;
+    }
+  }, [language, t]); // setMessages 제거
 
   /**
    * 메시지 전송 핸들러
@@ -161,8 +189,8 @@ export default function ChatContent({
         {
           id: Date.now() + 2,
           sender: 'bot',
-          text: '응답 중 오류가 발생했습니다.',
-          displayText: '응답 중 오류가 발생했습니다.',
+          text: t('aiAssistant.errors.responseError'),
+          displayText: t('aiAssistant.errors.responseError'),
           isTyping: false,
         },
       ]);
@@ -245,7 +273,7 @@ export default function ChatContent({
                 letterSpacing: '0.05em'
               }}
             >
-              💬 필담 나누기
+              {t('aiAssistant.chat.title')}
             </h3>
             <div 
               className="px-3 py-1 rounded-full text-sm"
@@ -256,7 +284,7 @@ export default function ChatContent({
                 fontWeight: '500'
               }}
             >
-              {categoryLabel} 분야
+              {t('aiAssistant.chat.currentField', { category: categoryLabel })}
             </div>
           </div>
         </div>
@@ -318,7 +346,7 @@ export default function ChatContent({
                     className="text-xs mt-1 text-right opacity-60"
                     style={{ color: '#8B4513' }}
                   >
-                    방금 전
+                    {t('aiAssistant.chat.justNow')}
                   </div>
                 </div>
               ) : (
@@ -381,7 +409,7 @@ export default function ChatContent({
                     className="text-xs mt-1 opacity-60"
                     style={{ color: '#8B4513' }}
                   >
-                    AI 전문가
+                    {t('aiAssistant.chat.aiExpert')}
                   </div>
                 </div>
               )}
@@ -405,7 +433,7 @@ export default function ChatContent({
                     <div className="w-2 h-2 bg-amber-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
                     <div className="w-2 h-2 bg-amber-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
                   </div>
-                  <span className="text-sm font-medium">답변을 준비하고 있습니다...</span>
+                  <span className="text-sm font-medium">{t('aiAssistant.chat.loading')}</span>
                 </div>
               </div>
             </div>
@@ -438,7 +466,7 @@ export default function ChatContent({
                   boxShadow: 'inset 0 2px 4px rgba(139, 69, 19, 0.1)',
                   backdropFilter: 'blur(10px)'
                 }}
-                placeholder="궁금한 것을 자유롭게 물어보세요..."
+                placeholder={t('aiAssistant.chat.placeholder')}
                 onFocus={(e) => {
                   e.target.style.borderColor = 'rgba(212, 175, 55, 0.5)';
                   e.target.style.boxShadow = '0 0 0 3px rgba(212, 175, 55, 0.1), inset 0 2px 4px rgba(139, 69, 19, 0.1)';
@@ -466,7 +494,7 @@ export default function ChatContent({
                 letterSpacing: '0.02em'
               }}
             >
-              {loading ? '전송 중...' : '전송'}
+              {loading ? t('aiAssistant.chat.sending') : t('aiAssistant.chat.send')}
             </button>
           </div>
         </div>

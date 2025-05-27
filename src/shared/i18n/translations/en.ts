@@ -711,6 +711,45 @@ const en = {
       koreanLearning: 'Korean Learning: 1345 (Multicultural Family Support Center)',
     },
   },
+  aiAssistant: {
+    title: 'Korea Life Assistant',
+    subtitle: 'Korea Life Guide with AI Expert',
+    greeting: 'Hello! I am an AI expert in {{category}} field.',
+    categories: {
+      all: '🌏 All',
+      visa: '📑 Visa/Legal',
+      social: '🏛 Social Security',
+      tax: '💰 Tax/Finance',
+      health: '🚑 Medical/Health',
+      employment: '💼 Employment/Jobs',
+      life: '👨‍👩‍👧 Daily Life',
+    },
+    sidebar: {
+      title: '📚 Category Guide',
+      autoSelectInfo: 'Categories are automatically selected based on your questions',
+    },
+    chat: {
+      title: '💬 Written Conversation',
+      currentField: '{{category}} Field',
+      placeholder: 'Feel free to ask anything...',
+      send: 'Send',
+      sending: 'Sending...',
+      loading: 'Preparing response...',
+      initialMessage: 'How can I help you?',
+      aiExpert: 'AI Expert',
+      justNow: 'Just now',
+    },
+    suggestions: [
+      'What basic documents do I need in Korea?',
+      'How can I work in Korea?',
+      'What are good ways to learn Korean?',
+    ],
+    errors: {
+      responseError: 'An error occurred while responding.',
+      networkError: 'Please check your network connection.',
+      loginRequired: 'Login is required for this feature.',
+    },
+  },
 };
 
 export default en;
