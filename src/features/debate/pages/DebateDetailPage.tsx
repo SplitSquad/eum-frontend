@@ -34,6 +34,7 @@ import DebateApi, { getVotesByDebateId } from '../api/debateApi';
 // Import the recharts library for pie charts
 // The recharts package should be installed with: npm install recharts
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { useTranslation } from '@/shared/i18n';
 
 /**-----------------------------------웹로그 관련------------------------------------ **/
 // userId 꺼내오는 헬퍼
@@ -304,6 +305,7 @@ type EmotionType = 'like' | 'dislike' | 'sad' | 'angry' | 'confused';
  */
 const DebateDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const {
     currentDebate: debate,
@@ -342,58 +344,42 @@ const DebateDetailPage: React.FC = () => {
 
   // 토론 상세 불러온 후 댓글도 불러오기
   useEffect(() => {
-    if (debate && id) {
-      // 댓글 목록 로드
-      fetchComments(parseInt(id));
-
-      // 디버깅용 로그
-      console.log('토론 데이터 로드됨:', debate);
-      console.log('투표 상태 (isVotedState):', debate.isVotedState);
-      console.log('감정표현 상태 (isState):', debate.isState);
-
-      // 토론 관련 웹로그
+    if (debate) {
+      // 상태 초기화
+      if (debate?.isVotedState === '찬성') {
+        setUserVote('pro');
+        setStance('pro');
+      } else if (debate?.isVotedState === '반대') {
+        setUserVote('con');
+        setStance('con');
+      } else {
+        setUserVote(null);
+        setStance(null);
+      }
       const userId = getUserId() ?? 0;
-      const debateContent = {
-        // 토론 제목과 내용
-        debateTitle: debate.title,
-        debateContent: debate.content,
-      };
       const chatLogPayload = {
         UID: userId,
         ClickPath: location.pathname,
         TAG: debate.category,
         CurrentPath: location.pathname,
         Event: 'click',
-        Content: debateContent,
+        Content: null,
         Timestamp: new Date().toISOString(),
       };
       sendWebLog({ userId, content: JSON.stringify(chatLogPayload) });
 
-      // 사용자 투표 상태 초기화
-      if (debate.isVotedState) {
-        const mappedVoteType = mapIsVotedStateToVoteType(debate.isVotedState);
-        console.log('매핑된 투표 타입:', mappedVoteType);
-        setUserVote(mappedVoteType);
-        setStance(mappedVoteType); // 댓글 작성 시 선택할 수 있는 입장도 함께 설정
-      } else {
-        // 투표 상태가 없으면 초기화
-        setUserVote(null);
-        setStance(null);
+      // 코멘트 로드
+      if (id) {
+        fetchComments(parseInt(id));
       }
 
-      // 사용자 감정표현 상태 초기화
-      if (debate.isState) {
-        const mappedEmotionType = mapIsStateToEmotionType(debate.isState);
-        console.log('매핑된 감정 타입:', mappedEmotionType);
+      // 감정표현 상태 확인
+      const mappedEmotionType = debate.isState ? mapIsStateToEmotionType(debate.isState) : null;
 
-        // 유효한 감정표현 타입이면 설정
-        if (mappedEmotionType) {
-          setUserEmotion(mappedEmotionType);
-        } else {
-          setUserEmotion(null);
-        }
+      // 감정표현 상태가 있으면 설정
+      if (mappedEmotionType) {
+        setUserEmotion(mappedEmotionType);
       } else {
-        // 감정표현 상태가 없으면 초기화
         setUserEmotion(null);
       }
 
@@ -402,45 +388,47 @@ const DebateDetailPage: React.FC = () => {
         console.log('국가별 참여 정보:', debate.countryStats);
       } else {
         console.log('국가별 참여 정보가 없습니다.');
-      }
 
-      // 항상 최신 투표 정보를 가져오기 위해 VoteController의 getVotes API 호출
-      getVotesByDebateId(parseInt(id))
-        .then(voteData => {
-          if (voteData && voteData.nationPercent) {
-            console.log('투표 API에서 국가별 참여 정보 로드됨:', voteData.nationPercent);
+        // 국가별 참여 정보가 없을 경우 즉시 API에서 가져옴
+        if (id) {
+          getVotesByDebateId(parseInt(id))
+            .then(voteData => {
+              if (voteData && voteData.nationPercent) {
+                console.log('투표 API에서 국가별 참여 정보 로드됨:', voteData.nationPercent);
 
-            // nationPercent를 countryStats로 변환
-            const countryStats = Object.entries(voteData.nationPercent).map(
-              ([countryCode, percentage]) => {
-                // 국가 코드에서 국가명 추출 (간단한 매핑)
-                let countryName = countryCode;
-                if (countryCode === 'KR') countryName = '대한민국';
-                else if (countryCode === 'US') countryName = '미국';
-                else if (countryCode === 'JP') countryName = '일본';
-                else if (countryCode === 'CN') countryName = '중국';
+                // nationPercent를 countryStats로 변환
+                const countryStats = Object.entries(voteData.nationPercent).map(
+                  ([countryCode, percentage]) => {
+                    // 국가 코드에서 국가명 추출
+                    let countryName = countryCode;
+                    if (countryCode === 'KR') countryName = t('debate.korea');
+                    else if (countryCode === 'US') countryName = '미국';
+                    else if (countryCode === 'JP') countryName = '일본';
+                    else if (countryCode === 'CN') countryName = '중국';
 
-                return {
-                  countryCode,
-                  countryName,
-                  count: Math.round(((percentage as number) / 100) * (voteData.voteCnt || 0)),
-                  percentage: percentage as number,
-                };
+                    return {
+                      countryCode,
+                      countryName,
+                      count: Math.round(((percentage as number) / 100) * (voteData.voteCnt || 0)),
+                      percentage: percentage as number,
+                    };
+                  }
+                );
+
+                // 토론 객체의 countryStats 업데이트
+                debate.countryStats = countryStats;
+
+                // 강제 리렌더링을 위해 상태 업데이트
+                setUserVote(prev => prev);
+              } else {
+                console.log('투표 API에서 국가별 참여 정보를 가져오지 못했습니다.');
               }
-            );
-
-            // 토론 객체의 countryStats 업데이트
-            debate.countryStats = countryStats;
-
-            // 컴포넌트 강제 리렌더링을 위해 상태 업데이트 (빈 객체로 업데이트해도 리렌더링 발생)
-            setUserVote(prev => prev);
-          } else {
-            console.log('투표 API에서 국가별 참여 정보를 가져오지 못했습니다.');
-          }
-        })
-        .catch(error => {
-          console.error('투표 API 호출 중 오류:', error);
-        });
+            })
+            .catch(error => {
+              console.error('투표 API 호출 중 오류:', error);
+            });
+        }
+      }
     }
   }, [debate, id, fetchComments]);
 
@@ -483,7 +471,7 @@ const DebateDetailPage: React.FC = () => {
             ([countryCode, percentage]) => {
               // 국가 코드에서 국가명 추출 (간단한 매핑)
               let countryName = countryCode;
-              if (countryCode === 'KR') countryName = '대한민국';
+              if (countryCode === 'KR') countryName = t('debate.korea');
               else if (countryCode === 'US') countryName = '미국';
               else if (countryCode === 'JP') countryName = '일본';
               else if (countryCode === 'CN') countryName = '중국';
@@ -499,6 +487,9 @@ const DebateDetailPage: React.FC = () => {
 
           // 상태 업데이트
           debate.countryStats = countryStats;
+
+          // 강제 리렌더링을 위해 상태 업데이트
+          setUserVote(prev => prev);
         }
         // 투표 실패하거나 응답에 nationPercent가 없는 경우 최신 투표 정보 가져오기
         else if (!success || !response.nationPercent) {
@@ -513,7 +504,7 @@ const DebateDetailPage: React.FC = () => {
                   ([countryCode, percentage]) => {
                     // 국가 코드에서 국가명 추출 (간단한 매핑)
                     let countryName = countryCode;
-                    if (countryCode === 'KR') countryName = '대한민국';
+                    if (countryCode === 'KR') countryName = t('debate.korea');
                     else if (countryCode === 'US') countryName = '미국';
                     else if (countryCode === 'JP') countryName = '일본';
                     else if (countryCode === 'CN') countryName = '중국';
@@ -587,7 +578,7 @@ const DebateDetailPage: React.FC = () => {
             ([countryCode, percentage]) => {
               // 국가 코드에서 국가명 추출 (간단한 매핑)
               let countryName = countryCode;
-              if (countryCode === 'KR') countryName = '대한민국';
+              if (countryCode === 'KR') countryName = t('debate.korea');
               else if (countryCode === 'US') countryName = '미국';
               else if (countryCode === 'JP') countryName = '일본';
               else if (countryCode === 'CN') countryName = '중국';
@@ -603,6 +594,9 @@ const DebateDetailPage: React.FC = () => {
 
           // 상태 업데이트
           debate.countryStats = countryStats;
+
+          // 강제 리렌더링을 위해 상태 업데이트
+          setUserVote(prev => prev);
         }
 
         // 실패 시에만 원래 상태로 되돌림
@@ -820,12 +814,23 @@ const DebateDetailPage: React.FC = () => {
   // Prepare data for pie chart
   const prepareChartData = (agree: number, disagree: number) => {
     return [
-      { name: '찬성', value: agree },
-      { name: '반대', value: disagree },
+      { name: t('debate.yes'), value: agree },
+      { name: t('debate.no'), value: disagree },
     ];
   };
 
   const COLORS = ['#e91e63', '#9c27b0'];
+
+  // 카테고리 한글명 → 번역 텍스트 매핑
+  const categoryNameMap: Record<string, string> = {
+    '정치/사회': t('debate.categories.politics'),
+    경제: t('debate.categories.economy'),
+    '생활/문화': t('debate.categories.culture'),
+    '과학/기술': t('debate.categories.technology'),
+    스포츠: t('debate.categories.sports'),
+    엔터테인먼트: t('debate.categories.entertainment'),
+    기타: t('debate.categories.etc'),
+  };
 
   // Render loading state
   if (loading) {
@@ -923,10 +928,14 @@ const DebateDetailPage: React.FC = () => {
                   sx={{ mb: 0.5, display: 'flex', alignItems: 'center', gap: 0.5 }}
                   component="div"
                 >
-                  {enhancedDebate.category}
+                  {enhancedDebate.category && (
+                    <CategoryBadge color={categoryColor}>
+                      {categoryNameMap[enhancedDebate.category] || enhancedDebate.category}
+                    </CategoryBadge>
+                  )}
                   <CountryFlag>
                     <FlagIcon fontSize="small" />
-                    한국
+                    {t('debate.korea')}
                   </CountryFlag>
                   <span style={{ margin: '0 4px' }}>•</span>
                   {formatDate(enhancedDebate.createdAt)}
@@ -954,7 +963,7 @@ const DebateDetailPage: React.FC = () => {
             WebkitTextFillColor: 'transparent',
           }}
         >
-          찬성과 반대, 당신의 의견은?
+          {t('debate.voteDescription')}
         </Typography>
 
         <VoteButtonGroup>
@@ -973,7 +982,7 @@ const DebateDetailPage: React.FC = () => {
           >
             <SentimentSatisfiedAltIcon />
             <Typography variant="subtitle1" fontWeight={600}>
-              찬성
+              {t('debate.yes')}
             </Typography>
             <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>
               {enhancedDebate.proCount || 0}
@@ -995,7 +1004,7 @@ const DebateDetailPage: React.FC = () => {
           >
             <SentimentVeryDissatisfiedIcon />
             <Typography variant="subtitle1" fontWeight={600}>
-              반대
+              {t('debate.no')}
             </Typography>
             <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>
               {enhancedDebate.conCount || 0}
@@ -1014,7 +1023,7 @@ const DebateDetailPage: React.FC = () => {
             WebkitTextFillColor: 'transparent',
           }}
         >
-          이 토론에 대한 감정을 표현해주세요
+          {t('debate.emotionDescription')}
         </Typography>
 
         <EmotionButtonGroup>
@@ -1032,7 +1041,7 @@ const DebateDetailPage: React.FC = () => {
             }}
           >
             <ThumbUpIcon />
-            <Typography variant="body2">좋아요</Typography>
+            <Typography variant="body2">{t('debate.like')}</Typography>
             <Typography variant="caption" sx={{ mt: 0.5, color: 'text.secondary' }}>
               {enhancedDebate.reactions.like || 0}
             </Typography>
@@ -1053,7 +1062,7 @@ const DebateDetailPage: React.FC = () => {
             }}
           >
             <ThumbUpIcon sx={{ transform: 'rotate(180deg)' }} />
-            <Typography variant="body2">싫어요</Typography>
+            <Typography variant="body2">{t('debate.dislike')}</Typography>
             <Typography variant="caption" sx={{ mt: 0.5, color: 'text.secondary' }}>
               {enhancedDebate.reactions.dislike || 0}
             </Typography>
@@ -1073,7 +1082,7 @@ const DebateDetailPage: React.FC = () => {
             }}
           >
             <SentimentVeryDissatisfiedIcon />
-            <Typography variant="body2">슬퍼요</Typography>
+            <Typography variant="body2">{t('debate.sad')}</Typography>
             <Typography variant="caption" sx={{ mt: 0.5, color: 'text.secondary' }}>
               {enhancedDebate.reactions.sad || 0}
             </Typography>
@@ -1093,7 +1102,7 @@ const DebateDetailPage: React.FC = () => {
             }}
           >
             <SentimentVeryDissatisfiedIcon />
-            <Typography variant="body2">화나요</Typography>
+            <Typography variant="body2">{t('debate.angry')}</Typography>
             <Typography variant="caption" sx={{ mt: 0.5, color: 'text.secondary' }}>
               {enhancedDebate.reactions.angry || 0}
             </Typography>
@@ -1114,7 +1123,7 @@ const DebateDetailPage: React.FC = () => {
             }}
           >
             <SentimentSatisfiedAltIcon />
-            <Typography variant="body2">글쎄요</Typography>
+            <Typography variant="body2">{t('debate.unsure')}</Typography>
             <Typography variant="caption" sx={{ mt: 0.5, color: 'text.secondary' }}>
               {enhancedDebate.reactions.unsure || 0}
             </Typography>
@@ -1135,7 +1144,7 @@ const DebateDetailPage: React.FC = () => {
                   WebkitTextFillColor: 'transparent',
                 }}
               >
-                투표 결과
+                {t('debate.voteResults')}
               </Typography>
 
               <VoteBarContainer>
@@ -1143,9 +1152,11 @@ const DebateDetailPage: React.FC = () => {
                   {voteRatio.agree}%
                 </Typography>
                 <VoteBar>
-                  <AgreeBar width={voteRatio.agree}>{voteRatio.agree > 10 && '찬성'}</AgreeBar>
+                  <AgreeBar width={voteRatio.agree}>
+                    {voteRatio.agree > 10 && t('debate.yes')}
+                  </AgreeBar>
                   <DisagreeBar width={voteRatio.disagree}>
-                    {voteRatio.disagree > 10 && '반대'}
+                    {voteRatio.disagree > 10 && t('debate.no')}
                   </DisagreeBar>
                 </VoteBar>
                 <Typography variant="body2" fontWeight={600} color="#9c27b0" width={40}>
@@ -1154,7 +1165,8 @@ const DebateDetailPage: React.FC = () => {
               </VoteBarContainer>
 
               <Typography variant="body2" textAlign="right">
-                총 투표수: {(enhancedDebate.proCount || 0) + (enhancedDebate.conCount || 0)}
+                {t('debate.totalVotes')}:{' '}
+                {(enhancedDebate.proCount || 0) + (enhancedDebate.conCount || 0)}
               </Typography>
 
               <ChartContainer>
@@ -1194,7 +1206,7 @@ const DebateDetailPage: React.FC = () => {
                   WebkitTextFillColor: 'transparent',
                 }}
               >
-                국가별 참여 현황
+                {t('debate.countryParticipation')}
               </Typography>
 
               {enhancedDebate.countryStats && enhancedDebate.countryStats.length > 0 ? (
@@ -1249,14 +1261,15 @@ const DebateDetailPage: React.FC = () => {
                         </Box>
                       </Box>
                       <Typography variant="body2" sx={{ minWidth: '60px', textAlign: 'right' }}>
-                        {stat.count}명 ({stat.percentage}%)
+                        {stat.count}
+                        {t('debate.ppl')} ({stat.percentage}%)
                       </Typography>
                     </CountryStatItem>
                   );
                 })
               ) : (
                 <Typography variant="body2" align="center" color="text.secondary" sx={{ py: 2 }}>
-                  국가별 참여 정보가 없습니다.
+                  {t('debate.noParticipationData')}
                 </Typography>
               )}
             </ProgressSection>
@@ -1275,27 +1288,27 @@ const DebateDetailPage: React.FC = () => {
               WebkitTextFillColor: 'transparent',
             }}
           >
-            사람들의 다양한 의견을 존중해주세요.
+            {t('debate.commentSection')}
           </Typography>
 
           {/* 입장 선택 안내 메시지 */}
           {stance ? (
             <Box sx={{ mb: 2, p: 1, bgcolor: 'rgba(255, 255, 255, 0.7)', borderRadius: 1 }}>
               <Typography variant="body2" color="text.secondary">
-                선택한 입장:{' '}
+                {t('debate.currentVote')}{' '}
                 <Box
                   component="span"
                   fontWeight="bold"
                   sx={{ color: stance === 'pro' ? '#4caf50' : '#f44336' }}
                 >
-                  {stance === 'pro' ? '찬성' : '반대'}
+                  {stance === 'pro' ? t('debate.yes') : t('debate.no')}
                 </Box>
               </Typography>
             </Box>
           ) : (
             <Box sx={{ mb: 2, p: 1, bgcolor: 'rgba(255, 255, 255, 0.7)', borderRadius: 1 }}>
               <Typography variant="body2" color="text.secondary">
-                투표 버튼을 클릭하여 먼저 입장을 선택하면 댓글에 입장이 표시됩니다.
+                {t('debate.commentGuide')}
               </Typography>
             </Box>
           )}

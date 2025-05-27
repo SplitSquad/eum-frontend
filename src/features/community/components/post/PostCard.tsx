@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Card,
   //CardActionArea,
@@ -23,7 +23,7 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 //import GroupsIcon from '@mui/icons-material/Groups';
 //import PersonIcon from '@mui/icons-material/Person';
 import { ko } from 'date-fns/locale';
-import { useLocation } from 'react-router-dom';
+import { useTranslation } from '../../../../shared/i18n';
 
 /**-----------------------------------웹로그 관련------------------------------------ **/
 // userId 꺼내오는 헬퍼
@@ -333,7 +333,36 @@ interface PostCardProps {
  * 게시글 목록에서 각 게시글을 카드 형태로 표시합니다.
  */
 const PostCard: React.FC<PostCardProps> = ({ post, hideImage = false, onClick }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // 태그 번역 함수
+  const translateTag = (tagName: string): string => {
+    // 태그 이름을 번역 키로 매핑
+    const tagTranslationMap: Record<string, string> = {
+      '관광/체험': t('community.tags.tourism'),
+      '식도락/맛집': t('community.tags.food'),
+      '교통/이동': t('community.tags.transport'),
+      '숙소/지역정보': t('community.tags.accommodation'),
+      '대사관/응급': t('community.tags.embassy'),
+      '부동산/계약': t('community.tags.realEstate'),
+      '생활환경/편의': t('community.tags.livingEnvironment'),
+      '문화/생활': t('community.tags.culture'),
+      '주거지 관리/유지': t('community.tags.housing'),
+      '학사/캠퍼스': t('community.tags.academic'),
+      '학업지원/시설': t('community.tags.studySupport'),
+      '행정/비자/서류': t('community.tags.visa'),
+      '기숙사/주거': t('community.tags.dormitory'),
+      '이력/채용준비': t('community.tags.career'),
+      '비자/법률/노동': t('community.tags.labor'),
+      '잡페어/네트워킹': t('community.tags.jobFair'),
+      '알바/파트타임': t('community.tags.partTime'),
+      테스트: t('community.tags.test'),
+    };
+
+    return tagTranslationMap[tagName] || tagName;
+  };
 
   const handleCardClick = async () => {
     const uid = getUserId() || 0;
@@ -360,10 +389,10 @@ const PostCard: React.FC<PostCardProps> = ({ post, hideImage = false, onClick })
       content: JSON.stringify({
         UID: uid,
         ClickPath: location.pathname,
-        TAG: post.category,
+        TAG: Array.isArray(post.tags) ? post.tags.join(',') : post.tags,
         CurrentPath: location.pathname,
         Event: 'click',
-        Content: { title: post.title, content: postContent.content },
+        Content: null,
         Timestamp: new Date().toISOString(),
       }),
     });
@@ -378,7 +407,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, hideImage = false, onClick })
   // 날짜 포맷팅
   const formattedDate = post.createdAt
     ? format(new Date(post.createdAt), 'yyyy-MM-dd HH:mm', { locale: ko })
-    : '날짜 없음';
+    : t('community.posts.noDate');
 
   return (
     <StyledCard>
@@ -411,16 +440,19 @@ const PostCard: React.FC<PostCardProps> = ({ post, hideImage = false, onClick })
           {/* 작성자 정보 */}
           <AuthorContainer sx={{ ml: 1 }}>
             <StyledAvatar>{post.writer?.nickname?.charAt(0) || '?'}</StyledAvatar>
-            <AuthorName variant="body2">{post.writer?.nickname || '익명'}</AuthorName>
+            <AuthorName variant="body2">
+              {post.writer?.nickname || t('community.posts.anonymous')}
+            </AuthorName>
           </AuthorContainer>
         </Box>
         <PostContent variant="body2">{post.content}</PostContent>
         {/* 태그 표시 */}
         {post.tags && post.tags.length > 0 && (
           <TagsContainer>
-            {post.tags.map((tag, index) => (
-              <TagChip key={index} label={typeof tag === 'string' ? tag : ''} size="small" />
-            ))}
+            {post.tags.map((tag, index) => {
+              const tagName = typeof tag === 'string' ? tag : (tag as any)?.name || '';
+              return <TagChip key={index} label={translateTag(tagName)} size="small" />;
+            })}
           </TagsContainer>
         )}
       </CardContentStyled>
@@ -430,25 +462,25 @@ const PostCard: React.FC<PostCardProps> = ({ post, hideImage = false, onClick })
       >
         {/* 메타 정보 (조회수, 좋아요, 싫어요, 댓글 수) */}
         <MetaContainer sx={{ flexDirection: 'row', alignItems: 'center', gap: 2, mb: 0 }}>
-          <EnhancedTooltip title="조회수">
+          <EnhancedTooltip title={t('community.posts.viewCount')}>
             <MetaItem>
               <VisibilityOutlinedIcon fontSize="small" />
               <Typography variant="body2">{post.viewCount || post.views || 0}</Typography>
             </MetaItem>
           </EnhancedTooltip>
-          <EnhancedTooltip title="좋아요">
+          <EnhancedTooltip title={t('community.posts.likeCount')}>
             <MetaItem>
               <ThumbUpOutlinedIcon fontSize="small" />
               <Typography variant="body2">{post.likeCount || post.like || 0}</Typography>
             </MetaItem>
           </EnhancedTooltip>
-          <EnhancedTooltip title="싫어요">
+          <EnhancedTooltip title={t('community.posts.dislikeCount')}>
             <MetaItem>
               <ThumbDownOutlinedIcon fontSize="small" />
               <Typography variant="body2">{post.dislikeCount || post.dislike || 0}</Typography>
             </MetaItem>
           </EnhancedTooltip>
-          <EnhancedTooltip title="댓글">
+          <EnhancedTooltip title={t('community.posts.commentCount')}>
             <MetaItem>
               <ChatBubbleOutlineIcon sx={{ fontSize: 18, color: '#888', mr: 0.5 }} />
               <span>{post.commentCount ?? 0}</span>

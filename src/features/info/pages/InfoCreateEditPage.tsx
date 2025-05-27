@@ -21,14 +21,14 @@ import { handleImageUpload, MAX_FILE_SIZE } from '@tiptap-editor/lib/tiptap-util
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 const categoryOptions = [
-  '관광/체험',
-  '교통/이동',
-  '부동산/계약',
-  '문화/생활',
-  '학사/캠퍼스',
+  '교통',
+  '금융/세금',
   '비자/법률',
-  '잡페어',
-  '숙소/지역정보',
+  '쇼핑',
+  '의료/건강',
+  '비자/법률',
+  '주거/부동산',
+  '취업/직장',
 ];
 
 export default function InfoCreatePage() {
@@ -37,6 +37,35 @@ export default function InfoCreatePage() {
   const isEdit = Boolean(id);
 
   const { title, setTitle, category, setCategory, content, setContent } = useInfoFormStore();
+
+  // ADMIN 권한 체크
+  useEffect(() => {
+    const checkAdminPermission = () => {
+      try {
+        const stored = localStorage.getItem('auth-storage');
+        if (!stored) {
+          alert('로그인이 필요합니다.');
+          navigate('/info');
+          return;
+        }
+
+        const parsed = JSON.parse(stored);
+        const role = parsed?.state?.user?.role;
+
+        if (role !== 'ROLE_ADMIN') {
+          alert('관리자만 접근할 수 있습니다.');
+          navigate('/info');
+          return;
+        }
+      } catch (error) {
+        console.error('권한 확인 중 오류:', error);
+        alert('권한 확인에 실패했습니다.');
+        navigate('/info');
+      }
+    };
+
+    checkAdminPermission();
+  }, [navigate]);
 
   // 초기화: 새 글 작성 모드일 때만 빈 상태로
   useEffect(() => {

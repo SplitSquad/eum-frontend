@@ -38,6 +38,25 @@ body {
   z-index: 1;
 }
 
+/* 모바일 최적화 */
+@media (max-width: 768px) {
+  .main-content {
+    min-height: calc(100vh - 56px - 100px); /* 모바일 헤더와 푸터 높이 조정 */
+    padding: 0.25rem 0;
+  }
+
+  .app-container {
+    font-size: 14px; /* 모바일에서 기본 폰트 크기 조정 */
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    min-height: calc(100vh - 56px - 80px);
+    padding: 0.125rem 0;
+  }
+}
+
 /* 봄 테마 색상 변수 */
 :root {
   --spring-pink-light: rgba(255, 235, 235, 1);

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Button, useTheme, useMediaQuery } from '@mui/material';
 import { useThemeStore } from '../../../theme/store/themeStore';
+import { useTranslation } from '../../../../shared/i18n';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import CheckIcon from '@mui/icons-material/Check';
@@ -25,14 +26,15 @@ const FormButtons: React.FC<FormButtonsProps> = ({
   onBack,
   onNext,
   onSubmit,
-  nextLabel = '다음',
-  backLabel = '이전',
-  submitLabel = '완료',
+  nextLabel,
+  backLabel,
+  submitLabel,
   isFirstStep = false,
   isLastStep = false,
   isSubmitting = false,
   isNextDisabled = false,
 }) => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { season } = useThemeStore();
@@ -76,7 +78,7 @@ const FormButtons: React.FC<FormButtonsProps> = ({
           visibility: isFirstStep ? 'hidden' : 'visible',
         }}
       >
-        {backLabel}
+        {backLabel || t('buttons.back')}
       </Button>
 
       {/* 다음/완료 버튼 */}
@@ -96,10 +98,10 @@ const FormButtons: React.FC<FormButtonsProps> = ({
         }}
       >
         {isSubmitting
-          ? '저장 중...'
+          ? t('onboarding.saving')
           : isLastStep
-            ? submitLabel
-            : nextLabel}
+            ? (submitLabel || t('buttons.finish'))
+            : (nextLabel || t('buttons.next'))}
       </Button>
     </Box>
   );

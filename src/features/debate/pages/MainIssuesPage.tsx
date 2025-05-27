@@ -24,6 +24,8 @@ import { styled } from '@mui/material/styles';
 import DebateLayout from '../components/common/DebateLayout';
 import { formatDate } from '../utils/dateUtils';
 
+import { useTranslation } from '@/shared/i18n';
+
 // 스타일 컴포넌트
 const CategoryItem = styled(ListItemButton)(({ theme }) => ({
   padding: '12px 16px',
@@ -207,6 +209,7 @@ interface EnhancedDebate extends Debate {
 }
 
 const MainIssuesPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const {
     debates,
@@ -229,35 +232,78 @@ const MainIssuesPage: React.FC = () => {
   } = useDebateStore();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const [selectedCategory, setSelectedCategory] = useState('전체');
+  const categoryMappings = {
+    all: {
+      code: '',
+      display: t('debate.categories.all'),
+    },
+    politics: {
+      code: '정치/사회',
+      display: t('debate.categories.politics'),
+    },
+    economy: {
+      code: '경제',
+      display: t('debate.categories.economy'),
+    },
+    culture: {
+      code: '생활/문화',
+      display: t('debate.categories.culture'),
+    },
+    technology: {
+      code: '과학/기술',
+      display: t('debate.categories.technology'),
+    },
+    sports: {
+      code: '스포츠',
+      display: t('debate.categories.sports'),
+    },
+    entertainment: {
+      code: '엔터테인먼트',
+      display: t('debate.categories.entertainment'),
+    },
+  };
 
-  // 카테고리 목록
-  const categories = [
-    { id: 'all', name: '전체' },
-    { id: 'politics', name: '정치/사회' },
-    { id: 'economy', name: '경제' },
-    { id: 'culture', name: '생활/문화' },
-    { id: 'technology', name: '과학/기술' },
-    { id: 'sports', name: '스포츠' },
-    { id: 'entertainment', name: '엔터테인먼트' },
-  ];
+  // selectedCategory는 항상 key값('all', 'politics', ...)으로 관리
+  const [selectedCategory, setSelectedCategory] = useState<
+    'all' | 'politics' | 'economy' | 'culture' | 'technology' | 'sports' | 'entertainment'
+  >('all');
+  const { isLoading: loading, error, getDebates: fetchDebates } = useDebateStore();
+
+  // 카테고리 목록 (API 호출용)
+  const categories: Record<string, string> = Object.values(categoryMappings).reduce(
+    (acc, { code, display }) => ({
+      ...acc,
+      [display]: code,
+    }),
+    {}
+  );
 
   // 카테고리별 색상
   const categoryColors = {
-    전체: '#757575',
-    '정치/사회': '#1976d2',
-    경제: '#ff9800',
-    '생활/문화': '#4caf50',
-    '과학/기술': '#9c27b0',
-    스포츠: '#f44336',
-    엔터테인먼트: '#2196f3',
+    POLITICS: '#1976d2',
+    ECONOMY: '#ff9800',
+    CULTURE: '#4caf50',
+    TECHNOLOGY: '#9c27b0',
+    SPORTS: '#f44336',
+    ENTERTAINMENT: '#2196f3',
   };
 
   // 특별 라벨
   const specialLabels = {
-    1: { text: '오늘의 이슈', color: '#ff9800' },
-    2: { text: '모스트 핫 이슈', color: '#f44336' },
-    3: { text: '반반 이슈', color: '#9c27b0' },
+    1: { text: t('debate.todayIssue'), color: '#ff9800' },
+    2: { text: t('debate.mostHotIssue'), color: '#f44336' },
+    3: { text: t('debate.halfAndHalfIssue'), color: '#9c27b0' },
+  };
+
+  // 카테고리 한글명 → 번역 텍스트 매핑
+  const categoryNameMap: Record<string, string> = {
+    '정치/사회': t('debate.categories.politics'),
+    경제: t('debate.categories.economy'),
+    '생활/문화': t('debate.categories.culture'),
+    '과학/기술': t('debate.categories.technology'),
+    스포츠: t('debate.categories.sports'),
+    엔터테인먼트: t('debate.categories.entertainment'),
+    기타: t('debate.categories.etc'),
   };
 
   useEffect(() => {
@@ -266,31 +312,31 @@ const MainIssuesPage: React.FC = () => {
 
     // 모든 특별 이슈를 한 번의 API 호출로 가져오기
     fetchSpecialIssues();
-
-    // 디버깅용 로그
-    console.log('MainIssuesPage - 초기화 시 특별 이슈 데이터:', {
-      todayIssues,
-      hotIssue,
-      balancedIssue,
-      loadingTodayIssues,
-      loadingHotIssue,
-      loadingBalancedIssue,
-    });
-
-    // 개별 호출은 주석처리 (이전 코드와의 비교를 위해 남겨둠)
-    // fetchTodayIssues();
-    // fetchHotIssue();
-    // fetchBalancedIssue();
   }, [getDebates, fetchSpecialIssues]);
 
   const handleDebateClick = (id: number) => {
     navigate(`/debate/${id}`);
   };
 
-  const handleCategoryClick = (category: string) => {
-    setSelectedCategory(category);
-    navigate('/debate/list');
+  const handleCategoryClick = (key: string) => {
+    const apiCategory = categoryMappings[key].code;
+    if (key === 'all') {
+      navigate('/debate/list');
+    } else {
+      setSelectedCategory(key as typeof selectedCategory);
+      fetchDebates(1, 20, apiCategory);
+    }
   };
+
+  // 필터링된 토론 목록
+  const filteredDebates = React.useMemo(() => {
+    const apiCategory = categoryMappings[selectedCategory].code;
+    if (!apiCategory) return debates;
+    return debates.filter((debate: any) => {
+      const debateCategory = debate.category || '';
+      return debateCategory === apiCategory;
+    });
+  }, [selectedCategory, debates]);
 
   // 찬성/반대 비율 계산
   const calculateVoteRatio = (agree: number, disagree: number) => {
@@ -309,17 +355,17 @@ const MainIssuesPage: React.FC = () => {
     <SidebarContainer>
       <Box sx={{ p: 2, borderBottom: '1px solid #eee' }}>
         <Typography variant="subtitle1" fontWeight={600}>
-          카테고리
+          {t('debate.categories.title')}
         </Typography>
       </Box>
       <List disablePadding>
-        {categories.map(category => (
+        {Object.entries(categoryMappings).map(([key, { display }]) => (
           <CategoryItem
-            key={category.id}
-            onClick={() => handleCategoryClick(category.name)}
-            selected={selectedCategory === category.name}
+            key={key}
+            selected={selectedCategory === key}
+            onClick={() => handleCategoryClick(key)}
           >
-            <ListItemText primary={category.name} />
+            <ListItemText primary={display} />
           </CategoryItem>
         ))}
       </List>
@@ -383,10 +429,10 @@ const MainIssuesPage: React.FC = () => {
                     sx={{ mb: 0.5, display: 'flex', alignItems: 'center', gap: 0.5 }}
                     component="div"
                   >
-                    {category || '기타'}
+                    {categoryNameMap[category] || category || t('debate.categories.etc')}
                     <FlagWrapper>
                       <FlagIcon fontSize="small" />
-                      한국
+                      {t('debate.korea')}
                     </FlagWrapper>
                   </Typography>
                   <Typography variant="h6" component="div" fontWeight={600} gutterBottom>
@@ -429,9 +475,11 @@ const MainIssuesPage: React.FC = () => {
       <IssueSection>
         <IssueTitleWrapper>
           <IssueSectionTitle variant="h5">
-            <FireIcon>🔥</FireIcon>오늘의 이슈<FireIcon>🔥</FireIcon>
+            <FireIcon>🔥</FireIcon>
+            {t('debate.todayIssue')}
+            <FireIcon>🔥</FireIcon>
           </IssueSectionTitle>
-          <ViewAllLink to="/debate/list">더 많은 이슈 보기 &gt;</ViewAllLink>
+          <ViewAllLink to="/debate/list">{t('debate.moreIssue')} &gt;</ViewAllLink>
         </IssueTitleWrapper>
 
         {loadingTodayIssues ? (
@@ -477,7 +525,9 @@ const MainIssuesPage: React.FC = () => {
       <IssueSection>
         <IssueTitleWrapper>
           <IssueSectionTitle variant="h5">
-            <FireIcon>🔥</FireIcon>모스트 핫 이슈<FireIcon>🔥</FireIcon>
+            <FireIcon>🔥</FireIcon>
+            {t('debate.mostHotIssue')}
+            <FireIcon>🔥</FireIcon>
           </IssueSectionTitle>
         </IssueTitleWrapper>
 
@@ -524,7 +574,9 @@ const MainIssuesPage: React.FC = () => {
       <IssueSection>
         <IssueTitleWrapper>
           <IssueSectionTitle variant="h5">
-            <FireIcon>🔥</FireIcon>반반 이슈<FireIcon>🔥</FireIcon>
+            <FireIcon>🔥</FireIcon>
+            {t('debate.halfAndHalfIssue')}
+            <FireIcon>🔥</FireIcon>
           </IssueSectionTitle>
         </IssueTitleWrapper>
 
@@ -580,7 +632,7 @@ const MainIssuesPage: React.FC = () => {
           display: 'inline-block',
         }}
       >
-        이전 이슈 살펴보기
+        {t('debate.oldIssues')}
       </Link>
     </Box>
   );
@@ -588,9 +640,56 @@ const MainIssuesPage: React.FC = () => {
   // 메인 컨텐츠 렌더링
   const renderContent = () => (
     <Box>
-      {renderTodayIssues()}
-      {renderHotIssues()}
-      {renderBalancedIssues()}
+      {selectedCategory === 'all' ? (
+        <>
+          {renderTodayIssues()}
+          {renderHotIssues()}
+          {renderBalancedIssues()}
+        </>
+      ) : (
+        <Box>
+          <Box
+            sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}
+          >
+            <Typography variant="h6" fontWeight={600}>
+              {categoryMappings[selectedCategory].display} {t('debate.name')}
+            </Typography>
+          </Box>
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+              <CircularProgress size={30} />
+            </Box>
+          ) : error ? (
+            <Paper
+              sx={{
+                p: 3,
+                textAlign: 'center',
+                backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                backdropFilter: 'blur(4px)',
+              }}
+            >
+              <Typography color="error">{error}</Typography>
+            </Paper>
+          ) : filteredDebates.length === 0 ? (
+            <Paper
+              sx={{
+                p: 3,
+                textAlign: 'center',
+                backgroundColor: 'rgba(253, 217, 217, 0.59)',
+                backdropFilter: 'blur(4px)',
+                boxShadow: 'none',
+                border: 'none',
+              }}
+            >
+              <Typography sx={{ fontWeight: 'bold', color: '#E91E63' }}>
+                {categoryMappings[selectedCategory].display} {t('debate.noIssues')}
+              </Typography>
+            </Paper>
+          ) : (
+            filteredDebates.map(debate => renderDebateCard(debate as EnhancedDebate))
+          )}
+        </Box>
+      )}
       {renderOldIssuesLink()}
     </Box>
   );

@@ -71,7 +71,7 @@ const convertToWidgetPost = (post: any): Post => {
     tags: post.tags || [],
     source: post.postType === '모임' ? 'discussion' : 'community',
     matchScore: post.matchScore,
-    address: post.address || post.location || '' // 주소 정보 추가
+    address: post.address || post.location || '', // 주소 정보 추가
   };
 };
 
@@ -91,12 +91,12 @@ const CommunityService = {
         page,
         size,
         postType: '자유',
-        sortBy: 'latest'
+        sortBy: 'latest',
       });
 
       // API 응답 형식 변환
       const widgetPosts = (response.postList || []).map(convertToWidgetPost);
-      
+
       return {
         content: widgetPosts,
         totalElements: response.total || 0,
@@ -104,7 +104,7 @@ const CommunityService = {
         size,
         number: page,
         first: page === 0,
-        last: page >= (response.totalPages || 0) - 1
+        last: page >= (response.totalPages || 0) - 1,
       };
     } catch (error) {
       console.error('커뮤니티 게시글 조회 실패:', error);
@@ -116,7 +116,7 @@ const CommunityService = {
         size,
         number: page,
         first: true,
-        last: true
+        last: true,
       };
     }
   },
@@ -133,12 +133,12 @@ const CommunityService = {
         page,
         size,
         postType: '모임',
-        sortBy: 'latest'
+        sortBy: 'latest',
       });
 
       // API 응답 형식 변환
       const widgetPosts = (response.postList || []).map(convertToWidgetPost);
-      
+
       return {
         content: widgetPosts,
         totalElements: response.total || 0,
@@ -146,7 +146,7 @@ const CommunityService = {
         size,
         number: page,
         first: page === 0,
-        last: page >= (response.totalPages || 0) - 1
+        last: page >= (response.totalPages || 0) - 1,
       };
     } catch (error) {
       console.error('모임 게시글 조회 실패:', error);
@@ -158,7 +158,7 @@ const CommunityService = {
         size,
         number: page,
         first: true,
-        last: true
+        last: true,
       };
     }
   },
@@ -175,45 +175,50 @@ const CommunityService = {
       const response = await DebateApi.getDebates({
         page: page + 1, // debate API는 1부터 시작
         size,
-        sortBy: 'latest'
+        sortBy: 'latest',
       });
 
       // 토론 API 응답을 위젯용 Post 형식으로 변환
       const widgetPosts: Post[] = response.debates.map((debate: any) => {
         // 기본 변환
         const post: Post = {
-        id: debate.id.toString(),
-        title: debate.title || '',
-        content: debate.content || '',
-        author: {
-          id: 'unknown', // 토론 API는 작성자 정보를 따로 제공하지 않음
-          name: '토론 게시자',
-          profileImagePath: ''
-        },
-        category: debate.category || '토론',
-        categoryColor: getCategoryColor(debate.category || '토론'),
-        createdAt: debate.createdAt || new Date().toISOString(),
-          likeCount: debate.voteCnt || (debate.reactions?.like || 0) + (debate.reactions?.happy || 0),
+          id: debate.id.toString(),
+          title: debate.title || '',
+          content: debate.content || '',
+          author: {
+            id: 'unknown', // 토론 API는 작성자 정보를 따로 제공하지 않음
+            name: '토론 게시자',
+            profileImagePath: '',
+          },
+          category: debate.category || '토론',
+          categoryColor: getCategoryColor(debate.category || '토론'),
+          createdAt: debate.createdAt || new Date().toISOString(),
+          likeCount:
+            debate.voteCnt || (debate.reactions?.like || 0) + (debate.reactions?.happy || 0),
           commentCount: debate.commentCnt || debate.commentCount || 0,
-        viewCount: debate.viewCount || 0,
-        images: debate.imageUrl ? [debate.imageUrl] : [],
-        tags: [],
+          viewCount: debate.viewCount || 0,
+          images: debate.imageUrl ? [debate.imageUrl] : [],
+          tags: [],
           source: 'debate', // 소스를 'debate'로 설정
-        matchScore: Math.floor(Math.random() * 15) + 80 // 임시 매칭 점수
+          matchScore: Math.floor(Math.random() * 15) + 80, // 임시 매칭 점수
         };
 
         // 토론 특화 필드 추가
-        if (debate.agreePercent !== undefined || debate.disagreePercent !== undefined || debate.voteCnt !== undefined) {
+        if (
+          debate.agreePercent !== undefined ||
+          debate.disagreePercent !== undefined ||
+          debate.voteCnt !== undefined
+        ) {
           post.debateStats = {
             agreePercent: debate.agreePercent || 0,
             disagreePercent: debate.disagreePercent || 0,
-            voteCnt: debate.voteCnt || 0
+            voteCnt: debate.voteCnt || 0,
           };
         }
 
         return post;
       });
-      
+
       return {
         content: widgetPosts,
         totalElements: response.total || 0,
@@ -221,7 +226,7 @@ const CommunityService = {
         size,
         number: page,
         first: page === 0,
-        last: page >= (response.totalPages || 0) - 1
+        last: page >= (response.totalPages || 0) - 1,
       };
     } catch (error) {
       console.error('토론 게시글 조회 실패:', error);
@@ -233,7 +238,7 @@ const CommunityService = {
         size,
         number: page,
         first: true,
-        last: true
+        last: true,
       };
     }
   },
@@ -251,14 +256,14 @@ const CommunityService = {
           // WeatherService에서 현재 위치 정보 가져오기
           const WeatherService = (await import('../../services/weather/weatherService')).default;
           const position = await WeatherService.getCurrentPosition();
-          
+
           // 카카오맵 스크립트 로드
           await new Promise<void>((resolve, reject) => {
             if (window.kakao && window.kakao.maps) {
               resolve();
               return;
             }
-            
+
             const script = document.createElement('script');
             script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${import.meta.env.VITE_KAKAO_MAP_KEY}&libraries=services&autoload=false`;
             script.onload = () => {
@@ -267,10 +272,10 @@ const CommunityService = {
             script.onerror = reject;
             document.head.appendChild(script);
           });
-          
+
           // 위치를 주소로 변환
           const geocoder = new window.kakao.maps.services.Geocoder();
-          userAddress = await new Promise<string>((resolve) => {
+          userAddress = await new Promise<string>(resolve => {
             geocoder.coord2RegionCode(
               position.longitude,
               position.latitude,
@@ -280,7 +285,7 @@ const CommunityService = {
                   const city = result[0].region_1depth_name; // 예: 서울특별시
                   const district = result[0].region_2depth_name; // 예: 중구
                   const dong = result[0].region_3depth_name || ''; // 예: 장충동
-                  
+
                   const address = dong ? `${city} ${district} ${dong}` : `${city} ${district}`;
                   resolve(address);
                 } else {
@@ -301,88 +306,139 @@ const CommunityService = {
       let district = '';
       let dong = '';
       let isDistrictOnly = false;
-      
+
       if (addressParts.length >= 2) {
         city = addressParts[0]; // 예: 서울특별시
         district = addressParts[1]; // 예: 양천구
         isDistrictOnly = addressParts.length === 2; // 구까지만 있는 경우 표시
-        
+
         if (addressParts.length >= 3) {
           dong = addressParts[2]; // 예: 목동
         }
       }
-      
+
       // 구 단위까지만 추출한 주소
       const districtAddress = addressParts.length >= 2 ? `${city} ${district}` : userAddress;
       console.log('API 요청 주소:', userAddress);
       console.log('구 단위 주소:', districtAddress);
-      
+
       try {
         let postList = [];
-        
+        let response: any = null;
+        let districtResponse: any = null;
+        let analysisData: Record<string, number> = {};
+
         // 동 단위 주소가 있으면 해당 요청
         if (!isDistrictOnly && dong) {
           console.log('동 단위까지 포함한 주소로 요청 시도');
           // 백엔드에서 추천 게시글 API 호출 (동 단위)
-          const response = await apiClient.get<any>('/community/post/recommendation', {
-            params: { 
+          response = await apiClient.get<any>('/community/post/recommendation', {
+            params: {
               address: userAddress,
-              size: size 
-            }
+              size: size,
+            },
           });
 
           // 응답 구조를 확인하고 처리
-          postList = Array.isArray(response) ? response : 
-                     (response.postList && Array.isArray(response.postList) ? response.postList : []);
+          postList = Array.isArray(response)
+            ? response
+            : response.postList && Array.isArray(response.postList)
+              ? response.postList
+              : [];
+
+          // 분석 데이터 추출
+          if (response && response.analysis) {
+            analysisData = response.analysis;
+          }
         }
-        
+
         // 결과가 없거나 매우 적거나, 처음부터 구 단위 주소만 있으면 구 단위로 요청
         if (postList.length < 2 || isDistrictOnly) {
           console.log('구 단위로 요청 시도:', districtAddress);
-          
+
           // 구 단위 주소로 요청
-          const districtResponse = await apiClient.get<any>('/community/post/recommendation', {
-            params: { 
+          districtResponse = await apiClient.get<any>('/community/post/recommendation', {
+            params: {
               address: districtAddress,
-              size: size 
-            }
+              size: size,
+            },
           });
-          
+
           // 새로운 응답 처리
-          const districtPostList = Array.isArray(districtResponse) ? districtResponse : 
-                               (districtResponse.postList && Array.isArray(districtResponse.postList) ? districtResponse.postList : []);
-          
+          const districtPostList = Array.isArray(districtResponse)
+            ? districtResponse
+            : districtResponse.postList && Array.isArray(districtResponse.postList)
+              ? districtResponse.postList
+              : [];
+
           // 기존 결과와 새 결과 병합
           if (districtPostList.length > 0) {
             if (postList.length > 0) {
               // 기존 결과가 있으면 중복 제거하며 병합
               const existingIds = new Set(postList.map((p: any) => p.postId?.toString()));
-              const uniqueNewPosts = districtPostList.filter((p: any) => !existingIds.has(p.postId?.toString()));
+              const uniqueNewPosts = districtPostList.filter(
+                (p: any) => !existingIds.has(p.postId?.toString())
+              );
               Array.prototype.push.apply(postList, uniqueNewPosts);
             } else {
               // 기존 결과가 없으면 새 결과를 그대로 사용
               postList = districtPostList;
             }
           }
+
+          // 분석 데이터가 없을 경우 구 단위 응답에서 분석 데이터 가져오기
+          if (
+            Object.keys(analysisData).length === 0 &&
+            districtResponse &&
+            districtResponse.analysis
+          ) {
+            analysisData = districtResponse.analysis;
+          }
         }
 
+        console.log('분석 데이터:', analysisData);
+
         // 게시글 목록 변환
-        const analysis = {}; // 분석 정보 객체
-        return postList.flat().filter(Boolean).map(post => {
-          // 위젯용 포스트로 변환
-          const widgetPost = convertToWidgetPost(post);
-          
-          // 임의의 매칭 점수 부여 (실제로는 서버에서 제공받는 것이 좋음)
-          const matchScore = Math.floor(Math.random() * 15) + 80;
-            
-          return {
-            ...widgetPost,
-            matchScore
-          };
-        });
+        return postList
+          .flat()
+          .filter(Boolean)
+          .map((post: any) => {
+            // 위젯용 포스트로 변환
+            const widgetPost = convertToWidgetPost(post);
+
+            // 태그 또는 카테고리 기반으로 매칭 점수 계산
+            let matchScore = 0;
+            const tags = post.tags || [];
+
+            if (tags.length > 0 && Object.keys(analysisData).length > 0) {
+              // 첫 번째 태그를 기준으로 매칭 점수 계산
+              const primaryTag = tags[0];
+
+              if (analysisData[primaryTag]) {
+                // 분석 데이터에서 해당 태그의 점수를 가져와 100을 곱함 (0~1 -> 0~100)
+                matchScore = Math.round(analysisData[primaryTag] * 100);
+
+                // 낮은 점수도 그대로 표시
+                console.log(`태그 ${primaryTag}의 실제 매칭 점수: ${matchScore}%`);
+              } else {
+                // 분석 데이터에 해당 태그가 없으면 0점
+                matchScore = 0;
+                console.log(`태그 ${primaryTag}에 대한 분석 데이터 없음, 점수: ${matchScore}%`);
+              }
+            } else {
+              // 태그가 없거나 분석 데이터가 없으면 0점
+              matchScore = 0;
+              console.log(`태그 또는 분석 데이터 없음, 점수: ${matchScore}%`);
+            }
+
+            return {
+              ...widgetPost,
+              matchScore,
+            };
+          });
       } catch (error) {
         console.error('추천 게시글 조회 실패:', error);
-        
+
         // 에러 시 인기 게시글로 대체
         try {
           const popularPosts = await CommunityApi.getTopPosts(size);
@@ -390,7 +446,7 @@ const CommunityService = {
             const widgetPost = convertToWidgetPost(post);
             return {
               ...widgetPost,
-              matchScore: Math.floor(Math.random() * 15) + 80
+              matchScore: Math.floor(Math.random() * 15) + 80,
             };
           });
         } catch (err) {
@@ -447,12 +503,15 @@ const CommunityService = {
       const response = await CommunityApi.getPosts({
         page: 0,
         size: count * 2,
-        postType: '모임'
+        postType: '모임',
       });
-      
+
       // 필요한 개수만큼 무작위로 선택
       if (response && response.postList && response.postList.length > 0) {
-        return CommunityService.shuffleArray(response.postList.map(convertToWidgetPost)).slice(0, count);
+        return CommunityService.shuffleArray(response.postList.map(convertToWidgetPost)).slice(
+          0,
+          count
+        );
       }
       return [];
     } catch (error) {
@@ -460,7 +519,7 @@ const CommunityService = {
       return [];
     }
   },
-  
+
   /**
    * 배열을 랜덤하게 섞는 유틸리티 함수
    * @param array 섞을 배열
@@ -473,7 +532,7 @@ const CommunityService = {
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
     return shuffled;
-  }
+  },
 };
 
 /**
@@ -483,18 +542,18 @@ const CommunityService = {
  */
 const getCategoryColor = (category: string): string => {
   const categoryColors: Record<string, string> = {
-    '여행': '#2196f3',
-    '맛집': '#f44336',
-    '사진': '#9c27b0',
-    '음악': '#4caf50',
-    '역사': '#ff9800',
-    '영화': '#795548',
-    '독서': '#607d8b',
-    '예술': '#e91e63',
-    '스포츠': '#00bcd4',
-    '취미': '#673ab7',
-    '토론': '#3f51b5',
-    '질문': '#009688'
+    여행: '#2196f3',
+    맛집: '#f44336',
+    사진: '#9c27b0',
+    음악: '#4caf50',
+    역사: '#ff9800',
+    영화: '#795548',
+    독서: '#607d8b',
+    예술: '#e91e63',
+    스포츠: '#00bcd4',
+    취미: '#673ab7',
+    토론: '#3f51b5',
+    질문: '#009688',
   };
 
   return categoryColors[category] || '#757575'; // 매핑이 없으면 기본 색상 반환
@@ -506,17 +565,17 @@ const getCategoryColor = (category: string): string => {
  */
 const formatAddress = (address: string): string => {
   if (!address || address === '자유') return '자유';
-  
+
   // 주소에서 구성 요소 추출
   const parts = address.split(' ');
-  
+
   // 시/도와 구/군만 반환 (구까지만 요청)
   if (parts.length >= 2) {
     // 시/도와 구/군만 포함
     return `${parts[0]} ${parts[1]}`;
   }
-  
+
   return address;
 };
 
-export default CommunityService; 
+export default CommunityService;
