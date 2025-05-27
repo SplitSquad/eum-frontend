@@ -396,8 +396,8 @@ const ProfilePage: React.FC = () => {
     setIsEditing(false);
   };
 
-  // 로딩 상태
-  if (profileLoading === 'loading' && !profile) {
+  // 초기 로딩 상태 (데이터가 전혀 없을 때만)
+  if (profileLoading === 'loading' && !profile && !user) {
     return (
       <PageLayout title="내 프로필">
         <LoadingWrapper>
@@ -431,43 +431,43 @@ const ProfilePage: React.FC = () => {
   const bookmarksCount = bookmarks?.totalElements || 0;
   const totalActivities = postsCount + commentsCount + debatesCount;
 
-  // 배지 정보 (임시 데이터)
+  // 배지 정보 - 실제 활동 기반으로 동적 생성
   const badges = [
-    {
+    ...(postsCount > 0 ? [{
       id: 1,
       name: '첫 게시글',
       icon: '📝',
       description: '첫 번째 게시글을 작성했습니다!',
-      unlocked: postsCount > 0,
-    },
-    {
+      unlocked: true,
+    }] : []),
+    ...(commentsCount >= 10 ? [{
       id: 2,
       name: '소통왕',
       icon: '💬',
       description: '10개 이상의 댓글을 작성했습니다!',
-      unlocked: commentsCount >= 10,
-    },
-    {
+      unlocked: true,
+    }] : []),
+    ...(debatesCount > 0 ? [{
       id: 3,
       name: '토론 참여자',
       icon: '🗳️',
       description: '토론에 참여하여 의견을 표현했습니다!',
-      unlocked: debatesCount > 0,
-    },
-    {
+      unlocked: true,
+    }] : []),
+    ...(bookmarksCount > 0 ? [{
       id: 4,
       name: '지식 수집가',
       icon: '📚',
       description: '첫 번째 북마크를 추가했습니다!',
-      unlocked: bookmarksCount > 0,
-    },
-    {
+      unlocked: true,
+    }] : []),
+    ...(totalActivities >= 10 ? [{
       id: 5,
       name: '활발한 활동가',
       icon: '🌟',
       description: '10개 이상의 활동을 완료했습니다!',
-      unlocked: totalActivities >= 10,
-    },
+      unlocked: true,
+    }] : []),
   ];
 
   // 사용자 레벨 계산 (임시 로직)
@@ -651,18 +651,15 @@ const ProfilePage: React.FC = () => {
         나의 배지
       </Typography>
 
-      {badges.some(badge => badge.unlocked) ? (
+      {badges.length > 0 ? (
         <BadgeGrid>
-          {badges.map(
-            badge =>
-              badge.unlocked && (
-                <Badge key={badge.id}>
-                  <BadgeIcon>{badge.icon}</BadgeIcon>
-                  <BadgeName>{badge.name}</BadgeName>
-                  <BadgeDescription>{badge.description}</BadgeDescription>
-                </Badge>
-              )
-          )}
+          {badges.map(badge => (
+            <Badge key={badge.id}>
+              <BadgeIcon>{badge.icon}</BadgeIcon>
+              <BadgeName>{badge.name}</BadgeName>
+              <BadgeDescription>{badge.description}</BadgeDescription>
+            </Badge>
+          ))}
         </BadgeGrid>
       ) : (
         <NoBadge>

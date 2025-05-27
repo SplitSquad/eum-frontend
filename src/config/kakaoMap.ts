@@ -528,14 +528,14 @@ export const getCoordsFromAddress = async (
 };
 
 /**
- * 카카오맵 웹 길찾기 URL 생성 함수
+ * 길찾기 페이지 URL 생성 함수
  * @param startName 출발지 이름
  * @param startLat 출발지 위도
  * @param startLng 출발지 경도
  * @param endName 도착지 이름
  * @param endLat 도착지 위도
  * @param endLng 도착지 경도
- * @returns 카카오맵 웹 URL
+ * @returns 길찾기 페이지 URL
  */
 export const getKakaoMapDirectionsUrl = (
   startName: string,
@@ -545,14 +545,8 @@ export const getKakaoMapDirectionsUrl = (
   endLat: number,
   endLng: number
 ): string => {
-  // 모바일에서는 from-to 형식으로 길찾기 가능
-  const mobileUrl = `https://map.kakao.com/link/to/${endName},${endLat},${endLng}/from/${startName},${startLat},${startLng}`;
-
-  // 웹에서는 to만 지원
-  const webUrl = `https://map.kakao.com/link/to/${endName},${endLat},${endLng}`;
-
-  // 모바일 디바이스 체크
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-  return isMobile ? mobileUrl : webUrl;
+  // 카카오맵 길찾기 페이지로 연결
+  const kakaoMapUrl = `https://map.kakao.com/link/to/${encodeURIComponent(endName)},${endLat},${endLng}`;
+  
+  return kakaoMapUrl;
 };
