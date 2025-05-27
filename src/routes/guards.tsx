@@ -131,7 +131,7 @@ export const GuestGuard = ({ children }: GuestGuardProps) => {
 
   // 3. 이미 로그인했으면 홈 또는 이전 페이지로 리다이렉트
   if (user !== undefined && isAuthenticated === true) {
-    const from = (location.state as any)?.from?.pathname || '/home';
+    const from = (location.state as any)?.from?.pathname || '/dashboard';
     return <Navigate to={from} replace />;
   }
 

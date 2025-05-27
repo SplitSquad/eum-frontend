@@ -154,7 +154,7 @@ const LoginPage: React.FC = () => {
       if (!updatedUser?.isOnBoardDone) {
         navigate('/onboarding');
       } else {
-        navigate('/home');
+        navigate('/dashboard');
       }
     } catch (err: any) {
       setLoading(false);

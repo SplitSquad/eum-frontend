@@ -23,11 +23,7 @@ const LoadingOverlay = ({ isLoaded = true }: Props) => {
   useEffect(() => {
     if (hasCompletedAll) {
       const timeout = setTimeout(() => {
-        if (isAuthenticated) {
-          navigate('/home');
-        } else {
-          navigate('/google-login');
-        }
+        navigate('/home');
       }, 800);
       return () => clearTimeout(timeout);
     }
