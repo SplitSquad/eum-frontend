@@ -38,6 +38,35 @@ export default function InfoCreatePage() {
 
   const { title, setTitle, category, setCategory, content, setContent } = useInfoFormStore();
 
+  // ADMIN 권한 체크
+  useEffect(() => {
+    const checkAdminPermission = () => {
+      try {
+        const stored = localStorage.getItem('auth-storage');
+        if (!stored) {
+          alert('로그인이 필요합니다.');
+          navigate('/info');
+          return;
+        }
+        
+        const parsed = JSON.parse(stored);
+        const role = parsed?.state?.user?.role;
+        
+        if (role !== 'ROLE_ADMIN') {
+          alert('관리자만 접근할 수 있습니다.');
+          navigate('/info');
+          return;
+        }
+      } catch (error) {
+        console.error('권한 확인 중 오류:', error);
+        alert('권한 확인에 실패했습니다.');
+        navigate('/info');
+      }
+    };
+
+    checkAdminPermission();
+  }, [navigate]);
+
   // 초기화: 새 글 작성 모드일 때만 빈 상태로
   useEffect(() => {
     if (!isEdit) {
