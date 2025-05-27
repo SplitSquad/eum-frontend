@@ -64,16 +64,7 @@ interface ReportListResponse {
   reportContent: 'personal_attack: gd';
   reporter: UserDetail;
   nreported: number;
-}
-
-interface ReportDetailResponse {
-  reportId: number;
-  reporter: UserDetail;
-  reported: UserDetail;
-  reportContent: string;
-  serviceType: ServiceType;
-  targetType: TargetType;
-  contentId: number;
+  readStatus: number;
 }
 
 // localstorage에 있는 토큰조회
@@ -104,12 +95,15 @@ class AdminpageApi {
       const reportList = reportListResponse as ReportListResponse[];
       const reports: Report[] = [];
       reportList.map(report => {
-        reports.push({
-          reportId: report.reportId,
-          reportContent: report.reportContent,
-          reporterName: report.reporter.name,
-          nreported: report.nreported,
-        });
+        if (report.readStatus == 0) {
+          reports.push({
+            reportId: report.reportId,
+            reportContent: report.reportContent,
+            reporterName: report.reporter.name,
+            nreported: report.nreported,
+            readStatus: report.readStatus,
+          });
+        }
       });
       console.info('[API] 신고리스트 반환: ', reports);
       return reports;
@@ -194,12 +188,14 @@ class AdminpageApi {
     console.log('[API]응답 반환: ', userResponse);
   }
 
-  // export interface ReportedContent {
-  //   title: string | null; // 제목(게시글의 경우 필요함)
-  //   content: string; // (게시글, 댓글, 대댓글)
-  //   writerName: string; // 작성자 이름
-  //   createdAt: string;
-  // }
+  // 관리자 해제
+  async unRegisterManager(email: string): Promise<void> {
+    console.log('[API] 관리자해제 요청 시작');
+    const temp = {
+      email: email,
+    };
+    const userResponse = await apiClient.post;
+  }
 
   // 커뮤니티서비스의 게시글 조회
   // /community/post/{postId}

@@ -7,10 +7,7 @@ import ReportDetailPopup from './ReportDetailPopup';
 
 interface UserDetailModalProps {
   user: User;
-  //   reports: Report[];
   onClose: () => void;
-  // onDeactivate: () => void;
-  //   onReactivate: () => void;
 }
 
 const Overlay = styled.div`
@@ -149,9 +146,10 @@ const handleRowClick = () => {
 
 const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
   const [reports, setReports] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const { reportList, fetchReports } = useAdminpageStore();
+  const { removeReport } = useAdminpageStore();
 
   useEffect(() => {
     fetchReports(user.userId);
@@ -209,7 +207,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
                     key={report.reportId}
                     onClick={() => {
                       setSelectedReport(report);
-                      setIsModalOpen(true);
+                      setIsPopupOpen(true);
                     }}
                   >
                     <Td>{index + 1}</Td>
@@ -222,12 +220,13 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
           </TableWrapper>
         </div>
       </ModalContainer>
-      {selectedReport && isModalOpen && (
+      {selectedReport && isPopupOpen && (
         <ReportDetailPopup
           report={selectedReport}
           onClose={() => {
+            removeReport(selectedReport.reportId);
             setSelectedReport(null);
-            setIsModalOpen(false);
+            setIsPopupOpen(false);
           }}
         />
       )}

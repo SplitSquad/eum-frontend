@@ -81,12 +81,6 @@ const SidebarMenu: React.FC = () => {
       <MenuItem>
         <StyledNavLink to="/adminpage/userManage">유저 관리</StyledNavLink>
       </MenuItem>
-      <MenuItem>
-        <StyledNavLink to="/adminpage/communityManage">커뮤니티관리</StyledNavLink>
-      </MenuItem>
-      <MenuItem>
-        <StyledNavLink to="/adminpage/debatemanage">토론관리</StyledNavLink>
-      </MenuItem>
     </SidebarContainer>
   );
 };

@@ -64,6 +64,8 @@ export interface AdminpageState {
   ) => Promise<void>;
   deactivateUser: (userId: number, period: number) => Promise<string>;
   readReport: (reportId: number) => Promise<void>;
+  removeReport: (reportId: number) => Promise<void>;
+  unRegisterManager: (userId: number) => Promise<void>;
 
   // 상태 리셋
   resetAllState: () => void;
@@ -162,6 +164,13 @@ export const useAdminpageStore = create<AdminpageState>((set, get) => ({
     try {
       await adminpageApi.registerManager(email);
       set({ roleChanged: true, roleChangeLoading: 'success' });
+      const { userList } = get();
+      if (userList) {
+        const updatedList = userList.map(user =>
+          user.email === email ? { ...user, role: 'ROLE_USER' } : user
+        );
+        set({ userList: updatedList });
+      }
       console.log('관리자 등록 성공!');
     } catch (error) {
       console.error('관리자등록 실패: ', error);
@@ -253,6 +262,34 @@ export const useAdminpageStore = create<AdminpageState>((set, get) => ({
         readReportError:
           error instanceof Error ? error.message : '신고된 컨텐츠를 조회하는데 실패했습니다.',
       });
+    }
+  },
+
+  removeReport: async (reportId: number) => {
+    const { reportList } = get();
+    if (reportList) {
+      const updatedList = reportList.filter(report => report.reportId !== reportId);
+      set({ reportList: updatedList });
+    }
+  },
+
+  unRegisterManager: async (userId: number) => {
+    set({ roleChangeLoading: 'loading' });
+    try {
+    } catch (error) {
+      console.error('컨텐츠 삭제 실패: ', error);
+      set({
+        roleChangeLoading: 'error',
+        roleChangeError:
+          error instanceof Error ? error.message : '신고된 컨텐츠를 조회하는데 실패했습니다.',
+      });
+    }
+    const { userList } = get();
+    if (userList) {
+      const updatedList = userList.map(user =>
+        user.userId === userId ? { ...user, role: 'ROLE_USER' } : user
+      );
+      set({ userList: updatedList });
     }
   },
 

@@ -8,6 +8,7 @@ import {
 import { User } from '../types';
 import styled from '@emotion/styled';
 import { useAdminpageStore } from '../store/adminpageStore';
+import { useEffect } from 'react';
 
 const Table = styled.table`
   width: 100%;
@@ -51,7 +52,7 @@ const Button = styled.button`
 
 const RegisterButton = styled.button`
   padding: 6px 12px;
-  background-color: #33a02c;
+  background-color: #ff6b6b;
   color: white;
   border: none;
   border-radius: 4px;
@@ -60,6 +61,11 @@ const RegisterButton = styled.button`
 
   &:hover {
     background-color: #ff5252;
+  }
+
+  &:disabled {
+    background-color: #ffb3b3;
+    cursor: not-allowed;
   }
 `;
 
@@ -72,7 +78,11 @@ const columnHelper = createColumnHelper<User>();
 
 const AdminManagementTable: React.FC<UserItemProps> = ({ user }) => {
   const [data, setData] = useState<User[]>(user);
-  const { registerManager } = useAdminpageStore();
+  const { registerManager, unRegisterManager } = useAdminpageStore();
+
+  useEffect(() => {
+    setData(user);
+  }, [user]);
 
   const columns = [
     columnHelper.accessor('userId', {
@@ -96,7 +106,7 @@ const AdminManagementTable: React.FC<UserItemProps> = ({ user }) => {
       header: '관리자 등록',
       cell: props =>
         props.row.original.role === 'ROLE_ADMIN' ? (
-          <Button onClick={() => registerManager(props.row.original.email)}>관리자 해제</Button>
+          <RegisterButton disabled>관리자 등록</RegisterButton>
         ) : (
           <RegisterButton onClick={() => registerManager(props.row.original.email)}>
             관리자 등록

@@ -138,16 +138,17 @@ const ReportDetailPopup: React.FC<ReportPopupProps> = ({ report, onClose }) => {
         ref={ref}
         onClick={e => e.stopPropagation()} // 이 부분 추가!
       >
-        <CloseButton onClick={onClose}>&times;</CloseButton>
+        {/* <CloseButton onClick={onClose}>&times;</CloseButton> */}
         <ActionButton
           top={25}
-          right={70}
+          right={20}
           onClick={() => {
             contentDelete(
               reportDetail?.serviceType,
               reportDetail?.targetType,
               reportDetail?.contentId
             );
+            onClose();
           }}
           color="#dc3545"
         >
@@ -155,13 +156,14 @@ const ReportDetailPopup: React.FC<ReportPopupProps> = ({ report, onClose }) => {
         </ActionButton>
         <ActionButton
           top={25}
-          right={130}
+          right={80}
           onClick={() => {
             readReport(report.reportId);
+            onClose();
           }}
           color="#33a02c"
         >
-          신고내역 삭제
+          신고내역 확인
         </ActionButton>
 
         <Header>
