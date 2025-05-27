@@ -1,3 +1,5 @@
+import { title } from 'process';
+
 const ko = {
   common: {
     home: '홈',
@@ -660,6 +662,61 @@ const ko = {
   pagination: {
     prev: '이전',
     next: '다음',
+  },
+  debate: {
+    categories: {
+      title: '카테고리',
+      all: '전체',
+      politics: '정치/사회',
+      economy: '경제',
+      culture: '생활/문화',
+      technology: '기술',
+      sports: '스포츠',
+      entertainment: '엔터테인먼트',
+    },
+    todayIssue: '오늘의 이슈',
+    mostHotIssue: '가장 핫한 이슈',
+    halfAndHalfIssue: '찬반 의견이 반반인 이슈',
+    moreIssue: '더 많은 이슈 보기',
+    oldIssues: '이전 이슈 보기',
+    korea: '한국',
+    yes: '찬성',
+    no: '반대',
+    voteDescription: '찬성과 반대, 당신의 의견은?',
+    emotionDescription: '이 토론에 대한 감정을 표현해주세요.',
+    like: '좋아요',
+    dislike: '싫어요',
+    angry: '화나요',
+    sad: '슬퍼요',
+    unsure: '글쎄요',
+    voteResults: '투표 결과',
+    totalVotes: '총 투표수',
+    countryParticipation: '국가별 참여율',
+    ppl: '명',
+    noParticipationData: '국가별 참여 정보가 없습니다.',
+    commentSection: '사람들의 다양한 의견을 존중해주세요.',
+    currentVote: '선택한 입장',
+    commentGuide: '투표 버튼을 클릭하여 먼저 입장을 선택하면 댓글에 입장이 표시됩니다.',
+    name: '토론',
+    comment: {
+      empty: '댓글이 없습니다. 첫 댓글을 남겨주세요!',
+      add: '댓글 추가',
+      newest: '최신순',
+      oldest: '오래된 순',
+      mostLiked: '인기순',
+      reply: '댓글',
+      order: '정렬',
+      cancel: '취소',
+    },
+    reply: {
+      placeholder: '답글을 입력하세요',
+      add: '답글 추가',
+      edit: '답글 수정',
+      delete: '답글 삭제',
+      deleteConfirm: '이 답글을 삭제하시겠습니까?',
+      noReplies: '답글이 없습니다. 첫 답글을 남겨주세요!',
+      cancel: '취소',
+    },
   },
 };
 

@@ -24,6 +24,9 @@ import { styled } from '@mui/material/styles';
 import DebateLayout from '../components/common/DebateLayout';
 import { formatDate } from '../utils/dateUtils';
 import { send } from 'process';
+import { useTranslation } from '@/shared/i18n';
+import { set } from 'date-fns';
+import { setupDebateLanguageChangeListener } from '@/features/debate/store/debateStore';
 
 // 스타일 컴포넌트
 const CategoryItem = styled(ListItemButton)(({ theme }) => ({
@@ -176,19 +179,19 @@ const DebateListPage: React.FC = () => {
   const { debates, isLoading: loading, error, getDebates: fetchDebates } = useDebateStore();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const [selectedCategory, setSelectedCategory] = useState('전체');
+  const { t } = useTranslation();
+  const [selectedCategory, setSelectedCategory] = useState<string>(t('debate.categories.all'));
 
   // 카테고리 목록
-  const categories = [
-    { id: 'all', name: '전체' },
-    { id: 'politics', name: '정치/사회' },
-    { id: 'economy', name: '경제' },
-    { id: 'culture', name: '생활/문화' },
-    { id: 'technology', name: '과학/기술' },
-    { id: 'sports', name: '스포츠' },
-    { id: 'entertainment', name: '엔터테인먼트' },
-  ];
-
+  const categories: Record<string, string> = {
+    [t('debate.categories.all')]: '', // 전체 는 빈 문자열로 보내서 전체 조회
+    [t('debate.categories.politics')]: '정치/사회',
+    [t('debate.categories.economy')]: '경제',
+    [t('debate.categories.culture')]: '생활/문화',
+    [t('debate.categories.technology')]: '과학/기술',
+    [t('debate.categories.sports')]: '스포츠',
+    [t('debate.categories.entertainment')]: '엔터테인먼트',
+  };
   // 카테고리별 색상
   const categoryColors = {
     '정치/사회': '#1976d2',
@@ -201,9 +204,20 @@ const DebateListPage: React.FC = () => {
 
   // 특별 라벨
   const specialLabels = {
-    1: { text: '오늘의 이슈', color: '#ff9800' },
-    2: { text: '모스트 핫 이슈', color: '#f44336' },
-    3: { text: '반반 이슈', color: '#9c27b0' },
+    1: { text: t('debate.todayIssue'), color: '#ff9800' },
+    2: { text: t('debate.mostHotIssue'), color: '#f44336' },
+    3: { text: t('debate.halfAndHalfIssue'), color: '#9c27b0' },
+  };
+
+  // 카테고리 한글명 → 번역 텍스트 매핑
+  const categoryNameMap: Record<string, string> = {
+    '정치/사회': t('debate.categories.politics'),
+    경제: t('debate.categories.economy'),
+    '생활/문화': t('debate.categories.culture'),
+    '과학/기술': t('debate.categories.technology'),
+    스포츠: t('debate.categories.sports'),
+    엔터테인먼트: t('debate.categories.entertainment'),
+    기타: t('debate.categories.etc'),
   };
 
   useEffect(() => {
@@ -214,29 +228,26 @@ const DebateListPage: React.FC = () => {
     navigate(`/debate/${id}`);
   };
 
-  const handleCategoryClick = (category: string) => {
-    setSelectedCategory(category);
-    // 서버에 API 요청을 보내기 전에 로딩 상태 표시
-    fetchDebates(1, 20, category === '전체' ? '' : category);
+  const handleCategoryClick = (label: string) => {
+    setSelectedCategory(label);
 
-    console.log('현재 데이터:', debates);
-    console.log('선택된 카테고리:', category);
+    // 클릭 즉시 API 호출 시에도 올바른 값을 넘겨줍니다.
+    const apiCategory = categories[label];
+    fetchDebates(1, 20, apiCategory);
   };
 
   // 필터링 로직 단순화
   const filteredDebates = useMemo(() => {
     console.log('필터링 수행:', selectedCategory);
 
-    if (selectedCategory === '전체') {
-      return debates;
-    }
+    const apiCategory = categories[selectedCategory];
+    // '전체'이면 그대로
+    if (!apiCategory) return debates;
 
-    // 카테고리가 정확히 일치하는 토론만 필터링
     return debates.filter((debate: any) => {
-      // 백엔드에서 category 필드를 제공하지 않는 경우 대비
       const debateCategory = debate.category || '';
-      const matched = debateCategory === selectedCategory;
-      console.log(`카테고리 비교: ${debateCategory} vs ${selectedCategory} => ${matched}`);
+      const matched = debateCategory === apiCategory;
+      console.log(`카테고리 비교: ${debateCategory} vs ${apiCategory} => ${matched}`);
       return matched;
     });
   }, [selectedCategory, debates]);
@@ -264,17 +275,17 @@ const DebateListPage: React.FC = () => {
     <SidebarContainer>
       <Box sx={{ p: 2, borderBottom: '1px solid #eee' }}>
         <Typography variant="subtitle1" fontWeight={600}>
-          카테고리
+          {t('debate.categories.title')}
         </Typography>
       </Box>
       <List disablePadding>
-        {categories.map(category => (
+        {Object.keys(categories).map(label => (
           <CategoryItem
-            key={category.id}
-            onClick={() => handleCategoryClick(category.name)}
-            selected={selectedCategory === category.name}
+            key={label}
+            selected={selectedCategory === label}
+            onClick={() => handleCategoryClick(label)}
           >
-            <ListItemText primary={category.name} />
+            <ListItemText primary={label} />
           </CategoryItem>
         ))}
       </List>
@@ -286,7 +297,7 @@ const DebateListPage: React.FC = () => {
     <DebateListContainer>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
         <Typography variant="h6" fontWeight={600}>
-          {selectedCategory} 토론
+          {selectedCategory} {t('debate.name')}
         </Typography>
       </Box>
 
@@ -345,10 +356,12 @@ const DebateListPage: React.FC = () => {
                           color="text.secondary"
                           sx={{ mb: 0.5, display: 'flex', alignItems: 'center', gap: 0.5 }}
                         >
-                          {debate.category || '기타'}
+                          {categoryNameMap[debate.category] ||
+                            debate.category ||
+                            t('debate.categories.etc')}
                           <FlagWrapper>
                             <FlagIcon fontSize="small" />
-                            한국
+                            {t('debate.korea')}
                           </FlagWrapper>
                         </Typography>
                         <Typography variant="h6" component="div" fontWeight={600} gutterBottom>
