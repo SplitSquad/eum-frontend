@@ -60,7 +60,7 @@ const initialState: InfoState = {
     category: 'all',
     keyword: '',
     page: 0,
-    size: 8,
+    size: 4,
     sortBy: 'latest',
   },
 };

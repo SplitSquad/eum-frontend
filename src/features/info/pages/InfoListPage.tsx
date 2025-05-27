@@ -175,7 +175,7 @@ export default function InfoListPage() {
   // 초기 데이터 로드 추적
   const hasInitialDataLoaded = useRef(false);
 
-  const size = 8; // 페이지 크기를 늘려서 테스트 (원래는 4개 원했지만 서버 제한으로 인해)
+  const size = 4; // 페이지 크기를 늘려서 테스트 (원래는 4개 원했지만 서버 제한으로 인해)
   const blockSize = 5; // 페이지네이션 블록 크기
 
   // ADMIN 권한 여부 확인
