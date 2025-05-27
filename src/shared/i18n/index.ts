@@ -43,7 +43,7 @@ export const useTranslation = () => {
    * @param params 치환할 변수 객체
    * @returns 번역된 문자열
    */
-  const t = (key: string, params?: Record<string, string>) => {
+  const t = (key: string, params?: Record<string, string | number>) => {
     // 현재 언어에 해당하는 번역 맵 가져오기
     const languageMap = translations[language] || translations.en;
     
@@ -78,7 +78,7 @@ export const useTranslation = () => {
     if (params && typeof translation === 'string') {
       return Object.entries(params).reduce(
         (acc, [paramKey, paramValue]) => 
-          acc.replace(new RegExp(`{{${paramKey}}}`, 'g'), paramValue),
+          acc.replace(new RegExp(`{{${paramKey}}}`, 'g'), String(paramValue)),
         translation
       );
     }
