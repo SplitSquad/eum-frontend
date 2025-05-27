@@ -2,14 +2,29 @@
 
 import React from 'react';
 import { Box } from '@mui/material';
-import { CategorySidebarProps } from '../types';
-import '../styles/ChatCategory.css';
+import { useTranslation } from '../../../shared/i18n';
+
+// Category 타입 정의: key는 내부 식별자, label은 화면 표시명
+export interface Category {
+  key: string; // 내부 식별자 (예: 'all', 'visa', ...)
+  label: string; // 사용자에게 보여줄 이름 (예: '전체', '체류자격/비자', ...)
+}
+
+// 사이드바 컴포넌트에 전달할 props 타입 정의
+interface CategorySidebarProps {
+  categories: Category[];
+  selectedKey: string; // 현재 선택된 카테고리의 key
+  // onSelect 제거: 외부에서 props로만 바꾸도록
+}
+
 /**
  * CategorySidebar 컴포넌트
  * - 조선시대 벽보/필사본 느낌의 한지 질감과 현대적 스타일을 조화시킨 카테고리 사이드바
  * - 클릭 비활성화: 시각적 피드백만 제공
  */
 export default function CategorySidebar({ categories, selectedKey }: CategorySidebarProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="relative">
       {/* 메인 카테고리 패널 */}
@@ -47,7 +62,7 @@ export default function CategorySidebar({ categories, selectedKey }: CategorySid
               textShadow: '0 1px 2px rgba(139, 69, 19, 0.1)',
             }}
           >
-            📚 분야별 안내
+            {t('aiAssistant.sidebar.title')}
           </h3>
           <div
             className="mt-2 h-0.5 mx-auto w-16"
@@ -163,7 +178,7 @@ export default function CategorySidebar({ categories, selectedKey }: CategorySid
                 fontWeight: '500',
               }}
             >
-              질문하시면 자동으로 분야가 선택됩니다
+              {t('aiAssistant.sidebar.autoSelectInfo')}
             </div>
           </div>
         </div>
