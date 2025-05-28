@@ -1,6 +1,10 @@
 import { tr } from 'date-fns/locale';
 
 const zh = {
+  welcome: {
+    title: '欢迎来到EUM',
+    description: 'EUM是一个为不同国家的人们提供交流和合作的平台。',
+  },
   common: {
     home: '首页',
     community: '社团与论坛',
@@ -814,6 +818,30 @@ const zh = {
       networkError: '请检查网络连接。',
       loginRequired: '此功能需要登录。',
     },
+  },
+  login: {
+    welcome: '欢迎',
+    login: '登录',
+    loading: '登录中...',
+    signup: '注册',
+    calenderDescription: '普通登录无法使用谷歌日历同步功能。',
+    loginError: '登录处理过程中发生错误',
+    invalidLoginInfo: '登录信息不正确',
+    termsAgreement: '登录即表示您同意服务条款和隐私政策',
+  },
+  signup: {
+    email: '邮箱',
+    password: '密码',
+    passwordPlaceholder: '至少输入8位',
+    name: '姓名',
+    birthday: '生日',
+    birthdayPlaceholder: 'YYYY-MM-DD',
+    phone: '手机号',
+    phonePlaceholder: '010-1234-5678',
+    signup: '注册',
+    cancel: '取消',
+    welcome: '欢迎',
+    termsAgreement: '登录即表示您同意服务条款和隐私政策。',
   },
 };
 

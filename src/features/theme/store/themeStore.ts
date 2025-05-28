@@ -2,41 +2,45 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 // 계절 타입 정의
-export type Season = 'spring' | 'summer' | 'autumn' | 'winter';
+export type Season = 'spring' | 'hanji' | 'professional';
 
 // 테마 상태 인터페이스
 interface ThemeState {
   season: Season;
   setSeason: (season: Season) => void;
-  getCurrentSeason: () => Season;
 }
 
-// 현재 월에 따른 계절 계산 함수
-const getDefaultSeason = (): Season => {
-  const month = new Date().getMonth() + 1; // 1-12
-  
-  if (month >= 3 && month <= 5) return 'spring'; // 3-5월: 봄
-  if (month >= 6 && month <= 8) return 'summer'; // 6-8월: 여름
-  if (month >= 9 && month <= 11) return 'autumn'; // 9-11월: 가을
-  return 'winter'; // 12, 1, 2월: 겨울
-};
+// Helper: body에 테마 클래스 적용
+function setBodyThemeClass(season: Season) {
+  const classList = document.body.classList;
+  classList.remove('theme-spring', 'theme-hanji', 'theme-professional');
+  if (season === 'spring') classList.add('theme-spring');
+  if (season === 'hanji') classList.add('theme-hanji');
+  if (season === 'professional') classList.add('theme-professional');
+}
 
 // Zustand 스토어 생성
 export const useThemeStore = create<ThemeState>()(
   persist(
     (set, get) => ({
       // 초기 상태 - 현재 월에 따른 기본 계절
-      season: getDefaultSeason(),
-      
+      season: 'spring' as Season,
+
       // 계절 설정 함수
-      setSeason: (season: Season) => set({ season }),
-      
-      // 현재 계절 반환 함수
-      getCurrentSeason: () => get().season,
+      setSeason: (season: Season) => {
+        set({ season });
+        setBodyThemeClass(season);
+      },
     }),
     {
       name: 'theme-storage', // 로컬 스토리지 키
-      partialize: (state) => ({ season: state.season }), // 저장할 상태 선택
+      partialize: state => ({ season: state.season }), // 저장할 상태 선택
     }
   )
-); 
+);
+
+// 앱 시작 시 현재 season에 맞는 body 클래스 적용
+if (typeof window !== 'undefined') {
+  const season = useThemeStore.getState().season;
+  setBodyThemeClass(season);
+}

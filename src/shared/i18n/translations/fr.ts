@@ -2,6 +2,11 @@ import { tr } from 'date-fns/locale';
 import { t } from 'i18next';
 
 const fr = {
+  welcome: {
+    title: 'Bienvenue sur EUM',
+    description:
+      'EUM est une plateforme pour la communication et la coopération entre des personnes de différents pays.',
+  },
   common: {
     home: 'Accueil',
     community: 'Groupes & Forums',
@@ -42,9 +47,9 @@ const fr = {
     loginDescription: 'Connectez-vous facilement avec votre compte Google',
     loginWithGoogleButton: 'Se connecter avec un compte Google',
     loginWithGeneral: 'Se connecter avec un compte général',
-    loginError: "Une erreur s'est produite lors du traitement de la connexion",
-    googleLoginError: "Une erreur s'est produite lors de la connexion Google. Veuillez réessayer",
-    invalidLoginInfo: 'Les informations de connexion sont invalides',
+    loginError: "Une erreur s'est produite lors de la connexion",
+    googleLoginError: 'Une erreur est survenue lors de la connexion Google. Veuillez réessayer.',
+    invalidLoginInfo: 'Les informations de connexion sont incorrectes',
     termsAgreement:
       "En vous connectant, vous acceptez les Conditions d'utilisation et la Politique de confidentialité",
     springMemories: 'Souvenirs de printemps',
@@ -835,6 +840,33 @@ const fr = {
       networkError: 'Veuillez vérifier votre connexion réseau.',
       loginRequired: 'La connexion est requise pour cette fonction.',
     },
+  },
+  login: {
+    welcome: 'Bienvenue',
+    login: 'Connexion',
+    loading: 'Connexion en cours...',
+    signup: 'Créer un compte',
+    calenderDescription:
+      "La synchronisation Google Agenda n'est pas disponible avec la connexion générale.",
+    loginError: "Une erreur s'est produite lors du traitement de la connexion",
+    invalidLoginInfo: 'Les informations de connexion sont incorrectes',
+    termsAgreement:
+      "En vous connectant, vous acceptez les Conditions d'utilisation et la Politique de confidentialité",
+  },
+  signup: {
+    email: 'E-mail',
+    password: 'Mot de passe',
+    passwordPlaceholder: 'Au moins 8 caractères',
+    name: 'Nom',
+    birthday: 'Date de naissance',
+    birthdayPlaceholder: 'YYYY-MM-DD',
+    phone: 'Numéro de téléphone',
+    phonePlaceholder: '010-1234-5678',
+    signup: 'Créer un compte',
+    cancel: 'Annuler',
+    welcome: 'Bienvenue',
+    termsAgreement:
+      "En vous connectant, vous acceptez les Conditions d'utilisation et la Politique de confidentialité.",
   },
 };
 

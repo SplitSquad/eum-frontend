@@ -1,6 +1,12 @@
 import { tr } from 'date-fns/locale';
 
 const ja = {
+  welcome: {
+    title: 'EUMへようこそ',
+    description:
+      'EUMは、異なる国の人々がコミュニケーションと協力を行うためのプラットフォームです。',
+  },
+
   common: {
     home: 'ホーム',
     community: 'クラブ＆フォーラム',
@@ -820,6 +826,32 @@ const ja = {
       networkError: 'ネットワーク接続を確認してください。',
       loginRequired: 'この機能にはログインが必要です。',
     },
+  },
+  login: {
+    welcome: 'ようこそ',
+    login: 'ログイン',
+    loading: 'ログイン中...',
+    signup: '新規登録',
+    calenderDescription: '一般ログインではGoogleカレンダー連携機能が利用できません。',
+    loginError: 'ログイン処理中にエラーが発生しました',
+    invalidLoginInfo: 'ログイン情報が正しくありません',
+    termsAgreement:
+      'ログインすることで、利用規約およびプライバシーポリシーに同意したことになります',
+  },
+  signup: {
+    email: 'メールアドレス',
+    password: 'パスワード',
+    passwordPlaceholder: '8文字以上入力',
+    name: '名前',
+    birthday: '生年月日',
+    birthdayPlaceholder: 'YYYY-MM-DD',
+    phone: '電話番号',
+    phonePlaceholder: '010-1234-5678',
+    signup: '新規登録',
+    cancel: 'キャンセル',
+    welcome: 'ようこそ',
+    termsAgreement:
+      'ログインすることで、利用規約およびプライバシーポリシーに同意したことになります。',
   },
 };
 

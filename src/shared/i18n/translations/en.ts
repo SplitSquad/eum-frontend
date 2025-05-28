@@ -1,6 +1,11 @@
 import { tr } from 'date-fns/locale';
 
 const en = {
+  welcome: {
+    title: 'Welcome to EUM',
+    description:
+      'EUM is a platform for communication and cooperation between people from different countries.',
+  },
   common: {
     home: 'Home',
     community: 'Clubs & Forums',
@@ -845,6 +850,30 @@ const en = {
       networkError: 'Please check your network connection.',
       loginRequired: 'Login is required for this feature.',
     },
+  },
+  login: {
+    welcome: 'Welcome',
+    login: 'Login',
+    loading: 'Logging in...',
+    signup: 'Sign Up',
+    calenderDescription: 'Google Calendar integration is not available with general login.',
+    loginError: 'An error occurred during login processing',
+    invalidLoginInfo: 'Login information is invalid',
+    termsAgreement: 'By logging in, you agree to the Terms of Service and Privacy Policy',
+  },
+  signup: {
+    email: 'Email',
+    password: 'Password',
+    passwordPlaceholder: 'At least 8 characters',
+    name: 'Name',
+    birthday: 'Birthday',
+    birthdayPlaceholder: 'YYYY-MM-DD',
+    phone: 'Phone number',
+    phonePlaceholder: '010-1234-5678',
+    signup: 'Sign Up',
+    cancel: 'Cancel',
+    welcome: 'Welcome',
+    termsAgreement: 'By logging in, you agree to the Terms of Service and Privacy Policy.',
   },
 };
 

@@ -1,4 +1,9 @@
 const es = {
+  welcome: {
+    title: 'Bienvenido a EUM',
+    description:
+      'EUM es una plataforma para la comunicación y cooperación entre personas de diferentes países.',
+  },
   common: {
     home: 'Inicio',
     community: 'Grupos y Foros',
@@ -39,10 +44,10 @@ const es = {
     loginDescription: 'Inicia sesión fácilmente con tu cuenta de Google',
     loginWithGoogleButton: 'Iniciar sesión con cuenta de Google',
     loginWithGeneral: 'Iniciar sesión con cuenta general',
-    loginError: 'Ocurrió un error durante el procesamiento del inicio de sesión',
+    loginError: 'Ocurrió un error durante el inicio de sesión',
     googleLoginError:
-      'Ocurrió un error durante el inicio de sesión de Google. Por favor, inténtalo de nuevo',
-    invalidLoginInfo: 'La información de inicio de sesión es inválida',
+      'Ocurrió un error al iniciar sesión con Google. Por favor, inténtalo de nuevo.',
+    invalidLoginInfo: 'La información de inicio de sesión no es correcta',
     termsAgreement:
       'Al iniciar sesión, aceptas los Términos de Servicio y la Política de Privacidad',
     springMemories: 'Recuerdos de primavera',
@@ -837,6 +842,33 @@ const es = {
       networkError: 'Por favor, verifique su conexión de red.',
       loginRequired: 'Se requiere iniciar sesión para esta función.',
     },
+  },
+  login: {
+    welcome: 'Bienvenido',
+    login: 'Iniciar sesión',
+    loading: 'Iniciando sesión...',
+    signup: 'Registrarse',
+    calenderDescription:
+      'La integración con Google Calendar no está disponible con el inicio de sesión general.',
+    loginError: 'Ocurrió un error durante el inicio de sesión',
+    invalidLoginInfo: 'La información de inicio de sesión no es correcta',
+    termsAgreement:
+      'Al iniciar sesión, aceptas los Términos de Servicio y la Política de Privacidad',
+  },
+  signup: {
+    email: 'Correo electrónico',
+    password: 'Contraseña',
+    passwordPlaceholder: 'Al menos 8 caracteres',
+    name: 'Nombre',
+    birthday: 'Fecha de nacimiento',
+    birthdayPlaceholder: 'YYYY-MM-DD',
+    phone: 'Número de teléfono',
+    phonePlaceholder: '010-1234-5678',
+    signup: 'Registrarse',
+    cancel: 'Cancelar',
+    welcome: 'Bienvenido',
+    termsAgreement:
+      'Al iniciar sesión, aceptas los Términos de Servicio y la Política de Privacidad.',
   },
 };
 
