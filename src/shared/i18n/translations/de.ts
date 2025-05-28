@@ -2,6 +2,11 @@ import { tr } from 'date-fns/locale';
 import { t } from 'i18next';
 
 const de = {
+  welcome: {
+    title: 'Willkommen bei EUM',
+    description:
+      'EUM ist eine Plattform für die Kommunikation und Kooperation von Menschen aus verschiedenen Ländern.',
+  },
   common: {
     home: 'Startseite',
     community: 'Gruppen & Foren',
@@ -829,6 +834,33 @@ const de = {
       networkError: 'Bitte überprüfen Sie Ihre Netzwerkverbindung.',
       loginRequired: 'Anmeldung ist für diese Funktion erforderlich.',
     },
+  },
+  login: {
+    welcome: 'Willkommen',
+    login: 'Anmelden',
+    loading: 'Anmeldung läuft...',
+    signup: 'Registrieren',
+    calenderDescription:
+      'Die Google Kalender-Integration ist mit allgemeiner Anmeldung nicht verfügbar.',
+    loginError: 'Bei der Anmeldung ist ein Fehler aufgetreten',
+    invalidLoginInfo: 'Anmeldeinformationen sind ungültig',
+    termsAgreement:
+      'Mit der Anmeldung stimmen Sie den Nutzungsbedingungen und der Datenschutzrichtlinie zu',
+  },
+  signup: {
+    email: 'E-Mail',
+    password: 'Passwort',
+    passwordPlaceholder: 'Mindestens 8 Zeichen',
+    name: 'Name',
+    birthday: 'Geburtsdatum',
+    birthdayPlaceholder: 'YYYY-MM-DD',
+    phone: 'Telefonnummer',
+    phonePlaceholder: '010-1234-5678',
+    signup: 'Registrieren',
+    cancel: 'Abbrechen',
+    welcome: 'Willkommen',
+    termsAgreement:
+      'Mit der Anmeldung stimmen Sie den Nutzungsbedingungen und der Datenschutzrichtlinie zu.',
   },
 };
 

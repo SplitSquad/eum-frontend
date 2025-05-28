@@ -38,20 +38,19 @@ const FormButtons: React.FC<FormButtonsProps> = ({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { season } = useThemeStore();
-  
+
   // 계절에 따른 버튼 색상
   const getPrimaryColor = () => {
     switch (season) {
-      case 'spring': return '#FFAAA5';
-      case 'summer': return '#77AADD';
-      case 'autumn': return '#E8846B';
-      case 'winter': return '#8795B5';
-      default: return '#FFAAA5';
+      case 'spring':
+        return '#FFAAA5';
+      default:
+        return '#FFAAA5';
     }
   };
-  
+
   const primaryColor = getPrimaryColor();
-  
+
   return (
     <Box
       sx={{
@@ -90,9 +89,7 @@ const FormButtons: React.FC<FormButtonsProps> = ({
         sx={{
           bgcolor: primaryColor,
           '&:hover': {
-            bgcolor: theme.palette.mode === 'light'
-              ? `${primaryColor}dd`
-              : `${primaryColor}bb`,
+            bgcolor: theme.palette.mode === 'light' ? `${primaryColor}dd` : `${primaryColor}bb`,
           },
           ml: 'auto',
         }}
@@ -100,11 +97,11 @@ const FormButtons: React.FC<FormButtonsProps> = ({
         {isSubmitting
           ? t('onboarding.saving')
           : isLastStep
-            ? (submitLabel || t('buttons.finish'))
-            : (nextLabel || t('buttons.next'))}
+            ? submitLabel || t('buttons.finish')
+            : nextLabel || t('buttons.next')}
       </Button>
     </Box>
   );
 };
 
-export default FormButtons; 
+export default FormButtons;

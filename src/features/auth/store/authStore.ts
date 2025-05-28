@@ -16,6 +16,10 @@ export interface User {
   picture?: string;
   profileImagePath?: string; // 프로필 이미지 경로 추가
   googleId?: string;
+  nation?: string;
+  language?: string;
+  gender?: string;
+  visitPurpose?: string;
 }
 
 /**
@@ -282,8 +286,8 @@ export const useAuthStore = create<AuthState>()(
 
             // API 호출 실패 시 토큰에서 직접 정보 추출
             try {
-                          // JWT 토큰 디코딩
-            const payload = JSON.parse(atob(validToken.split('.')[1]));
+              // JWT 토큰 디코딩
+              const payload = JSON.parse(atob(validToken.split('.')[1]));
               const userId = payload.userId || 0;
               const role = payload.role || 'ROLE_USER';
               const name = payload.name || ''; // 이름 정보도 추출

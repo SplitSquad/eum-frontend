@@ -13,6 +13,8 @@ import {
 } from '@mui/material';
 import { useRegionStore } from '../../store/regionStore';
 import { regionTree } from '@/constants/regionTree';
+import { useThemeStore } from '@/features/theme/store/themeStore';
+import { seasonalColors } from '@/components/layout/springTheme';
 
 interface RegionSelectorProps {
   // 선택이 바뀔 때 콜백 (optional)
@@ -22,6 +24,8 @@ interface RegionSelectorProps {
 const RegionSelector: React.FC<RegionSelectorProps> = ({ onChange }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const season = useThemeStore(state => state.season);
+  const colors = seasonalColors[season] || seasonalColors.spring;
   const {
     selectedCity,
     selectedDistrict,
@@ -59,10 +63,10 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({ onChange }) => {
             sx={{
               bgcolor: 'rgba(255, 255, 255, 0.8)',
               '& .MuiOutlinedInput-notchedOutline': {
-                borderColor: '#FFD7D7',
+                borderColor: colors.primary,
               },
               '&:hover .MuiOutlinedInput-notchedOutline': {
-                borderColor: '#FFAAA5',
+                borderColor: colors.secondary,
               },
             }}
           >
@@ -90,10 +94,10 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({ onChange }) => {
               sx={{
                 bgcolor: 'rgba(255, 255, 255, 0.8)',
                 '& .MuiOutlinedInput-notchedOutline': {
-                  borderColor: '#FFD7D7',
+                  borderColor: colors.primary,
                 },
                 '&:hover .MuiOutlinedInput-notchedOutline': {
-                  borderColor: '#FFAAA5',
+                  borderColor: colors.secondary,
                 },
               }}
             >
@@ -122,10 +126,10 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({ onChange }) => {
               sx={{
                 bgcolor: 'rgba(255, 255, 255, 0.8)',
                 '& .MuiOutlinedInput-notchedOutline': {
-                  borderColor: '#FFD7D7',
+                  borderColor: colors.primary,
                 },
                 '&:hover .MuiOutlinedInput-notchedOutline': {
-                  borderColor: '#FFAAA5',
+                  borderColor: colors.secondary,
                 },
               }}
             >
@@ -154,8 +158,8 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({ onChange }) => {
           }
           size="small"
           sx={{
-            bgcolor: '#FFAAA5',
-            color: 'white',
+            bgcolor: colors.secondary,
+            color: colors.text,
             fontWeight: 600,
           }}
         />
@@ -164,7 +168,7 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({ onChange }) => {
             label="초기화"
             size="small"
             onClick={resetRegion}
-            sx={{ bgcolor: '#FFD7D7', color: '#FF7777', fontWeight: 600, cursor: 'pointer' }}
+            sx={{ bgcolor: colors.primary, color: colors.text, fontWeight: 600, cursor: 'pointer' }}
           />
         )}
       </Box>

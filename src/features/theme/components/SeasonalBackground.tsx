@@ -1,37 +1,28 @@
 import React from 'react';
-import { useThemeStore } from '../store/themeStore';
 import SpringBackground from './SeasonalBackground/SpringBackground';
-import SummerBackground from './SeasonalBackground/SummerBackground';
-import AutumnBackground from './SeasonalBackground/AutumnBackground';
-import WinterBackground from './SeasonalBackground/WinterBackground';
+import HanjiBackground from './SeasonalBackground/HanjiBackground';
+import ProfessionalBackground from './SeasonalBackground/ProfessionalBackground';
+import { useThemeStore } from '../store/themeStore';
 
 interface SeasonalBackgroundProps {
   children: React.ReactNode;
   noPadding?: boolean;
 }
 
-/**
- * 현재 선택된 계절에 따라 적절한 배경 컴포넌트를 렌더링하는 컴포넌트
- */
 const SeasonalBackground: React.FC<SeasonalBackgroundProps> = ({ children, noPadding = false }) => {
-  const { season } = useThemeStore();
-  
-  // 현재 계절에 따라 적절한 배경 컴포넌트 선택
-  switch (season) {
-    case 'summer':
-      return <SummerBackground noPadding={noPadding}>{children}</SummerBackground>;
-    
-    case 'autumn':
-      return <AutumnBackground noPadding={noPadding}>{children}</AutumnBackground>;
-    
-    case 'winter':
-      return <WinterBackground noPadding={noPadding}>{children}</WinterBackground>;
-    
-    case 'spring':
-    default:
-      // 기본값은 봄 테마
-      return <SpringBackground noPadding={noPadding}>{children}</SpringBackground>;
+  const season = useThemeStore(state => state.season);
+
+  if (season === 'spring') {
+    return <SpringBackground noPadding={noPadding}>{children}</SpringBackground>;
   }
+  if (season === 'professional') {
+    return <ProfessionalBackground noPadding={noPadding}>{children}</ProfessionalBackground>;
+  }
+  if (season === 'hanji' || season === 'winter') {
+    return <HanjiBackground noPadding={noPadding}>{children}</HanjiBackground>;
+  }
+  // fallback
+  return <SpringBackground noPadding={noPadding}>{children}</SpringBackground>;
 };
 
-export default SeasonalBackground; 
+export default SeasonalBackground;
