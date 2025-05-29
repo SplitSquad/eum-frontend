@@ -468,63 +468,6 @@ export default function InfoListPage() {
               paddingRight: 32,
             }}
           >
-            {/* 카테고리 뱃지 박스 (검색바와 인기 정보 사이) 
-            <div
-              style={{
-                background: 'rgba(255,255,255,0.7)',
-                border: '2px solid #bfa76a',
-                borderRadius: 12,
-                padding: '16px 12px',
-                marginBottom: 12,
-                display: 'grid',
-                gridTemplateColumns: 'repeat(4, 1fr)',
-                gap: 10,
-                position: 'relative',
-              }}
-            >
-               주제 선택 타이틀 (박스 안, 상단) 
-              <div
-                style={{
-                  gridColumn: '1 / -1',
-                  fontWeight: 800,
-                  fontSize: 15,
-                  color: '#222',
-                  marginBottom: 8,
-                  textAlign: 'left',
-                  letterSpacing: '-0.5px',
-                }}
-              >
-                {t('infoPage.categorySelectTitle')}
-              </div>
-              {categories.slice(1).map(category => (
-                <button
-                  key={category.key}
-                  onClick={() => handleCategoryChange(category.key)}
-                  style={{
-                    background: selectedCategory === category.key ? '#222' : '#f3f4f6',
-                    color: selectedCategory === category.key ? '#fff' : '#222',
-                    border:
-                      selectedCategory === category.key
-                        ? '1.5px solid #222'
-                        : '1.5px solid #e5e7eb',
-                    borderRadius: 20,
-                    padding: '6px 0',
-                    fontWeight: 600,
-                    fontSize: 10,
-                    cursor: 'pointer',
-                    transition: 'all 0.15s',
-                    width: '100%',
-                    whiteSpace: 'normal',
-                    wordBreak: 'break-word',
-                    outline: 'none',
-                    boxShadow: 'none',
-                  }}
-                >
-                  {category.label}
-                </button>
-              ))}
-            </div>*/}
-
             {/* 추천 정보 */}
             <div>
               <div

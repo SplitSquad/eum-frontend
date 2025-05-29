@@ -206,6 +206,7 @@ const ProBoardListPage: React.FC = () => {
     setPostFilter,
     searchPosts,
     fetchTopPosts,
+    topPosts,
   } = useCommunityStore();
 
   // 현재 URL에서 쿼리 파라미터 가져오기
@@ -282,6 +283,7 @@ const ProBoardListPage: React.FC = () => {
     // 초기 데이터 로드 완료 플래그 설정
     initialDataLoadedRef.current = true;
     hasInitialDataLoaded.current = true;
+    console.log('topPosts', topPosts);
   }, []);
 
   // 언어 변경 감지 및 검색 상태 유지
@@ -642,14 +644,12 @@ const ProBoardListPage: React.FC = () => {
                 {t('community.board.description')}
               </p>
             </div>
-            {isAdmin && (
-              <button
-                onClick={handleCreatePost}
-                style={{ ...proButton, padding: '12px 32px', fontSize: 16 }}
-              >
-                {t('community.posts.writePost')}
-              </button>
-            )}
+            <button
+              onClick={handleCreatePost}
+              style={{ ...proButton, padding: '12px 32px', fontSize: 16 }}
+            >
+              {t('community.posts.writePost')}
+            </button>
           </div>
         </div>
       </div>
@@ -812,7 +812,67 @@ const ProBoardListPage: React.FC = () => {
               paddingLeft: 16,
             }}
           >
-            {/* 여기에 사이드바 위젯/광고/인기글 등 추가 가능 */}
+            {/* 인기 게시글 */}
+            {/*
+            <section
+              style={{
+                background: 'rgba(255,255,255,0.5)',
+                borderRadius: 10,
+                padding: 12,
+                border: '1.5px solid #e5e7eb',
+                marginBottom: 8,
+              }}
+            >
+              <h3
+                style={{
+                  fontSize: 15,
+                  fontWeight: 700,
+                  color: '#111',
+                  marginBottom: 12,
+                  fontFamily: proCard.fontFamily,
+                }}
+              >
+                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  {t('community.sidebar.popularPosts')}
+                </span>
+              </h3>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                {(topPosts || []).map((post, idx) => (
+                  <li
+                    key={post.id || post.postId || idx}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      padding: '8px 0',
+                      borderBottom:
+                        idx === (topPosts?.length || 0) - 1 ? 'none' : '1px solid #e5e7eb',
+                      cursor: 'pointer',
+                    }}
+                    onClick={() => navigate(`/community/board/${post.id || post.postId}`)}
+                  >
+                    <span style={{ fontWeight: 700, color: '#bbb', minWidth: 20 }}>{idx + 1}</span>
+                    <span
+                      style={{
+                        flex: 1,
+                        fontSize: 14,
+                        color: '#111',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 6,
+                      }}
+                    >
+                      {post.title}
+                    </span>
+                    <span style={{ fontSize: 12, color: '#888' }}>{post.views}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+            */}
             {/* 필터/검색 영역 */}
             <Paper
               elevation={0}
@@ -1012,36 +1072,6 @@ const ProBoardListPage: React.FC = () => {
                     gap: 2,
                   }}
                 >
-                  {/* 지역 선택 */}
-                  <Box>
-                    <Typography
-                      variant="subtitle2"
-                      gutterBottom
-                      sx={{ fontWeight: 600, color: '#555' }}
-                    >
-                      {t('community.filters.region')}
-                    </Typography>
-                    <FormControl fullWidth size="small">
-                      <Select
-                        value={selectedRegion}
-                        onChange={e => handleRegionChange(e.target.value)}
-                        sx={{
-                          bgcolor: 'rgba(255, 255, 255, 0.5)',
-                          '& .MuiOutlinedInput-notchedOutline': {
-                            borderColor: '#FFD7D7',
-                          },
-                          '&:hover .MuiOutlinedInput-notchedOutline': {
-                            borderColor: '#FFAAA5',
-                          },
-                          borderRadius: '8px',
-                        }}
-                      >
-                        <MenuItem value="전체">{t('community.filters.all')}</MenuItem>
-                        <MenuItem value="자유">{t('community.postTypes.free')}</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Box>
-
                   {/* 카테고리와 태그 영역(통합) */}
                   <Box sx={{ gridColumn: isMobile ? 'auto' : '1 / -1' }}>
                     <Typography

@@ -88,7 +88,29 @@ const PostTypeLabel = styled(Typography)(({ theme }) => ({
   fontWeight: 600,
   color: '#666',
 }));
-
+const proCard = {
+  background: 'rgba(255,255,255,0.5)',
+  border: '1.5px solid #222',
+  borderRadius: 10,
+  boxShadow: '0 2px 12px 0 rgba(0,0,0,0.04)',
+  marginBottom: 24,
+  padding: 24,
+  fontFamily: 'Inter, Pretendard, Arial, sans-serif',
+};
+const proButton = {
+  background: 'rgba(255,255,255,1)',
+  border: '1.5px solid #222',
+  borderRadius: 8,
+  fontFamily: 'Inter, Pretendard, Arial, sans-serif',
+  fontWeight: 600,
+  color: '#222',
+  padding: '10px 28px',
+  margin: '0 8px',
+  cursor: 'pointer',
+  boxShadow: 'none',
+  transition: 'background 0.2s, color 0.2s, border 0.2s',
+  outline: 'none',
+};
 // 선택 가능한 게시글 타입 (UI 표시용)
 type SelectablePostType = 'ALL' | '자유' | '모임';
 
@@ -191,6 +213,7 @@ const ProGroupListPage: React.FC = () => {
     setPostFilter,
     searchPosts,
     fetchTopPosts,
+    topPosts,
   } = useCommunityStore();
 
   // 현재 URL에서 쿼리 파라미터 가져오기

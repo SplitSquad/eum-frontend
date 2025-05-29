@@ -453,6 +453,40 @@ const zh = {
       alreadyJoined: '已经加入了这个小组',
       notMember: '不是小组成员',
     },
+    sidebar: {
+      popularInfo: '热门信息',
+      emergencyContacts: '紧急联系方式',
+      emergency: {
+        title: '紧急情况',
+        subtitle: '火警、医疗',
+        number: '119',
+      },
+      police: {
+        title: '警察局',
+        subtitle: '报警、失物招领',
+        number: '112',
+      },
+      foreignerCenter: {
+        title: '外国人服务中心',
+        subtitle: '支持19种语言',
+        number: '1345',
+      },
+      usefulSites: '🔗 实用网站',
+      hikorea: {
+        title: 'HiKorea',
+        subtitle: '签证与居留',
+      },
+      nhis: {
+        title: '国民健康保险',
+        subtitle: '参保与管理',
+      },
+      worknet: {
+        title: 'WorkNet',
+        subtitle: '招聘信息',
+      },
+      currentSearch: '当前搜索',
+      popularPosts: '热门帖子',
+    },
   },
   widgets: {
     dynamicFeed: {
@@ -725,8 +759,8 @@ const zh = {
       createdAt: '发布日期',
     },
     sidebar: {
-      popularInfo: '🔥 热门信息',
-      emergencyContacts: '🆘 紧急联系方式',
+      popularInfo: '热门信息',
+      emergencyContacts: '紧急联系方式',
       emergency: {
         title: '紧急情况',
         subtitle: '火警、医疗',

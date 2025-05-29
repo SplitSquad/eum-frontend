@@ -10,6 +10,11 @@ const vi = {
     },
     categorySelectTitle: 'Chọn chủ đề',
   },
+  community: {
+    sidebar: {
+      popularPosts: 'Bài viết nổi bật',
+    },
+  },
 };
 
 export default vi;

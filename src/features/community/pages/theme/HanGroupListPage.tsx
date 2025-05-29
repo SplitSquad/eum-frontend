@@ -38,22 +38,18 @@ import TuneIcon from '@mui/icons-material/Tune';
 import CreateIcon from '@mui/icons-material/Create';
 import ClearIcon from '@mui/icons-material/Clear';
 import { styled } from '@mui/system';
-
-import SpringBackground from '../../components/shared/SpringBackground';
-import CategoryTabs from '../../components/shared/CategoryTabs';
-import PostList from '../../components/post/PostList';
-import RegionSelector from '../../components/shared/RegionSelector';
-import PostTypeSelector from '../../components/shared/PostTypeSelector';
+import RegionSelector from '@/features/community/components/shared/RegionSelector';
 
 import useCommunityStore from '../../store/communityStore';
 import { Post } from '../../types';
-import useAuthStore from '@/features/auth/store/authStore';
+import useAuthStore from '../../../../features/auth/store/authStore';
+import PostList from '@/features/community/components/post/PostList';
 import { usePostStore } from '../../store/postStore';
 import { PostApi } from '../../api/postApi';
 import { PostType } from '../../types-folder';
 import { useRegionStore } from '../../store/regionStore';
-import { useTranslation } from '@/shared/i18n';
-import { useLanguageStore } from '@/features/theme/store/languageStore';
+import { useTranslation } from '../../../../shared/i18n';
+import { useLanguageStore } from '../../../../features/theme/store/languageStore';
 
 /**
  * 게시글 목록 페이지 컴포넌트

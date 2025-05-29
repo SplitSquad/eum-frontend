@@ -479,6 +479,40 @@ const en = {
       alreadyJoined: 'Already joined this group',
       notMember: 'Not a group member',
     },
+    sidebar: {
+      popularPosts: 'Popular Posts',
+      popularInfo: 'Popular Info',
+      emergencyContacts: 'Emergency Contacts',
+      emergency: {
+        title: 'Emergency',
+        subtitle: 'Fire, Medical',
+        number: '119',
+      },
+      police: {
+        title: 'Police',
+        subtitle: 'Crime & Lost Reports',
+        number: '112',
+      },
+      foreignerCenter: {
+        title: 'Foreigner Help Center',
+        subtitle: 'Supports 19 Languages',
+        number: '1345',
+      },
+      usefulSites: '🔗 Useful Sites',
+      hikorea: {
+        title: 'HiKorea',
+        subtitle: 'Visa & Stay Services',
+      },
+      nhis: {
+        title: 'National Health Insurance',
+        subtitle: 'Enrollment & Management',
+      },
+      worknet: {
+        title: 'WorkNet',
+        subtitle: 'Job Listings',
+      },
+      currentSearch: 'Current Search',
+    },
   },
   widgets: {
     dynamicFeed: {
@@ -753,8 +787,8 @@ const en = {
       createdAt: 'Date',
     },
     sidebar: {
-      popularInfo: '🔥 Popular Info',
-      emergencyContacts: '🆘 Emergency Contacts',
+      popularInfo: 'Popular Info',
+      emergencyContacts: 'Emergency Contacts',
       emergency: {
         title: 'Emergency',
         subtitle: 'Fire, Medical',

@@ -501,6 +501,40 @@ const ko = {
       alreadyJoined: '이미 참가한 모임입니다',
       notMember: '모임 멤버가 아닙니다',
     },
+    sidebar: {
+      popularInfo: '인기 정보',
+      emergencyContacts: '긴급 연락처',
+      emergency: {
+        title: '응급상황',
+        subtitle: '화재, 의료응급',
+        number: '119',
+      },
+      police: {
+        title: '경찰서',
+        subtitle: '범죄신고, 분실신고',
+        number: '112',
+      },
+      foreignerCenter: {
+        title: '외국인종합안내센터',
+        subtitle: '19개 언어 지원',
+        number: '1345',
+      },
+      usefulSites: '유용한 사이트',
+      hikorea: {
+        title: '하이코리아',
+        subtitle: '비자, 체류 관련 업무',
+      },
+      nhis: {
+        title: '국민건강보험공단',
+        subtitle: '건강보험 가입 및 관리',
+      },
+      worknet: {
+        title: '워크넷',
+        subtitle: '취업정보 및 구직활동',
+      },
+      currentSearch: '현재 검색',
+      popularPosts: '인기 게시글',
+    },
   },
   widgets: {
     dynamicFeed: {
