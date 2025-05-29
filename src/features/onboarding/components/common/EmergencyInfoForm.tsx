@@ -20,6 +20,8 @@ interface EmergencyInfoFormProps {
   onMedicalConditionsChange: (value: string) => void;
   onFoodAllergiesChange: (value: string) => void;
   onReceiveEmergencyAlertsChange: (value: boolean) => void;
+  title?: string;
+  subtitle?: string;
 }
 
 const EmergencyInfoForm: React.FC<EmergencyInfoFormProps> = ({
