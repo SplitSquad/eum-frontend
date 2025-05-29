@@ -19,23 +19,62 @@ import { ImageUploadNode } from '@tiptap-editor/components/tiptap-node/image-upl
 import { TrailingNode } from '@tiptap-editor/components/tiptap-extension/trailing-node-extension';
 import { handleImageUpload, MAX_FILE_SIZE } from '@tiptap-editor/lib/tiptap-utils';
 import { createInfo, updateInfo, uploadInfoImage, getInfoDetail } from '../api/infoApi';
+import { useTranslation } from '@/shared/i18n';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { seasonalColors } from '@/components/layout/springTheme';
+import { useThemeStore } from '@/features/theme/store/themeStore';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
-const categoryOptions = [
-  '교통',
-  '금융/세금',
-  '비자/법률',
-  '쇼핑',
-  '의료/건강',
-  '비자/법률',
-  '주거/부동산',
-  '취업/직장',
+
+const getCategoryColor = (category: string) => {
+  const colorMap: { [key: string]: string } = {
+    '비자/법률': '#4CAF50',
+    '취업/직장': '#2196F3',
+    '주거/부동산': '#FF9800',
+    교육: '#9C27B0',
+    '의료/건강': '#F44336',
+    '금융/세금': '#607D8B',
+    교통: '#795548',
+    쇼핑: '#E91E63',
+  };
+  return colorMap[category] || '#6B7280';
+};
+
+// 한국어 카테고리를 영어 키로 변환
+const getCategoryKey = (koreanCategory: string): string => {
+  const categoryMap: { [key: string]: string } = {
+    '비자/법률': 'visa',
+    '취업/직장': 'employment',
+    '주거/부동산': 'housing',
+    교육: 'education',
+    '의료/건강': 'healthcare',
+    '금융/세금': 'finance',
+    교통: 'transportation',
+    쇼핑: 'shopping',
+  };
+  return categoryMap[koreanCategory] || 'all';
+};
+
+// InfoListPage와 동일하게 카테고리 키 선언
+const categoryKeys = [
+  'education',
+  'transportation',
+  'finance',
+  'visa',
+  'shopping',
+  'healthcare',
+  'housing',
+  'employment',
 ];
 
 export default function InfoCreatePage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { id } = useParams<{ id?: string }>();
   const isEdit = Boolean(id);
+  const season = useThemeStore(state => state.season);
 
   const { title, setTitle, category, setCategory, content, setContent } = useInfoFormStore();
 
@@ -105,6 +144,16 @@ export default function InfoCreatePage() {
         'aria-label': '본문 입력 영역',
         class: 'prose focus:outline-none',
       },
+      handleDOMEvents: {
+        keydown: (view, event) => {
+          if (event.key === 'Enter') {
+            setTimeout(() => {
+              document.body.scrollTo({ top: document.body.scrollHeight / 2, behavior: 'smooth' });
+            }, 150);
+          }
+          return false;
+        },
+      },
     },
     extensions: [
       StarterKit,
@@ -167,46 +216,119 @@ export default function InfoCreatePage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-lg">
-      <h2 className="text-xl font-semibold mb-4">{isEdit ? '정보글 수정' : '정보글 작성'}</h2>
-
+    <div
+      style={{
+        maxWidth: '48rem',
+        margin: '0 auto',
+        background: seasonalColors[season].background,
+        padding: '2rem',
+        borderRadius: '1rem',
+        boxShadow: '0 8px 32px 0 rgba(60,60,60,0.10)',
+        marginTop: '2.5rem',
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginBottom: '1.5rem',
+        }}
+      >
+        <IconButton
+          aria-label={t('infoPage.detail.back')}
+          onClick={() => navigate(-1)}
+          sx={{ color: '#888', mr: 2 }}
+        >
+          <ArrowBackIcon />
+        </IconButton>
+        <h2
+          style={{
+            fontSize: '2rem',
+            fontWeight: 700,
+            color: seasonalColors[season].primary,
+            textAlign: 'center',
+            flex: 1,
+          }}
+        >
+          {isEdit ? t('infoPage.editTitle') : t('infoPage.createTitle')}
+        </h2>
+        <div style={{ width: 48 }} />
+      </div>
       {/* 제목 */}
       <input
         type="text"
         value={title}
         onChange={e => setTitle(e.target.value)}
-        placeholder="제목을 입력하세요"
-        className="w-full border border-gray-300 rounded-md px-4 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        placeholder={t('infoPage.form.titlePlaceholder')}
+        className="w-full border border-gray-300 rounded-lg px-4 py-3 mb-5 focus:outline-none focus:ring-2 focus:ring-blue-400 text-lg"
       />
-
       {/* 카테고리 */}
       <select
         value={category || ''}
         onChange={e => setCategory(e.target.value)}
-        className="w-full border border-gray-300 rounded-md px-4 py-2 mb-6 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        className="w-full border border-gray-300 rounded-lg px-4 py-3 mb-6 focus:outline-none focus:ring-2 focus:ring-blue-400 text-base"
       >
         <option value="" disabled>
-          카테고리를 선택하세요
+          {t('infoPage.form.categoryPlaceholder')}
         </option>
-        {categoryOptions.map(opt => (
-          <option key={opt} value={opt}>
-            {opt}
+        {categoryKeys.map(key => (
+          <option key={key} value={key}>
+            {t(`infoPage.categories.${key}`)}
           </option>
         ))}
       </select>
-
+      {/* 카테고리 뱃지 */}
+      {category && (
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-start',
+            alignItems: 'center',
+            marginBottom: '1.5rem',
+          }}
+        >
+          <span
+            style={{
+              background: seasonalColors[season].primary,
+              color: '#fff',
+              borderRadius: '999px',
+              padding: '0.35em 1.2em',
+              fontWeight: 600,
+              fontSize: '1rem',
+              letterSpacing: '0.01em',
+              boxShadow: '0 1px 4px rgba(60,60,60,0.08)',
+              display: 'inline-block',
+            }}
+          >
+            {t(`infoPage.categories.${category}`)}
+          </span>
+        </div>
+      )}
       {/* 본문 에디터 */}
-      <div className="border border-gray-200 rounded-md p-4 mb-6 min-h-[400px]">
+      <div className="border border-gray-200 rounded-lg p-4 mb-8 min-h-[400px] bg-gray-50">
         <SimpleEditor editor={editor} />
       </div>
-
       {/* 제출 버튼 */}
-      <button
-        onClick={handleSubmit}
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-md transition"
-      >
-        {isEdit ? '수정하기' : '작성하기'}
-      </button>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '2rem' }}>
+        <Button
+          variant="contained"
+          color="primary"
+          size="large"
+          onClick={handleSubmit}
+          sx={{
+            borderRadius: 2,
+            fontWeight: 600,
+            fontSize: '1.125rem',
+            py: 1.5,
+            boxShadow: 'none',
+            textTransform: 'none',
+            minWidth: 160,
+          }}
+        >
+          {isEdit ? t('infoPage.form.editButton') : t('infoPage.form.createButton')}
+        </Button>
+      </div>
     </div>
   );
 }

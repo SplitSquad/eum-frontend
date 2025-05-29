@@ -782,6 +782,15 @@ const zh = {
       educationSupport: '教育支持',
       koreanLearning: '韩语学习:1345（多文化家庭服务中心）',
     },
+    createTitle: '创建信息',
+    editTitle: '编辑信息',
+    form: {
+      titlePlaceholder: '请输入标题',
+      categoryPlaceholder: '请选择类别',
+      createButton: '创建',
+      editButton: '编辑',
+    },
+    categorySelectTitle: '选择主题',
   },
 
   aiAssistant: {

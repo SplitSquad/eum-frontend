@@ -801,6 +801,15 @@ const fr = {
       educationSupport: "Aide à l'éducation",
       koreanLearning: 'Apprendre le coréen : 1345 (Centre multiculturel)',
     },
+    createTitle: 'Créer une information',
+    editTitle: 'Modifier une information',
+    form: {
+      titlePlaceholder: 'Entrez un titre',
+      categoryPlaceholder: 'Sélectionnez une catégorie',
+      createButton: 'Créer',
+      editButton: 'Modifier',
+    },
+    categorySelectTitle: 'Choisir un sujet',
   },
   aiAssistant: {
     title: 'Assistant de Vie en Corée',

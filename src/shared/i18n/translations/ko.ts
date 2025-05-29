@@ -783,8 +783,8 @@ const ko = {
       createdAt: '작성일',
     },
     sidebar: {
-      popularInfo: '🔥 인기 정보',
-      emergencyContacts: '🆘 긴급 연락처',
+      popularInfo: '인기 정보',
+      emergencyContacts: '긴급 연락처',
       emergency: {
         title: '응급상황',
         subtitle: '화재, 의료응급',
@@ -800,7 +800,7 @@ const ko = {
         subtitle: '19개 언어 지원',
         number: '1345',
       },
-      usefulSites: '🔗 유용한 사이트',
+      usefulSites: '유용한 사이트',
       hikorea: {
         title: '하이코리아',
         subtitle: '비자, 체류 관련 업무',
@@ -840,6 +840,15 @@ const ko = {
       educationSupport: '교육 지원',
       koreanLearning: '한국어 학습: 1345 (다문화가족지원센터)',
     },
+    createTitle: '정보글 작성',
+    editTitle: '정보글 수정',
+    form: {
+      titlePlaceholder: '제목을 입력하세요',
+      categoryPlaceholder: '카테고리를 선택하세요',
+      createButton: '작성하기',
+      editButton: '수정하기',
+    },
+    categorySelectTitle: '주제 선택',
   },
   aiAssistant: {
     title: '한국생활 도우미',

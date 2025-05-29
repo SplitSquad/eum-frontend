@@ -39,16 +39,16 @@ import CreateIcon from '@mui/icons-material/Create';
 import ClearIcon from '@mui/icons-material/Clear';
 import { styled } from '@mui/system';
 
-import PostList from '../components/post/PostList';
+import PostList from '../../components/post/PostList';
 
-import useCommunityStore from '../store/communityStore';
-import { Post } from '../types';
-import useAuthStore from '../../../features/auth/store/authStore';
-import { usePostStore } from '../store/postStore';
-import { PostApi } from '../api/postApi';
-import { PostType } from '../types-folder';
-import { useTranslation } from '../../../shared/i18n';
-import { useLanguageStore } from '../../../features/theme/store/languageStore';
+import useCommunityStore from '../../store/communityStore';
+import { Post } from '../../types';
+import useAuthStore from '@/features/auth/store/authStore';
+import { usePostStore } from '../../store/postStore';
+import { PostApi } from '../../api/postApi';
+import { PostType } from '../../types-folder';
+import { useTranslation } from '@/shared/i18n';
+import { useLanguageStore } from '@/features/theme/store/languageStore';
 
 /**
  * 게시글 목록 페이지 컴포넌트
@@ -100,7 +100,7 @@ interface LocalPostFilter {
   searchActive?: boolean; // 검색 활성화 여부
 }
 
-const BoardListPage: React.FC = () => {
+const HanBoardListPage: React.FC = () => {
   const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -1059,4 +1059,4 @@ const BoardListPage: React.FC = () => {
   );
 };
 
-export default BoardListPage;
+export default HanBoardListPage;

@@ -794,6 +794,15 @@ const de = {
       educationSupport: 'Bildungsunterstützung',
       koreanLearning: 'Koreanisch lernen:1345 (Familienzentrum)',
     },
+    createTitle: 'Information erstellen',
+    editTitle: 'Information bearbeiten',
+    form: {
+      titlePlaceholder: 'Titel eingeben',
+      categoryPlaceholder: 'Kategorie auswählen',
+      createButton: 'Erstellen',
+      editButton: 'Bearbeiten',
+    },
+    categorySelectTitle: 'Thema auswählen',
   },
 
   aiAssistant: {

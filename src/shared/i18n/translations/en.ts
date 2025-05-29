@@ -810,6 +810,15 @@ const en = {
       educationSupport: 'Education Support',
       koreanLearning: 'Korean Learning: 1345 (Multicultural Family Center)',
     },
+    createTitle: 'Create Information',
+    editTitle: 'Edit Information',
+    form: {
+      titlePlaceholder: 'Enter a title',
+      categoryPlaceholder: 'Select a category',
+      createButton: 'Create',
+      editButton: 'Edit',
+    },
+    categorySelectTitle: 'Select topic',
   },
 
   aiAssistant: {

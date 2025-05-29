@@ -797,6 +797,15 @@ const ru = {
       educationSupport: 'Поддержка в образовании',
       koreanLearning: 'Изучение корейского:1345 (Мультикультурный центр)',
     },
+    createTitle: 'Создать информацию',
+    editTitle: 'Редактировать информацию',
+    form: {
+      titlePlaceholder: 'Введите заголовок',
+      categoryPlaceholder: 'Выберите категорию',
+      createButton: 'Создать',
+      editButton: 'Редактировать',
+    },
+    categorySelectTitle: 'Выбрать тему',
   },
 
   aiAssistant: {

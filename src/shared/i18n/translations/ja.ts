@@ -787,6 +787,15 @@ const ja = {
       educationSupport: '教育支援',
       koreanLearning: '韓国語学習：1345 (多文化家庭支援センター)',
     },
+    createTitle: '情報作成',
+    editTitle: '情報編集',
+    form: {
+      titlePlaceholder: 'タイトルを入力してください',
+      categoryPlaceholder: 'カテゴリを選択してください',
+      createButton: '作成する',
+      editButton: '編集する',
+    },
+    categorySelectTitle: 'トピックを選択',
   },
   aiAssistant: {
     title: '韓国生活アシスタント',

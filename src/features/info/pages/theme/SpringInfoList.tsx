@@ -36,6 +36,8 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import PersonIcon from '@mui/icons-material/Person';
 import { seasonalColors } from '@/components/layout/springTheme';
 import { useThemeStore } from '@/features/theme/store/themeStore';
+import InfoCreateEditPage from '../InfoCreateEditPage';
+import InfoCreateOverlay from './InfoCreateOverlay';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
@@ -192,8 +194,6 @@ export default function InfoListPage() {
     }
   }, []);
 
-  // 스토어 함수들을 사용하므로 로컬 함수 제거
-
   // 초기 데이터 로드
   useEffect(() => {
     // 이미 데이터를 로드했으면 중복 요청 방지
@@ -306,561 +306,583 @@ export default function InfoListPage() {
   const startPage = currentBlock * blockSize + 1;
   const endPage = Math.min(startPage + blockSize - 1, totalPages);
 
+  const isCreate = location.pathname.endsWith('/create');
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* 헤더 */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">{t('infoPage.title')}</h1>
-              <p className="text-gray-600 mt-1">{t('infoPage.description')}</p>
+    <>
+      <div className="min-h-screen bg-gray-50">
+        {/* 헤더 */}
+        <div className="bg-white border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-4 py-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">{t('infoPage.title')}</h1>
+                <p className="text-gray-600 mt-1">{t('infoPage.description')}</p>
+              </div>
+              {isAdmin && (
+                <button
+                  onClick={() => {
+                    navigate('create');
+                    // 글 작성 후 돌아왔을 때 카테고리 카운트 새로고침을 위해 storage event 활용
+                    localStorage.setItem('needRefreshCategories', 'true');
+                  }}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  {t('infoPage.actions.write')}
+                </button>
+              )}
             </div>
-            {isAdmin && (
-              <button
-                onClick={() => {
-                  navigate('create');
-                  // 글 작성 후 돌아왔을 때 카테고리 카운트 새로고침을 위해 storage event 활용
-                  localStorage.setItem('needRefreshCategories', 'true');
-                }}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                {t('infoPage.actions.write')}
-              </button>
-            )}
           </div>
         </div>
-      </div>
 
-      {/* 검색바 */}
-      <div className="bg-white border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <form onSubmit={handleSearch} className="max-w-md">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder={t('infoPage.searchPlaceholder')}
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-                className="w-full pl-4 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              <button
-                type="submit"
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex gap-8">
-          {/* 메인 컨텐츠 */}
-          <div className="flex-1">
-            {/* 카테고리 그리드 */}
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                {t('infoPage.categories.title')}
-              </h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {categories.slice(1).map(
-                  (
-                    category // '전체' 제외
-                  ) => (
-                    <button
-                      key={category.key}
-                      onClick={() => handleCategoryChange(category.key)}
-                      className={`p-6 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-all duration-200 text-left group ${
-                        selectedCategory === category.key
-                          ? 'ring-2 ring-blue-500 border-blue-500'
-                          : ''
-                      }`}
-                    >
-                      <div className="flex flex-col items-center text-center">
-                        <div
-                          className="w-12 h-12 rounded-full flex items-center justify-center text-2xl mb-3"
-                          style={{ backgroundColor: `${getCategoryColor(category.key)}20` }}
-                        >
-                          {getCategoryIcon(category.key)}
-                        </div>
-                        <h3 className="font-medium text-gray-900 mb-1">{category.label}</h3>
-                        <p className="text-sm text-gray-500">
-                          {t('infoPage.content.postsCount', {
-                            count: String(categoryCounts[category.key] || 0),
-                          })}
-                        </p>
-                      </div>
-                    </button>
-                  )
-                )}
+        {/* 검색바 */}
+        <div className="bg-white border-b border-gray-100">
+          <div className="max-w-7xl mx-auto px-4 py-4">
+            <form onSubmit={handleSearch} className="max-w-md">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder={t('infoPage.searchPlaceholder')}
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  className="w-full pl-4 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <button
+                  type="submit"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                </button>
               </div>
-            </div>
+            </form>
+          </div>
+        </div>
 
-            {/* 추천 정보 */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold text-gray-900">
-                  {selectedCategory === 'all'
-                    ? t('infoPage.content.allInfo')
-                    : categories.find(cat => cat.key === selectedCategory)?.label ||
-                      selectedCategory}
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="flex gap-8">
+            {/* 메인 컨텐츠 */}
+            <div className="flex-1">
+              {/* 카테고리 그리드 */}
+              <div className="mb-8">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                  {t('infoPage.categories.title')}
                 </h2>
-                <div className="flex items-center gap-2">
-                  <div className="flex bg-gray-100 rounded-lg p-1">
-                    <button
-                      onClick={() => handleSortChange('latest')}
-                      className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                        sortBy === 'latest'
-                          ? 'bg-white text-gray-900 shadow-sm'
-                          : 'text-gray-600 hover:text-gray-900'
-                      }`}
-                    >
-                      {t('infoPage.sorting.latest')}
-                    </button>
-                    <button
-                      onClick={() => handleSortChange('popular')}
-                      className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                        sortBy === 'popular'
-                          ? 'bg-white text-gray-900 shadow-sm'
-                          : 'text-gray-600 hover:text-gray-900'
-                      }`}
-                    >
-                      {t('infoPage.sorting.popular')}
-                    </button>
-                  </div>
-                  <button
-                    onClick={() => handleCategoryChange('all')}
-                    className={`px-3 py-1 text-sm rounded-lg transition-colors ${
-                      selectedCategory === 'all'
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    {t('infoPage.actions.viewAll')}
-                  </button>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {categories.slice(1).map(
+                    (
+                      category // '전체' 제외
+                    ) => (
+                      <button
+                        key={category.key}
+                        onClick={() => handleCategoryChange(category.key)}
+                        className={`p-6 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-all duration-200 text-left group ${
+                          selectedCategory === category.key
+                            ? 'ring-2 ring-blue-500 border-blue-500'
+                            : ''
+                        }`}
+                      >
+                        <div className="flex flex-col items-center text-center">
+                          <div
+                            className="w-12 h-12 rounded-full flex items-center justify-center text-2xl mb-3"
+                            style={{ backgroundColor: `${getCategoryColor(category.key)}20` }}
+                          >
+                            {getCategoryIcon(category.key)}
+                          </div>
+                          <h3 className="font-medium text-gray-900 mb-1">{category.label}</h3>
+                          <p className="text-sm text-gray-500">
+                            {t('infoPage.content.postsCount', {
+                              count: String(categoryCounts[category.key] || 0),
+                            })}
+                          </p>
+                        </div>
+                      </button>
+                    )
+                  )}
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg border border-gray-200">
-                {loading ? (
-                  <div className="p-8 text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-                    <p className="text-gray-500">{t('infoPage.content.loading')}</p>
-                  </div>
-                ) : error ? (
-                  <div className="p-8 text-center">
-                    <div className="text-red-500 mb-4">⚠️</div>
-                    <p className="text-red-600">{error}</p>
-                  </div>
-                ) : posts.length === 0 ? (
-                  <div className="p-8 text-center">
-                    <svg
-                      className="w-12 h-12 text-gray-400 mx-auto mb-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+              {/* 추천 정보 */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    {selectedCategory === 'all'
+                      ? t('infoPage.content.allInfo')
+                      : categories.find(cat => cat.key === selectedCategory)?.label ||
+                        selectedCategory}
+                  </h2>
+                  <div className="flex items-center gap-2">
+                    <div className="flex bg-gray-100 rounded-lg p-1">
+                      <button
+                        onClick={() => handleSortChange('latest')}
+                        className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                          sortBy === 'latest'
+                            ? 'bg-white text-gray-900 shadow-sm'
+                            : 'text-gray-600 hover:text-gray-900'
+                        }`}
+                      >
+                        {t('infoPage.sorting.latest')}
+                      </button>
+                      <button
+                        onClick={() => handleSortChange('popular')}
+                        className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                          sortBy === 'popular'
+                            ? 'bg-white text-gray-900 shadow-sm'
+                            : 'text-gray-600 hover:text-gray-900'
+                        }`}
+                      >
+                        {t('infoPage.sorting.popular')}
+                      </button>
+                    </div>
+                    <button
+                      onClick={() => handleCategoryChange('all')}
+                      className={`px-3 py-1 text-sm rounded-lg transition-colors ${
+                        selectedCategory === 'all'
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1}
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
-                    <p className="text-gray-500">{t('infoPage.content.noData')}</p>
+                      {t('infoPage.actions.viewAll')}
+                    </button>
                   </div>
-                ) : (
-                  <>
-                    <div className="divide-y divide-gray-100">
-                      {posts.map((post, index) => (
-                        <div
-                          key={post.informationId}
-                          className="p-6 hover:bg-gray-50 transition-colors cursor-pointer"
-                          onClick={() => navigate(`${post.informationId}`)}
-                        >
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-2">
-                                <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded">
-                                  {t(`infoPage.categories.${getCategoryKey(post.category)}`)}
-                                </span>
-                              </div>
-                              <h3 className="text-lg font-medium text-gray-900 mb-2 hover:text-blue-600 transition-colors">
-                                {post.title}
-                              </h3>
-                              <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                                {extractTextFromContent(post.content || '')}
-                              </p>
-                              <div className="flex items-center gap-4 text-xs text-gray-500">
-                                <span className="flex items-center gap-1">
-                                  <svg
-                                    className="w-4 h-4"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                                    />
-                                  </svg>
-                                  {post.userName}
-                                </span>
-                                <span>{new Date(post.createdAt).toLocaleDateString()}</span>
-                                <span className="flex items-center gap-1">
-                                  <svg
-                                    className="w-4 h-4"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                    />
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                                    />
-                                  </svg>
-                                  {post.views}
-                                </span>
-                              </div>
-                            </div>
+                </div>
 
-                            <button
-                              onClick={e => {
-                                e.stopPropagation();
-                                handleBookmark(post.informationId);
-                              }}
-                              className={`ml-4 p-2 rounded-lg transition-colors ${
-                                bookmarkedIds.includes(post.informationId)
-                                  ? 'text-yellow-500 bg-yellow-50'
-                                  : 'text-gray-400 hover:text-yellow-500 hover:bg-yellow-50'
-                              }`}
-                            >
-                              <svg
-                                className="w-5 h-5"
-                                fill={
+                <div className="bg-white rounded-lg border border-gray-200">
+                  {loading ? (
+                    <div className="p-8 text-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                      <p className="text-gray-500">{t('infoPage.content.loading')}</p>
+                    </div>
+                  ) : error ? (
+                    <div className="p-8 text-center">
+                      <div className="text-red-500 mb-4">⚠️</div>
+                      <p className="text-red-600">{error}</p>
+                    </div>
+                  ) : posts.length === 0 ? (
+                    <div className="p-8 text-center">
+                      <svg
+                        className="w-12 h-12 text-gray-400 mx-auto mb-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1}
+                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        />
+                      </svg>
+                      <p className="text-gray-500">{t('infoPage.content.noData')}</p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="divide-y divide-gray-100">
+                        {posts.map((post, index) => (
+                          <div
+                            key={post.informationId}
+                            className="p-6 hover:bg-gray-50 transition-colors cursor-pointer"
+                            onClick={() => navigate(`${post.informationId}`)}
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-2">
+                                  <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded">
+                                    {t(`infoPage.categories.${getCategoryKey(post.category)}`)}
+                                  </span>
+                                </div>
+                                <h3 className="text-lg font-medium text-gray-900 mb-2 hover:text-blue-600 transition-colors">
+                                  {post.title}
+                                </h3>
+                                <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                                  {extractTextFromContent(post.content || '')}
+                                </p>
+                                <div className="flex items-center gap-4 text-xs text-gray-500">
+                                  <span className="flex items-center gap-1">
+                                    <svg
+                                      className="w-4 h-4"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                      />
+                                    </svg>
+                                    {post.userName}
+                                  </span>
+                                  <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                                  <span className="flex items-center gap-1">
+                                    <svg
+                                      className="w-4 h-4"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                      />
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                      />
+                                    </svg>
+                                    {post.views}
+                                  </span>
+                                </div>
+                              </div>
+
+                              <button
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  handleBookmark(post.informationId);
+                                }}
+                                className={`ml-4 p-2 rounded-lg transition-colors ${
                                   bookmarkedIds.includes(post.informationId)
-                                    ? 'currentColor'
-                                    : 'none'
-                                }
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
+                                    ? 'text-yellow-500 bg-yellow-50'
+                                    : 'text-gray-400 hover:text-yellow-500 hover:bg-yellow-50'
+                                }`}
                               >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-                                />
-                              </svg>
-                            </button>
+                                <svg
+                                  className="w-5 h-5"
+                                  fill={
+                                    bookmarkedIds.includes(post.informationId)
+                                      ? 'currentColor'
+                                      : 'none'
+                                  }
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
+                                  />
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* 페이지네이션 */}
+                      {totalPages > 1 && (
+                        <div className="px-6 py-4 border-t border-gray-200">
+                          <div className="flex justify-center items-center space-x-2">
+                            {/* 이전 블록 */}
+                            {startPage > 1 && (
+                              <button
+                                onClick={() => setPage(Math.max(startPage - blockSize, 1))}
+                                className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                              >
+                                {t('infoPage.pagination.previous')}
+                              </button>
+                            )}
+
+                            {/* 페이지 번호들 */}
+                            {Array.from(
+                              { length: endPage - startPage + 1 },
+                              (_, i) => startPage + i
+                            ).map(p => (
+                              <button
+                                key={p}
+                                onClick={() => setPage(p)}
+                                className={`px-3 py-2 text-sm rounded-lg transition-colors ${
+                                  p === page
+                                    ? 'bg-blue-600 text-white'
+                                    : 'text-gray-700 hover:bg-gray-100'
+                                }`}
+                              >
+                                {p}
+                              </button>
+                            ))}
+
+                            {/* 다음 블록 */}
+                            {endPage < totalPages && (
+                              <button
+                                onClick={() => setPage(Math.min(startPage + blockSize, totalPages))}
+                                className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                              >
+                                {t('infoPage.pagination.next')}
+                              </button>
+                            )}
                           </div>
                         </div>
-                      ))}
-                    </div>
-
-                    {/* 페이지네이션 */}
-                    {totalPages > 1 && (
-                      <div className="px-6 py-4 border-t border-gray-200">
-                        <div className="flex justify-center items-center space-x-2">
-                          {/* 이전 블록 */}
-                          {startPage > 1 && (
-                            <button
-                              onClick={() => setPage(Math.max(startPage - blockSize, 1))}
-                              className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                            >
-                              {t('infoPage.pagination.previous')}
-                            </button>
-                          )}
-
-                          {/* 페이지 번호들 */}
-                          {Array.from(
-                            { length: endPage - startPage + 1 },
-                            (_, i) => startPage + i
-                          ).map(p => (
-                            <button
-                              key={p}
-                              onClick={() => setPage(p)}
-                              className={`px-3 py-2 text-sm rounded-lg transition-colors ${
-                                p === page
-                                  ? 'bg-blue-600 text-white'
-                                  : 'text-gray-700 hover:bg-gray-100'
-                              }`}
-                            >
-                              {p}
-                            </button>
-                          ))}
-
-                          {/* 다음 블록 */}
-                          {endPage < totalPages && (
-                            <button
-                              onClick={() => setPage(Math.min(startPage + blockSize, totalPages))}
-                              className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                            >
-                              {t('infoPage.pagination.next')}
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* 오른쪽 사이드바 */}
-          <aside className="w-80 space-y-6">
-            {/* 인기 정보 */}
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                <span className="flex items-center gap-2">{t('infoPage.sidebar.popularInfo')}</span>
-              </h3>
-              <div className="space-y-3">
-                {popularPosts.map((post, index) => (
-                  <button
-                    key={post.informationId}
-                    onClick={() => navigate(`${post.informationId}`)}
-                    className="flex items-start gap-3 w-full text-left p-2 rounded hover:bg-gray-50 transition-colors"
-                  >
-                    <span className="flex-shrink-0 w-6 h-6 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-xs font-bold">
-                      {index + 1}
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 line-clamp-2 mb-1">
-                        {post.title}
-                      </p>
-                      <div className="flex items-center gap-2 text-xs text-gray-500">
-                        <span className="px-1.5 py-0.5 bg-gray-100 rounded text-xs">
-                          {t(`infoPage.categories.${getCategoryKey(post.category)}`)}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <svg
-                            className="w-3 h-3"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                            />
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                            />
-                          </svg>
-                          {post.views}
-                        </span>
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* 긴급 연락처 */}
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                <span className="flex items-center gap-2">
-                  {t('infoPage.sidebar.emergencyContacts')}
-                </span>
-              </h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-                  <div>
-                    <p className="text-sm font-medium text-red-800">
-                      {t('infoPage.sidebar.emergency.title')}
-                    </p>
-                    <p className="text-xs text-red-600">
-                      {t('infoPage.sidebar.emergency.subtitle')}
-                    </p>
-                  </div>
-                  <a href="tel:119" className="text-lg font-bold text-red-600">
-                    119
-                  </a>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                  <div>
-                    <p className="text-sm font-medium text-blue-800">
-                      {t('infoPage.sidebar.police.title')}
-                    </p>
-                    <p className="text-xs text-blue-600">{t('infoPage.sidebar.police.subtitle')}</p>
-                  </div>
-                  <a href="tel:112" className="text-lg font-bold text-blue-600">
-                    112
-                  </a>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                  <div>
-                    <p className="text-sm font-medium text-green-800">
-                      {t('infoPage.sidebar.foreignerCenter.title')}
-                    </p>
-                    <p className="text-xs text-green-600">
-                      {t('infoPage.sidebar.foreignerCenter.subtitle')}
-                    </p>
-                  </div>
-                  <a href="tel:1345" className="text-lg font-bold text-green-600">
-                    1345
-                  </a>
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
             </div>
 
-            {/* 유용한 웹사이트 */}
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                <span className="flex items-center gap-2">{t('infoPage.sidebar.usefulSites')}</span>
-              </h3>
-              <div className="space-y-3">
-                <a
-                  href="https://www.hikorea.go.kr"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block p-3 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">
-                        {t('infoPage.sidebar.hikorea.title')}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {t('infoPage.sidebar.hikorea.subtitle')}
-                      </p>
-                    </div>
-                    <svg
-                      className="w-4 h-4 text-gray-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                      />
-                    </svg>
-                  </div>
-                </a>
-
-                <a
-                  href="https://www.nhis.or.kr"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block p-3 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">
-                        {t('infoPage.sidebar.nhis.title')}
-                      </p>
-                      <p className="text-xs text-gray-500">{t('infoPage.sidebar.nhis.subtitle')}</p>
-                    </div>
-                    <svg
-                      className="w-4 h-4 text-gray-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                      />
-                    </svg>
-                  </div>
-                </a>
-
-                <a
-                  href="https://www.work.go.kr"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block p-3 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">
-                        {t('infoPage.sidebar.worknet.title')}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {t('infoPage.sidebar.worknet.subtitle')}
-                      </p>
-                    </div>
-                    <svg
-                      className="w-4 h-4 text-gray-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                      />
-                    </svg>
-                  </div>
-                </a>
-              </div>
-            </div>
-
-            {/* 최근 검색어 */}
-            {keyword && (
+            {/* 오른쪽 사이드바 */}
+            <aside className="w-80 space-y-6">
+              {/* 인기 정보 */}
               <div className="bg-white rounded-lg border border-gray-200 p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  {t('infoPage.sidebar.currentSearch')}
-                </h3>
-                <div className="flex items-center gap-2">
-                  <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
-                    "{keyword}"
+                  <span className="flex items-center gap-2">
+                    {t('infoPage.sidebar.popularInfo')}
                   </span>
-                  <button
-                    onClick={() => {
-                      setKeyword('');
-                      setSearchTerm('');
-                      setPage(1);
-                    }}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
+                </h3>
+                <div className="space-y-3">
+                  {popularPosts.map((post, index) => (
+                    <button
+                      key={post.informationId}
+                      onClick={() => navigate(`${post.informationId}`)}
+                      className="flex items-start gap-3 w-full text-left p-2 rounded hover:bg-gray-50 transition-colors"
+                    >
+                      <span className="flex-shrink-0 w-6 h-6 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-xs font-bold">
+                        {index + 1}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 line-clamp-2 mb-1">
+                          {post.title}
+                        </p>
+                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                          <span className="px-1.5 py-0.5 bg-gray-100 rounded text-xs">
+                            {t(`infoPage.categories.${getCategoryKey(post.category)}`)}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <svg
+                              className="w-3 h-3"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                              />
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                              />
+                            </svg>
+                            {post.views}
+                          </span>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
                 </div>
               </div>
-            )}
-          </aside>
+
+              {/* 긴급 연락처 */}
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  <span className="flex items-center gap-2">
+                    {t('infoPage.sidebar.emergencyContacts')}
+                  </span>
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                    <div>
+                      <p className="text-sm font-medium text-red-800">
+                        {t('infoPage.sidebar.emergency.title')}
+                      </p>
+                      <p className="text-xs text-red-600">
+                        {t('infoPage.sidebar.emergency.subtitle')}
+                      </p>
+                    </div>
+                    <a href="tel:119" className="text-lg font-bold text-red-600">
+                      119
+                    </a>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                    <div>
+                      <p className="text-sm font-medium text-blue-800">
+                        {t('infoPage.sidebar.police.title')}
+                      </p>
+                      <p className="text-xs text-blue-600">
+                        {t('infoPage.sidebar.police.subtitle')}
+                      </p>
+                    </div>
+                    <a href="tel:112" className="text-lg font-bold text-blue-600">
+                      112
+                    </a>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                    <div>
+                      <p className="text-sm font-medium text-green-800">
+                        {t('infoPage.sidebar.foreignerCenter.title')}
+                      </p>
+                      <p className="text-xs text-green-600">
+                        {t('infoPage.sidebar.foreignerCenter.subtitle')}
+                      </p>
+                    </div>
+                    <a href="tel:1345" className="text-lg font-bold text-green-600">
+                      1345
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              {/* 유용한 웹사이트 */}
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  <span className="flex items-center gap-2">
+                    {t('infoPage.sidebar.usefulSites')}
+                  </span>
+                </h3>
+                <div className="space-y-3">
+                  <a
+                    href="https://www.hikorea.go.kr"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block p-3 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">
+                          {t('infoPage.sidebar.hikorea.title')}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {t('infoPage.sidebar.hikorea.subtitle')}
+                        </p>
+                      </div>
+                      <svg
+                        className="w-4 h-4 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                        />
+                      </svg>
+                    </div>
+                  </a>
+
+                  <a
+                    href="https://www.nhis.or.kr"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block p-3 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">
+                          {t('infoPage.sidebar.nhis.title')}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {t('infoPage.sidebar.nhis.subtitle')}
+                        </p>
+                      </div>
+                      <svg
+                        className="w-4 h-4 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                        />
+                      </svg>
+                    </div>
+                  </a>
+
+                  <a
+                    href="https://www.work.go.kr"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block p-3 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">
+                          {t('infoPage.sidebar.worknet.title')}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {t('infoPage.sidebar.worknet.subtitle')}
+                        </p>
+                      </div>
+                      <svg
+                        className="w-4 h-4 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                        />
+                      </svg>
+                    </div>
+                  </a>
+                </div>
+              </div>
+
+              {/* 최근 검색어 */}
+              {keyword && (
+                <div className="bg-white rounded-lg border border-gray-200 p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                    {t('infoPage.sidebar.currentSearch')}
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                      "{keyword}"
+                    </span>
+                    <button
+                      onClick={() => {
+                        setKeyword('');
+                        setSearchTerm('');
+                        setPage(1);
+                      }}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </aside>
+          </div>
         </div>
       </div>
-    </div>
+      {isCreate && (
+        <InfoCreateOverlay onClose={() => navigate(-1)}>
+          <InfoCreateEditPage />
+        </InfoCreateOverlay>
+      )}
+    </>
   );
 }
