@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -24,6 +24,11 @@ import {
   Button,
   IconButton,
   Theme,
+  Stepper,
+  Step,
+  StepLabel,
+  FormGroup,
+  Checkbox,
 } from '@mui/material';
 import OnboardingLayout from '../components/common/OnboardingLayout';
 import FormButtons from '../components/common/FormButtons';
@@ -45,6 +50,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import VisaIcon from '@mui/icons-material/DocumentScanner';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
+import CountrySelector from '../../../shared/components/CountrySelector';
 
 // 스타일링된 컴포넌트
 const StyledPaper = styled(Paper)(({ theme }) => ({
@@ -613,13 +619,15 @@ const StudyProfile: React.FC = () => {
                 type="number"
               />
 
-              <StyledTextField
+              <CountrySelector
                 label="국적"
-                name="nationality"
                 value={formData.nationality}
-                onChange={handleInputChange}
-                fullWidth
-                color="primary"
+                onChange={(value) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    nationality: value,
+                  }));
+                }}
               />
             </Box>
 

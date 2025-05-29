@@ -38,6 +38,7 @@ import { useTranslation } from '../../../shared/i18n';
 import { saveOnboardingData } from '../api/onboardingApi';
 import { koreanCities, koreanTouristAttractions } from '../data/koreaData';
 import { motion } from 'framer-motion';
+import CountrySelector from '../../../shared/components/CountrySelector';
 
 // 아이콘 임포트
 import PersonIcon from '@mui/icons-material/Person';
@@ -606,13 +607,16 @@ const TravelProfile: React.FC = () => {
                 type="number"
               />
 
-              <StyledTextField
+              <CountrySelector
                 label="국적"
-                name="nationality"
                 value={formData.nationality}
-                onChange={handleInputChange}
+                onChange={(value) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    nationality: value,
+                  }));
+                }}
                 fullWidth
-                color="primary"
               />
             </Box>
 
@@ -1232,9 +1236,6 @@ const TravelProfile: React.FC = () => {
                           ? alpha(primaryColor, 0.12)
                           : alpha(theme.palette.grey[100], 0.7),
                         transform: 'translateY(-2px)',
-                        boxShadow: isSelected
-                          ? `0 4px 10px ${alpha(primaryColor, 0.2)}`
-                          : '0 4px 10px rgba(0, 0, 0, 0.05)',
                       },
                       display: 'flex',
                       flexDirection: 'column',

@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useState, useCallback, memo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Card,
@@ -12,78 +12,21 @@ import {
   Tooltip,
   styled,
   CardActions,
+  IconButton,
 } from '@mui/material';
 import ThumbUpOutlinedIcon from '@mui/icons-material/ThumbUpOutlined';
 import ThumbDownOutlinedIcon from '@mui/icons-material/ThumbDownOutlined';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
-import { PostSummary } from '../../types-folder/index';
-import { format } from 'date-fns';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
+import FlagDisplay from '../../../../shared/components/FlagDisplay';
 //import GroupsIcon from '@mui/icons-material/Groups';
 //import PersonIcon from '@mui/icons-material/Person';
 import { ko } from 'date-fns/locale';
 import { useTranslation } from '../../../../shared/i18n';
-
-/**-----------------------------------웹로그 관련------------------------------------ **/
-// userId 꺼내오는 헬퍼
-export function getUserId(): number | null {
-  try {
-    const raw = localStorage.getItem('auth-storage');
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    return parsed?.state?.user?.userId ?? null;
-  } catch {
-    return null;
-  }
-}
-
-// 로그 전송 타입 정의
-interface WebLog {
-  userId: number;
-  content: string;
-}
-
-// BASE URL에 엔드포인트 설정
-const BASE = import.meta.env.VITE_API_BASE_URL;
-
-// 로그 전송 함수
-export function sendWebLog(log: WebLog) {
-  // jwt token 가져오기
-  const token = localStorage.getItem('auth_token');
-  if (!token) {
-    throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
-  }
-  fetch(`${BASE}/logs`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: token },
-    body: JSON.stringify(log),
-  }).catch(err => {
-    console.error('WebLog 전송 실패:', err);
-  });
-  // 전송 완료
-  console.log('WebLog 전송 성공:', log);
-}
-
-// useTrackedPost 훅
-export function useTrackedPost() {
-  const location = useLocation();
-
-  return (title: string, content: string, tag: string | null = null) => {
-    const userId = getUserId() || 0;
-    const postLogPayload = {
-      UID: userId,
-      ClickPath: location.pathname,
-      TAG: tag,
-      CurrentPath: location.pathname,
-      Event: 'click',
-      Content: { title: title, content: content },
-      Timestamp: new Date().toISOString(),
-    };
-    sendWebLog({ userId, content: JSON.stringify(postLogPayload) });
-  };
-}
-/**------------------------------------------------------------------------------------**/
+import { PostSummary } from '../../types-folder/index';
+import { format } from 'date-fns';
+import { ViewTracker } from '../../utils/viewTracker';
 
 // 스타일 컴포넌트
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -207,19 +150,43 @@ const MetaContainer = styled(Box)(({ theme }) => ({
 const AuthorContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  gap: '8px',
+  gap: '6px',
+  minWidth: 0, // flex shrink 허용
+  flex: '0 1 auto', // 필요시 축소
 }));
 
 const StyledAvatar = styled(Avatar)(({ theme }) => ({
-  width: '28px',
-  height: '28px',
+  width: '24px',
+  height: '24px',
   border: '2px solid rgba(255, 170, 165, 0.4)',
+  fontSize: '0.7rem',
+  flexShrink: 0, // 아바타는 축소 방지
 }));
 
 const AuthorName = styled(Typography)(({ theme }) => ({
-  fontSize: '0.85rem',
+  fontSize: '0.75rem',
   color: '#666',
   fontWeight: 500,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+  minWidth: 0, // text overflow 작동 허용
+}));
+
+const AuthorInfoBox = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  minWidth: 0, // flex shrink 허용
+  gap: '2px',
+}));
+
+const FlagContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '2px',
+  minWidth: 0,
+  overflow: 'hidden',
 }));
 
 // 툴크 스타일 개선
@@ -329,10 +296,14 @@ interface PostCardProps {
 }
 
 /**
- * 게시글 카드 컴포넌트
- * 게시글 목록에서 각 게시글을 카드 형태로 표시합니다.
+ * 게시글 카드 컴포넌트 (성능 최적화 버전)
+ * React.memo로 최적화하여 불필요한 리렌더링 방지
  */
-const PostCard: React.FC<PostCardProps> = ({ post, hideImage = false, onClick }) => {
+const PostCard: React.FC<PostCardProps> = memo(({
+  post,
+  hideImage = false,
+  onClick,
+}) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
@@ -365,37 +336,26 @@ const PostCard: React.FC<PostCardProps> = ({ post, hideImage = false, onClick })
   };
 
   const handleCardClick = async () => {
-    const uid = getUserId() || 0;
-    // content는 받아 올 수가 없어, api 호출 후 값을 받아와서 웹 로그로 전송
-    // noViewCount=true 파라미터를 추가하여 조회수 증가 방지
-    const res = await fetch(`${BASE}/community/post/${post.postId}?noViewCount=true`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: localStorage.getItem('auth_token') || '',
-      },
-    });
-    const postContent = await res.json();
+    // ViewTracker를 사용하여 게시글 클릭 추적 (조회수 증가는 PostDetailPage에서 처리)
+    const tags = Array.isArray(post.tags) 
+      ? post.tags.map(tag => typeof tag === 'string' ? tag : tag.name || '') 
+      : [];
+    
+    ViewTracker.trackPostClick(
+      post.postId,
+      post.title,
+      tags,
+      location.pathname
+    );
 
+    // 네비게이션 처리
     if (onClick) {
       onClick(post);
     } else {
+      // PostDetailPage에서 조회수 처리가 이루어짐을 표시
+      sessionStorage.setItem('fromPostList', 'true');
       navigate(`/community/post/${post.postId}`);
     }
-
-    // 웹로그 전송
-    sendWebLog({
-      userId: uid,
-      content: JSON.stringify({
-        UID: uid,
-        ClickPath: location.pathname,
-        TAG: Array.isArray(post.tags) ? post.tags.join(',') : post.tags,
-        CurrentPath: location.pathname,
-        Event: 'click',
-        Content: null,
-        Timestamp: new Date().toISOString(),
-      }),
-    });
   };
 
   // 기본 썸네일 이미지
@@ -433,16 +393,27 @@ const PostCard: React.FC<PostCardProps> = ({ post, hideImage = false, onClick })
             </Typography>
           </AddressInfo>
         )}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-          <PostTitle variant="h6" sx={{ mb: 0, flexShrink: 0 }}>
-            {post.title}
-          </PostTitle>
-          {/* 작성자 정보 */}
-          <AuthorContainer sx={{ ml: 1 }}>
-            <StyledAvatar>{post.writer?.nickname?.charAt(0) || '?'}</StyledAvatar>
-            <AuthorName variant="body2">{post.writer?.nickname || t('community.posts.anonymous')}</AuthorName>
-          </AuthorContainer>
-        </Box>
+        
+        {/* 제목 */}
+        <PostTitle variant="h6" sx={{ mb: 1 }}>
+          {post.title}
+        </PostTitle>
+        
+        {/* 작성자 정보 */}
+        <AuthorContainer sx={{ mb: 1 }}>
+          <StyledAvatar>{post.writer?.nickname?.charAt(0) || '?'}</StyledAvatar>
+          <AuthorInfoBox>
+            <AuthorName variant="body2">
+              {post.writer?.nickname || t('community.posts.anonymous')}
+            </AuthorName>
+            {/* 국가 정보 표시 */}
+            {post.writer?.nation && (
+              <FlagContainer>
+                <FlagDisplay nation={post.writer.nation} size="small" />
+              </FlagContainer>
+            )}
+          </AuthorInfoBox>
+        </AuthorContainer>
         <PostContent variant="body2">{post.content}</PostContent>
         {/* 태그 표시 */}
         {post.tags && post.tags.length > 0 && (
@@ -498,6 +469,20 @@ const PostCard: React.FC<PostCardProps> = ({ post, hideImage = false, onClick })
       </CardActionsStyled>
     </StyledCard>
   );
-};
+}, (prevProps, nextProps) => {
+  // 커스텀 비교 함수: 의미있는 변경사항만 리렌더링
+  return (
+    prevProps.post.postId === nextProps.post.postId &&
+    prevProps.post.title === nextProps.post.title &&
+    prevProps.post.content === nextProps.post.content &&
+    prevProps.post.viewCount === nextProps.post.viewCount &&
+    prevProps.post.likeCount === nextProps.post.likeCount &&
+    prevProps.post.commentCount === nextProps.post.commentCount &&
+    prevProps.hideImage === nextProps.hideImage &&
+    prevProps.onClick === nextProps.onClick
+  );
+});
+
+PostCard.displayName = 'PostCard';
 
 export default PostCard;

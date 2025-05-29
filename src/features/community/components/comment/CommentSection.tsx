@@ -45,6 +45,7 @@ import ReportDialog, {
   ServiceType,
 } from '../../../common/components/ReportDialog';
 import { useTranslation } from '../../../../shared/i18n';
+import FlagDisplay from '../../../../shared/components/FlagDisplay';
 
 const CommentCardWrapper = styled(Box)(({ theme }) => ({
   padding: theme.spacing(2),
@@ -106,6 +107,7 @@ type User = {
   nickname?: string;
   name?: string;
   profileImage?: string;
+  nation?: string;
 };
 
 type Reply = {
@@ -1112,6 +1114,12 @@ const CommentSection: React.FC<CommentSectionProps> = ({
           </Avatar>
           <Box>
             <Typography variant="subtitle2">{comment.writer?.nickname}</Typography>
+            {/* 국가 정보 표시 */}
+            {comment.writer?.nation && (
+              <Typography variant="caption" sx={{ fontSize: '0.7rem', color: '#999', mt: 0.2, display: 'block' }}>
+                <FlagDisplay nation={comment.writer.nation} size="small" />
+              </Typography>
+            )}
             <Typography variant="caption" color="text.secondary">
               {format(new Date(comment.createdAt), 'yyyy년 MM월 dd일 HH:mm', { locale: ko })}
               {comment.translating && (
@@ -1162,6 +1170,16 @@ const CommentSection: React.FC<CommentSectionProps> = ({
       </Box>
 
       {/* 댓글 내용 */}
+      {controls.editMode[comment.commentId] ? (
+        <CommentForm
+          initialValue={comment.content}
+          onSubmit={async content => {
+            return await handleCommentForm(comment.commentId, content, false);
+          }}
+          onCancel={() => controls.handleEditCancel(comment.commentId)}
+          buttonText={t('community.comments.editComment')}
+        />
+      ) : (
       <Typography
         variant="body1"
         sx={{
@@ -1172,6 +1190,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
       >
         {comment.content}
       </Typography>
+      )}
 
       <CommentFooter>
         <ReactionButton
@@ -1277,8 +1296,14 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                                 <Typography variant="body2" fontWeight="bold">
                                   {reply.writer?.nickname}
                                 </Typography>
+                                {/* 국가 정보 표시 */}
+                                {reply.writer?.nation && (
+                                  <Typography variant="caption" sx={{ fontSize: '0.7rem', color: '#999', mt: 0.2, display: 'block' }}>
+                                    <FlagDisplay nation={reply.writer.nation} size="small" />
+                                  </Typography>
+                                )}
                                 <Typography variant="caption" color="text.secondary">
-                                  {formatDateToAbsolute(reply.createdAt, t)}
+                                  {format(new Date(reply.createdAt), 'yyyy년 MM월 dd일 HH:mm', { locale: ko })}
                                 </Typography>
                               </Box>
 
@@ -1403,7 +1428,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
           }
         }}
       >
-        {t('buttons.edit')}
+        {t('community.comments.editComment')}
       </MenuItem>
       <MenuItem
         onClick={() => {
@@ -1418,7 +1443,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
           }
         }}
       >
-        {t('buttons.delete')}
+        {t('community.comments.deleteComment')}
       </MenuItem>
     </Menu>
   );

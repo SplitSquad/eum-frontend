@@ -11,6 +11,8 @@ export const getMyPosts = mypageApi.getMyPosts;
 export const getMyComments = mypageApi.getMyComments;
 export const getMyDebates = mypageApi.getMyDebates;
 export const getMyBookmarks = mypageApi.getMyBookmarks;
+export const uploadProfileImage = mypageApi.uploadProfileImage;
+export const deleteProfileImage = mypageApi.deleteProfileImage;
 
 // 기본 내보내기
 export default mypageApi; 

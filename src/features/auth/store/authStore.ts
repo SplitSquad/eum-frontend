@@ -50,6 +50,9 @@ interface AuthState {
   // isOnBoardDone 직접 제어 (추가)
   setOnBoardDone: (isDone: boolean) => void;
   getOnBoardDone: () => boolean;
+
+  // 프로필 이미지 업데이트 (추가)
+  updateProfileImage: (imagePath: string) => void;
 }
 
 // 타입 변환 헬퍼 함수: isOnBoardDone 값을 항상 boolean으로 처리
@@ -339,6 +342,15 @@ export const useAuthStore = create<AuthState>()(
           token: null,
           error: null,
         });
+      },
+
+      // 프로필 이미지 업데이트 (추가)
+      updateProfileImage: (imagePath: string) => {
+        const { user } = get();
+        if (user) {
+          const updatedUser = { ...user, profileImagePath: imagePath };
+          set({ user: updatedUser });
+        }
       },
     }),
     {

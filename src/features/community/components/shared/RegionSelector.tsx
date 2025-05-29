@@ -11,17 +11,22 @@ import {
   useTheme,
   useMediaQuery,
 } from '@mui/material';
+import { useTranslation } from '../../../../shared/i18n';
 import { useRegionStore } from '../../store/regionStore';
 import { regionTree } from '@/constants/regionTree';
 
 interface RegionSelectorProps {
   // 선택이 바뀔 때 콜백 (optional)
   onChange?: (city: string | null, district: string | null, neighborhood: string | null) => void;
+  // 비활성화 여부 (optional)
+  disabled?: boolean;
 }
 
-const RegionSelector: React.FC<RegionSelectorProps> = ({ onChange }) => {
+const RegionSelector: React.FC<RegionSelectorProps> = ({ onChange, disabled = false }) => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  
   const {
     selectedCity,
     selectedDistrict,
@@ -42,16 +47,17 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({ onChange }) => {
   return (
     <Box sx={{ mb: 2 }}>
       <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: '#666' }}>
-        지역 선택
+        {t('community.regions.regionSelection')}
       </Typography>
       <Box sx={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 2 }}>
         {/* 시/도 선택 */}
         <FormControl size="small" sx={{ minWidth: 120, flex: 1 }}>
-          <InputLabel id="city-label">시/도</InputLabel>
+          <InputLabel id="city-label">{t('community.regions.cityProvince')}</InputLabel>
           <Select
             labelId="city-label"
             value={selectedCity || ''}
-            label="시/도"
+            label={t('community.regions.cityProvince')}
+            disabled={disabled}
             onChange={e => {
               setCity(e.target.value);
               if (onChange) onChange(e.target.value, null, null);
@@ -66,7 +72,7 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({ onChange }) => {
               },
             }}
           >
-            <MenuItem value="">전체</MenuItem>
+            <MenuItem value="">{t('community.regions.all')}</MenuItem>
             {regionTree.map(city => (
               <MenuItem key={city.value} value={city.value}>
                 {city.value}
@@ -78,11 +84,12 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({ onChange }) => {
         {/* 구/군 선택 (시/도 선택 시) */}
         {selectedCity && (
           <FormControl size="small" sx={{ minWidth: 120, flex: 1 }}>
-            <InputLabel id="district-label">구/군</InputLabel>
+            <InputLabel id="district-label">{t('community.regions.districtCounty')}</InputLabel>
             <Select
               labelId="district-label"
               value={selectedDistrict || ''}
-              label="구/군"
+              label={t('community.regions.districtCounty')}
+              disabled={disabled}
               onChange={e => {
                 setDistrict(e.target.value);
                 if (onChange) onChange(selectedCity, e.target.value, null);
@@ -97,7 +104,7 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({ onChange }) => {
                 },
               }}
             >
-              <MenuItem value="">전체</MenuItem>
+              <MenuItem value="">{t('community.regions.all')}</MenuItem>
               {districts.map(district => (
                 <MenuItem key={district} value={district}>
                   {district}
@@ -110,11 +117,12 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({ onChange }) => {
         {/* 동/읍/면 선택 (구/군 선택 시) */}
         {selectedCity && selectedDistrict && neighborhoods.length > 0 && (
           <FormControl size="small" sx={{ minWidth: 120, flex: 1 }}>
-            <InputLabel id="neighborhood-label">동/읍/면</InputLabel>
+            <InputLabel id="neighborhood-label">{t('community.regions.neighborhoodTownship')}</InputLabel>
             <Select
               labelId="neighborhood-label"
               value={selectedNeighborhood || ''}
-              label="동/읍/면"
+              label={t('community.regions.neighborhoodTownship')}
+              disabled={disabled}
               onChange={e => {
                 setNeighborhood(e.target.value);
                 if (onChange) onChange(selectedCity, selectedDistrict, e.target.value);
@@ -129,7 +137,7 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({ onChange }) => {
                 },
               }}
             >
-              <MenuItem value="">전체</MenuItem>
+              <MenuItem value="">{t('community.regions.all')}</MenuItem>
               {neighborhoods.map(neighborhood => (
                 <MenuItem key={neighborhood} value={neighborhood}>
                   {neighborhood}
@@ -145,7 +153,7 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({ onChange }) => {
         <Chip
           label={
             !selectedCity
-              ? '전국'
+              ? t('community.regions.nationwide')
               : !selectedDistrict
                 ? selectedCity
                 : !selectedNeighborhood
@@ -159,9 +167,9 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({ onChange }) => {
             fontWeight: 600,
           }}
         />
-        {(selectedCity || selectedDistrict || selectedNeighborhood) && (
+        {(selectedCity || selectedDistrict || selectedNeighborhood) && !disabled && (
           <Chip
-            label="초기화"
+            label={t('community.regions.reset')}
             size="small"
             onClick={resetRegion}
             sx={{ bgcolor: '#FFD7D7', color: '#FF7777', fontWeight: 600, cursor: 'pointer' }}

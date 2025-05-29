@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -32,6 +32,7 @@ import { useThemeStore } from '../../theme/store/themeStore';
 import { saveOnboardingData } from '../api/onboardingApi';
 import { koreanCities, koreanAdministrativeDivisions } from '../data/koreaData';
 import { motion } from 'framer-motion';
+import CountrySelector from '../../../shared/components/CountrySelector';
 
 // 아이콘 임포트
 import PersonIcon from '@mui/icons-material/Person';
@@ -623,15 +624,17 @@ const LivingProfile: React.FC = () => {
                 type="number"
               />
               
-              <StyledTextField
-                  label="국적"
-                  name="nationality"
-                  value={formData.nationality}
-                  onChange={handleInputChange}
-                  fullWidth
-                color="primary"
+              <CountrySelector
+                label="국적"
+                value={formData.nationality}
+                onChange={(value) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    nationality: value,
+                  }));
+                }}
               />
-          </Box>
+            </Box>
             
             <Box sx={{ 
               display: 'grid', 

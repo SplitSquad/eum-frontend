@@ -46,6 +46,7 @@ import ReportDialog, {
   ReportTargetType,
   ServiceType,
 } from '../../../common/components/ReportDialog';
+import FlagDisplay from '../../../../shared/components/FlagDisplay';
 
 interface CommentItemProps {
   comment: DebateComment;
@@ -485,7 +486,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, alignItems: 'center' }}>
             <Typography variant="subtitle2">{userName || '익명'}</Typography>
             {countryName && (
-              <CountryChip icon={<FlagIcon fontSize="small" />} label={countryName} size="small" />
+              <FlagDisplay nation={countryName} size="small" inline={true} />
             )}
             {/* 입장 표시 - 댓글 내용에서 추출한 stance 사용 */}
             <StanceChip

@@ -19,6 +19,7 @@ import { styled } from '@mui/material/styles';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FlagIcon from '@mui/icons-material/Flag';
+import FlagDisplay from '../../../../shared/components/FlagDisplay';
 
 interface ReplyItemProps {
   reply: DebateReply;
@@ -176,11 +177,7 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
                 </Typography>
                 
                 {countryName && (
-                  <CountryChip 
-                    icon={<FlagIcon sx={{ fontSize: '0.7rem' }} />} 
-                    label={countryName}
-                    size="small"
-                  />
+                  <FlagDisplay nation={countryName} size="small" inline={true} />
                 )}
                 
                 <Typography variant="caption" color="text.secondary" sx={{ ml: 0.5 }}>

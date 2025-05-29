@@ -8,6 +8,8 @@ import {
   CommentResDto,
   ReplyResDto
 } from '../types';
+import { detectLanguage } from '../../community/utils/languageUtils';
+import { debugLog } from '../../../shared/utils/debug';
 
 // 목업 댓글 데이터
 const MOCK_COMMENTS: DebateComment[] = [
@@ -283,8 +285,14 @@ const CommentApi = {
     stance?: 'pro' | 'con';
   }): Promise<DebateComment | null> => {
     try {
-      // 사용자의 언어 설정 확인
-      const userLanguage = localStorage.getItem('userLanguage') || 'ko';
+      // 언어 감지 - 사용자가 입력한 댓글 내용에서 자동 감지
+      const detectedLanguage = detectLanguage(commentRequest.content);
+      
+      debugLog('토론 댓글 언어 감지 결과:', {
+        content: commentRequest.content.substring(0, 50) + '...',
+        detectedLanguage,
+        contentLength: commentRequest.content.length
+      });
       
       // stance 값을 콘솔에 출력하여 디버깅
       console.log('[DEBUG] 댓글 작성 시 선택한 입장(stance):', commentRequest.stance);
@@ -298,8 +306,10 @@ const CommentApi = {
         content: contentWithStance, // stance 정보가 포함된 내용
         debateId: commentRequest.debateId,
         stance: commentRequest.stance, // 백엔드에서 사용하지 않더라도 보내기
-        language: userLanguage // 사용자 언어 설정 동적으로 추가
+        language: detectedLanguage.toUpperCase() // 감지된 언어를 대문자로 변환
       };
+      
+      debugLog('토론 댓글 생성 페이로드:', requestData);
       
       // 실제 API 호출
       const token = localStorage.getItem('token') || '';
@@ -311,7 +321,7 @@ const CommentApi = {
       
       console.log('댓글 작성 응답:', response);
       
-                        // 디버깅용 로그 추가 (더 자세한 정보로)
+      // 디버깅용 로그 추가 (더 자세한 정보로)
       console.log('[DEBUG] 댓글 원본 응답:', JSON.stringify(response, null, 2));
       console.log('[DEBUG] 요청에 포함된 stance:', commentRequest.stance);
       
@@ -353,14 +363,22 @@ const CommentApi = {
    */
   updateComment: async (commentId: number, content: string): Promise<boolean> => {
     try {
-      // 사용자의 언어 설정 확인
-      const userLanguage = localStorage.getItem('userLanguage') || 'ko';
+      // 언어 감지 - 수정된 댓글 내용에서 자동 감지
+      const detectedLanguage = detectLanguage(content);
+      
+      debugLog('토론 댓글 수정 언어 감지 결과:', {
+        content: content.substring(0, 50) + '...',
+        detectedLanguage,
+        contentLength: content.length
+      });
       
       // 백엔드 API 요청 형식으로 변환
       const requestData: CommentReqDto = {
         content,
-        language: userLanguage // 사용자 언어 설정 추가
+        language: detectedLanguage.toUpperCase() // 감지된 언어를 대문자로 변환
       };
+      
+      debugLog('토론 댓글 수정 페이로드:', requestData);
       
       // 실제 API 호출
       const token = localStorage.getItem('token') || '';
@@ -510,15 +528,23 @@ const CommentApi = {
    */
   createReply: async (commentId: number, content: string): Promise<DebateReply | null> => {
     try {
-      // 사용자의 언어 설정 확인
-      const userLanguage = localStorage.getItem('userLanguage') || 'ko';
+      // 언어 감지 - 사용자가 입력한 대댓글 내용에서 자동 감지
+      const detectedLanguage = detectLanguage(content);
+      
+      debugLog('토론 대댓글 언어 감지 결과:', {
+        content: content.substring(0, 50) + '...',
+        detectedLanguage,
+        contentLength: content.length
+      });
       
       // 백엔드 API 요청 형식으로 변환
       const requestData = {
         content,
         commentId,
-        language: userLanguage // 사용자 언어 설정 추가
+        language: detectedLanguage.toUpperCase() // 감지된 언어를 대문자로 변환
       };
+      
+      debugLog('토론 대댓글 생성 페이로드:', requestData);
       
       // 실제 API 호출
       const token = localStorage.getItem('token') || '';
@@ -546,14 +572,22 @@ const CommentApi = {
    */
   updateReply: async (replyId: number, content: string): Promise<boolean> => {
     try {
-      // 사용자의 언어 설정 확인
-      const userLanguage = localStorage.getItem('userLanguage') || 'ko';
+      // 언어 감지 - 수정된 대댓글 내용에서 자동 감지
+      const detectedLanguage = detectLanguage(content);
+      
+      debugLog('토론 대댓글 수정 언어 감지 결과:', {
+        content: content.substring(0, 50) + '...',
+        detectedLanguage,
+        contentLength: content.length
+      });
       
       // 백엔드 API 요청 형식으로 변환
       const requestData = {
         content,
-        language: userLanguage // 사용자 언어 설정 추가
+        language: detectedLanguage.toUpperCase() // 감지된 언어를 대문자로 변환
       };
+      
+      debugLog('토론 대댓글 수정 페이로드:', requestData);
       
       // 실제 API 호출
       const token = localStorage.getItem('token') || '';
