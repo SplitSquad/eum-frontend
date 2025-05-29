@@ -15,6 +15,7 @@ import GoogleLoginButton from '../features/auth/components/GoogleLoginButton';
 import useAuthStore from '../features/auth/store/authStore';
 import LoginButton from '../features/auth/components/LoginButton';
 import { useSnackbar } from 'notistack';
+import { useTranslation } from '@/shared/i18n';
 
 const TransparentSnackbar = styled('div')(() => ({
   borderRadius: 10,
@@ -29,6 +30,7 @@ const TransparentSnackbar = styled('div')(() => ({
   gap: 12,
 }));
 
+const { t } = useTranslation();
 // 로그인 카드 스타일
 const LoginCard = styled(Paper)`
   padding: 2rem;
@@ -87,7 +89,7 @@ const LoginPage: React.FC = () => {
 
   useEffect(() => {
     if (qs.has('from')) {
-      enqueueSnackbar('로그인 후 서비스 이용이 가능합니다.', {
+      enqueueSnackbar(t('common.authenticatedError'), {
         variant: 'warning',
         autoHideDuration: 1500,
         content: (key, message) => (
