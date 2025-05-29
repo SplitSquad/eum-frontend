@@ -38,17 +38,18 @@ import TuneIcon from '@mui/icons-material/Tune';
 import CreateIcon from '@mui/icons-material/Create';
 import ClearIcon from '@mui/icons-material/Clear';
 import { styled } from '@mui/system';
+import RegionSelector from '@/features/community/components/shared/RegionSelector';
 
-import PostList from '../components/post/PostList';
-
-import useCommunityStore from '../store/communityStore';
-import { Post } from '../types';
-import useAuthStore from '../../../features/auth/store/authStore';
-import { usePostStore } from '../store/postStore';
-import { PostApi } from '../api/postApi';
-import { PostType } from '../types-folder';
-import { useTranslation } from '../../../shared/i18n';
-import { useLanguageStore } from '../../../features/theme/store/languageStore';
+import useCommunityStore from '../../store/communityStore';
+import { Post } from '../../types';
+import useAuthStore from '../../../../features/auth/store/authStore';
+import PostList from '@/features/community/components/post/PostList';
+import { usePostStore } from '../../store/postStore';
+import { PostApi } from '../../api/postApi';
+import { PostType } from '../../types-folder';
+import { useRegionStore } from '../../store/regionStore';
+import { useTranslation } from '../../../../shared/i18n';
+import { useLanguageStore } from '../../../../features/theme/store/languageStore';
 
 /**
  * 게시글 목록 페이지 컴포넌트
@@ -100,7 +101,7 @@ interface LocalPostFilter {
   searchActive?: boolean; // 검색 활성화 여부
 }
 
-const BoardListPage: React.FC = () => {
+const HanGroupListPage: React.FC = () => {
   const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -111,7 +112,6 @@ const BoardListPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [showFilters, setShowFilters] = useState<boolean>(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [selectedRegion, setSelectedRegion] = useState<string>(t('community.filters.all'));
   const [searchType, setSearchType] = useState<string>(t('community.searchType.titleContent'));
   const [isSearchMode, setIsSearchMode] = useState<boolean>(false);
 
@@ -200,7 +200,7 @@ const BoardListPage: React.FC = () => {
     sortBy: (queryParams.get('sortBy') as 'latest' | 'popular') || 'latest',
     page: queryParams.get('page') ? parseInt(queryParams.get('page') as string) - 1 : 0,
     size: 6,
-    postType: (queryParams.get('postType') as PostType) || '자유',
+    postType: (queryParams.get('postType') as PostType) || '모임',
   });
 
   // 컴포넌트 마운트 시 게시글 목록 조회를 위한 트래킹
@@ -233,8 +233,8 @@ const BoardListPage: React.FC = () => {
     // 초기 로드 시 명시적으로 기본 필터 설정 (자유 게시글, 자유 지역)
     const initialFilter = {
       ...filter,
-      postType: '자유' as PostType,
-      location: '자유',
+      postType: '모임' as PostType,
+      location: '전체',
       page: 0,
       size: 6,
     };
@@ -272,58 +272,45 @@ const BoardListPage: React.FC = () => {
     hasInitialDataLoaded.current = false;
   }, [language]);
 
-  // 검색 상태 표시를 위한 추가 컴포넌트
+  // 검색 상태 표시기 컴포넌트
   const SearchStatusIndicator = () => {
-    if (!isSearchMode || !searchTerm) return null;
-
-    // 현재 적용된 필터 정보 표시
-    const filterInfo: string[] = [];
-    if (filter.category && filter.category !== t('community.filters.all')) {
-      filterInfo.push(`${t('community.filters.category')}: ${filter.category}`);
-    }
-    if (filter.postType) {
-      filterInfo.push(`${t('community.postTypes.all')}: ${filter.postType}`);
-    }
-    if (filter.location && filter.location !== '전체' && filter.location !== '자유') {
-      filterInfo.push(`${t('community.filters.region')}: ${filter.location}`);
-    }
+    if (!isSearchMode) return null;
 
     return (
       <Box
         sx={{
+          mb: 2,
+          p: 2,
+          bgcolor: 'rgba(255, 235, 235, 0.3)',
+          borderRadius: '8px',
+          border: '1px solid rgba(255, 170, 165, 0.3)',
           display: 'flex',
           alignItems: 'center',
-          bgcolor: 'rgba(255, 230, 230, 0.8)',
-          p: 1,
-          borderRadius: 1,
-          mb: 2,
-          gap: 1,
-          flexWrap: 'wrap',
+          justifyContent: 'space-between',
         }}
       >
-        <SearchIcon color="secondary" fontSize="small" />
-        <Typography variant="body2" color="secondary.dark">
-          "{searchTerm}" {t('community.messages.searchActive')}{' '}
-          {searchType === t('community.searchType.titleContent')
-            ? `(${t('community.searchType.titleContent')})`
-            : `(${searchType})`}
-          {filterInfo.length > 0 && <span> - {filterInfo.join(' / ')}</span>}
-        </Typography>
-        <Box sx={{ flexGrow: 1 }} />
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <SearchIcon sx={{ color: '#FF6B6B' }} />
+          <Typography variant="body2" sx={{ color: '#666' }}>
+            {t('community.messages.searchActive')}: "{searchTerm}" ({searchType})
+          </Typography>
+        </Box>
         <Button
           size="small"
-          variant="outlined"
-          color="secondary"
           onClick={() => {
             setIsSearchMode(false);
             setSearchTerm('');
             fetchPosts({
               ...filter,
               page: 0,
-              resetSearch: true, // 검색 상태만 초기화
+              resetSearch: true,
             });
           }}
-          startIcon={<ClearIcon />}
+          sx={{
+            color: '#FF6B6B',
+            textTransform: 'none',
+            fontSize: '0.875rem',
+          }}
         >
           {t('community.actions.clearSearch')}
         </Button>
@@ -331,74 +318,77 @@ const BoardListPage: React.FC = () => {
     );
   };
 
-  // 필터 변경 시 검색 상태를 유지하는 함수
+  // 지역 문자열 생성 함수
+  const getRegionString = () => {
+    const { selectedCity, selectedDistrict, selectedNeighborhood } = useRegionStore.getState();
+    return (
+      [selectedCity, selectedDistrict, selectedNeighborhood].filter(Boolean).join(' ') || '전체'
+    );
+  };
+
+  // 필터 적용 함수 (검색 상태 고려)
   const applyFilterWithSearchState = (newFilter: Partial<LocalPostFilter>) => {
     const updatedFilter = { ...filter, ...newFilter };
+    setFilter(updatedFilter);
 
+    // URL 업데이트
+    const params = new URLSearchParams();
+    if (updatedFilter.category && updatedFilter.category !== '전체') {
+      params.set('category', updatedFilter.category);
+    }
+    if (updatedFilter.location && updatedFilter.location !== '전체') {
+      params.set('location', updatedFilter.location);
+    }
+    if (updatedFilter.tag) {
+      params.set('tag', updatedFilter.tag);
+    }
+    if (updatedFilter.sortBy) {
+      params.set('sortBy', updatedFilter.sortBy);
+    }
+    if (updatedFilter.page && updatedFilter.page > 0) {
+      params.set('page', (updatedFilter.page + 1).toString());
+    }
+    if (updatedFilter.postType) {
+      params.set('postType', updatedFilter.postType);
+    }
+
+    // URL 업데이트 (페이지 새로고침 없이)
+    const newUrl = `${location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
+    window.history.replaceState({}, '', newUrl);
+
+    // 검색 모드인지 확인하고 적절한 API 호출
     if (isSearchMode && searchTerm) {
-      // 검색 중이면 필터와 함께 검색 재실행
-      console.log('[DEBUG] 검색 상태에서 필터 변경 - 세부 정보:', {
-        현재필터: filter,
-        새필터: newFilter,
-        병합필터: updatedFilter,
-        검색어: searchTerm,
-        검색타입: searchType,
-      });
-
-      // UI용 필터 상태 먼저 업데이트 (로딩 상태 표시용)
-      setFilter(updatedFilter);
-
-      // searchPosts 함수 호출 - 필터 변경 사항 적용하여 재검색
-      const searchOptions = {
-        page: updatedFilter.page !== undefined ? updatedFilter.page : 0,
-        size: updatedFilter.size || 6,
-        postType: '자유' as PostType,
-        region: updatedFilter.location,
-        category: updatedFilter.category,
-        tag: updatedFilter.tag,
-        sort: updatedFilter.sortBy === 'popular' ? 'views,desc' : 'createdAt,desc',
-      };
-
-      console.log('[DEBUG] 검색 API 파라미터:', searchOptions);
-
-      // 이번에는 서버에 직접 API 요청 (postApi 직접 사용)
-      try {
-        const postApi = usePostStore.getState();
-        postApi.searchPosts(searchTerm, searchType, searchOptions);
-      } catch (error) {
-        console.error('검색 중 오류 발생:', error);
-      }
+      // 검색 모드일 때는 검색 API 사용
+      searchPosts(searchTerm, searchType, updatedFilter);
     } else {
-      // 검색 중이 아니면 일반 필터 적용
-      setFilter(updatedFilter);
+      // 일반 모드일 때는 일반 게시글 조회 API 사용
       fetchPosts(updatedFilter);
     }
   };
 
   // 카테고리 변경 핸들러
   const handleCategoryChange = (category: string) => {
-    console.log('[DEBUG] 카테고리 변경:', category);
+    console.log('카테고리 변경:', category);
 
     // 이전 카테고리와 같으면 변경 없음
     if (category === selectedCategory) {
-      console.log('[DEBUG] 같은 카테고리 선택, 변경 없음');
+      console.log('같은 카테고리 선택, 변경 없음');
       return;
     }
 
-    // 카테고리 상태 업데이트
     setSelectedCategory(category);
 
-    // 카테고리에 맞는 태그 목록 설정
-    if (category && category !== t('community.filters.all')) {
-      setAvailableTags(categoryTags[category as keyof typeof categoryTags] || []);
-    } else {
-      setAvailableTags([]);
-    }
+    // 카테고리에 맞는 태그 목록 업데이트
+    setAvailableTags(categoryTags[category as keyof typeof categoryTags] || []);
 
-    // 새 필터 생성
+    // 선택된 태그 초기화
+    setSelectedTags([]);
+
+    // 필터 업데이트
     const newFilter = {
       ...filter,
       category,
+      tag: '', // 태그 초기화
       page: 0,
     };
 
@@ -408,37 +398,39 @@ const BoardListPage: React.FC = () => {
 
   // 태그 선택 핸들러
   const handleTagSelect = (tag: string) => {
-    console.log('[DEBUG] 태그 선택:', tag);
+    console.log('태그 선택:', tag);
 
-    // 이미 선택된 태그면 취소
+    let newSelectedTags: string[];
+    let originalTagNames: string[];
+
     if (selectedTags.includes(tag)) {
-      console.log('[DEBUG] 태그 선택 취소');
-      setSelectedTags([]);
-
-      // 필터에서 태그 제거
-      const updatedFilter = { ...filter };
-      delete updatedFilter.tag;
-      updatedFilter.page = 0;
-
-      // 필터 적용 (검색 상태 유지하면서)
-      applyFilterWithSearchState(updatedFilter);
+      // 이미 선택된 태그면 제거
+      newSelectedTags = selectedTags.filter(t => t !== tag);
+      // 원본 태그명들로 변환
+      originalTagNames = newSelectedTags.map(t => getOriginalTagName(t));
     } else {
-      // 새 태그 선택
-      setSelectedTags([tag]);
-
-      // 번역된 태그를 한국어 원본 태그로 변환
-      const originalTagName = getOriginalTagName(tag);
-      console.log('[DEBUG] 태그 변환:', { 번역태그: tag, 원본태그: originalTagName });
-
-      const updatedFilter = { ...filter };
-      // 원본 태그명으로 설정 (백엔드에서 인식할 수 있는 한국어 태그)
-      updatedFilter.tag = originalTagName;
-      // 페이지 초기화
-      updatedFilter.page = 0;
-
-      // 필터 적용 (검색 상태 유지하면서)
-      applyFilterWithSearchState(updatedFilter);
+      // 새로운 태그 추가
+      newSelectedTags = [...selectedTags, tag];
+      // 원본 태그명들로 변환
+      originalTagNames = newSelectedTags.map(t => getOriginalTagName(t));
     }
+
+    setSelectedTags(newSelectedTags);
+
+    console.log('[DEBUG] 태그 변환:', {
+      번역태그들: newSelectedTags,
+      원본태그들: originalTagNames,
+    });
+
+    // 필터 업데이트 - 원본 태그명들로 설정
+    const newFilter = {
+      ...filter,
+      tag: originalTagNames.join(','),
+      page: 0,
+    };
+
+    // 필터 적용 (검색 상태 유지하면서)
+    applyFilterWithSearchState(newFilter);
   };
 
   // 검색 타입 변경 핸들러
@@ -446,28 +438,14 @@ const BoardListPage: React.FC = () => {
     setSearchType(event.target.value);
   };
 
-  // 검색 핸들러 - 검색 버튼 클릭 시 실행
+  // 검색 실행 핸들러
   const handleSearch = () => {
-    console.log('[검색 시작] 검색어:', searchTerm, '검색 타입:', searchType);
-
-    // 검색어가 비어있으면 전체 게시글 목록 가져오기
     if (!searchTerm.trim()) {
-      console.log('검색어가 비어있어 전체 목록을 불러옵니다.');
-      setIsSearchMode(false);
-      fetchPosts({ ...filter, page: 0, resetSearch: true });
+      console.log('검색어가 비어있음');
       return;
     }
 
-    // 검색 모드 활성화
-    setIsSearchMode(true);
-
-    // 검색 시 필터 상태 업데이트
-    const searchFilter = {
-      ...filter,
-      page: 0,
-      postType: '자유' as PostType,
-    };
-    setFilter(searchFilter);
+    console.log('검색 실행:', searchTerm, searchType);
 
     // 번역된 검색 타입을 한국어로 변환
     let convertedSearchType = searchType;
@@ -487,44 +465,37 @@ const BoardListPage: React.FC = () => {
     convertedSearchType = searchTypeMapping[searchType] || searchType;
     console.log('[DEBUG] 검색 타입 변환:', { 원본: searchType, 변환: convertedSearchType });
 
-    const searchOptions = {
-      page: 0,
-      size: 6,
-      postType: '자유' as PostType,
-      region: selectedRegion,
-      category: selectedCategory,
-      tag: filter.tag,
-      sort: filter.sortBy === 'popular' ? 'views,desc' : 'createdAt,desc',
-    };
+    // 검색 모드 활성화
+    setIsSearchMode(true);
 
-    console.log('[DEBUG] 검색 API 파라미터:', {
-      keyword: searchTerm,
-      searchType: convertedSearchType,
-      ...searchOptions,
+    // 검색 API 호출
+    searchPosts(searchTerm, convertedSearchType, {
+      ...filter,
+      page: 0, // 검색 시 첫 페이지로 이동
     });
-
-    // 검색 요청 직접 실행
-    try {
-      const postApi = usePostStore.getState();
-      postApi.searchPosts(searchTerm, convertedSearchType, searchOptions);
-      console.log('검색 요청 전송 완료');
-    } catch (error) {
-      console.error('검색 중 오류 발생:', error);
-    }
   };
 
   // 작성자 검색 핸들러
   const handleAuthorSearch = () => {
-    console.log('[DEBUG] 작성자 검색 실행:', searchTerm);
-    if (searchTerm.trim()) {
-      // 작성자 이름으로 검색 - 명시적으로 '작성자' 타입 지정
-      searchPosts(searchTerm, t('community.searchType.author'));
-    } else {
-      fetchPosts(filter);
+    if (!searchTerm.trim()) {
+      console.log('검색어가 비어있음');
+      return;
     }
+
+    console.log('작성자 검색 실행:', searchTerm);
+
+    // 검색 타입을 작성자로 변경하고 검색 실행
+    setSearchType(t('community.searchType.author'));
+    setIsSearchMode(true);
+
+    // 검색 API 호출 - 작성자는 항상 '작성자'로 변환
+    searchPosts(searchTerm, '작성자', {
+      ...filter,
+      page: 0,
+    });
   };
 
-  // 키보드 엔터로 검색
+  // 엔터 키 검색 핸들러
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleSearch();
@@ -556,25 +527,20 @@ const BoardListPage: React.FC = () => {
   };
 
   // 지역 변경 핸들러
-  const handleRegionChange = (region: string) => {
-    console.log('[DEBUG] 지역 변경:', region);
+  const { selectedCity, selectedDistrict, selectedNeighborhood } = useRegionStore();
 
-    // 이전 지역과 같으면 변경 없음
-    if (region === selectedRegion) {
-      console.log('[DEBUG] 같은 지역 선택, 변경 없음');
-      return;
-    }
-
-    setSelectedRegion(region);
-
+  const handleRegionChange = (
+    city: string | null,
+    district: string | null,
+    neighborhood: string | null
+  ) => {
+    const region = [city, district, neighborhood].filter(Boolean).join(' ');
     // 필터 업데이트
     const newFilter = {
       ...filter,
-      location: region,
+      location: region || '전체',
       page: 0,
     };
-
-    // 필터 적용 (검색 상태 유지하면서)
     applyFilterWithSearchState(newFilter);
   };
 
@@ -600,7 +566,7 @@ const BoardListPage: React.FC = () => {
             fontFamily: '"Noto Sans KR", sans-serif',
           }}
         >
-          {t('community.board.title')}
+          {t('community.groups.title')}
         </Typography>
 
         {/* 글쓰기 버튼 */}
@@ -782,28 +748,6 @@ const BoardListPage: React.FC = () => {
               ),
             }}
           />
-
-          {/* 작성자 검색 버튼 */}
-          <Button
-            variant="outlined"
-            onClick={handleAuthorSearch}
-            startIcon={<PersonSearchIcon />}
-            size="small"
-            sx={{
-              textTransform: 'none',
-              borderColor: '#FFD7D7',
-              color: '#666',
-              fontWeight: 500,
-              '&:hover': {
-                borderColor: '#FFAAA5',
-                bgcolor: 'rgba(255, 235, 235, 0.2)',
-              },
-              borderRadius: '20px',
-              px: 2,
-            }}
-          >
-            {t('community.actions.authorSearch')}
-          </Button>
         </Box>
 
         {/* 필터 영역 */}
@@ -816,30 +760,12 @@ const BoardListPage: React.FC = () => {
               gap: 2,
             }}
           >
-            {/* 지역 선택 */}
+            {/* 지역 선택  */}
             <Box>
               <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600, color: '#555' }}>
                 {t('community.filters.region')}
               </Typography>
-              <FormControl fullWidth size="small">
-                <Select
-                  value={selectedRegion}
-                  onChange={e => handleRegionChange(e.target.value)}
-                  sx={{
-                    bgcolor: 'rgba(255, 255, 255, 0.5)',
-                    '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: '#FFD7D7',
-                    },
-                    '&:hover .MuiOutlinedInput-notchedOutline': {
-                      borderColor: '#FFAAA5',
-                    },
-                    borderRadius: '8px',
-                  }}
-                >
-                  <MenuItem value="전체">{t('community.filters.all')}</MenuItem>
-                  <MenuItem value="자유">{t('community.postTypes.free')}</MenuItem>
-                </Select>
-              </FormControl>
+              <RegionSelector onChange={handleRegionChange} />
             </Box>
 
             {/* 카테고리와 태그 영역(통합) */}
@@ -1059,4 +985,4 @@ const BoardListPage: React.FC = () => {
   );
 };
 
-export default BoardListPage;
+export default HanGroupListPage;

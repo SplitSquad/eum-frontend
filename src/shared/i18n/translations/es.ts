@@ -472,6 +472,40 @@ const es = {
       alreadyJoined: 'Ya te uniste a este grupo',
       notMember: 'No eres miembro del grupo',
     },
+    sidebar: {
+      popularPosts: 'Publicaciones populares',
+      popularInfo: 'Info popular',
+      emergencyContacts: 'Contactos de emergencia',
+      emergency: {
+        title: 'Emergencia',
+        subtitle: 'Bomberos, médico',
+        number: '119',
+      },
+      police: {
+        title: 'Policía',
+        subtitle: 'Delitos y pérdidas',
+        number: '112',
+      },
+      foreignerCenter: {
+        title: 'Centro de ayuda',
+        subtitle: '19 idiomas',
+        number: '1345',
+      },
+      usefulSites: '🔗 Sitios útiles',
+      hikorea: {
+        title: 'HiKorea',
+        subtitle: 'Visa y estadía',
+      },
+      nhis: {
+        title: 'Seguro de salud',
+        subtitle: 'Inscripción y gestión',
+      },
+      worknet: {
+        title: 'WorkNet',
+        subtitle: 'Ofertas de empleo',
+      },
+      currentSearch: 'Búsqueda actual',
+    },
   },
   widgets: {
     dynamicFeed: {
@@ -746,8 +780,8 @@ const es = {
       createdAt: 'Fecha',
     },
     sidebar: {
-      popularInfo: '🔥 Info popular',
-      emergencyContacts: '🆘 Contactos de emergencia',
+      popularInfo: 'Info popular',
+      emergencyContacts: 'Contactos de emergencia',
       emergency: {
         title: 'Emergencia',
         subtitle: 'Bomberos, médico',
@@ -803,6 +837,15 @@ const es = {
       educationSupport: 'Soporte educativo',
       koreanLearning: 'Aprender coreano:1345 (Centro multicultural)',
     },
+    createTitle: 'Crear información',
+    editTitle: 'Editar información',
+    form: {
+      titlePlaceholder: 'Ingrese un título',
+      categoryPlaceholder: 'Seleccione una categoría',
+      createButton: 'Crear',
+      editButton: 'Editar',
+    },
+    categorySelectTitle: 'Seleccionar tema',
   },
   aiAssistant: {
     title: 'Asistente de Vida en Corea',

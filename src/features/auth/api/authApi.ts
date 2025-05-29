@@ -123,9 +123,7 @@ export const loginUser = async (loginUser: CommonUserLoginRequest) => {
       email: loginUser.email,
       password: loginUser.password,
     };
-    console.log('로그인 요청 데이터:', payload);
     const response = await apiClient.post<CommonUserLoginResponse>('/auth/common/login', payload);
-    console.log('로그인 응답 데이터:', response);
     // 토큰 저장
     setToken(response.token);
 

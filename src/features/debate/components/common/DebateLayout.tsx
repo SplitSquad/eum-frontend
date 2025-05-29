@@ -14,8 +14,6 @@ const LayoutContent = styled(Box)({
 
 const Sidebar = styled(Box)(({ theme }) => ({
   width: '240px',
-  backgroundColor: 'rgba(255, 255, 255, 0)',
-  paddingRight: theme.spacing(2),
   [theme.breakpoints.down('md')]: {
     display: 'none',
   },
@@ -55,7 +53,6 @@ const DebateLayout: React.FC<DebateLayoutProps> = ({
   return (
     <div>
       {/* 페이지 헤더 */}
-      <PageHeaderText isMobile={isMobile}>토론 게시판</PageHeaderText>
 
       <LayoutContent>
         {showSidebar && sidebar && <Sidebar>{sidebar}</Sidebar>}

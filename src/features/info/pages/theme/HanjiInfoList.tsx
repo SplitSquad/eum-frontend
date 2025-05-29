@@ -27,6 +27,11 @@ import {
 } from '@mui/material';
 
 import { useThemeStore } from '@/features/theme/store/themeStore';
+import lightIMG from '@/assets/icons/common/전등.png';
+import flowerIMG from '@/assets/icons/common/꽃.png';
+import jsIMG from '@/assets/icons/common/장승.png';
+import BookmarkIcon from '@mui/icons-material/Bookmark';
+import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
@@ -81,7 +86,63 @@ const getCategoryIcon = (categoryKey: string) => {
   };
   return iconMap[categoryKey] || '📄';
 };
-
+// 더미 데이터 (InfoPost 타입)
+const dummyPosts = [
+  {
+    informationId: 1,
+    title: '비자 신청 방법 총정리',
+    content: '한국에서 비자를 신청하는 절차와 준비물, 주의사항을 정리했습니다.',
+    userName: '관리자',
+    createdAt: '2024-06-01T10:00:00Z',
+    views: 123,
+    category: '비자/법률',
+  },
+  {
+    informationId: 2,
+    title: '서울 지하철 완전 정복',
+    content: '서울 지하철 노선도, 환승 팁, 교통카드 사용법 등 교통 정보를 안내합니다.',
+    userName: '홍길동',
+    createdAt: '2024-06-02T09:30:00Z',
+    views: 98,
+    category: '교통',
+  },
+  {
+    informationId: 3,
+    title: '한국 은행 계좌 개설 가이드',
+    content: '외국인이 한국에서 은행 계좌를 개설하는 방법과 필요한 서류를 소개합니다.',
+    userName: '이영희',
+    createdAt: '2024-06-03T14:20:00Z',
+    views: 77,
+    category: '금융/세금',
+  },
+  {
+    informationId: 4,
+    title: '한국 병원 이용 꿀팁',
+    content: '진료 예약, 보험 적용, 통역 서비스 등 의료 시스템을 쉽게 이용하는 방법.',
+    userName: '관리자',
+    createdAt: '2024-06-04T11:10:00Z',
+    views: 56,
+    category: '의료/건강',
+  },
+  {
+    informationId: 5,
+    title: '월세/전세 차이와 계약 주의사항',
+    content: '한국의 월세, 전세 개념과 계약 시 꼭 확인해야 할 점을 정리했습니다.',
+    userName: '김철수',
+    createdAt: '2024-06-05T16:45:00Z',
+    views: 42,
+    category: '주거/부동산',
+  },
+  {
+    informationId: 6,
+    title: '한국 쇼핑몰 이용법',
+    content: '온라인/오프라인 쇼핑몰에서 결제, 배송, 교환/환불하는 방법 안내.',
+    userName: '박지민',
+    createdAt: '2024-06-06T13:00:00Z',
+    views: 31,
+    category: '쇼핑',
+  },
+];
 const getCategoryColor = (categoryKey: string) => {
   const colorMap: { [key: string]: string } = {
     visa: '#4CAF50',
@@ -116,6 +177,48 @@ const extractTextFromContent = (content: string): string => {
   }
 };
 
+// Hanji/Korean theme style objects
+const hanjiBg = {
+  backgroundColor: '#f8f5e4',
+  backgroundImage: `repeating-linear-gradient(135deg, #f3ecd7 0px, #f3ecd7 2px, transparent 2px, transparent 8px)`,
+  minHeight: '100vh',
+  fontFamily: "'Nanum Myeongjo', serif",
+  color: '#3d2c16',
+  paddingBottom: 40,
+};
+const hanjiCard = {
+  background: 'rgba(255,255,250,0.98)',
+  border: '2px solid #bfa76a',
+  borderRadius: '10px',
+  boxShadow: '0 4px 24px 0 rgba(60,40,10,0.08)',
+  marginBottom: 24,
+  fontFamily: "'Nanum Myeongjo', serif",
+  position: 'relative' as const,
+  overflow: 'visible' as const,
+};
+const hanjiButton = {
+  background: '#fffbe6',
+  border: '2px solid #bfa76a',
+  borderRadius: 12,
+  fontFamily: "'Nanum Myeongjo', serif",
+  fontWeight: 700,
+  color: '#6b4c1b',
+  padding: '10px 28px',
+  margin: '0 8px',
+  cursor: 'pointer',
+  transition: 'background 0.2s, color 0.2s',
+  outline: 'none',
+  boxShadow: 'none',
+};
+const hanjiButtonHover = {
+  background: '#e0c9a6',
+  color: '#3d2c16',
+};
+const hanjiButtonActive = {
+  background: '#bfa76a',
+  color: '#fff',
+  border: '2px solid #bfa76a',
+};
 export default function InfoListPage() {
   const { t, language } = useTranslation();
   const navigate = useNavigate();
@@ -298,23 +401,42 @@ export default function InfoListPage() {
   const endPage = Math.min(startPage + blockSize - 1, totalPages);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div style={{ minHeight: '100vh' }}>
       {/* 헤더 */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
+      <div style={{ borderBottom: '1.5px solid #e5e7eb' }}>
+        <div style={{ maxWidth: 1120, margin: '0 auto' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '24px 16px',
+            }}
+          >
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">{t('infoPage.title')}</h1>
-              <p className="text-gray-600 mt-1">{t('infoPage.description')}</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span
+                  style={{
+                    fontSize: 34,
+                    fontWeight: 700,
+                    color: '#111',
+                    fontFamily: hanjiCard.fontFamily,
+                  }}
+                >
+                  {t('infoPage.title')}
+                </span>
+              </div>
+              <p style={{ color: '#666', marginTop: 6, fontFamily: hanjiCard.fontFamily }}>
+                {t('infoPage.description')}
+              </p>
             </div>
             {isAdmin && (
               <button
                 onClick={() => {
                   navigate('create');
-                  // 글 작성 후 돌아왔을 때 카테고리 카운트 새로고침을 위해 storage event 활용
                   localStorage.setItem('needRefreshCategories', 'true');
                 }}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                style={{ ...hanjiButton, padding: '12px 32px', fontSize: 16 }}
               >
                 {t('infoPage.actions.write')}
               </button>
@@ -323,139 +445,134 @@ export default function InfoListPage() {
         </div>
       </div>
 
-      {/* 검색바 */}
-      <div className="bg-white border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <form onSubmit={handleSearch} className="max-w-md">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder={t('infoPage.searchPlaceholder')}
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-                className="w-full pl-4 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              <button
-                type="submit"
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex gap-8">
+      <div
+        style={{
+          maxWidth: 1120,
+          margin: '0 auto',
+          padding: '32px 16px',
+          height: 'auto',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            gap: 8,
+            alignItems: 'flex-start',
+            height: 'auto',
+          }}
+        >
           {/* 메인 컨텐츠 */}
-          <div className="flex-1">
-            {/* 카테고리 그리드 */}
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                {t('infoPage.categories.title')}
-              </h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {categories.slice(1).map(
-                  (
-                    category // '전체' 제외
-                  ) => (
-                    <button
-                      key={category.key}
-                      onClick={() => handleCategoryChange(category.key)}
-                      className={`p-6 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-all duration-200 text-left group ${
-                        selectedCategory === category.key
-                          ? 'ring-2 ring-blue-500 border-blue-500'
-                          : ''
-                      }`}
-                    >
-                      <div className="flex flex-col items-center text-center">
-                        <div
-                          className="w-12 h-12 rounded-full flex items-center justify-center text-2xl mb-3"
-                          style={{ backgroundColor: `${getCategoryColor(category.key)}20` }}
-                        >
-                          {getCategoryIcon(category.key)}
-                        </div>
-                        <h3 className="font-medium text-gray-900 mb-1">{category.label}</h3>
-                        <p className="text-sm text-gray-500">
-                          {t('infoPage.content.postsCount', {
-                            count: String(categoryCounts[category.key] || 0),
-                          })}
-                        </p>
-                      </div>
-                    </button>
-                  )
-                )}
-              </div>
-            </div>
-
+          <div
+            style={{
+              flex: 1,
+              paddingRight: 32,
+            }}
+          >
             {/* 추천 정보 */}
             <div>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold text-gray-900">
-                  {selectedCategory === 'all'
-                    ? t('infoPage.content.allInfo')
-                    : categories.find(cat => cat.key === selectedCategory)?.label ||
-                      selectedCategory}
-                </h2>
-                <div className="flex items-center gap-2">
-                  <div className="flex bg-gray-100 rounded-lg p-1">
-                    <button
-                      onClick={() => handleSortChange('latest')}
-                      className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                        sortBy === 'latest'
-                          ? 'bg-white text-gray-900 shadow-sm'
-                          : 'text-gray-600 hover:text-gray-900'
-                      }`}
-                    >
-                      {t('infoPage.sorting.latest')}
-                    </button>
-                    <button
-                      onClick={() => handleSortChange('popular')}
-                      className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                        sortBy === 'popular'
-                          ? 'bg-white text-gray-900 shadow-sm'
-                          : 'text-gray-600 hover:text-gray-900'
-                      }`}
-                    >
-                      {t('infoPage.sorting.popular')}
-                    </button>
-                  </div>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: 16,
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <img
+                    src={jsIMG}
+                    alt="logo"
+                    style={{ height: 24, width: 24, objectFit: 'contain' }}
+                  />
+                  <h2
+                    style={{
+                      fontSize: 22,
+                      fontWeight: 700,
+                      color: '#111',
+                      fontFamily: hanjiCard.fontFamily,
+                      margin: 0,
+                    }}
+                  >
+                    {selectedCategory === 'all'
+                      ? t('infoPage.content.allInfo')
+                      : categories.find(cat => cat.key === selectedCategory)?.label ||
+                        selectedCategory}
+                  </h2>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  {/* 정렬 드롭다운 */}
+                  <select
+                    value={sortBy}
+                    onChange={e => handleSortChange(e.target.value as 'latest' | 'popular')}
+                    style={{
+                      padding: '6px 16px',
+                      fontSize: 14,
+                      border: '1.5px solid #bfa76a',
+                      borderRadius: 6,
+                      background: '#fff',
+                      color: '#222',
+                      fontWeight: 600,
+                      fontFamily: hanjiCard.fontFamily,
+                      outline: 'none',
+                      cursor: 'pointer',
+                      minWidth: 100,
+                      marginRight: 8,
+                    }}
+                  >
+                    <option value="latest">{t('infoPage.sorting.latest')}</option>
+                    <option value="popular">{t('infoPage.sorting.popular')}</option>
+                  </select>
                   <button
                     onClick={() => handleCategoryChange('all')}
-                    className={`px-3 py-1 text-sm rounded-lg transition-colors ${
-                      selectedCategory === 'all'
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
+                    style={{
+                      ...hanjiButton,
+                      padding: '6px 16px',
+                      fontSize: 14,
+                      background: selectedCategory === 'all' ? '#a88b5a' : '#e9d7b7',
+                      color: '#3d2c16',
+                      border: '1.5px solid #a88b5a',
+                      borderRadius: 6,
+                      margin: 0,
+                    }}
                   >
                     {t('infoPage.actions.viewAll')}
                   </button>
                 </div>
               </div>
 
-              <div>
+              <div
+                style={{
+                  background: 'rgba(255, 255, 255, 0.07)',
+                }}
+              >
                 {loading ? (
-                  <div>
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-                    <p>{t('infoPage.content.loading')}</p>
+                  <div style={{ padding: 32, textAlign: 'center' }}>
+                    <div
+                      style={{
+                        width: 32,
+                        height: 32,
+                        border: '3px solid #222',
+                        borderBottomColor: 'transparent',
+                        borderRadius: '50%',
+                        margin: '0 auto 8px',
+                        animation: 'spin 1s linear infinite',
+                      }}
+                    />
+                    <p style={{ color: '#888', fontFamily: hanjiCard.fontFamily }}>
+                      {t('infoPage.content.loading')}
+                    </p>
                   </div>
                 ) : error ? (
-                  <div>
-                    <div className="text-red-500 mb-4">⚠️</div>
-                    <p className="text-red-600">{error}</p>
+                  <div style={{ padding: 32, textAlign: 'center' }}>
+                    <div style={{ color: '#e53e3e', marginBottom: 16, fontSize: 28 }}>⚠️</div>
+                    <p style={{ color: '#e53e3e', fontFamily: hanjiCard.fontFamily }}>{error}</p>
                   </div>
                 ) : posts.length === 0 ? (
-                  <div>
+                  <div style={{ padding: 32, textAlign: 'center' }}>
                     <svg
-                      className="w-12 h-12 text-gray-400 mx-auto mb-4"
+                      width="48"
+                      height="48"
+                      style={{ color: '#bbb', margin: '0 auto 16px' }}
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -467,86 +584,144 @@ export default function InfoListPage() {
                         d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                       />
                     </svg>
-                    <p>{t('infoPage.content.noData')}</p>
+                    <p style={{ color: '#888', fontFamily: hanjiCard.fontFamily }}>
+                      {t('infoPage.content.noData')}
+                    </p>
                   </div>
                 ) : (
                   <>
                     <div>
                       {posts.map((post, index) => (
-                        <div
+                        <Box
                           key={post.informationId}
+                          sx={{
+                            ...hanjiCard,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            mb: 2,
+                            p: '20px 16px',
+                            cursor: 'pointer',
+                            transition: 'box-shadow 0.2s',
+                            position: 'relative',
+                            '&:hover': {
+                              boxShadow: '0 4px 16px 0 rgba(60,40,10,0.13)',
+                            },
+                          }}
                           onClick={() => navigate(`${post.informationId}`)}
                         >
-                          <div>
-                            <div>
-                              <div>
-                                <span>
-                                  {t(`infoPage.categories.${getCategoryKey(post.category)}`)}
-                                </span>
-                              </div>
-                              <h3>{post.title}</h3>
-                              <p>{extractTextFromContent(post.content || '')}</p>
-                              <div>
-                                <span>
-                                  <svg
-                                    className="w-4 h-4"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                                    />
-                                  </svg>
-                                  {post.userName}
-                                </span>
-                                <span>{new Date(post.createdAt).toLocaleDateString()}</span>
-                                <span>
-                                  <svg
-                                    className="w-4 h-4"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                    />
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                                    />
-                                  </svg>
-                                  {post.views}
-                                </span>
-                              </div>
-                            </div>
-
-                            <button
-                              onClick={e => {
-                                e.stopPropagation();
-                                handleBookmark(post.informationId);
-                              }}
-                              className={`ml-4 p-2 rounded-lg transition-colors ${
-                                bookmarkedIds.includes(post.informationId)
-                                  ? 'text-yellow-500 bg-yellow-50'
-                                  : 'text-gray-400 hover:text-yellow-500 hover:bg-yellow-50'
-                              }`}
-                            >
+                          {/* 북마크 버튼 (오른쪽 상단, 한지 테마) */}
+                          <button
+                            onClick={e => {
+                              e.stopPropagation();
+                              handleBookmark(post.informationId);
+                            }}
+                            style={{
+                              position: 'absolute',
+                              top: 10,
+                              right: 10,
+                              background: 'rgba(233,215,183,0.95)',
+                              border: '1.5px solid #a88b5a',
+                              borderRadius: '50%',
+                              width: 36,
+                              height: 36,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              boxShadow: 'none',
+                              outline: 'none',
+                              cursor: 'pointer',
+                              transition: 'background 0.15s, border 0.15s',
+                              zIndex: 2,
+                            }}
+                            onFocus={e => {
+                              e.currentTarget.style.outline = 'none';
+                              e.currentTarget.style.boxShadow = 'none';
+                              e.currentTarget.style.background = 'rgba(233,215,183,0.95)';
+                            }}
+                            onMouseDown={e => {
+                              e.currentTarget.style.outline = 'none';
+                              e.currentTarget.style.boxShadow = 'none';
+                              e.currentTarget.style.background = 'rgba(233,215,183,0.95)';
+                            }}
+                            onMouseOver={e =>
+                              (e.currentTarget.style.border = '1.5px solid rgba(107, 76, 27, 0.68)')
+                            }
+                            onMouseOut={e => (e.currentTarget.style.border = '1.5px solid #a88b5a')}
+                            aria-label={
+                              bookmarkedIds.includes(post.informationId)
+                                ? t('infoPage.actions.removeBookmark')
+                                : t('infoPage.actions.addBookmark')
+                            }
+                          >
+                            {bookmarkedIds.includes(post.informationId) ? (
+                              <BookmarkIcon sx={{ color: '#a88b5a', fontSize: 22 }} />
+                            ) : (
+                              <BookmarkBorderIcon sx={{ color: '#bbb', fontSize: 22 }} />
+                            )}
+                          </button>
+                          <span
+                            style={{
+                              display: 'inline-block',
+                              background: '#e9d7b7',
+                              color: '#3d2c16',
+                              fontSize: 13,
+                              fontWeight: 500,
+                              borderRadius: 8,
+                              padding: '2px 12px',
+                              marginBottom: 4,
+                              width: 'fit-content',
+                              whiteSpace: 'normal',
+                              wordBreak: 'break-word',
+                              border: '1.5px solid #a88b5a',
+                            }}
+                          >
+                            {t(`infoPage.categories.${getCategoryKey(post.category)}`)}
+                          </span>
+                          <div
+                            style={{
+                              fontSize: 22,
+                              fontWeight: 700,
+                              color: '#111',
+                              marginBottom: 2,
+                            }}
+                          >
+                            {post.title}
+                          </div>
+                          <div
+                            style={{
+                              color: '#666',
+                              fontSize: 15,
+                              marginBottom: 2,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
+                            }}
+                          >
+                            {extractTextFromContent(post.content || '')}
+                          </div>
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 16,
+                              fontSize: 13,
+                              color: '#aaa',
+                              marginTop: 2,
+                              paddingTop: 4,
+                              paddingBottom: 4,
+                              paddingLeft: 8,
+                              paddingRight: 8,
+                            }}
+                          >
+                            <span>{post.userName}</span>
+                            <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                               <svg
-                                className="w-5 h-5"
-                                fill={
-                                  bookmarkedIds.includes(post.informationId)
-                                    ? 'currentColor'
-                                    : 'none'
-                                }
+                                width="16"
+                                height="16"
+                                fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
                               >
@@ -554,22 +729,39 @@ export default function InfoListPage() {
                                   strokeLinecap="round"
                                   strokeLinejoin="round"
                                   strokeWidth={2}
-                                  d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
+                                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                />
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                                 />
                               </svg>
-                            </button>
+                              {post.views}
+                            </span>
                           </div>
-                        </div>
+                        </Box>
                       ))}
                     </div>
 
                     {/* 페이지네이션 */}
                     {totalPages > 1 && (
-                      <div>
-                        <div>
+                      <div style={{ padding: '24px 0', borderTop: '1.5px solid #e5e7eb' }}>
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            gap: 8,
+                          }}
+                        >
                           {/* 이전 블록 */}
                           {startPage > 1 && (
-                            <button onClick={() => setPage(Math.max(startPage - blockSize, 1))}>
+                            <button
+                              onClick={() => setPage(Math.max(startPage - blockSize, 1))}
+                              style={{ ...hanjiButton, fontSize: 14, padding: '6px 16px' }}
+                            >
                               {t('infoPage.pagination.previous')}
                             </button>
                           )}
@@ -582,11 +774,12 @@ export default function InfoListPage() {
                             <button
                               key={p}
                               onClick={() => setPage(p)}
-                              className={`${
-                                p === page
-                                  ? 'bg-blue-600 text-white'
-                                  : 'text-gray-700 hover:bg-gray-100'
-                              }`}
+                              style={{
+                                ...hanjiButton,
+                                fontSize: 14,
+                                padding: '6px 16px',
+                                ...(p === page ? hanjiButtonActive : {}),
+                              }}
                             >
                               {p}
                             </button>
@@ -596,6 +789,7 @@ export default function InfoListPage() {
                           {endPage < totalPages && (
                             <button
                               onClick={() => setPage(Math.min(startPage + blockSize, totalPages))}
+                              style={{ ...hanjiButton, fontSize: 14, padding: '6px 16px' }}
                             >
                               {t('infoPage.pagination.next')}
                             </button>
@@ -609,132 +803,379 @@ export default function InfoListPage() {
             </div>
           </div>
 
+          {/* 그라데이션 border line */}
+          <div
+            style={{
+              width: 2,
+              minHeight: '100%',
+              background: 'linear-gradient(to bottom, #fff 0%, #f8f5e4 100%)',
+              borderRadius: 1,
+              marginLeft: 0,
+              marginRight: 0,
+              border: '1.5px solid #bfa76a',
+            }}
+          />
+
           {/* 오른쪽 사이드바 */}
-          <aside>
-            {/* 인기 정보 */}
-            <div>
-              <h3>
-                <span>{t('infoPage.sidebar.popularInfo')}</span>
+          <aside
+            style={{
+              width: 320,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 24,
+              position: 'sticky',
+              top: 200,
+              alignSelf: 'flex-start',
+              height: 'fit-content',
+              paddingLeft: 16,
+            }}
+          >
+            {/* 검색바 (사이드바 상단) */}
+            <form onSubmit={handleSearch} style={{ width: '100%', marginBottom: 24 }}>
+              <div style={{ position: 'relative', width: '100%' }}>
+                <input
+                  type="text"
+                  placeholder={t('infoPage.searchPlaceholder')}
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  style={{
+                    width: '100%',
+                    paddingLeft: 16,
+                    paddingRight: 40,
+                    paddingTop: 12,
+                    paddingBottom: 12,
+                    border: '1.5px solid #bfa76a',
+                    borderRadius: 8,
+                    fontSize: 16,
+                    background: '#fafafa',
+                    color: '#222',
+                  }}
+                />
+                <button
+                  type="submit"
+                  style={{
+                    position: 'absolute',
+                    right: 12,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: '#888',
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    cursor: 'pointer',
+                    height: 32,
+                    width: 32,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </form>
+
+            {/* 카테고리 뱃지 박스 (검색바와 인기 정보 사이) */}
+            <div
+              style={{
+                background: 'rgba(255,255,255,0.7)',
+                border: '2px solid #bfa76a',
+                borderRadius: 12,
+                padding: '16px 12px',
+                marginBottom: 12,
+                display: 'grid',
+                gridTemplateColumns: 'repeat(4, 1fr)',
+                gap: 10,
+                position: 'relative',
+              }}
+            >
+              {/* 주제 선택 타이틀 (박스 안, 상단) */}
+              <div
+                style={{
+                  gridColumn: '1 / -1',
+                  fontWeight: 800,
+                  fontSize: 15,
+                  color: '#222',
+                  marginBottom: 8,
+                  textAlign: 'left',
+                  letterSpacing: '-0.5px',
+                }}
+              >
+                {t('infoPage.categorySelectTitle')}
+              </div>
+              {categories.slice(1).map(category => (
+                <button
+                  key={category.key}
+                  onClick={() => handleCategoryChange(category.key)}
+                  style={{
+                    background: selectedCategory === category.key ? '#a88b5a' : '#e9d7b7',
+                    color: '#3d2c16',
+                    border: '1.5px solid #a88b5a',
+                    borderRadius: 20,
+                    padding: '6px 0',
+                    fontWeight: 600,
+                    fontSize: 10,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s',
+                    width: '100%',
+                    whiteSpace: 'normal',
+                    wordBreak: 'break-word',
+                    outline: 'none',
+                    boxShadow: 'none',
+                  }}
+                >
+                  {category.label}
+                </button>
+              ))}
+            </div>
+            <section
+              style={{
+                background: 'rgba(255,255,255,0.5)',
+                borderRadius: 10,
+                padding: 12,
+                border: '1.5px solid #bfa76a',
+              }}
+            >
+              <h3
+                style={{
+                  fontSize: 15,
+                  fontWeight: 700,
+                  color: '#111',
+                  marginBottom: 12,
+                }}
+              >
+                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <img
+                    src={lightIMG}
+                    alt="logo"
+                    style={{ width: 24, height: 24, objectFit: 'contain' }}
+                  />
+                  {t('infoPage.sidebar.popularInfo')}
+                </span>
               </h3>
-              <div>
-                {popularPosts.map((post, index) => (
-                  <button
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                {popularPosts.map((post, idx) => (
+                  <li
                     key={post.informationId}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      padding: '8px 0',
+                      borderBottom: idx === popularPosts.length - 1 ? 'none' : '1px solid #e5e7eb',
+                      cursor: 'pointer',
+                    }}
                     onClick={() => navigate(`${post.informationId}`)}
                   >
-                    <span>{index + 1}</span>
-                    <div>
-                      <p>{post.title}</p>
-                      <div>
-                        <span>{t(`infoPage.categories.${getCategoryKey(post.category)}`)}</span>
-                        <span>
-                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                            />
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                            />
-                          </svg>
-                          {post.views}
-                        </span>
-                      </div>
-                    </div>
-                  </button>
+                    <span style={{ fontWeight: 700, color: '#bbb', minWidth: 20 }}>{idx + 1}</span>
+                    <span
+                      style={{
+                        flex: 1,
+                        fontSize: 14,
+                        color: '#111',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 6,
+                      }}
+                    >
+                      <img
+                        src={flowerIMG}
+                        alt="logo"
+                        style={{ width: 24, height: 24, objectFit: 'contain' }}
+                      />
+                      {post.title}
+                    </span>
+                    <span style={{ fontSize: 12, color: '#888' }}>{post.views}</span>
+                  </li>
                 ))}
-              </div>
-            </div>
-
-            {/* 긴급 연락처 */}
-            <div>
-              <h3>
-                <span>{t('infoPage.sidebar.emergencyContacts')}</span>
-              </h3>
-              <div>
-                <div>
-                  <div>
-                    <p>{t('infoPage.sidebar.emergency.title')}</p>
-                    <p>{t('infoPage.sidebar.emergency.subtitle')}</p>
-                  </div>
-                  <a href="tel:119" className="text-lg font-bold text-red-600">
-                    119
-                  </a>
-                </div>
-                <div>
-                  <div>
-                    <p>{t('infoPage.sidebar.police.title')}</p>
-                    <p>{t('infoPage.sidebar.police.subtitle')}</p>
-                  </div>
-                  <a href="tel:112" className="text-lg font-bold text-blue-600">
-                    112
-                  </a>
-                </div>
-                <div>
-                  <div>
-                    <p>{t('infoPage.sidebar.foreignerCenter.title')}</p>
-                    <p>{t('infoPage.sidebar.foreignerCenter.subtitle')}</p>
-                  </div>
-                  <a href="tel:1345" className="text-lg font-bold text-green-600">
-                    1345
-                  </a>
-                </div>
-              </div>
-            </div>
+              </ul>
+            </section>
 
             {/* 유용한 웹사이트 */}
-            <div>
-              <h3>
-                <span>{t('infoPage.sidebar.usefulSites')}</span>
+            <div
+              style={{
+                background: 'rgba(255,255,255,0.5)',
+                borderRadius: 10,
+                border: '1.5px solid #bfa76a',
+                padding: 24,
+              }}
+            >
+              <h3
+                style={{
+                  fontSize: 16,
+                  fontWeight: 600,
+                  color: '#111',
+                  marginBottom: 16,
+                  fontFamily: hanjiCard.fontFamily,
+                }}
+              >
+                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  {t('infoPage.sidebar.usefulSites')}
+                </span>
               </h3>
-              <div>
-                <a href="https://www.hikorea.go.kr" target="_blank" rel="noopener noreferrer">
-                  <div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <a
+                  href="https://www.hikorea.go.kr"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'block',
+                    padding: 12,
+                    border: '1.5px solid #bfa76a',
+                    borderRadius: 8,
+                    textDecoration: 'none',
+                    color: '#111',
+                    transition: 'border 0.2s, background 0.2s',
+                  }}
+                  onMouseOver={e => (e.currentTarget.style.border = '1.5px solid #222')}
+                  onMouseOut={e => (e.currentTarget.style.border = '1.5px solid #bfa76a')}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                    }}
+                  >
                     <div>
-                      <p>{t('infoPage.sidebar.hikorea.title')}</p>
-                      <p>{t('infoPage.sidebar.hikorea.subtitle')}</p>
-                    </div>
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                      />
-                    </svg>
-                  </div>
-                </a>
-
-                <a href="https://www.nhis.or.kr" target="_blank" rel="noopener noreferrer">
-                  <div>
-                    <div>
-                      <p>{t('infoPage.sidebar.nhis.title')}</p>
-                      <p>{t('infoPage.sidebar.nhis.subtitle')}</p>
-                    </div>
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                      />
-                    </svg>
-                  </div>
-                </a>
-
-                <a href="https://www.work.go.kr" target="_blank" rel="noopener noreferrer">
-                  <div>
-                    <div>
-                      <p>{t('infoPage.sidebar.worknet.title')}</p>
-                      <p>{t('infoPage.sidebar.worknet.subtitle')}</p>
+                      <p
+                        style={{
+                          fontSize: 14,
+                          fontWeight: 500,
+                          color: '#111',
+                          fontFamily: hanjiCard.fontFamily,
+                        }}
+                      >
+                        {t('infoPage.sidebar.hikorea.title')}
+                      </p>
+                      <p style={{ fontSize: 12, color: '#888', fontFamily: hanjiCard.fontFamily }}>
+                        {t('infoPage.sidebar.hikorea.subtitle')}
+                      </p>
                     </div>
                     <svg
-                      className="w-4 h-4 text-gray-400"
+                      width="16"
+                      height="16"
+                      style={{ color: '#bbb' }}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                      />
+                    </svg>
+                  </div>
+                </a>
+                <a
+                  href="https://www.nhis.or.kr"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'block',
+                    padding: 12,
+                    border: '1.5px solid #bfa76a',
+                    borderRadius: 8,
+                    textDecoration: 'none',
+                    color: '#111',
+                    transition: 'border 0.2s, background 0.2s',
+                  }}
+                  onMouseOver={e => (e.currentTarget.style.border = '1.5px solid #222')}
+                  onMouseOut={e => (e.currentTarget.style.border = '1.5px solid #bfa76a')}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                    }}
+                  >
+                    <div>
+                      <p
+                        style={{
+                          fontSize: 14,
+                          fontWeight: 500,
+                          color: '#111',
+                          fontFamily: hanjiCard.fontFamily,
+                        }}
+                      >
+                        {t('infoPage.sidebar.nhis.title')}
+                      </p>
+                      <p style={{ fontSize: 12, color: '#888', fontFamily: hanjiCard.fontFamily }}>
+                        {t('infoPage.sidebar.nhis.subtitle')}
+                      </p>
+                    </div>
+                    <svg
+                      width="16"
+                      height="16"
+                      style={{ color: '#bbb' }}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                      />
+                    </svg>
+                  </div>
+                </a>
+                <a
+                  href="https://www.work.go.kr"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'block',
+                    padding: 12,
+                    border: '1.5px solid #bfa76a',
+                    borderRadius: 8,
+                    textDecoration: 'none',
+                    color: '#111',
+                    transition: 'border 0.2s, background 0.2s',
+                  }}
+                  onMouseOver={e => (e.currentTarget.style.border = '1.5px solid #222')}
+                  onMouseOut={e => (e.currentTarget.style.border = '1.5px solid #bfa76a')}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                    }}
+                  >
+                    <div>
+                      <p
+                        style={{
+                          fontSize: 14,
+                          fontWeight: 500,
+                          color: '#111',
+                          fontFamily: hanjiCard.fontFamily,
+                        }}
+                      >
+                        {t('infoPage.sidebar.worknet.title')}
+                      </p>
+                      <p style={{ fontSize: 12, color: '#888', fontFamily: hanjiCard.fontFamily }}>
+                        {t('infoPage.sidebar.worknet.subtitle')}
+                      </p>
+                    </div>
+                    <svg
+                      width="16"
+                      height="16"
+                      style={{ color: '#bbb' }}
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -753,18 +1194,60 @@ export default function InfoListPage() {
 
             {/* 최근 검색어 */}
             {keyword && (
-              <div>
-                <h3>{t('infoPage.sidebar.currentSearch')}</h3>
-                <div>
-                  <span>"{keyword}"</span>
+              <div
+                style={{
+                  background: 'rgba(255,255,255,0.5)',
+                  borderRadius: 10,
+                  border: '1.5px solid #bfa76a',
+                  padding: 24,
+                }}
+              >
+                <h3
+                  style={{
+                    fontSize: 16,
+                    fontWeight: 600,
+                    color: '#111',
+                    marginBottom: 16,
+                    fontFamily: hanjiCard.fontFamily,
+                  }}
+                >
+                  {t('infoPage.sidebar.currentSearch')}
+                </h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span
+                    style={{
+                      padding: '6px 16px',
+                      background: '#e3f2fd',
+                      color: '#1976d2',
+                      borderRadius: 16,
+                      fontSize: 14,
+                      fontWeight: 500,
+                      fontFamily: hanjiCard.fontFamily,
+                    }}
+                  >
+                    "{keyword}"
+                  </span>
                   <button
                     onClick={() => {
                       setKeyword('');
                       setSearchTerm('');
                       setPage(1);
                     }}
+                    style={{
+                      color: '#bbb',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: 0,
+                    }}
                   >
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg
+                      width="16"
+                      height="16"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"

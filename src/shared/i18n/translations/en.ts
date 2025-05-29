@@ -479,6 +479,40 @@ const en = {
       alreadyJoined: 'Already joined this group',
       notMember: 'Not a group member',
     },
+    sidebar: {
+      popularPosts: 'Popular Posts',
+      popularInfo: 'Popular Info',
+      emergencyContacts: 'Emergency Contacts',
+      emergency: {
+        title: 'Emergency',
+        subtitle: 'Fire, Medical',
+        number: '119',
+      },
+      police: {
+        title: 'Police',
+        subtitle: 'Crime & Lost Reports',
+        number: '112',
+      },
+      foreignerCenter: {
+        title: 'Foreigner Help Center',
+        subtitle: 'Supports 19 Languages',
+        number: '1345',
+      },
+      usefulSites: '🔗 Useful Sites',
+      hikorea: {
+        title: 'HiKorea',
+        subtitle: 'Visa & Stay Services',
+      },
+      nhis: {
+        title: 'National Health Insurance',
+        subtitle: 'Enrollment & Management',
+      },
+      worknet: {
+        title: 'WorkNet',
+        subtitle: 'Job Listings',
+      },
+      currentSearch: 'Current Search',
+    },
   },
   widgets: {
     dynamicFeed: {
@@ -753,8 +787,8 @@ const en = {
       createdAt: 'Date',
     },
     sidebar: {
-      popularInfo: '🔥 Popular Info',
-      emergencyContacts: '🆘 Emergency Contacts',
+      popularInfo: 'Popular Info',
+      emergencyContacts: 'Emergency Contacts',
       emergency: {
         title: 'Emergency',
         subtitle: 'Fire, Medical',
@@ -810,6 +844,15 @@ const en = {
       educationSupport: 'Education Support',
       koreanLearning: 'Korean Learning: 1345 (Multicultural Family Center)',
     },
+    createTitle: 'Create Information',
+    editTitle: 'Edit Information',
+    form: {
+      titlePlaceholder: 'Enter a title',
+      categoryPlaceholder: 'Select a category',
+      createButton: 'Create',
+      editButton: 'Edit',
+    },
+    categorySelectTitle: 'Select topic',
   },
 
   aiAssistant: {

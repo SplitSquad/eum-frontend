@@ -2,6 +2,7 @@ import React from 'react';
 import { Box } from '@mui/material';
 import styled from '@emotion/styled';
 import { keyframes } from '@emotion/react';
+import castleBg from '@/assets/images/backgrounds/castlebg.png';
 
 interface ProfessionalBackgroundProps {
   children: React.ReactNode;
@@ -33,12 +34,29 @@ const ProfessionalContainer = styled(Box, {
   overflow: visible;
 `;
 
+const BackgroundImage = styled('img')`
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 90vw;
+  height: 90vh;
+  min-width: 240px;
+  min-height: 180px;
+  max-width: 100vw;
+  max-height: 100vh;
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 1;
+  user-select: none;
+`;
+
 const ProfessionalBackground: React.FC<ProfessionalBackgroundProps> = ({
   children,
   noPadding = false,
 }) => {
   return (
     <ProfessionalContainer noPadding={noPadding}>
+      <BackgroundImage src={castleBg} alt="background" />
       <Box
         sx={{
           position: 'relative',
