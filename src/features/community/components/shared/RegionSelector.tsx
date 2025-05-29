@@ -158,8 +158,8 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({ onChange }) => {
           }
           size="small"
           sx={{
-            bgcolor: colors.secondary,
-            color: colors.text,
+            bgcolor: '#fafafa',
+            color: '#222',
             fontWeight: 600,
           }}
         />
@@ -168,7 +168,12 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({ onChange }) => {
             label="초기화"
             size="small"
             onClick={resetRegion}
-            sx={{ bgcolor: colors.primary, color: colors.text, fontWeight: 600, cursor: 'pointer' }}
+            sx={{
+              bgcolor: '#fafafa',
+              color: '#222',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
           />
         )}
       </Box>

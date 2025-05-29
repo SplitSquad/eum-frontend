@@ -26,7 +26,7 @@ const ToggleInput = styled.input`
   height: 0;
 
   &:checked + span {
-    background-color: #FF9999;
+    background-color: rgb(179, 179, 179);
   }
 
   &:checked + span:before {
@@ -47,7 +47,7 @@ const ToggleSlider = styled.span`
 
   &:before {
     position: absolute;
-    content: "";
+    content: '';
     height: 18px;
     width: 18px;
     left: 3px;
@@ -79,15 +79,15 @@ const ButtonGroup = styled.div`
 `;
 
 const DangerZone = styled.div`
-  border: 1px solid #ffcccc;
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
   padding: 16px;
-  background-color: #fff8f8;
+  background-color: #fafafa;
   margin-top: 16px;
 `;
 
 const DangerTitle = styled.h3`
-  color: #e53935;
+  color: #222;
   margin-top: 0;
   margin-bottom: 12px;
   font-size: 1.1rem;
@@ -150,8 +150,8 @@ const SettingsPage: React.FC = () => {
         <InfoCard title="알림 설정">
           <SettingItem>
             <ToggleSwitch>
-              <ToggleInput 
-                type="checkbox" 
+              <ToggleInput
+                type="checkbox"
                 name="emailNotifications"
                 checked={settings.emailNotifications}
                 onChange={handleToggleChange}
@@ -159,15 +159,13 @@ const SettingsPage: React.FC = () => {
               <ToggleSlider />
             </ToggleSwitch>
             <SettingLabel>이메일 알림</SettingLabel>
-            <SettingDescription>
-              중요 알림 및 업데이트 정보를 이메일로 받습니다.
-            </SettingDescription>
+            <SettingDescription>중요 알림 및 업데이트 정보를 이메일로 받습니다.</SettingDescription>
           </SettingItem>
 
           <SettingItem>
             <ToggleSwitch>
-              <ToggleInput 
-                type="checkbox" 
+              <ToggleInput
+                type="checkbox"
                 name="activityUpdates"
                 checked={settings.activityUpdates}
                 onChange={handleToggleChange}
@@ -182,8 +180,8 @@ const SettingsPage: React.FC = () => {
 
           <SettingItem>
             <ToggleSwitch>
-              <ToggleInput 
-                type="checkbox" 
+              <ToggleInput
+                type="checkbox"
                 name="marketingEmails"
                 checked={settings.marketingEmails}
                 onChange={handleToggleChange}
@@ -200,8 +198,8 @@ const SettingsPage: React.FC = () => {
         <InfoCard title="표시 설정">
           <SettingItem>
             <ToggleSwitch>
-              <ToggleInput 
-                type="checkbox" 
+              <ToggleInput
+                type="checkbox"
                 name="darkMode"
                 checked={settings.darkMode}
                 onChange={handleToggleChange}
@@ -209,9 +207,7 @@ const SettingsPage: React.FC = () => {
               <ToggleSlider />
             </ToggleSwitch>
             <SettingLabel>다크 모드</SettingLabel>
-            <SettingDescription>
-              어두운 테마를 사용합니다. (미리보기)
-            </SettingDescription>
+            <SettingDescription>어두운 테마를 사용합니다. (미리보기)</SettingDescription>
           </SettingItem>
 
           <SettingItem>
@@ -257,12 +253,10 @@ const SettingsPage: React.FC = () => {
                 disabled
                 value="user@example.com" // This should be the actual user's email
               />
-              <SettingDescription>
-                이메일 주소는 변경할 수 없습니다.
-              </SettingDescription>
+              <SettingDescription>이메일 주소는 변경할 수 없습니다.</SettingDescription>
             </FormField>
           </SettingItem>
-          
+
           <DangerZone>
             <DangerTitle>로그아웃</DangerTitle>
             <DangerDescription>
@@ -275,12 +269,16 @@ const SettingsPage: React.FC = () => {
         </InfoCard>
 
         <ButtonGroup>
-          <Button type="button" variant="outline">취소</Button>
-          <Button type="button" onClick={handleSave} variant="primary">저장</Button>
+          <Button type="button" variant="outline">
+            취소
+          </Button>
+          <Button type="button" onClick={handleSave} variant="primary">
+            저장
+          </Button>
         </ButtonGroup>
       </PageContainer>
     </PageLayout>
   );
 };
 
-export default SettingsPage; 
+export default SettingsPage;

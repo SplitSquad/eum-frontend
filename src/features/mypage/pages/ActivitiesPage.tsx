@@ -24,7 +24,7 @@ const PageContainer = styled.div`
 const TabContainer = styled.div`
   display: flex;
   margin-bottom: 20px;
-  border-bottom: 1px solid #eaeaea;
+  border-bottom: 1px solid #e0e0e0;
 `;
 
 const Tab = styled.button<{ active: boolean }>`
@@ -32,21 +32,21 @@ const Tab = styled.button<{ active: boolean }>`
   font-size: 0.95rem;
   background: none;
   border: none;
-  border-bottom: 2px solid ${props => (props.active ? '#FF9999' : 'transparent')};
-  color: ${props => (props.active ? '#333' : '#777')};
+  border-bottom: 2px solid ${props => (props.active ? '#fafafa' : 'transparent')};
+  color: ${props => (props.active ? '#222' : '#555')};
   font-weight: ${props => (props.active ? '600' : '400')};
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
-    color: #333;
+    color: #222;
   }
 `;
 
 const EmptyState = styled.div`
   padding: 40px 0;
   text-align: center;
-  color: #777;
+  color: #555;
   font-size: 0.95rem;
 `;
 
@@ -87,7 +87,7 @@ const ActivityIcon = styled.div`
   svg {
     width: 18px;
     height: 18px;
-    color: #ff9999;
+    color: #222;
   }
 `;
 

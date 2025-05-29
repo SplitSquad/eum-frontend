@@ -686,6 +686,9 @@ const fr = {
     next: 'Suivant',
   },
   debate: {
+    title: 'Débat sur les sujets brûlants',
+    description:
+      'Participez à la discussion sur les sujets de société les plus brûlants du moment et partagez vos opinions variées.',
     categories: {
       title: 'Catégorie',
       all: 'Tous',

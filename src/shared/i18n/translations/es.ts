@@ -688,6 +688,9 @@ const es = {
     next: 'Siguiente',
   },
   debate: {
+    title: 'Debate de temas candentes',
+    description:
+      'Participa en el debate sobre los temas sociales más candentes del momento y comparte tus opiniones diversas.',
     categories: {
       title: 'Categoría',
       all: 'Todos',

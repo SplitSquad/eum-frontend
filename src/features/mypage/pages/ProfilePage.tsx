@@ -90,7 +90,7 @@ const Spinner = styled.div`
   height: 40px;
   border: 3px solid rgba(0, 0, 0, 0.1);
   border-radius: 50%;
-  border-top-color: #ff9999;
+  border-top-color: #888;
   animation: spin 1s linear infinite;
 
   @keyframes spin {
@@ -103,7 +103,7 @@ const Spinner = styled.div`
 const ErrorMessage = styled.div`
   text-align: center;
   padding: 20px;
-  color: #e53e3e;
+  color: #888;
   margin: 20px 0;
 `;
 
@@ -143,12 +143,12 @@ const StatIcon = styled.div`
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #ffd1d1 0%, #ff9999 100%);
+  background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 8px;
-  color: white;
+  color: #555;
 `;
 
 const StatValue = styled.div`
@@ -248,7 +248,7 @@ const BadgeIcon = styled.div`
   align-items: center;
   justify-content: center;
   margin-bottom: 8px;
-  color: #ff9999;
+  color: #888;
   font-size: 32px;
 `;
 
@@ -270,6 +270,10 @@ const IconWithText = styled.div`
   align-items: center;
   gap: 8px;
   margin-bottom: 8px;
+
+  svg {
+    color: #888 !important;
+  }
 `;
 
 // 방문 목적에 따른 한국어 변환 함수
@@ -433,41 +437,61 @@ const ProfilePage: React.FC = () => {
 
   // 배지 정보 - 실제 활동 기반으로 동적 생성
   const badges = [
-    ...(postsCount > 0 ? [{
-      id: 1,
-      name: '첫 게시글',
-      icon: '📝',
-      description: '첫 번째 게시글을 작성했습니다!',
-      unlocked: true,
-    }] : []),
-    ...(commentsCount >= 10 ? [{
-      id: 2,
-      name: '소통왕',
-      icon: '💬',
-      description: '10개 이상의 댓글을 작성했습니다!',
-      unlocked: true,
-    }] : []),
-    ...(debatesCount > 0 ? [{
-      id: 3,
-      name: '토론 참여자',
-      icon: '🗳️',
-      description: '토론에 참여하여 의견을 표현했습니다!',
-      unlocked: true,
-    }] : []),
-    ...(bookmarksCount > 0 ? [{
-      id: 4,
-      name: '지식 수집가',
-      icon: '📚',
-      description: '첫 번째 북마크를 추가했습니다!',
-      unlocked: true,
-    }] : []),
-    ...(totalActivities >= 10 ? [{
-      id: 5,
-      name: '활발한 활동가',
-      icon: '🌟',
-      description: '10개 이상의 활동을 완료했습니다!',
-      unlocked: true,
-    }] : []),
+    ...(postsCount > 0
+      ? [
+          {
+            id: 1,
+            name: '첫 게시글',
+            icon: '📝',
+            description: '첫 번째 게시글을 작성했습니다!',
+            unlocked: true,
+          },
+        ]
+      : []),
+    ...(commentsCount >= 10
+      ? [
+          {
+            id: 2,
+            name: '소통왕',
+            icon: '💬',
+            description: '10개 이상의 댓글을 작성했습니다!',
+            unlocked: true,
+          },
+        ]
+      : []),
+    ...(debatesCount > 0
+      ? [
+          {
+            id: 3,
+            name: '토론 참여자',
+            icon: '🗳️',
+            description: '토론에 참여하여 의견을 표현했습니다!',
+            unlocked: true,
+          },
+        ]
+      : []),
+    ...(bookmarksCount > 0
+      ? [
+          {
+            id: 4,
+            name: '지식 수집가',
+            icon: '📚',
+            description: '첫 번째 북마크를 추가했습니다!',
+            unlocked: true,
+          },
+        ]
+      : []),
+    ...(totalActivities >= 10
+      ? [
+          {
+            id: 5,
+            name: '활발한 활동가',
+            icon: '🌟',
+            description: '10개 이상의 활동을 완료했습니다!',
+            unlocked: true,
+          },
+        ]
+      : []),
   ];
 
   // 사용자 레벨 계산 (임시 로직)
@@ -575,28 +599,28 @@ const ProfilePage: React.FC = () => {
               <Box gridColumn="span 2">
                 <Box display="flex" flexDirection="column" gap={1}>
                   <IconWithText>
-                    <PublicIcon fontSize="small" sx={{ color: '#FF9999' }} />
+                    <PublicIcon fontSize="small" />
                     <Typography variant="body2">
                       <strong>국가:</strong> {profile?.country || '국가 정보 없음'}
                     </Typography>
                   </IconWithText>
 
                   <IconWithText>
-                    <TranslateIcon fontSize="small" sx={{ color: '#FF9999' }} />
+                    <TranslateIcon fontSize="small" />
                     <Typography variant="body2">
                       <strong>언어:</strong> {profile?.language || '언어 정보 없음'}
                     </Typography>
                   </IconWithText>
 
                   <IconWithText>
-                    <CakeIcon fontSize="small" sx={{ color: '#FF9999' }} />
+                    <CakeIcon fontSize="small" />
                     <Typography variant="body2">
                       <strong>가입일:</strong> {profile?.joinDate || '가입일 정보 없음'}
                     </Typography>
                   </IconWithText>
 
                   <IconWithText>
-                    <TravelExploreIcon fontSize="small" sx={{ color: '#FF9999' }} />
+                    <TravelExploreIcon fontSize="small" />
                     <Typography variant="body2">
                       <strong>방문 목적:</strong> {visitPurpose}
                     </Typography>

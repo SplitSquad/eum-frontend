@@ -11,9 +11,7 @@ import {
   BoardListPage,
 } from './pages';
 import ProGroupListPage from './pages/theme/ProGroupListPage';
-import HanGroupListPage from './pages/theme/HanGroupListPage';
 import ProBoardListPage from './pages/theme/ProBoardListPage';
-import HanBoardListPage from './pages/theme/HanBoardListPage';
 
 /**
  * 커뮤니티 서브 라우트
@@ -26,39 +24,15 @@ export const CommunityRoutes: React.FC = () => {
     <Routes>
       <Route
         path="/"
-        element={
-          season === 'hanji' ? (
-            <HanGroupListPage />
-          ) : season === 'professional' ? (
-            <ProGroupListPage />
-          ) : (
-            <GroupListPage />
-          )
-        }
+        element={season === 'professional' ? <ProGroupListPage /> : <GroupListPage />}
       />
       <Route
         path="/groups"
-        element={
-          season === 'hanji' ? (
-            <HanGroupListPage />
-          ) : season === 'professional' ? (
-            <ProGroupListPage />
-          ) : (
-            <GroupListPage />
-          )
-        }
+        element={season === 'professional' ? <ProGroupListPage /> : <GroupListPage />}
       />
       <Route
         path="/board"
-        element={
-          season === 'hanji' ? (
-            <HanBoardListPage />
-          ) : season === 'professional' ? (
-            <ProBoardListPage />
-          ) : (
-            <BoardListPage />
-          )
-        }
+        element={season === 'professional' ? <ProBoardListPage /> : <BoardListPage />}
       />
       <Route path="/create" element={<PostCreatePage />} />
       <Route path="/edit/:postId" element={<PostCreatePage />} />

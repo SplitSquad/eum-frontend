@@ -20,7 +20,7 @@ const CardContainer = styled.div`
   position: relative;
   z-index: 1;
   transition: all 0.3s ease;
-  
+
   &:hover {
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
     transform: translateY(-3px);
@@ -28,7 +28,7 @@ const CardContainer = styled.div`
 `;
 
 const CardHeader = styled.div`
-  background: linear-gradient(135deg, #FFD1D1 0%, #FF9999 100%);
+  background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
   height: 80px;
   position: relative;
 `;
@@ -54,7 +54,7 @@ const ProfileImage = styled.div`
   transform: translateX(-50%);
   background: white;
   transition: all 0.3s ease;
-  
+
   &:hover {
     transform: translateX(-50%) scale(1.05);
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
@@ -76,16 +76,16 @@ const Name = styled.h2`
 
 const Role = styled.div`
   font-size: 0.875rem;
-  color: white;
-  background-color: #FF9999;
+  color: #222;
+  background-color: #f0f0f0;
   padding: 2px 10px;
   border-radius: 12px;
   display: inline-block;
   margin-bottom: 8px;
   transition: all 0.3s ease;
-  
+
   &:hover {
-    background-color: #FF7777;
+    background-color: #e0e0e0;
     transform: translateY(-2px);
   }
 `;
@@ -107,7 +107,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
   role,
   email,
   children,
-  className
+  className,
 }) => {
   return (
     <CardContainer className={className}>
@@ -125,4 +125,4 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
   );
 };
 
-export default ProfileCard; 
+export default ProfileCard;

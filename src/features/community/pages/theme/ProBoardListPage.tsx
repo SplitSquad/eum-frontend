@@ -31,6 +31,7 @@ import TuneIcon from '@mui/icons-material/Tune';
 import CreateIcon from '@mui/icons-material/Create';
 import ClearIcon from '@mui/icons-material/Clear';
 import { styled } from '@mui/system';
+import squareImg from '@/assets/icons/common/네모문양.png';
 
 import PostList from '../../components/post/PostList';
 
@@ -219,7 +220,7 @@ const ProBoardListPage: React.FC = () => {
     tag: queryParams.get('tag') || '',
     sortBy: (queryParams.get('sortBy') as 'latest' | 'popular') || 'latest',
     page: queryParams.get('page') ? parseInt(queryParams.get('page') as string) - 1 : 0,
-    size: 6,
+    size: 4,
     postType: (queryParams.get('postType') as PostType) || '자유',
   });
 
@@ -271,7 +272,7 @@ const ProBoardListPage: React.FC = () => {
       postType: '자유' as PostType,
       location: '자유',
       page: 0,
-      size: 6,
+      size: 4,
     };
     setFilter(initialFilter);
 
@@ -329,7 +330,7 @@ const ProBoardListPage: React.FC = () => {
         sx={{
           display: 'flex',
           alignItems: 'center',
-          bgcolor: 'rgba(255, 230, 230, 0.8)',
+          bgcolor: 'rgba(228, 228, 228, 0.8)',
           p: 1,
           borderRadius: 1,
           mb: 2,
@@ -387,7 +388,7 @@ const ProBoardListPage: React.FC = () => {
       // searchPosts 함수 호출 - 필터 변경 사항 적용하여 재검색
       const searchOptions = {
         page: updatedFilter.page !== undefined ? updatedFilter.page : 0,
-        size: updatedFilter.size || 6,
+        size: updatedFilter.size || 4,
         postType: '자유' as PostType,
         region: updatedFilter.location,
         category: updatedFilter.category,
@@ -644,12 +645,6 @@ const ProBoardListPage: React.FC = () => {
                 {t('community.board.description')}
               </p>
             </div>
-            <button
-              onClick={handleCreatePost}
-              style={{ ...proButton, padding: '12px 32px', fontSize: 16 }}
-            >
-              {t('community.posts.writePost')}
-            </button>
           </div>
         </div>
       </div>
@@ -673,6 +668,74 @@ const ProBoardListPage: React.FC = () => {
         >
           {/* 메인 컨텐츠 */}
           <div style={{ flex: 1, paddingRight: 32 }}>
+            {/* 카테고리/아이콘 영역 */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24 }}>
+              <img
+                src={squareImg}
+                alt="logo"
+                style={{ height: 24, width: 24, objectFit: 'contain' }}
+              />
+              <h2
+                style={{
+                  fontSize: 22,
+                  fontWeight: 700,
+                  color: '#111',
+                  fontFamily: proCard.fontFamily,
+                  margin: 0,
+                }}
+              >
+                {selectedCategory === '전체'
+                  ? t('infoPage.content.allInfo')
+                  : t(`community.categories.${selectedCategory}`) || selectedCategory}
+              </h2>
+              {/* 글쓰기 버튼 왼쪽, 정렬 드롭다운 오른쪽, 둘 다 오른쪽 정렬 */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  flex: 1,
+                  justifyContent: 'flex-end',
+                }}
+              >
+                <button
+                  onClick={handleCreatePost}
+                  style={{
+                    ...proButton,
+                    padding: '6px 16px',
+                    fontSize: 14,
+                    background: selectedCategory === 'all' ? '#222' : '#f3f4f6',
+                    color: selectedCategory === 'all' ? '#fff' : '#222',
+                    border: selectedCategory === 'all' ? '1.5px solid #222' : '1.5px solid #e5e7eb',
+                    borderRadius: 6,
+                    margin: 0,
+                  }}
+                >
+                  {t('community.posts.writePost')}
+                </button>
+                <select
+                  value={filter.sortBy}
+                  onChange={e => handleSortChange(e.target.value as 'latest' | 'popular')}
+                  style={{
+                    padding: '6px 16px',
+                    fontSize: 14,
+                    border: '1.5px solid #222',
+                    borderRadius: 6,
+                    background: '#fff',
+                    color: '#222',
+                    fontWeight: 600,
+                    fontFamily: proCard.fontFamily,
+                    outline: 'none',
+                    cursor: 'pointer',
+                    minWidth: 100,
+                    marginRight: 0,
+                  }}
+                >
+                  <option value="latest">{t('community.filters.latest')}</option>
+                  <option value="popular">{t('community.filters.popular')}</option>
+                </select>
+              </div>
+            </div>
             {/* 게시글 목록/로딩/에러/검색결과 없음 등 */}
             {postLoading ? (
               <Box
@@ -749,12 +812,12 @@ const ProBoardListPage: React.FC = () => {
                   flexGrow: 1,
                   backgroundColor: 'rgba(255,255,255,0.7)',
                   borderRadius: '16px',
-                  border: '1px solid rgba(255, 170, 165, 0.2)',
-                  boxShadow: '0 8px 20px rgba(255, 170, 165, 0.1)',
+                  border: '1.5px solid #e5e7eb',
+                  boxShadow: '0 8px 20px rgba(226, 225, 225, 0.1)',
                 }}
               >
                 <Box sx={{ mb: 3, textAlign: 'center' }}>
-                  <SearchIcon sx={{ fontSize: '3rem', color: '#FFAAA5', mb: 2 }} />
+                  <SearchIcon sx={{ fontSize: '3rem', color: '#222', mb: 2 }} />
                   <Typography variant="h5" color="textSecondary" gutterBottom>
                     {t('community.messages.noResults')}
                   </Typography>
@@ -781,7 +844,7 @@ const ProBoardListPage: React.FC = () => {
             ) : (
               /* 게시글 목록 */
               <Box sx={{ flex: 1, minHeight: '400px' }}>
-                <PostList />
+                <PostList isGroup={false} />
               </Box>
             )}
           </div>
@@ -812,67 +875,25 @@ const ProBoardListPage: React.FC = () => {
               paddingLeft: 16,
             }}
           >
-            {/* 인기 게시글 */}
-            {/*
-            <section
-              style={{
-                background: 'rgba(255,255,255,0.5)',
-                borderRadius: 10,
-                padding: 12,
+            {/* 총 게시글 개수 박스 */}
+            <Paper
+              elevation={0}
+              sx={{
+                mb: 1,
+                p: 2,
+                bgcolor: 'rgba(255,255,255,0.95)',
+                borderRadius: '12px',
                 border: '1.5px solid #e5e7eb',
-                marginBottom: 8,
+                boxShadow: '0 2px 8px rgba(226, 225, 225, 0.08)',
+                textAlign: 'center',
+                fontFamily: proCard.fontFamily,
               }}
             >
-              <h3
-                style={{
-                  fontSize: 15,
-                  fontWeight: 700,
-                  color: '#111',
-                  marginBottom: 12,
-                  fontFamily: proCard.fontFamily,
-                }}
-              >
-                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  {t('community.sidebar.popularPosts')}
-                </span>
-              </h3>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                {(topPosts || []).map((post, idx) => (
-                  <li
-                    key={post.id || post.postId || idx}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 8,
-                      padding: '8px 0',
-                      borderBottom:
-                        idx === (topPosts?.length || 0) - 1 ? 'none' : '1px solid #e5e7eb',
-                      cursor: 'pointer',
-                    }}
-                    onClick={() => navigate(`/community/board/${post.id || post.postId}`)}
-                  >
-                    <span style={{ fontWeight: 700, color: '#bbb', minWidth: 20 }}>{idx + 1}</span>
-                    <span
-                      style={{
-                        flex: 1,
-                        fontSize: 14,
-                        color: '#111',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 6,
-                      }}
-                    >
-                      {post.title}
-                    </span>
-                    <span style={{ fontSize: 12, color: '#888' }}>{post.views}</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-            */}
+              <Typography variant="subtitle2" sx={{ color: '#222', fontWeight: 700, fontSize: 18 }}>
+                {t('community.messages.totalPosts', { count: posts.length.toString() })}
+              </Typography>
+            </Paper>
+
             {/* 필터/검색 영역 */}
             <Paper
               elevation={0}
@@ -881,89 +902,11 @@ const ProBoardListPage: React.FC = () => {
                 p: 2,
                 bgcolor: 'rgba(255, 255, 255, 0.85)',
                 borderRadius: '16px',
-                border: '1px solid rgba(255, 170, 165, 0.3)',
-                boxShadow: '0 8px 20px rgba(255, 170, 165, 0.15)',
+                border: '1.5px solid #e5e7eb',
+                boxShadow: '0 8px 20px rgba(226, 225, 225, 0.15)',
                 backdropFilter: 'blur(8px)',
               }}
             >
-              {/* 필터 토글 버튼과 정렬 버튼 */}
-              <Box
-                sx={{
-                  mb: 2,
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  flexWrap: 'wrap',
-                  gap: 1,
-                }}
-              >
-                {/* 필터 토글 버튼 */}
-                <Button
-                  variant="outlined"
-                  onClick={toggleFilters}
-                  startIcon={showFilters ? <ExpandLessIcon /> : <TuneIcon />}
-                  size="small"
-                  sx={{
-                    textTransform: 'none',
-                    borderColor: '#FFD7D7',
-                    color: '#666',
-                    fontWeight: 500,
-                    '&:hover': {
-                      borderColor: '#FFAAA5',
-                      bgcolor: 'rgba(255, 235, 235, 0.2)',
-                    },
-                    borderRadius: '20px',
-                    px: 2,
-                  }}
-                >
-                  {showFilters
-                    ? t('community.actions.hideFilters')
-                    : t('community.actions.showFilters')}
-                </Button>
-
-                {/* 정렬 버튼 */}
-                <ButtonGroup
-                  variant="outlined"
-                  size="small"
-                  aria-label={t('community.filters.sortBy')}
-                  sx={{
-                    '& .MuiButton-outlined': {
-                      borderColor: '#FFD7D7',
-                      color: '#666',
-                      '&:hover': {
-                        borderColor: '#FFAAA5',
-                        bgcolor: 'rgba(255, 235, 235, 0.2)',
-                      },
-                      borderRadius: '20px',
-                    },
-                    '& .MuiButtonGroup-grouped:not(:last-of-type)': {
-                      borderColor: '#FFD7D7',
-                    },
-                  }}
-                >
-                  <Button
-                    onClick={() => handleSortChange('latest')}
-                    sx={{
-                      fontWeight: filter.sortBy === 'latest' ? 'bold' : 'normal',
-                      bgcolor:
-                        filter.sortBy === 'latest' ? 'rgba(255, 235, 235, 0.4)' : 'transparent',
-                    }}
-                  >
-                    {t('community.filters.latest')}
-                  </Button>
-                  <Button
-                    onClick={() => handleSortChange('popular')}
-                    sx={{
-                      fontWeight: filter.sortBy === 'popular' ? 'bold' : 'normal',
-                      bgcolor:
-                        filter.sortBy === 'popular' ? 'rgba(255, 235, 235, 0.4)' : 'transparent',
-                    }}
-                  >
-                    {t('community.filters.popular')}
-                  </Button>
-                </ButtonGroup>
-              </Box>
-
               {/* 검색 필드 */}
               <Box
                 sx={{
@@ -987,10 +930,10 @@ const ProBoardListPage: React.FC = () => {
                     sx={{
                       bgcolor: 'rgba(255, 255, 255, 0.5)',
                       '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: '#FFD7D7',
+                        borderColor: '#e5e7eb',
                       },
                       '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: '#FFAAA5',
+                        borderColor: '#222',
                       },
                       borderRadius: '8px',
                     }}
@@ -1018,13 +961,13 @@ const ProBoardListPage: React.FC = () => {
                       bgcolor: 'rgba(255, 255, 255, 0.5)',
                       borderRadius: '8px',
                       '& fieldset': {
-                        borderColor: '#FFD7D7',
+                        borderColor: '#e5e7eb',
                       },
                       '&:hover fieldset': {
-                        borderColor: '#FFAAA5',
+                        borderColor: '#222',
                       },
                       '&.Mui-focused fieldset': {
-                        borderColor: '#FF9999',
+                        borderColor: '#222',
                       },
                     },
                   }}
@@ -1032,7 +975,7 @@ const ProBoardListPage: React.FC = () => {
                     endAdornment: (
                       <InputAdornment position="end">
                         <IconButton size="small" onClick={handleSearch} title={t('common.search')}>
-                          <SearchIcon fontSize="small" sx={{ color: '#FF9999' }} />
+                          <SearchIcon fontSize="small" sx={{ color: '#222' }} />
                         </IconButton>
                       </InputAdornment>
                     ),
@@ -1047,11 +990,11 @@ const ProBoardListPage: React.FC = () => {
                   size="small"
                   sx={{
                     textTransform: 'none',
-                    borderColor: '#FFD7D7',
+                    borderColor: '#e5e7eb',
                     color: '#666',
                     fontWeight: 500,
                     '&:hover': {
-                      borderColor: '#FFAAA5',
+                      borderColor: '#222',
                       bgcolor: 'rgba(255, 235, 235, 0.2)',
                     },
                     borderRadius: '20px',
@@ -1061,117 +1004,130 @@ const ProBoardListPage: React.FC = () => {
                   {t('community.actions.authorSearch')}
                 </Button>
               </Box>
+            </Paper>
 
-              {/* 필터 영역 */}
-              <Collapse in={showFilters}>
-                <Divider sx={{ mb: 2, borderColor: 'rgba(255, 170, 165, 0.2)' }} />
-                <Box
-                  sx={{
-                    display: 'grid',
-                    gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(200px, 1fr))',
-                    gap: 2,
-                  }}
-                >
-                  {/* 카테고리와 태그 영역(통합) */}
-                  <Box sx={{ gridColumn: isMobile ? 'auto' : '1 / -1' }}>
-                    <Typography
-                      variant="subtitle2"
-                      gutterBottom
-                      sx={{ fontWeight: 600, color: '#555' }}
-                    >
-                      {t('community.filters.category')}
-                    </Typography>
+            {/* 분리된 필터 영역 */}
 
-                    {/* 카테고리 선택 버튼 */}
-                    <ToggleButtonGroup
-                      color="primary"
-                      value={selectedCategory}
-                      exclusive
-                      onChange={(e, newValue) => newValue && handleCategoryChange(newValue)}
-                      size="small"
-                      sx={{
-                        width: '100%',
-                        flexWrap: 'wrap',
-                        mb: 2,
-                        '& .MuiToggleButton-root': {
-                          borderRadius: '8px',
-                          border: '1px solid #FFD7D7',
-                          mb: 1,
-                          '&.Mui-selected': {
-                            bgcolor: 'rgba(255, 170, 165, 0.2)',
-                            color: '#FF6B6B',
-                            fontWeight: 'bold',
-                          },
+            <Paper
+              elevation={0}
+              sx={{
+                mb: 3,
+                p: 2,
+                bgcolor: 'rgba(255, 255, 255, 0.85)',
+                borderRadius: '16px',
+                border: '1.5px solid #e5e7eb',
+                boxShadow: '0 8px 20px rgba(226, 225, 225, 0.15)',
+                backdropFilter: 'blur(8px)',
+              }}
+            >
+              <Divider sx={{ mb: 2, borderColor: '#e5e7eb' }} />
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(200px, 1fr))',
+                  gap: 2,
+                }}
+              >
+                {/* 카테고리와 태그 영역(통합) */}
+                <Box sx={{ gridColumn: isMobile ? 'auto' : '1 / -1' }}>
+                  <Typography
+                    variant="subtitle2"
+                    gutterBottom
+                    sx={{ fontWeight: 600, color: '#222' }}
+                  >
+                    {t('community.filters.category')}
+                  </Typography>
+
+                  {/* 카테고리 선택 버튼 */}
+                  <ToggleButtonGroup
+                    color="primary"
+                    value={selectedCategory}
+                    exclusive
+                    onChange={(e, newValue) => newValue && handleCategoryChange(newValue)}
+                    size="small"
+                    sx={{
+                      width: '100%',
+                      flexWrap: 'wrap',
+                      mb: 2,
+                      '& .MuiToggleButton-root': {
+                        borderRadius: '8px',
+                        border: '1px solid #e5e7eb',
+                        mb: 1,
+                        '&.Mui-selected': {
+                          bgcolor: 'rgba(226, 225, 225, 0.2)',
+                          color: '#222',
+                          fontWeight: 'bold',
+                        },
+                        '&:hover': {
+                          bgcolor: 'rgba(226, 225, 225, 0.4)',
+                        },
+                      },
+                      '& .MuiToggleButtonGroup-grouped': {
+                        borderRadius: '8px !important',
+                        mx: 0.5,
+                      },
+                    }}
+                  >
+                    <ToggleButton value="전체" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
+                      {t('community.categories.all')}
+                    </ToggleButton>
+                    <ToggleButton value="travel" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
+                      {t('community.categories.travel')}
+                    </ToggleButton>
+                    <ToggleButton value="living" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
+                      {t('community.categories.living')}
+                    </ToggleButton>
+                    <ToggleButton value="study" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
+                      {t('community.categories.study')}
+                    </ToggleButton>
+                    <ToggleButton value="job" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
+                      {t('community.categories.job')}
+                    </ToggleButton>
+                  </ToggleButtonGroup>
+
+                  {/* 카테고리에 따른 태그 선택 */}
+                  <Typography
+                    variant="subtitle2"
+                    gutterBottom
+                    sx={{ fontWeight: 600, color: '#222', mt: 2 }}
+                  >
+                    {t('community.filters.tags')}
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: 1,
+                      mt: 1,
+                    }}
+                  >
+                    {availableTags.map(tag => (
+                      <Chip
+                        key={tag}
+                        label={tag}
+                        onClick={() => handleTagSelect(tag)}
+                        color={selectedTags.includes(tag) ? 'primary' : 'default'}
+                        variant={selectedTags.includes(tag) ? 'filled' : 'outlined'}
+                        sx={{
+                          borderRadius: '16px',
+                          borderColor: selectedTags.includes(tag) ? '#222' : '#e5e7eb',
+                          backgroundColor: selectedTags.includes(tag)
+                            ? 'rgba(226, 225, 225, 0.2)'
+                            : 'transparent',
+                          color: selectedTags.includes(tag) ? '#222' : '#222',
                           '&:hover': {
-                            bgcolor: 'rgba(255, 235, 235, 0.4)',
-                          },
-                        },
-                        '& .MuiToggleButtonGroup-grouped': {
-                          borderRadius: '8px !important',
-                          mx: 0.5,
-                        },
-                      }}
-                    >
-                      <ToggleButton value="전체" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
-                        {t('community.categories.all')}
-                      </ToggleButton>
-                      <ToggleButton value="travel" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
-                        {t('community.categories.travel')}
-                      </ToggleButton>
-                      <ToggleButton value="living" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
-                        {t('community.categories.living')}
-                      </ToggleButton>
-                      <ToggleButton value="study" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
-                        {t('community.categories.study')}
-                      </ToggleButton>
-                      <ToggleButton value="job" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
-                        {t('community.categories.job')}
-                      </ToggleButton>
-                    </ToggleButtonGroup>
-
-                    {/* 카테고리에 따른 태그 선택 */}
-                    <Typography
-                      variant="subtitle2"
-                      gutterBottom
-                      sx={{ fontWeight: 600, color: '#555', mt: 2 }}
-                    >
-                      {t('community.filters.tags')}
-                    </Typography>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        gap: 1,
-                        mt: 1,
-                      }}
-                    >
-                      {availableTags.map(tag => (
-                        <Chip
-                          key={tag}
-                          label={tag}
-                          onClick={() => handleTagSelect(tag)}
-                          color={selectedTags.includes(tag) ? 'primary' : 'default'}
-                          variant={selectedTags.includes(tag) ? 'filled' : 'outlined'}
-                          sx={{
-                            borderRadius: '16px',
-                            borderColor: selectedTags.includes(tag) ? '#FF6B6B' : '#FFD7D7',
                             backgroundColor: selectedTags.includes(tag)
-                              ? 'rgba(255, 170, 165, 0.2)'
-                              : 'transparent',
-                            color: selectedTags.includes(tag) ? '#FF6B6B' : '#666',
-                            '&:hover': {
-                              backgroundColor: selectedTags.includes(tag)
-                                ? 'rgba(255, 170, 165, 0.3)'
-                                : 'rgba(255, 235, 235, 0.2)',
-                            },
-                          }}
-                        />
-                      ))}
-                    </Box>
+                              ? 'rgba(226, 225, 225, 0.3)'
+                              : 'rgba(226, 225, 225, 0.2)',
+                          },
+                        }}
+                      />
+                    ))}
                   </Box>
                 </Box>
-              </Collapse>
+              </Box>
             </Paper>
+
             {/* 검색 상태 표시기 */}
             <SearchStatusIndicator />
           </aside>

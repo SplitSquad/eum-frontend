@@ -694,6 +694,9 @@ const en = {
     next: 'Next',
   },
   debate: {
+    title: 'Hot Issue Debate',
+    description:
+      "Join the discussion on today's hottest social issues and share your diverse opinions.",
     categories: {
       title: 'Category',
       all: 'All',

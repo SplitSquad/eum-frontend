@@ -726,6 +726,8 @@ const ko = {
     next: '다음',
   },
   debate: {
+    title: '핫 이슈 토론',
+    description: '지금 가장 뜨거운 사회 이슈에 대해 자유롭게 토론하고 다양한 의견을 나눠보세요.',
     categories: {
       title: '카테고리',
       all: '전체',

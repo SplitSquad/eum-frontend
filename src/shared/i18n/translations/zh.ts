@@ -668,6 +668,8 @@ const zh = {
     next: '下一页',
   },
   debate: {
+    title: '热点议题辩论',
+    description: '就当前最热门的社会议题自由讨论，分享你的多元观点。',
     categories: {
       title: '分类',
       all: '全部',
