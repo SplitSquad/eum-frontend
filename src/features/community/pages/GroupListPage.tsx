@@ -52,6 +52,7 @@ import { usePostStore } from '../store/postStore';
 import { PostApi } from '../api/postApi';
 import { PostType } from '../types-folder';
 import { useRegionStore } from '../store/regionStore';
+import PageHeaderText from '@/components/layout/PageHeaderText';
 
 /**
  * 게시글 목록 페이지 컴포넌트
@@ -484,47 +485,30 @@ const GroupListPage: React.FC = () => {
   return (
     <div>
       {/* 페이지 헤더 */}
-      <Box
-        sx={{
-          mb: 3,
-          display: 'flex',
-          flexDirection: isMobile ? 'column' : 'row',
-          justifyContent: 'space-between',
-          alignItems: isMobile ? 'flex-start' : 'center',
-          gap: 2,
-        }}
+      <PageHeaderText
+        isMobile={isMobile}
+        action={
+          <Button
+            variant="contained"
+            startIcon={<CreateIcon />}
+            onClick={handleCreatePost}
+            sx={{
+              bgcolor: '#FFAAA5',
+              '&:hover': {
+                bgcolor: '#FF8B8B',
+              },
+              borderRadius: '24px',
+              boxShadow: '0 2px 8px rgba(255, 170, 165, 0.5)',
+              color: 'white',
+              fontWeight: 600,
+            }}
+          >
+            글쓰기
+          </Button>
+        }
       >
-        <Typography
-          variant={isMobile ? 'h5' : 'h4'}
-          component="h1"
-          sx={{
-            fontWeight: 700,
-            color: '#555',
-            fontFamily: '"Noto Sans KR", sans-serif',
-          }}
-        >
-          모임 게시판
-        </Typography>
-
-        {/* 글쓰기 버튼 */}
-        <Button
-          variant="contained"
-          startIcon={<CreateIcon />}
-          onClick={handleCreatePost}
-          sx={{
-            bgcolor: '#FFAAA5',
-            '&:hover': {
-              bgcolor: '#FF8B8B',
-            },
-            borderRadius: '24px',
-            boxShadow: '0 2px 8px rgba(255, 170, 165, 0.5)',
-            color: 'white',
-            fontWeight: 600,
-          }}
-        >
-          글쓰기
-        </Button>
-      </Box>
+        모임 게시판
+      </PageHeaderText>
 
       {/* 상단 필터링 및 검색 영역 */}
       <Paper

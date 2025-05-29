@@ -1,6 +1,12 @@
 import { tr } from 'date-fns/locale';
 
 const ja = {
+  welcome: {
+    title: 'EUMへようこそ',
+    description:
+      'EUMは、異なる国の人々がコミュニケーションと協力を行うためのプラットフォームです。',
+  },
+
   common: {
     home: 'ホーム',
     community: 'クラブ＆フォーラム',
@@ -1103,41 +1109,70 @@ const ja = {
       koreanLearning: '韓国語学習：1345 (多文化家庭支援センター)',
     },
   },
-
   aiAssistant: {
     title: '韓国生活アシスタント',
-    subtitle: 'AI専門家が案内する韓国生活',
-    greeting: 'こんにちは！{{category}}のAI専門家です。',
+    subtitle: 'AI専門家と一緒に韓国生活ガイド',
+    greeting: 'こんにちは！{{category}}分野のAI専門家です。',
     categories: {
-      all: '🌏 全て',
-      visa: '📑 ビザ',
-      social: '🏛 社会保障',
+      all: '🌏 全体',
+      visa: '📑 滞在資格・ビザ',
+      social: '🏛 社会保障制度',
       tax: '💰 税金・金融',
       health: '🚑 医療・健康',
-      employment: '💼 求職',
-      life: '👨‍👩‍👧 生活',
+      employment: '💼 求人・求職',
+      life: '👨‍👩‍👧 日常生活',
     },
     sidebar: {
-      title: '📚 分野別ガイド',
-      autoSelectInfo: '質問すると自動で分野が選択されます',
+      title: '📚 分野別案内',
+      autoSelectInfo: '質問すると自動的に分野が選択されます',
     },
     chat: {
-      title: '💬 チャット',
-      currentField: '{{category}}',
-      placeholder: '何でも聞いてください…',
+      title: '💬 筆談を交わす',
+      currentField: '{{category}}分野',
+      placeholder: '気になることを自由にお聞きください...',
       send: '送信',
-      sending: '送信中…',
-      loading: '回答を準備中…',
-      initialMessage: 'ご用件は何ですか？',
+      sending: '送信中...',
+      loading: '回答を準備しています...',
+      initialMessage: '何をお手伝いしましょうか？',
       aiExpert: 'AI専門家',
       justNow: 'たった今',
     },
-    suggestions: ['韓国で必要な書類は？', '韓国で働くには？', '韓国語を学ぶ良い方法は？'],
+    suggestions: [
+      '韓国で必要な基本書類は？',
+      '韓国で働くにはどうすればいいですか？',
+      '韓国語を学ぶ良い方法はありますか？',
+    ],
     errors: {
-      responseError: '応答中にエラーが発生しました。',
+      responseError: '回答中にエラーが発生しました。',
       networkError: 'ネットワーク接続を確認してください。',
-      loginRequired: 'ログインが必要です。',
+      loginRequired: 'この機能にはログインが必要です。',
     },
+  },
+  login: {
+    welcome: 'ようこそ',
+    login: 'ログイン',
+    loading: 'ログイン中...',
+    signup: '新規登録',
+    calenderDescription: '一般ログインではGoogleカレンダー連携機能が利用できません。',
+    loginError: 'ログイン処理中にエラーが発生しました',
+    invalidLoginInfo: 'ログイン情報が正しくありません',
+    termsAgreement:
+      'ログインすることで、利用規約およびプライバシーポリシーに同意したことになります',
+  },
+  signup: {
+    email: 'メールアドレス',
+    password: 'パスワード',
+    passwordPlaceholder: '8文字以上入力',
+    name: '名前',
+    birthday: '生年月日',
+    birthdayPlaceholder: 'YYYY-MM-DD',
+    phone: '電話番号',
+    phonePlaceholder: '010-1234-5678',
+    signup: '新規登録',
+    cancel: 'キャンセル',
+    welcome: 'ようこそ',
+    termsAgreement:
+      'ログインすることで、利用規約およびプライバシーポリシーに同意したことになります。',
   },
 };
 

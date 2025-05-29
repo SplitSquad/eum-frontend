@@ -39,6 +39,7 @@ import { getGoogleAuthUrl } from '@/features/auth/api/authApi';
 import { AlarmCenter } from '@/components/notification/AlarmCenter';
 import { InfoIcon } from 'lucide-react';
 import { shouldForwardProp } from '@mui/system';
+import { seasonalColors, SeasonColors } from '@/components/layout/springTheme';
 
 /**-----------------------------------웹로그 관련------------------------------------ **/
 // userId 꺼내오는 헬퍼
@@ -107,56 +108,18 @@ export function useTrackedNavigation() {
 
 /**------------------------------------------------------------------------------------**/
 
-// 계절별 스타일 적용을 위한 타입
-type SeasonColors = {
-  primary: string;
-  secondary: string;
-  text: string;
-  hover: string;
-  background: string;
-};
-
-// 계절별 색상 정의
-const seasonalColors: Record<string, SeasonColors> = {
-  spring: {
-    primary: 'rgba(255, 200, 200, 0.9)',
-    secondary: 'rgba(255, 150, 150, 0.8)',
-    text: '#333333',
-    hover: 'rgba(255, 150, 150, 0.2)',
-    background: 'rgba(255, 255, 255, 0.9)',
-  },
-  summer: {
-    primary: 'rgba(100, 180, 255, 0.9)',
-    secondary: 'rgba(0, 150, 255, 0.8)',
-    text: '#333333',
-    hover: 'rgba(100, 180, 255, 0.2)',
-    background: 'rgba(255, 255, 255, 0.9)',
-  },
-  autumn: {
-    primary: 'rgba(210, 105, 30, 0.9)',
-    secondary: 'rgba(180, 80, 10, 0.8)',
-    text: '#333333',
-    hover: 'rgba(210, 105, 30, 0.2)',
-    background: 'rgba(255, 255, 255, 0.9)',
-  },
-  winter: {
-    primary: 'rgba(176, 196, 222, 0.9)',
-    secondary: 'rgba(70, 130, 180, 0.8)',
-    text: '#333333',
-    hover: 'rgba(176, 196, 222, 0.2)',
-    background: 'rgba(255, 255, 255, 0.9)',
-  },
-};
-
 // 스타일드 컴포넌트
 const StyledAppBar = styled(AppBar)<{ season: string }>`
-  background: linear-gradient(to bottom, rgba(235, 245, 255, 0.95), rgba(255, 255, 255, 0.98));
-  );
-  box-shadow: none;
-  border-bottom: 0px solid rgba(0, 0, 0, 0);
-  backdrop-filter: blur(10px);
-  color: ${props => seasonalColors[props.season]?.text || '#333333'};
-
+  ${props =>
+    props.season === 'spring' || props.season === 'hanji' || props.season === 'professional'
+      ? `
+    background: linear-gradient(to bottom, ${seasonalColors[props.season]?.background}, #fff 98%);
+    box-shadow: none;
+    border-bottom: 0px solid rgba(0, 0, 0, 0);
+    backdrop-filter: blur(10px);
+    color: ${seasonalColors[props.season]?.text || '#333333'};
+  `
+      : ''}
   .MuiToolbar-root {
     min-height: 72px;
   }
@@ -168,7 +131,11 @@ const NavButton = styled(Button, {
   margin: 0 8px;
   font-weight: ${props => (props.isactive ? '600' : '400')};
   color: ${props =>
-    props.isactive ? seasonalColors[props.season]?.secondary : seasonalColors[props.season]?.text};
+    props.season === 'spring' || props.season === 'hanji' || props.season === 'professional'
+      ? props.isactive
+        ? seasonalColors[props.season]?.secondary
+        : seasonalColors[props.season]?.text
+      : undefined};
   padding: 6px 16px 2px;
   position: relative;
   transition: all 0.3s ease;
@@ -179,10 +146,16 @@ const LoginNavButton = styled(NavButton)`
     font-weight: 700 !important;
     font-size: 1.1rem !important;
     color: white !important;
-    background-color: ${props => seasonalColors[props.season]?.primary} !important;
+    background-color: ${props =>
+      props.season === 'spring' || props.season === 'hanji' || props.season === 'professional'
+        ? seasonalColors[props.season]?.primary
+        : undefined} !important;
 
     &:hover {
-      background-color: ${props => seasonalColors[props.season]?.secondary} !important;
+      background-color: ${props =>
+        props.season === 'spring' || props.season === 'hanji' || props.season === 'professional'
+          ? seasonalColors[props.season]?.secondary
+          : undefined} !important;
     }
 
     .MuiButton-startIcon {
@@ -231,12 +204,18 @@ const MenuNavButton = styled(NavButton)`
     }
 
     &:hover {
-      background-color: ${props => seasonalColors[props.season]?.hover};
+      background-color: ${props =>
+        props.season === 'spring' || props.season === 'hanji' || props.season === 'professional'
+          ? seasonalColors[props.season]?.hover
+          : undefined};
       border-radius: 4px !important;
       box-shadow: none !important;
 
       &:after {
-        background-color: ${props => seasonalColors[props.season]?.secondary};
+        background-color: ${props =>
+          props.season === 'spring' || props.season === 'hanji' || props.season === 'professional'
+            ? seasonalColors[props.season]?.secondary
+            : undefined};
         opacity: 0.5;
       }
     }
@@ -254,11 +233,10 @@ const MenuNavButton = styled(NavButton)`
 const LogoText = styled(Typography)<{ season: string }>`
   font-weight: 700;
   font-size: 1.5rem;
-  background-image: linear-gradient(
-    135deg,
-    ${props => seasonalColors[props.season]?.primary || '#ff7e5f'},
-    ${props => seasonalColors[props.season]?.secondary || '#feb47b'}
-  );
+  background-image: ${props =>
+    props.season === 'spring' || props.season === 'hanji' || props.season === 'professional'
+      ? `linear-gradient(135deg, ${seasonalColors[props.season]?.primary || '#ff7e5f'}, ${seasonalColors[props.season]?.secondary || '#feb47b'})`
+      : 'none'};
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
@@ -266,10 +244,20 @@ const LogoText = styled(Typography)<{ season: string }>`
 `;
 
 const MobileMenuButton = styled(IconButton)<{ season: string }>`
-  color: ${props => seasonalColors[props.season]?.text};
+  color: ${props =>
+    props.season === 'spring' || props.season === 'hanji' || props.season === 'professional'
+      ? seasonalColors[props.season]?.text
+      : undefined};
 
   &:hover {
-    background-color: ${props => seasonalColors[props.season]?.hover};
+    background-color: ${props =>
+      props.season === 'spring' || props.season === 'hanji' || props.season === 'professional'
+        ? seasonalColors[props.season]?.hover
+        : undefined};
+    color: ${props =>
+      props.season === 'spring' || props.season === 'hanji' || props.season === 'professional'
+        ? seasonalColors[props.season]?.text
+        : undefined};
   }
 `;
 
@@ -278,7 +266,10 @@ const DrawerHeader = styled(Box)<{ season: string }>`
   align-items: center;
   justify-content: space-between;
   padding: 16px;
-  background-color: ${props => seasonalColors[props.season]?.primary};
+  background-color: ${props =>
+    props.season === 'spring' || props.season === 'hanji' || props.season === 'professional'
+      ? seasonalColors[props.season]?.primary
+      : undefined};
 `;
 
 const DrawerItem = styled(ListItem, {
@@ -287,24 +278,36 @@ const DrawerItem = styled(ListItem, {
   margin: 4px 8px;
   border-radius: 8px;
   background-color: ${props =>
-    props.isactive ? seasonalColors[props.season]?.hover : 'transparent'};
+    (props.season === 'spring' || props.season === 'hanji' || props.season === 'professional') &&
+    props.isactive
+      ? seasonalColors[props.season]?.hover
+      : 'transparent'};
 
   &:hover {
-    background-color: ${props => seasonalColors[props.season]?.hover};
+    background-color: ${props =>
+      props.season === 'spring' || props.season === 'hanji' || props.season === 'professional'
+        ? seasonalColors[props.season]?.hover
+        : undefined};
   }
 
   .MuiListItemIcon-root {
     color: ${props =>
+      (props.season === 'spring' || props.season === 'hanji' || props.season === 'professional') &&
       props.isactive
         ? seasonalColors[props.season]?.secondary
-        : seasonalColors[props.season]?.text};
+        : props.season === 'spring' || props.season === 'hanji' || props.season === 'professional'
+          ? seasonalColors[props.season]?.text
+          : undefined};
   }
 
   .MuiListItemText-primary {
     color: ${props =>
+      (props.season === 'spring' || props.season === 'hanji' || props.season === 'professional') &&
       props.isactive
         ? seasonalColors[props.season]?.secondary
-        : seasonalColors[props.season]?.text};
+        : props.season === 'spring' || props.season === 'hanji' || props.season === 'professional'
+          ? seasonalColors[props.season]?.text
+          : undefined};
     font-weight: ${props => (props.isactive ? '600' : '400')};
   }
 `;
@@ -394,8 +397,14 @@ const CommunityDropdownItem = styled.div<{ season: string }>`
   width: 100%;
 
   &:hover {
-    background-color: ${props => seasonalColors[props.season]?.hover};
-    color: ${props => seasonalColors[props.season]?.text};
+    background-color: ${props =>
+      props.season === 'spring' || props.season === 'hanji' || props.season === 'professional'
+        ? seasonalColors[props.season]?.hover
+        : undefined};
+    color: ${props =>
+      props.season === 'spring' || props.season === 'hanji' || props.season === 'professional'
+        ? seasonalColors[props.season]?.text
+        : undefined};
   }
 `;
 
@@ -425,11 +434,6 @@ const ProfileName = styled(Typography)`
 const ProfileDetail = styled(Typography)`
   font-size: 0.8rem;
   color: #666666;
-  line-height: 1.2;
-`;
-
-const FlagEmoji = styled.span`
-  font-size: 1.2rem;
   line-height: 1.2;
 `;
 
@@ -497,17 +501,18 @@ const ProfileDropdownItem = styled(Box)<{ season: string }>`
   }
 
   &:hover {
-    background-color: ${props => seasonalColors[props.season]?.hover};
-    color: ${props => seasonalColors[props.season]?.text};
+    background-color: ${props =>
+      props.season === 'spring' || props.season === 'hanji' || props.season === 'professional'
+        ? seasonalColors[props.season]?.hover
+        : undefined};
+    color: ${props =>
+      props.season === 'spring' || props.season === 'hanji' || props.season === 'professional'
+        ? seasonalColors[props.season]?.text
+        : undefined};
   }
 `;
 
-function Header({
-  userName = '기본값',
-  userCountry = '한국',
-  userType = '유학',
-  isVisible = true,
-}: HeaderProps) {
+function Header({ isVisible = true, notifications }: HeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { season } = useThemeStore();
@@ -519,6 +524,11 @@ function Header({
   //const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isMobile = false;
   const token = localStorage.getItem('auth_token');
+  console.log('headcheck user:', user);
+  // user 정보에서 가져오기 (없으면 기본값)
+  const userName = user?.name || 'user';
+  const userCountry = user?.nation || '한국';
+  const userType = user?.visitPurpose || '유학';
 
   // 인증 상태가 변경될 때마다 사용자 정보 로드
   useEffect(() => {
@@ -532,33 +542,6 @@ function Header({
       loadUser();
     }
   }, [token]);
-
-  // 국가 코드에 따른 국기 이모지 매핑
-  const getCountryFlag = (country: string) => {
-    const countryCode =
-      country === '한국'
-        ? 'ko'
-        : country === '미국'
-          ? 'en'
-          : country === '일본'
-            ? 'ja'
-            : country === '중국'
-              ? 'zh'
-              : country === '독일'
-                ? 'de'
-                : country === '프랑스'
-                  ? 'fr'
-                  : country === '스페인'
-                    ? 'es'
-                    : country === '러시아'
-                      ? 'ru'
-                      : 'ko';
-
-    const lang = SUPPORTED_LANGUAGES.find(l => l.code === countryCode);
-    return lang?.flag || '🌎';
-  };
-
-  const flagEmoji = getCountryFlag(userCountry);
 
   // 상태 관리
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -777,8 +760,7 @@ function Header({
                       />
                       <ProfileInfo>
                         <ProfileRow>
-                          <ProfileName>{user?.name || userName}</ProfileName>
-                          <FlagEmoji>{flagEmoji}</FlagEmoji>
+                          <ProfileName>{userName}</ProfileName>
                         </ProfileRow>
                         <DetailRow>
                           <ProfileDetail>{userType}</ProfileDetail>

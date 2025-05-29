@@ -41,12 +41,6 @@ const EmergencyInfoForm: React.FC<EmergencyInfoFormProps> = ({
     switch (season) {
       case 'spring':
         return '#FFAAA5';
-      case 'summer':
-        return '#77AADD';
-      case 'autumn':
-        return '#E8846B';
-      case 'winter':
-        return '#8795B5';
       default:
         return '#FFAAA5';
     }

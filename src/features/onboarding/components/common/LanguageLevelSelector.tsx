@@ -26,29 +26,21 @@ const LevelCard = styled(Paper)<{ season: string; isSelected: boolean }>`
   padding: 16px;
   border-radius: 8px;
   margin-bottom: 12px;
-  border: 2px solid 
-    ${props => 
-      props.isSelected ? 
-        props.season === 'spring' ? '#FFAAA5' :
-        props.season === 'summer' ? '#77AADD' :
-        props.season === 'autumn' ? '#E8846B' :
-        '#8795B5' : 'transparent'};
-  
-  background-color: ${props => 
-    props.isSelected ? 
-      props.season === 'spring' ? 'rgba(255, 170, 165, 0.05)' :
-      props.season === 'summer' ? 'rgba(119, 170, 221, 0.05)' :
-      props.season === 'autumn' ? 'rgba(232, 132, 107, 0.05)' :
-      'rgba(135, 149, 181, 0.05)' : 'white'};
-      
+  border: 2px solid
+    ${props =>
+      props.isSelected ? (props.season === 'spring' ? '#FFAAA5' : '#8795B5') : 'transparent'};
+
+  background-color: ${props =>
+    props.isSelected
+      ? props.season === 'spring'
+        ? 'rgba(255, 170, 165, 0.05)'
+        : 'rgba(135, 149, 181, 0.05)'
+      : 'white'};
+
   transition: all 0.3s ease;
-  
+
   &:hover {
-    border-color: ${props => 
-      props.season === 'spring' ? '#FFAAA5' :
-      props.season === 'summer' ? '#77AADD' :
-      props.season === 'autumn' ? '#E8846B' :
-      '#8795B5'};
+    border-color: ${props => (props.season === 'spring' ? '#FFAAA5' : '#8795B5')};
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   }
 `;
@@ -65,20 +57,19 @@ const LanguageLevelSelector: React.FC<LanguageLevelSelectorProps> = ({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { season } = useThemeStore();
-  
+
   // 계절에 따른 색상 가져오기
   const getColorByTheme = () => {
     switch (season) {
-      case 'spring': return '#FFAAA5';
-      case 'summer': return '#77AADD';
-      case 'autumn': return '#E8846B';
-      case 'winter': return '#8795B5';
-      default: return '#FFAAA5';
+      case 'spring':
+        return '#FFAAA5';
+      default:
+        return '#FFAAA5';
     }
   };
 
   const primaryColor = getColorByTheme();
-  
+
   return (
     <Box sx={{ mb: 4 }}>
       {title && (
@@ -86,18 +77,15 @@ const LanguageLevelSelector: React.FC<LanguageLevelSelectorProps> = ({
           {title}
         </Typography>
       )}
-      
+
       {subtitle && (
         <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
           {subtitle}
         </Typography>
       )}
-      
+
       <FormControl component="fieldset" fullWidth>
-        <RadioGroup 
-          value={value} 
-          onChange={(e) => onChange(e.target.value)}
-        >
+        <RadioGroup value={value} onChange={e => onChange(e.target.value)}>
           {languageLevels.map(level => (
             <LevelCard
               key={level.id}
@@ -108,11 +96,11 @@ const LanguageLevelSelector: React.FC<LanguageLevelSelectorProps> = ({
               <FormControlLabel
                 value={level.id}
                 control={
-                  <Radio 
-                    sx={{ 
+                  <Radio
+                    sx={{
                       color: theme.palette.grey[400],
                       '&.Mui-checked': { color: primaryColor },
-                    }} 
+                    }}
                   />
                 }
                 label={
@@ -135,4 +123,4 @@ const LanguageLevelSelector: React.FC<LanguageLevelSelectorProps> = ({
   );
 };
 
-export default LanguageLevelSelector; 
+export default LanguageLevelSelector;

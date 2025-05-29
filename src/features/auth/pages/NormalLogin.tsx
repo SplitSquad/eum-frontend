@@ -16,14 +16,20 @@ import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 import { loginUser } from '../api/authApi';
 import Loading from '@/pages/Loading';
+import { useTranslation } from '@/shared/i18n';
+import { seasonalColors } from '@/components/layout/springTheme';
+import { useThemeStore } from '@/features/theme/store/themeStore';
+
 // 로그인 카드 스타일
-const LoginCard = styled(Paper)`
+const { t } = useTranslation();
+
+const LoginCard = styled(Paper)<{ colors: typeof seasonalColors.spring }>`
   padding: 2rem;
   border-radius: 16px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 235, 235, 0.8);
+  border: 1.5px solid ${({ colors }) => colors.primary};
   max-width: 450px;
   width: 100%;
   margin: 0 auto;
@@ -36,15 +42,15 @@ const LogoContainer = styled(Box)`
 `;
 
 // 페이지 제목 스타일
-const PageTitle = styled(Typography)`
-  color: #333;
+const PageTitle = styled(Typography)<{ color: string }>`
+  color: ${({ color }) => color};
   margin-bottom: 0.5rem;
   font-weight: 700;
 `;
 
 // 부제목 스타일
-const Subtitle = styled(Typography)`
-  color: #777;
+const Subtitle = styled(Typography)<{ color: string }>`
+  color: ${({ color }) => color};
   margin-bottom: 2rem;
 `;
 
@@ -59,7 +65,7 @@ const InputBox = styled('div')`
 const LoginInputs = ({ id, setId, password, setPassword }) => (
   <InputBox>
     <TextField
-      label="아이디"
+      label="ID"
       variant="outlined"
       value={id}
       onChange={e => setId(e.target.value)}
@@ -68,7 +74,7 @@ const LoginInputs = ({ id, setId, password, setPassword }) => (
       sx={{ background: 'rgba(255,255,255,0.7)' }}
     />
     <TextField
-      label="비밀번호"
+      label="PASSWORD"
       variant="outlined"
       type="password"
       value={password}
@@ -80,7 +86,7 @@ const LoginInputs = ({ id, setId, password, setPassword }) => (
   </InputBox>
 );
 
-const LoginActionButton = ({ onClick, loading }) => (
+const LoginActionButton = ({ onClick, loading, colors }) => (
   <Button
     variant="contained"
     color="primary"
@@ -90,20 +96,17 @@ const LoginActionButton = ({ onClick, loading }) => (
       mt: 1,
       borderRadius: 2,
       fontWeight: 700,
-      background: 'linear-gradient(90deg, #FFB6B9 0%, #FF9999 100%)',
-      boxShadow: '0 2px 8px rgba(255, 170, 165, 0.15)',
-      '&:hover': {
-        background: 'linear-gradient(90deg, #FF9999 0%, #FFB6B9 100%)',
-      },
+      background: colors.gradient,
+      boxShadow: '0 2px 8px rgba(187, 142, 45, 0.33)',
     }}
     onClick={onClick}
     disabled={loading}
   >
-    {loading ? '로그인 중...' : '로그인'}
+    {loading ? t('login.loading') : t('login.login')}
   </Button>
 );
 
-const SignupButton = ({ onClick }) => (
+const SignupButton = ({ onClick, colors }) => (
   <Button
     variant="outlined"
     color="secondary"
@@ -112,16 +115,16 @@ const SignupButton = ({ onClick }) => (
       mt: 2,
       borderRadius: 2,
       fontWeight: 700,
-      borderColor: '#FFB6B9',
-      color: '#FF9999',
+      borderColor: colors.primary,
+      color: colors.primary,
       '&:hover': {
-        borderColor: '#FF9999',
-        background: 'rgba(255, 170, 165, 0.08)',
+        borderColor: colors.primary,
+        background: colors.hover,
       },
     }}
     onClick={onClick}
   >
-    회원가입
+    {t('login.signup')}
   </Button>
 );
 
@@ -138,6 +141,8 @@ const LoginPage: React.FC = () => {
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const season = useThemeStore(state => state.season);
+  const colors = seasonalColors[season] || seasonalColors.spring;
 
   const handleLoginClick = async () => {
     setLoading(true);
@@ -158,7 +163,7 @@ const LoginPage: React.FC = () => {
       }
     } catch (err: any) {
       setLoading(false);
-      setError(err.message || '로그인 중 오류가 발생했습니다.');
+      setError(err.message || t('login.loginError'));
     }
   };
 
@@ -188,7 +193,7 @@ const LoginPage: React.FC = () => {
           }}
         >
           <Fade in={true} timeout={1000}>
-            <LoginCard elevation={3}>
+            <LoginCard elevation={3} colors={colors}>
               <LogoContainer>
                 {/* TODO: 실제 로고로 교체 */}
                 <Typography
@@ -202,9 +207,11 @@ const LoginPage: React.FC = () => {
                   봄날의 기억
                 </Typography>
               </LogoContainer>
-              <PageTitle variant={isMobile ? 'h5' : 'h4'}>환영합니다</PageTitle>
-              <Subtitle variant="body1">
-                일반 로그인 시 구글 캘린더 연동 기능 사용이 어렵습니다.
+              <PageTitle variant={isMobile ? 'h5' : 'h4'} color={colors.primary}>
+                {t('login.welcome')}
+              </PageTitle>
+              <Subtitle variant="body1" color={colors.text}>
+                {t('login.calenderDescription')}
               </Subtitle>
               {error && (
                 <Box mb={3}>
@@ -228,13 +235,13 @@ const LoginPage: React.FC = () => {
                 {/*아이디 비밀번호 입력 영역*/}
                 <LoginInputs id={id} setId={setId} password={password} setPassword={setPassword} />
                 {/*로그인 버튼*/}
-                <LoginActionButton onClick={handleLoginClick} loading={loading} />
+                <LoginActionButton onClick={handleLoginClick} loading={loading} colors={colors} />
                 {/*회원가입 버튼*/}
-                <SignupButton onClick={handleSignupClick} />
+                <SignupButton onClick={handleSignupClick} colors={colors} />
               </Box>
               <Box mt={4}>
                 <Typography variant="caption" color="textSecondary">
-                  로그인 시 서비스 이용약관 및 개인정보 처리방침에 동의하게 됩니다.
+                  {t('login.termsAgreement')}
                 </Typography>
               </Box>
             </LoginCard>

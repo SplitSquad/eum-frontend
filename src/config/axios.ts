@@ -1,5 +1,11 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { setToken, getToken, removeToken, getValidToken, isTokenExpired } from '../features/auth/tokenUtils';
+import {
+  setToken,
+  getToken,
+  removeToken,
+  getValidToken,
+  isTokenExpired,
+} from '../features/auth/tokenUtils';
 import { env, isDevelopment } from './env';
 
 /**
@@ -190,7 +196,7 @@ axiosInstance.interceptors.response.use(
 
               // 로그인 페이지로 이동 전에 플래그 리셋
               isRefreshing = false;
-              
+
               // 무한 리다이렉트 방지
               if (!window.location.pathname.includes('/google-login')) {
                 window.location.href = '/google-login';
@@ -202,7 +208,7 @@ axiosInstance.interceptors.response.use(
             clearAuthData();
 
             isRefreshing = false;
-            
+
             // 무한 리다이렉트 방지
             if (!window.location.pathname.includes('/google-login')) {
               window.location.href = '/google-login';
@@ -226,7 +232,7 @@ axiosInstance.interceptors.response.use(
           // 토큰 갱신 API 자체가 401 반환 시
           console.error('인증 오류 (401): 토큰 갱신 불가, 로그인 필요');
           clearAuthData();
-          
+
           // 무한 리다이렉트 방지: 현재 페이지가 로그인 페이지가 아닌 경우에만 리다이렉트
           if (!window.location.pathname.includes('/google-login')) {
             window.location.href = '/google-login';

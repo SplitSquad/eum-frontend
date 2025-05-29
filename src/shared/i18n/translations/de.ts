@@ -2,6 +2,11 @@ import { tr } from 'date-fns/locale';
 import { t } from 'i18next';
 
 const de = {
+  welcome: {
+    title: 'Willkommen bei EUM',
+    description:
+      'EUM ist eine Plattform für die Kommunikation und Kooperation von Menschen aus verschiedenen Ländern.',
+  },
   common: {
     home: 'Startseite',
     community: 'Gruppen & Foren',
@@ -1008,7 +1013,7 @@ const de = {
     commentSection: 'Bitte respektiere die unterschiedlichen Meinungen.',
     currentVote: 'Gewählte Position',
     commentGuide:
-      'Klicke zuerst auf „Abstimmen“, um deine Stimme abzugeben; dein Eintrag erscheint dann im Kommentarbereich.',
+      'Klicke zuerst auf "Abstimmen", um deine Stimme abzugeben; dein Eintrag erscheint dann im Kommentarbereich.',
     name: 'Debatte',
     comment: {
       empty: 'Noch keine Kommentare. Sei der Erste und hinterlasse einen Kommentar!',
@@ -1127,43 +1132,70 @@ const de = {
   },
 
   aiAssistant: {
-    title: 'Korea Lebenshelfer',
-    subtitle: 'Ihr KI-Experte für das Leben in Korea',
-    greeting: 'Hallo! Ich bin Ihr KI-Experte für {{category}}.',
+    title: 'Korea Leben Assistent',
+    subtitle: 'Korea Lebensführer mit KI-Experte',
+    greeting: 'Hallo! Ich bin ein KI-Experte im Bereich {{category}}.',
     categories: {
       all: '🌏 Alle',
-      visa: '📑 Visum',
-      social: '🏛 Soziale Sicherheit',
+      visa: '📑 Visa/Rechtlich',
+      social: '🏛 Sozialversicherung',
       tax: '💰 Steuern/Finanzen',
-      health: '🚑 Gesundheit',
-      employment: '💼 Job',
+      health: '🚑 Medizin/Gesundheit',
+      employment: '💼 Beschäftigung/Arbeit',
       life: '👨‍👩‍👧 Alltag',
     },
     sidebar: {
-      title: '📚 Themenauswahl',
-      autoSelectInfo: 'Stellen Sie eine Frage, das Thema wählt sich automatisch',
+      title: '📚 Kategorienführer',
+      autoSelectInfo: 'Kategorien werden automatisch basierend auf Ihren Fragen ausgewählt',
     },
     chat: {
-      title: '💬 Chatten',
-      currentField: '{{category}}',
-      placeholder: 'Fragen Sie mich…',
+      title: '💬 Schriftliche Unterhaltung',
+      currentField: '{{category}} Bereich',
+      placeholder: 'Fragen Sie gerne alles...',
       send: 'Senden',
-      sending: 'Wird gesendet…',
-      loading: 'Antwort wird vorbereitet…',
-      initialMessage: 'Wie kann ich helfen?',
+      sending: 'Wird gesendet...',
+      loading: 'Antwort wird vorbereitet...',
+      initialMessage: 'Wie kann ich Ihnen helfen?',
       aiExpert: 'KI-Experte',
-      justNow: 'gerade eben',
+      justNow: 'Gerade eben',
     },
     suggestions: [
-      'Welche Dokumente brauche ich in Korea?',
-      'Wie finde ich einen Job in Korea?',
-      'Wie lerne ich am besten Koreanisch?',
+      'Welche Grunddokumente brauche ich in Korea?',
+      'Wie kann ich in Korea arbeiten?',
+      'Was sind gute Wege, Koreanisch zu lernen?',
     ],
     errors: {
-      responseError: 'Fehler bei der Antwort.',
-      networkError: 'Netzwerk prüfen.',
-      loginRequired: 'Login erforderlich.',
+      responseError: 'Ein Fehler ist beim Antworten aufgetreten.',
+      networkError: 'Bitte überprüfen Sie Ihre Netzwerkverbindung.',
+      loginRequired: 'Anmeldung ist für diese Funktion erforderlich.',
     },
+  },
+  login: {
+    welcome: 'Willkommen',
+    login: 'Anmelden',
+    loading: 'Anmeldung läuft...',
+    signup: 'Registrieren',
+    calenderDescription:
+      'Die Google Kalender-Integration ist mit allgemeiner Anmeldung nicht verfügbar.',
+    loginError: 'Bei der Anmeldung ist ein Fehler aufgetreten',
+    invalidLoginInfo: 'Anmeldeinformationen sind ungültig',
+    termsAgreement:
+      'Mit der Anmeldung stimmen Sie den Nutzungsbedingungen und der Datenschutzrichtlinie zu',
+  },
+  signup: {
+    email: 'E-Mail',
+    password: 'Passwort',
+    passwordPlaceholder: 'Mindestens 8 Zeichen',
+    name: 'Name',
+    birthday: 'Geburtsdatum',
+    birthdayPlaceholder: 'YYYY-MM-DD',
+    phone: 'Telefonnummer',
+    phonePlaceholder: '010-1234-5678',
+    signup: 'Registrieren',
+    cancel: 'Abbrechen',
+    welcome: 'Willkommen',
+    termsAgreement:
+      'Mit der Anmeldung stimmen Sie den Nutzungsbedingungen und der Datenschutzrichtlinie zu.',
   },
 };
 

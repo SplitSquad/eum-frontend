@@ -32,9 +32,9 @@ const InfoDetailBody: React.FC = () => {
       Highlight.configure({ multicolor: true }),
       Image,
       ImageUploadNode.configure({
-        accept: 'image/*',
+        accept: '*/*',
         maxSize: MAX_FILE_SIZE,
-        limit: 3,
+        limit: 10,
         upload: handleImageUpload,
       }),
       TrailingNode,

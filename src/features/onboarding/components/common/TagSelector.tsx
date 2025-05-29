@@ -35,13 +35,7 @@ const ThemedAccordion = styled(Accordion)<{ season: string }>`
   margin-bottom: 8px;
   border: 1px solid
     ${props =>
-      props.season === 'spring'
-        ? 'rgba(255, 235, 235, 0.8)'
-        : props.season === 'summer'
-          ? 'rgba(230, 240, 255, 0.8)'
-          : props.season === 'autumn'
-            ? 'rgba(255, 235, 215, 0.8)'
-            : 'rgba(230, 235, 250, 0.8)'};
+      props.season === 'spring' ? 'rgba(255, 235, 235, 0.8)' : 'rgba(230, 235, 250, 0.8)'};
 
   &:before {
     display: none;
@@ -51,13 +45,7 @@ const ThemedAccordion = styled(Accordion)<{ season: string }>`
     margin-bottom: 16px;
     box-shadow: 0 6px 16px
       ${props =>
-        props.season === 'spring'
-          ? 'rgba(255, 170, 180, 0.15)'
-          : props.season === 'summer'
-            ? 'rgba(100, 170, 220, 0.15)'
-            : props.season === 'autumn'
-              ? 'rgba(230, 130, 110, 0.15)'
-              : 'rgba(135, 149, 181, 0.15)'};
+        props.season === 'spring' ? 'rgba(255, 170, 180, 0.15)' : 'rgba(135, 149, 181, 0.15)'};
   }
 `;
 
@@ -68,11 +56,7 @@ const ThemedSummary = styled(AccordionSummary)<{ season: string }>`
     ${props =>
       props.season === 'spring'
         ? 'rgba(255, 245, 245, 0.7) 0%, rgba(255, 235, 235, 0.7) 100%'
-        : props.season === 'summer'
-          ? 'rgba(230, 245, 255, 0.7) 0%, rgba(210, 235, 255, 0.7) 100%'
-          : props.season === 'autumn'
-            ? 'rgba(255, 245, 230, 0.7) 0%, rgba(255, 235, 220, 0.7) 100%'
-            : 'rgba(245, 250, 255, 0.7) 0%, rgba(235, 240, 255, 0.7) 100%'}
+        : 'rgba(245, 250, 255, 0.7) 0%, rgba(235, 240, 255, 0.7) 100%'}
   );
 
   .MuiAccordionSummary-content {
@@ -84,73 +68,33 @@ const ThemedChip = styled(Chip)<{ season: string; selected?: boolean }>`
   margin: 4px;
   background-color: ${props => {
     if (props.selected) {
-      return props.season === 'spring'
-        ? '#FFAAA5'
-        : props.season === 'summer'
-          ? '#77AADD'
-          : props.season === 'autumn'
-            ? '#E8846B'
-            : '#8795B5';
+      return props.season === 'spring' ? '#FFAAA5' : '#8795B5';
     } else {
-      return props.season === 'spring'
-        ? '#FFF5F5'
-        : props.season === 'summer'
-          ? '#F0F8FF'
-          : props.season === 'autumn'
-            ? '#FFF5EE'
-            : '#F5F8FF';
+      return props.season === 'spring' ? '#FFF5F5' : '#F5F8FF';
     }
   }};
   color: ${props => (props.selected ? '#FFF' : '#666')};
   border: 1px solid
     ${props => {
       if (props.selected) {
-        return props.season === 'spring'
-          ? '#FFAAA5'
-          : props.season === 'summer'
-            ? '#77AADD'
-            : props.season === 'autumn'
-              ? '#E8846B'
-              : '#8795B5';
+        return props.season === 'spring' ? '#FFAAA5' : '#8795B5';
       } else {
-        return props.season === 'spring'
-          ? '#FFD7D7'
-          : props.season === 'summer'
-            ? '#A9D7F6'
-            : props.season === 'autumn'
-              ? '#FFDAC1'
-              : '#D6E1FF';
+        return props.season === 'spring' ? '#FFD7D7' : '#D6E1FF';
       }
     }};
   box-shadow: ${props =>
     props.selected
       ? props.season === 'spring'
         ? '0 2px 8px rgba(255, 170, 165, 0.3)'
-        : props.season === 'summer'
-          ? '0 2px 8px rgba(100, 170, 220, 0.3)'
-          : props.season === 'autumn'
-            ? '0 2px 8px rgba(230, 130, 110, 0.3)'
-            : '0 2px 8px rgba(135, 149, 181, 0.3)'
+        : '0 2px 8px rgba(135, 149, 181, 0.3)'
       : 'none'};
 
   &:hover {
     background-color: ${props => {
       if (props.selected) {
-        return props.season === 'spring'
-          ? '#FF9999'
-          : props.season === 'summer'
-            ? '#5599CC'
-            : props.season === 'autumn'
-              ? '#D66E59'
-              : '#768AAA';
+        return props.season === 'spring' ? '#FF9999' : '#768AAA';
       } else {
-        return props.season === 'spring'
-          ? '#FFE5E5'
-          : props.season === 'summer'
-            ? '#E6F2FF'
-            : props.season === 'autumn'
-              ? '#FFEEDD'
-              : '#E6EEFF';
+        return props.season === 'spring' ? '#FFE5E5' : '#E6EEFF';
       }
     }};
   }
@@ -218,12 +162,6 @@ const OnboardingTagSelector: React.FC<OnboardingTagSelectorProps> = ({
     switch (season) {
       case 'spring':
         return '#FFAAA5';
-      case 'summer':
-        return '#77AADD';
-      case 'autumn':
-        return '#E8846B';
-      case 'winter':
-        return '#8795B5';
       default:
         return '#FFAAA5';
     }

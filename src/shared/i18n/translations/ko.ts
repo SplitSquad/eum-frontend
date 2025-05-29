@@ -5,6 +5,34 @@ import { de } from 'date-fns/locale';
 import { title } from 'process';
 
 const ko = {
+  welcome: {
+    title: 'EUM에 오신 것을 환영합니다',
+    description: 'EUM은 다른 나라의 사람들이 소통하고 협력하는 플랫폼입니다.',
+  },
+  login: {
+    welcome: '환영합니다',
+    login: '로그인',
+    loading: '로그인 중...',
+    signup: '회원가입',
+    calenderDescription: '일반 로그인 시 구글 캘린더 연동 기능 사용이 어렵습니다.',
+    loginError: '로그인 처리 중 오류가 발생했습니다',
+    invalidLoginInfo: '로그인 정보가 올바르지 않습니다',
+    termsAgreement: '로그인 시 서비스 이용약관 및 개인정보 처리방침에 동의하게 됩니다',
+  },
+  signup: {
+    email: '이메일',
+    password: '비밀번호',
+    passwordPlaceholder: '8자 이상 입력',
+    name: '이름',
+    birthday: '생일',
+    birthdayPlaceholder: 'YYYY-MM-DD',
+    phone: '폰번호',
+    phonePlaceholder: '010-1234-5678',
+    signup: '회원가입',
+    cancel: '취소',
+    welcome: '환영합니다',
+    termsAgreement: '로그인 시 서비스 이용약관 및 개인정보 처리방침에 동의하게 됩니다.',
+  },
   common: {
     authenticatedError: '로그인 후 서비스 이용 가능합니다.',
     home: '홈',

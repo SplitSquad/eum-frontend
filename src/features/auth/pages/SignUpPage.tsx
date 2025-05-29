@@ -17,15 +17,18 @@ import useAuthStore from '../store/authStore';
 import useUserStore from '../store/userStore';
 import RegionSelector from '@/features/community/components/shared/RegionSelector';
 import { registerUser } from '../api/authApi';
+import { seasonalColors } from '@/components/layout/springTheme';
+import { useThemeStore } from '@/features/theme/store/themeStore';
+import { useTranslation } from '@/shared/i18n';
 
 // 로그인 카드 스타일
-const LoginCard = styled(Paper)`
+const LoginCard = styled(Paper)<{ colors: typeof seasonalColors.spring }>`
   padding: 2rem;
   border-radius: 16px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 235, 235, 0.8);
+  border: 1.5px solid ${({ colors }) => colors.primary};
   max-width: 450px;
   width: 100%;
   margin: 0 auto;
@@ -38,8 +41,8 @@ const LogoContainer = styled(Box)`
 `;
 
 // 페이지 제목 스타일
-const PageTitle = styled(Typography)`
-  color: #333;
+const PageTitle = styled(Typography)<{ color: string }>`
+  color: ${({ color }) => color};
   margin-bottom: 0.5rem;
   font-weight: 700;
 `;
@@ -74,6 +77,7 @@ const SignUpInputs = ({
   setPhone,
   errors = {},
   handleRegionChange,
+  t,
 }: {
   id: string;
   setId: (v: string) => void;
@@ -97,11 +101,12 @@ const SignUpInputs = ({
     district: string | null,
     neighborhood: string | null
   ) => void;
+  t: (key: string) => string;
 }) => {
   return (
     <InputBox>
       <TextField
-        label="이메일"
+        label={t('signup.email')}
         variant="outlined"
         value={id}
         onChange={e => setId(e.target.value)}
@@ -113,13 +118,13 @@ const SignUpInputs = ({
         helperText={errors.id}
       />
       <TextField
-        label="비밀번호"
+        label={t('signup.password')}
         variant="outlined"
         type="password"
         value={password}
         onChange={e => setPassword(e.target.value)}
         fullWidth
-        placeholder="at least 8 characters"
+        placeholder={t('signup.passwordPlaceholder')}
         autoComplete="current-password"
         sx={{ background: 'rgba(255,255,255,0.7)' }}
         required
@@ -127,7 +132,7 @@ const SignUpInputs = ({
         helperText={errors.password}
       />
       <TextField
-        label="이름"
+        label={t('signup.name')}
         variant="outlined"
         value={name}
         onChange={e => setName(e.target.value)}
@@ -139,7 +144,7 @@ const SignUpInputs = ({
         helperText={errors.name}
       />
       <TextField
-        label="생일"
+        label={t('signup.birthday')}
         variant="outlined"
         value={birthday}
         onChange={e => setBirthday(e.target.value)}
@@ -147,12 +152,12 @@ const SignUpInputs = ({
         autoComplete="birthday"
         sx={{ background: 'rgba(255,255,255,0.7)' }}
         required
-        placeholder="YYYY-MM-DD"
+        placeholder={t('signup.birthdayPlaceholder')}
         error={!!errors.birthday}
         helperText={errors.birthday}
       />
       <TextField
-        label="폰번호"
+        label={t('signup.phone')}
         variant="outlined"
         value={phone}
         onChange={e => setPhone(e.target.value)}
@@ -160,7 +165,7 @@ const SignUpInputs = ({
         autoComplete="phone"
         sx={{ background: 'rgba(255,255,255,0.7)' }}
         required
-        placeholder="010-1234-5678"
+        placeholder={t('signup.phonePlaceholder')}
         error={!!errors.phone}
         helperText={errors.phone}
       />
@@ -169,7 +174,7 @@ const SignUpInputs = ({
   );
 };
 
-const SignupButton = ({ onClick }) => (
+const SignupButton = ({ onClick, colors, t }) => (
   <Button
     variant="outlined"
     color="secondary"
@@ -177,20 +182,20 @@ const SignupButton = ({ onClick }) => (
       mt: 2,
       borderRadius: 2,
       fontWeight: 700,
-      borderColor: '#FFB6B9',
-      color: '#FF9999',
+      borderColor: colors.primary,
+      color: colors.primary,
       '&:hover': {
-        borderColor: '#FF9999',
-        background: 'rgba(255, 170, 165, 0.08)',
+        borderColor: colors.primary,
+        background: colors.hover,
       },
     }}
     onClick={onClick}
   >
-    회원가입
+    {t('signup.signup')}
   </Button>
 );
 
-const CancelButton = ({ onClick }) => (
+const CancelButton = ({ onClick, colors, t }) => (
   <Button
     variant="outlined"
     color="error"
@@ -198,16 +203,16 @@ const CancelButton = ({ onClick }) => (
       mt: 2,
       borderRadius: 2,
       fontWeight: 700,
-      borderColor: '#FF5252',
-      color: '#FF1744',
+      borderColor: colors.primary,
+      color: colors.primary,
       '&:hover': {
-        borderColor: '#FF1744',
-        background: 'rgba(255, 23, 68, 0.08)',
+        borderColor: colors.primary,
+        background: colors.hover,
       },
     }}
     onClick={onClick}
   >
-    취소
+    {t('signup.cancel')}
   </Button>
 );
 
@@ -234,6 +239,9 @@ const SignUpPage: React.FC = () => {
     district: string | null;
     neighborhood: string | null;
   }>({ city: '', district: '', neighborhood: '' });
+  const { t } = useTranslation();
+  const season = useThemeStore(state => state.season);
+  const colors = seasonalColors[season] || seasonalColors.spring;
 
   // useCallback으로 RegionSelector onChange 핸들러 래핑
   const handleRegionChange = useCallback(
@@ -338,7 +346,7 @@ const SignUpPage: React.FC = () => {
         }}
       >
         <Fade in={true} timeout={1000}>
-          <LoginCard elevation={3}>
+          <LoginCard elevation={3} colors={colors}>
             <LogoContainer>
               {/* TODO: 실제 로고로 교체 */}
               <Typography
@@ -353,7 +361,9 @@ const SignUpPage: React.FC = () => {
               </Typography>
             </LogoContainer>
 
-            <PageTitle variant={isMobile ? 'h5' : 'h4'}>환영합니다</PageTitle>
+            <PageTitle variant={isMobile ? 'h5' : 'h4'} color={colors.primary}>
+              {t('signup.welcome')}
+            </PageTitle>
 
             {error && (
               <Box mb={3}>
@@ -389,17 +399,18 @@ const SignUpPage: React.FC = () => {
                 regionSelection={regionSelection}
                 setRegionSelection={setRegionSelection}
                 handleRegionChange={handleRegionChange}
+                t={t}
               />
               {/*회원가입/취소 버튼*/}
               <Box sx={{ display: 'flex', gap: 2, mt: 2, justifyContent: 'flex-end' }}>
-                <CancelButton onClick={() => navigate('/google-login')} />
-                <SignupButton onClick={handleSignup} />
+                <CancelButton onClick={() => navigate('/google-login')} colors={colors} t={t} />
+                <SignupButton onClick={handleSignup} colors={colors} t={t} />
               </Box>
             </Box>
 
             <Box mt={4}>
               <Typography variant="caption" color="textSecondary">
-                로그인 시 서비스 이용약관 및 개인정보 처리방침에 동의하게 됩니다.
+                {t('signup.termsAgreement')}
               </Typography>
             </Box>
           </LoginCard>

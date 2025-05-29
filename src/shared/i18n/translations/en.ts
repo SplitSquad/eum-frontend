@@ -1,6 +1,11 @@
 import { tr } from 'date-fns/locale';
 
 const en = {
+  welcome: {
+    title: 'Welcome to EUM',
+    description:
+      'EUM is a platform for communication and cooperation between people from different countries.',
+  },
   common: {
     authenticatedError: 'After logging in, you can access the service.',
     home: 'Home',
@@ -1462,42 +1467,66 @@ const en = {
 
   aiAssistant: {
     title: 'Korea Life Assistant',
-    subtitle: 'Your AI expert for living in Korea',
-    greeting: 'Hello! I am your AI expert in {{category}}.',
+    subtitle: 'Korea Life Guide with AI Expert',
+    greeting: 'Hello! I am an AI expert in {{category}} field.',
     categories: {
       all: '🌏 All',
-      visa: '📑 Visa',
+      visa: '📑 Visa/Legal',
       social: '🏛 Social Security',
       tax: '💰 Tax/Finance',
-      health: '🚑 Health',
-      employment: '💼 Jobs',
-      life: '👨‍👩‍👧 Lifestyle',
+      health: '🚑 Medical/Health',
+      employment: '💼 Employment/Jobs',
+      life: '👨‍👩‍👧 Daily Life',
     },
     sidebar: {
-      title: '📚 Guide by Topic',
-      autoSelectInfo: 'Ask a question and the topic will auto-select',
+      title: '📚 Category Guide',
+      autoSelectInfo: 'Categories are automatically selected based on your questions',
     },
     chat: {
-      title: '💬 Chat',
-      currentField: '{{category}}',
-      placeholder: 'Ask anything... ',
+      title: '💬 Written Conversation',
+      currentField: '{{category}} Field',
+      placeholder: 'Feel free to ask anything...',
       send: 'Send',
       sending: 'Sending...',
-      loading: 'Preparing answer...',
+      loading: 'Preparing response...',
       initialMessage: 'How can I help you?',
       aiExpert: 'AI Expert',
-      justNow: 'just now',
+      justNow: 'Just now',
     },
     suggestions: [
       'What basic documents do I need in Korea?',
       'How can I work in Korea?',
-      'What is a good way to learn Korean?',
+      'What are good ways to learn Korean?',
     ],
     errors: {
       responseError: 'An error occurred while responding.',
       networkError: 'Please check your network connection.',
-      loginRequired: 'Login is required.',
+      loginRequired: 'Login is required for this feature.',
     },
+  },
+  login: {
+    welcome: 'Welcome',
+    login: 'Login',
+    loading: 'Logging in...',
+    signup: 'Sign Up',
+    calenderDescription: 'Google Calendar integration is not available with general login.',
+    loginError: 'An error occurred during login processing',
+    invalidLoginInfo: 'Login information is invalid',
+    termsAgreement: 'By logging in, you agree to the Terms of Service and Privacy Policy',
+  },
+  signup: {
+    email: 'Email',
+    password: 'Password',
+    passwordPlaceholder: 'At least 8 characters',
+    name: 'Name',
+    birthday: 'Birthday',
+    birthdayPlaceholder: 'YYYY-MM-DD',
+    phone: 'Phone number',
+    phonePlaceholder: '010-1234-5678',
+    signup: 'Sign Up',
+    cancel: 'Cancel',
+    welcome: 'Welcome',
+    termsAgreement: 'By logging in, you agree to the Terms of Service and Privacy Policy.',
   },
 };
 
