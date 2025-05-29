@@ -1,5 +1,11 @@
 const es = {
   city: {
+    alarm: {
+      loading: 'Cargando alarmas...',
+      alarm: 'Alarmas',
+      markAllRead: 'Marcar todas como leídas',
+      noAlarms: 'No hay alarmas',
+    },
     seoul: 'Seúl',
     busan: 'Busán',
     incheon: 'Incheon',

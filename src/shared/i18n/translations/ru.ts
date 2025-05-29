@@ -1,6 +1,12 @@
 import { tr } from 'date-fns/locale';
 
 const ru = {
+  alarm: {
+    loading: 'Загрузка...',
+    alarm: 'Уведомление',
+    markAllRead: 'Отметить все как прочитанное',
+    noAlarms: 'Нет уведомлений',
+  },
   city: {
     seoul: 'Сеул',
     busan: 'Пусан',

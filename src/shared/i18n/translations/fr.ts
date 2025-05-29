@@ -2,6 +2,12 @@ import { tr } from 'date-fns/locale';
 import { t } from 'i18next';
 
 const fr = {
+  alarm: {
+    loading: 'Chargement des alarmes...',
+    alarm: 'Alarme',
+    markAllRead: 'Marquer toutes comme lues',
+    noAlarms: 'Aucune alarme',
+  },
   city: {
     seoul: 'Séoul',
     busan: 'Busan',

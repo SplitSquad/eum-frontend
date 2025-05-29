@@ -1,6 +1,12 @@
 import { tr } from 'date-fns/locale';
 
 const en = {
+  alarm: {
+    loading: 'Loading alarms...',
+    alarm: 'Alarms',
+    markAllRead: 'Mark all as read',
+    noAlarms: 'No alarms available',
+  },
   city: {
     seoul: 'Seoul',
     busan: 'Busan',
@@ -1706,7 +1712,7 @@ const en = {
     birthdayRequired: 'Please enter your date of birth.',
     phoneRequired: 'Please enter your phone number.',
     addressRequired: 'Please select your address (city/province).',
-    passwordLengthAlert: 'Please enter a valid password.',
+    passwordLengthAlert: 'Password must be at least 8 characters long.',
     birthdayFormatAlert: 'Please enter in yyyy-mm-dd format.',
     birthdayValidAlert: 'Please enter a valid date of birth.',
     phoneValidAlert: 'Please enter a valid phone number.',

@@ -22,7 +22,8 @@ import { seasonalColors } from '@/components/layout/springTheme';
 import { useThemeStore } from '@/features/theme/store/themeStore';
 import { useTranslation } from '@/shared/i18n';
 
-// 로그인 카드 스타일
+// 스타일 컴포넌트 생략 (질문에 주신 코드 그대로 유지)
+
 const LoginCard = styled(Paper)<{ colors: typeof seasonalColors.spring }>`
   padding: 2rem;
   border-radius: 16px;
@@ -36,19 +37,16 @@ const LoginCard = styled(Paper)<{ colors: typeof seasonalColors.spring }>`
   text-align: center;
 `;
 
-// 로고 영역
 const LogoContainer = styled(Box)`
   margin-bottom: 2rem;
 `;
 
-// 페이지 제목 스타일
 const PageTitle = styled(Typography)<{ color: string }>`
   color: ${({ color }) => color};
   margin-bottom: 0.5rem;
   font-weight: 700;
 `;
 
-// 아이디/비밀번호 입력 영역 스타일
 const InputBox = styled('div')`
   display: flex;
   flex-direction: column;
@@ -81,6 +79,8 @@ const SignUpInputs = ({
   setPhone,
   errors = {},
   handleRegionChange,
+  regionSelection,
+  setRegionSelection,
   t,
 }: {
   id: string;
@@ -133,27 +133,33 @@ const SignUpInputs = ({
         label={t('signup.email')}
         variant="outlined"
         value={id}
-        onChange={e => setId(e.target.value)}
+        onChange={e => {
+          setId(e.target.value);
+          if (errors.id) errors.id = '';
+        }}
         fullWidth
         autoComplete="username"
         sx={{ background: 'rgba(255,255,255,0.7)' }}
         required
         error={!!errors.id}
-        helperText={errors.id}
+        helperText={errors.id || ''}
       />
       <TextField
         label={t('signup.password')}
         variant="outlined"
         type="password"
         value={password}
-        onChange={e => setPassword(e.target.value)}
+        onChange={e => {
+          setPassword(e.target.value);
+          if (errors.password) errors.password = '';
+        }}
         fullWidth
         placeholder={t('signup.passwordPlaceholder')}
         autoComplete="new-password"
         sx={{ background: 'rgba(255,255,255,0.7)' }}
         required
         error={!!errors.password}
-        helperText={errors.password}
+        helperText={errors.password || ''}
       />
       <div>
         <TextField
@@ -161,7 +167,10 @@ const SignUpInputs = ({
           variant="outlined"
           type="password"
           value={confirmPassword}
-          onChange={e => setConfirmPassword(e.target.value)}
+          onChange={e => {
+            setConfirmPassword(e.target.value);
+            if (errors.confirmPassword) errors.confirmPassword = '';
+          }}
           fullWidth
           placeholder={t('signup.passwordPlaceholder') || '비밀번호를 한 번 더 입력하세요'}
           autoComplete="new-password"
@@ -191,39 +200,48 @@ const SignUpInputs = ({
         label={t('signup.name')}
         variant="outlined"
         value={name}
-        onChange={e => setName(e.target.value)}
+        onChange={e => {
+          setName(e.target.value);
+          if (errors.name) errors.name = '';
+        }}
         fullWidth
         autoComplete="name"
         sx={{ background: 'rgba(255,255,255,0.7)' }}
         required
         error={!!errors.name}
-        helperText={errors.name}
+        helperText={errors.name || ''}
       />
       <TextField
         label={t('signup.birthday')}
         variant="outlined"
         value={birthday}
-        onChange={e => setBirthday(e.target.value)}
+        onChange={e => {
+          setBirthday(e.target.value);
+          if (errors.birthday) errors.birthday = '';
+        }}
         fullWidth
         autoComplete="birthday"
         sx={{ background: 'rgba(255,255,255,0.7)' }}
         required
         placeholder={t('signup.birthdayPlaceholder')}
         error={!!errors.birthday}
-        helperText={errors.birthday}
+        helperText={errors.birthday || ''}
       />
       <TextField
         label={t('signup.phone')}
         variant="outlined"
         value={phone}
-        onChange={e => setPhone(e.target.value)}
+        onChange={e => {
+          setPhone(e.target.value);
+          if (errors.phone) errors.phone = '';
+        }}
         fullWidth
         autoComplete="phone"
         sx={{ background: 'rgba(255,255,255,0.7)' }}
         required
         placeholder={t('signup.phonePlaceholder')}
         error={!!errors.phone}
-        helperText={errors.phone}
+        helperText={errors.phone || ''}
       />
       <RegionSelector onChange={handleRegionChange} />
     </InputBox>
@@ -303,40 +321,70 @@ const SignUpPage: React.FC = () => {
         district: district || '',
         neighborhood: neighborhood || '',
       });
+      if (inputErrors.address) setInputErrors(prev => ({ ...prev, address: '' }));
     },
-    []
+    [inputErrors]
   );
+
+  // 실시간 유효성 검사: 입력값이 변경되면 errors 해당 필드 제거
+  const handleInputChange = (field: keyof InputErrors, value: string) => {
+    switch (field) {
+      case 'id':
+        setId(value);
+        if (inputErrors.id) setInputErrors(prev => ({ ...prev, id: '' }));
+        break;
+      case 'password':
+        setPassword(value);
+        if (inputErrors.password) setInputErrors(prev => ({ ...prev, password: '' }));
+        break;
+      case 'confirmPassword':
+        setConfirmPassword(value);
+        if (inputErrors.confirmPassword) setInputErrors(prev => ({ ...prev, confirmPassword: '' }));
+        break;
+      case 'name':
+        setName(value);
+        if (inputErrors.name) setInputErrors(prev => ({ ...prev, name: '' }));
+        break;
+      case 'birthday':
+        setBirthday(value);
+        if (inputErrors.birthday) setInputErrors(prev => ({ ...prev, birthday: '' }));
+        break;
+      case 'phone':
+        setPhone(value);
+        if (inputErrors.phone) setInputErrors(prev => ({ ...prev, phone: '' }));
+        break;
+      default:
+        break;
+    }
+  };
 
   const handleSignup = async () => {
     const errors: InputErrors = {};
-    if (!id) errors.id = t('signup.emailRequired'); // 이메일을 입력하세요.
-    if (!password) errors.password = t('signup.passwordRequired'); // 비밀번호를 입력하세요.
-    if (!confirmPassword) errors.confirmPassword = t('signup.confirmPasswordRequired'); // 비밀번호 확인을 입력하세요.
-    // if (password && confirmPassword && password !== confirmPassword)
-    //   errors.confirmPassword = t('signup.passwordMismatch');        // 비밀번호가 일치하지 않습니다.
-    if (!name) errors.name = t('signup.nameRequired'); // 이름을 입력하세요.
-    if (!birthday) errors.birthday = t('signup.birthdayRequired'); // 생일을 입력하세요.
-    if (!phone) errors.phone = t('signup.phoneRequired'); // 폰번호를 입력하세요.
-    if (!regionSelection.city) errors.address = t('signup.addressRequired'); // 주소(시/도)를 선택하세요.
+    if (!id) errors.id = t('signup.emailRequired');
+    if (!password) errors.password = t('signup.passwordRequired');
+    if (!name) errors.name = t('signup.nameRequired');
+    if (!birthday) errors.birthday = t('signup.birthdayRequired');
+    if (!phone) errors.phone = t('signup.phoneRequired');
+    if (!regionSelection.city) errors.address = t('signup.addressRequired');
     setInputErrors(errors);
     if (Object.keys(errors).length > 0) return;
 
     if (password.length < 8) {
-      alert(t('signup.passwordLengthAlert')); // 정확한 비밀번호 값을 입력해주세요.
+      alert(t('signup.passwordLengthAlert'));
       return;
     }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(birthday)) {
-      alert(t('signup.birthdayFormatAlert')); // yyyy-mm-dd 형식으로 입력해주세요.
+      alert(t('signup.birthdayFormatAlert'));
       return;
     }
     const [year, month, day] = birthday.split('-').map(Number);
     const date = new Date(birthday);
     if (date.getFullYear() !== year || date.getMonth() + 1 !== month || date.getDate() !== day) {
-      alert(t('signup.birthdayValidAlert')); // 정확한 생일 값을 입력해주세요.
+      alert(t('signup.birthdayValidAlert'));
       return;
     }
     if (!/^\d{2,3}-\d{3,4}-\d{4}$/.test(phone)) {
-      alert(t('signup.phoneValidAlert')); // 정확한 폰번호 값을 입력해주세요.
+      alert(t('signup.phoneValidAlert'));
       return;
     }
 
@@ -431,17 +479,17 @@ const SignUpPage: React.FC = () => {
             >
               <SignUpInputs
                 id={id}
-                setId={setId}
+                setId={v => handleInputChange('id', v)}
                 password={password}
-                setPassword={setPassword}
+                setPassword={v => handleInputChange('password', v)}
                 confirmPassword={confirmPassword}
-                setConfirmPassword={setConfirmPassword}
+                setConfirmPassword={v => handleInputChange('confirmPassword', v)}
                 name={name}
-                setName={setName}
+                setName={v => handleInputChange('name', v)}
                 birthday={birthday}
-                setBirthday={setBirthday}
+                setBirthday={v => handleInputChange('birthday', v)}
                 phone={phone}
-                setPhone={setPhone}
+                setPhone={v => handleInputChange('phone', v)}
                 errors={inputErrors}
                 regionSelection={regionSelection}
                 setRegionSelection={setRegionSelection}

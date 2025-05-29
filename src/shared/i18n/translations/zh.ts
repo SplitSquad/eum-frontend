@@ -1,6 +1,12 @@
 import { tr } from 'date-fns/locale';
 
 const zh = {
+  alarm: {
+    loading: '加载中...',
+    alarm: '通知',
+    markAllRead: '全部标记为已读',
+    noAlarms: '没有通知',
+  },
   city: {
     seoul: '首尔',
     busan: '釜山',

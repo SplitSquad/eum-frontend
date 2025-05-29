@@ -98,7 +98,7 @@ const ko = {
     birthdayRequired: '생일을 입력하세요.',
     phoneRequired: '폰번호를 입력하세요.',
     addressRequired: '주소(시/도)를 선택하세요.',
-    passwordLengthAlert: '정확한 비밀번호 값을 입력해주세요.',
+    passwordLengthAlert: '8자리 이상 입력해주세요.',
     birthdayFormatAlert: 'yyyy-mm-dd 형식으로 입력해주세요.',
     birthdayValidAlert: '정확한 생일 값을 입력해주세요.',
     phoneValidAlert: '정확한 폰번호 값을 입력해주세요.',

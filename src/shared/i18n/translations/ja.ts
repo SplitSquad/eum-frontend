@@ -1,6 +1,12 @@
 import { tr } from 'date-fns/locale';
 
 const ja = {
+  alarm: {
+    loading: '読み込み中...',
+    alarm: 'アラーム',
+    markAllRead: 'すべて既読にする',
+    noAlarms: 'アラームがありません',
+  },
   city: {
     seoul: 'ソウル',
     busan: '釜山',
