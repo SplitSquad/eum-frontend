@@ -25,10 +25,11 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { mainCategories } from '../components/common/CommonTags';
 import { motion } from 'framer-motion';
 import { useSnackbar } from 'notistack';
+import { useTranslation } from '@/shared/i18n';
 
 // Material UI의 Grid를 스타일링된 버전으로 재정의
 //const Grid = styled(Box)(({ theme }) => ({}));
-
+const { t } = useTranslation();
 const MotionCard = styled(motion.div)(({ theme }) => ({
   height: '100%',
   width: '100%',
@@ -207,7 +208,7 @@ const PurposeCard: React.FC<{
                   textTransform: 'none',
                 }}
               >
-                선택하기
+                {t('onboarding.purpose.select')}
               </Button>
             )}
           </CardContent>
@@ -279,10 +280,10 @@ const PurposeSelection: React.FC = () => {
 
   // 목적 설명 매핑
   const purposeDescriptionMap: Record<string, string> = {
-    study: '한국에서 학업을 계획하고 있어요. 유학, 어학연수 등을 위한 정보를 제공합니다.',
-    travel: '한국 여행을 계획하고 있어요. 관광, 맛집, 교통 등 여행에 필요한 정보를 제공합니다.',
-    living: '한국에서 거주할 예정이에요. 주거, 생활, 정착에 관한 정보를 제공합니다.',
-    job: '한국에서 취업 또는 일할 계획이에요. 취업 정보와 비자, 커리어 관련 정보를 제공합니다.',
+    study: t('onboarding.purpose.study'),
+    travel: t('onboarding.purpose.travel'),
+    living: t('onboarding.purpose.living'),
+    job: t('onboarding.purpose.job'),
   };
 
   // 다음 단계로 이동
@@ -360,7 +361,7 @@ const PurposeSelection: React.FC = () => {
               letterSpacing: '-0.02em',
             }}
           >
-            어떤 목적으로 한국에 방문하시나요?
+            {t('onboarding.purpose.welcome')}
           </Typography>
           <Typography
             variant="subtitle1"
@@ -375,7 +376,7 @@ const PurposeSelection: React.FC = () => {
               opacity: 0.85,
             }}
           >
-            가장 적합한 옵션을 선택하면 맞춤형 정보를 제공해드립니다
+            {t('onboarding.purpose.description')}
           </Typography>
         </Box>
 

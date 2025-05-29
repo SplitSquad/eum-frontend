@@ -4,7 +4,7 @@ import styled from '@emotion/styled';
 import { useMypageStore } from '../store/mypageStore';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../auth/store/authStore';
-import { CircularProgress } from '@mui/material';
+import { CircularProgress, Pagination } from '@mui/material';
 import DebateApi from '../../debate/api/debateApi';
 
 //리스폰스 타입 정의
@@ -36,10 +36,38 @@ const Tab = styled.button<{ active: boolean }>`
   color: ${props => (props.active ? '#222' : '#555')};
   font-weight: ${props => (props.active ? '600' : '400')};
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
 
   &:hover {
-    color: #222;
+    color: #333;
+    transform: translateY(-1px);
+    background-color: rgba(255, 153, 153, 0.05);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: #ff9999;
+    transform: scaleX(${props => (props.active ? 1 : 0)});
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center;
+  }
+
+  /* 호버 시 밑줄 미리보기 */
+  &:hover::after {
+    transform: scaleX(${props => (props.active ? 1 : 0.3)});
+    opacity: ${props => (props.active ? 1 : 0.5)};
+  }
+
+  /* 클릭 시 리플 효과 */
+  &:active {
+    transform: translateY(0) scale(0.98);
   }
 `;
 
@@ -48,6 +76,35 @@ const EmptyState = styled.div`
   text-align: center;
   color: #555;
   font-size: 0.95rem;
+  opacity: 0;
+  animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(15px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+`;
+
+// 콘텐츠 전환을 위한 애니메이션 래퍼
+const ContentWrapper = styled.div<{ isVisible: boolean; delay?: number }>`
+  opacity: ${props => (props.isVisible ? 1 : 0)};
+  transform: ${props => (props.isVisible ? 'translateY(0)' : 'translateY(10px)')};
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition-delay: ${props => props.delay || 0}ms;
+  will-change: opacity, transform;
+
+  /* 콘텐츠가 사라질 때는 더 빠르게 */
+  ${props =>
+    !props.isVisible &&
+    `
+    transition-duration: 0.2s;
+  `}
 `;
 
 const ActivityList = styled.div`
@@ -56,16 +113,65 @@ const ActivityList = styled.div`
   gap: 16px;
 `;
 
-const ActivityItem = styled.div`
+const ActivityItem = styled.div<{ animationDelay?: number }>`
   display: flex;
   align-items: flex-start;
   padding: 16px;
   border-bottom: 1px solid #f0f0f0;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 8px;
+  opacity: 0;
+  transform: translateY(15px);
+  animation: slideInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation-delay: ${props => props.animationDelay || 0}ms;
+
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(15px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* 탭 전환 시 부드러운 재시작을 위한 애니메이션 */
+  &.tab-enter {
+    animation: tabEnter 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation-delay: ${props => props.animationDelay || 0}ms;
+  }
+
+  @keyframes tabEnter {
+    0% {
+      opacity: 0;
+      transform: translateY(20px) scale(0.98);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
 
   &:hover {
     background-color: #f9f9f9;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+    /* 호버 시 아이콘 배경색 변경 */
+    .activity-icon {
+      background-color: #ffe6e6;
+
+      svg {
+        transform: scale(1.05);
+      }
+    }
+
+    /* 호버 시 제목 색상 변경 */
+    .activity-title {
+      color: #ff9999;
+    }
   }
 
   &:last-child {
@@ -83,11 +189,13 @@ const ActivityIcon = styled.div`
   justify-content: center;
   margin-right: 16px;
   flex-shrink: 0;
+  transition: all 0.3s ease;
 
   svg {
     width: 18px;
     height: 18px;
-    color: #222;
+    color: #ff9999;
+    transition: transform 0.3s ease;
   }
 `;
 
@@ -99,12 +207,18 @@ const ActivityTitle = styled.div`
   font-weight: 500;
   margin-bottom: 4px;
   font-size: 0.95rem;
+  transition: color 0.3s ease;
 `;
 
 const ActivityDescription = styled.div`
   color: #666;
   font-size: 0.875rem;
   margin-bottom: 8px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 `;
 
 const ActivityMeta = styled.div`
@@ -121,6 +235,50 @@ const LoadingContainer = styled.div`
   display: flex;
   justify-content: center;
   padding: 40px 0;
+
+  .MuiCircularProgress-root {
+    animation: fadeIn 0.3s ease-in;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+`;
+
+// 페이지네이션 컨테이너
+const PaginationContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+`;
+
+// 활동 개수 정보 표시
+const ActivityCountInfo = styled.div`
+  text-align: center;
+  margin-top: 12px;
+  color: #888;
+  font-size: 0.8rem;
+  opacity: 0;
+  animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation-delay: 200ms;
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(5px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 `;
 
 // ActivityItem 타입 선언 (실제 사용하는 속성만 포함)
@@ -146,6 +304,25 @@ const ActivitiesPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<
     'all' | 'posts' | 'comments' | 'debates' | 'bookmarks'
   >('all');
+
+  // 통합 로딩 상태 관리 (깜빡임 방지)
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [contentReady, setContentReady] = useState(false);
+
+  // 탭 전환 애니메이션을 위한 상태
+  const [isContentVisible, setIsContentVisible] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  // 페이지네이션 상태 (각 탭별로 독립적인 페이지)
+  const [currentPages, setCurrentPages] = useState({
+    all: 1,
+    posts: 1,
+    comments: 1,
+    debates: 1,
+    bookmarks: 1,
+  });
+
+  const itemsPerPage = 5; // 페이지당 5개 아이템
 
   // Store에서 데이터 가져오기
   const {
@@ -177,71 +354,87 @@ const ActivitiesPage: React.FC = () => {
     }
   }, [isAuthenticated, user, userId]);
 
-  // 데이터 불러오기
+  // 데이터 불러오기 - 최적화된 단일 useEffect
   useEffect(() => {
-    const loadData = async () => {
-      if (!isAuthenticated) {
-        console.log('[AUTH] 인증되지 않은 사용자입니다. 데이터를 불러오지 않습니다.');
+    const initializeData = async () => {
+      if (!isAuthenticated || !user?.userId || userId <= 0) {
+        console.log('[AUTH] 인증 정보 없음 - 로딩 종료');
+        setIsInitialLoading(false);
         return;
       }
 
-      if (!user) {
-        console.log('[AUTH] 사용자 정보가 없습니다. 데이터를 불러오지 않습니다.');
-        return;
-      }
+      try {
+        console.log('[DEBUG] 활동 내역 데이터 로딩 시작, 사용자 ID:', userId);
 
-      if (userId <= 0) {
-        console.error('[ERROR] 사용자 ID가 유효하지 않습니다:', userId);
-        return;
-      }
+        // 모든 활동 데이터를 동시에 로드
+        const dataPromises = [
+          fetchMyPosts(0, 10),
+          fetchMyComments(0, 10),
+          fetchMyDebates(0, 10),
+          fetchMyBookmarks(0, 5),
+        ];
 
-      console.log('[DEBUG] 활동 내역 데이터 로딩 시작, 사용자 ID:', userId);
+        await Promise.allSettled(dataPromises);
 
-      // 현재 탭 또는 전체 탭이 선택되었을 때만 해당 데이터 로드
-      if (activeTab === 'all' || activeTab === 'posts') {
-        console.log('[DEBUG] 내 게시글 데이터 로딩 시작');
-        fetchMyPosts();
-      }
-
-      if (activeTab === 'all' || activeTab === 'comments') {
-        console.log('[DEBUG] 내 댓글 데이터 로딩 시작');
-        fetchMyComments();
-      }
-
-      if (activeTab === 'all' || activeTab === 'debates') {
-        console.log('[DEBUG] 내 토론 데이터 로딩 시작');
-        try {
-          fetchMyDebates();
-          // 백업으로 직접 API 호출
-          console.log('[DEBUG] 직접 토론 API 호출 시도');
-          const response = await DebateApi.getVotedDebates(userId);
-          console.log('[DEBUG] 직접 토론 API 응답:', response);
-        } catch (error) {
-          console.error('[ERROR] 토론 데이터 로딩 실패:', error);
-        }
-      }
-
-      if (activeTab === 'all' || activeTab === 'bookmarks') {
-        console.log('[DEBUG] 내 북마크 데이터 로딩 시작');
-        fetchMyBookmarks();
+        console.log('[DEBUG] 모든 활동 데이터 로딩 완료');
+      } catch (error) {
+        console.error('[ERROR] 활동 데이터 로딩 실패:', error);
+      } finally {
+        setIsInitialLoading(false);
+        // 부드러운 등장을 위한 지연
+        setTimeout(() => {
+          setContentReady(true);
+          setIsContentVisible(true);
+        }, 60);
       }
     };
 
-    loadData();
+    initializeData();
   }, [
+    isAuthenticated,
+    user?.userId,
     userId,
-    activeTab,
     fetchMyPosts,
     fetchMyComments,
-    fetchMyBookmarks,
     fetchMyDebates,
-    isAuthenticated,
-    user,
+    fetchMyBookmarks,
   ]);
 
-  // 탭 변경 핸들러
+  // 탭 변경 핸들러 - 부드러운 전환 애니메이션
   const handleTabChange = (tab: typeof activeTab) => {
-    setActiveTab(tab);
+    if (tab === activeTab) return;
+
+    setIsTransitioning(true);
+    setIsContentVisible(false);
+
+    // 콘텐츠가 사라진 후 탭 변경
+    setTimeout(() => {
+      setActiveTab(tab);
+      // 탭 변경 시 해당 탭의 페이지를 1페이지로 리셋
+      setCurrentPages(prev => ({
+        ...prev,
+        [tab]: 1,
+      }));
+      // 새 콘텐츠 표시
+      setTimeout(() => {
+        setIsContentVisible(true);
+        setIsTransitioning(false);
+      }, 30); // 더 빠른 전환
+    }, 150); // 사라지는 시간 단축
+  };
+
+  // 페이지 변경 핸들러
+  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
+    setCurrentPages(prev => ({
+      ...prev,
+      [activeTab]: value,
+    }));
+
+    // 페이지 변경 시 부드러운 전환
+    setIsContentVisible(false);
+    setTimeout(() => {
+      setIsContentVisible(true);
+    }, 100);
   };
 
   // 아이콘 렌더링 함수
@@ -287,6 +480,8 @@ const ActivitiesPage: React.FC = () => {
 
   // 로딩 상태 확인
   const isLoading = () => {
+    if (isTransitioning) return true; // 전환 중일 때도 로딩으로 처리
+
     if (activeTab === 'all') {
       return (
         postsLoading === 'loading' ||
@@ -319,7 +514,28 @@ const ActivitiesPage: React.FC = () => {
     }
   };
 
-  // 활동 목록 생성
+  // 날짜 포맷팅 함수
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '';
+
+    try {
+      const date = new Date(dateString);
+
+      // YYYY.MM.DD HH:mm 형식으로 표시
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+
+      return `${year}.${month}.${day} ${hours}:${minutes}`;
+    } catch (error) {
+      // 날짜 파싱 실패 시 원본 문자열의 앞부분만 표시
+      return dateString.split('T')[0] || dateString.substring(0, 10);
+    }
+  };
+
+  // 활동 목록 생성 (페이지네이션 적용)
   const getActivities = () => {
     const allActivities: ActivityItem[] = [];
 
@@ -327,10 +543,10 @@ const ActivitiesPage: React.FC = () => {
     if ((activeTab === 'all' || activeTab === 'posts') && posts?.content) {
       console.log('[DEBUG] 게시글 활동 데이터:', posts.content);
       const postActivities = posts.content.map(post => ({
-        id: post.id || 0, // 타입에 맞게 수정
+        id: post.id || 0,
         type: 'post',
         title: '게시물 작성',
-        description: post.title || '', // 타입에 맞게 수정
+        description: post.title || '',
         date: post.createdAt || '',
         onClick: () => handleActivityClick('post', post.id || 0),
       }));
@@ -341,10 +557,10 @@ const ActivitiesPage: React.FC = () => {
     if ((activeTab === 'all' || activeTab === 'comments') && comments?.content) {
       console.log('[DEBUG] 댓글 활동 데이터:', comments.content);
       const commentActivities = comments.content.map(comment => ({
-        id: comment.postId || 0, // 타입에 맞게 수정
+        id: comment.postId || 0,
         type: 'comment',
         title: '댓글 작성',
-        description: `${comment.postTitle || ''}: ${comment.content || ''}`, // 타입에 맞게 수정
+        description: `${comment.postTitle || ''}: ${comment.content || ''}`,
         date: comment.createdAt || '',
         onClick: () => handleActivityClick('comment', comment.postId || 0),
       }));
@@ -380,14 +596,45 @@ const ActivitiesPage: React.FC = () => {
     }
 
     // 날짜순으로 정렬 (최신순)
-    return allActivities.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const sortedActivities = allActivities.sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+
+    // 페이지네이션 적용
+    const currentPage = currentPages[activeTab];
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+
+    return {
+      activities: sortedActivities.slice(startIndex, endIndex),
+      totalPages: Math.ceil(sortedActivities.length / itemsPerPage),
+      totalItems: sortedActivities.length,
+    };
   };
 
-  const activities = getActivities();
+  const { activities, totalPages, totalItems } = getActivities();
+
+  // 통합 로딩 상태 처리 (깜빡임 방지)
+  if (isInitialLoading) {
+    return (
+      <PageLayout title="활동 내역">
+        <LoadingContainer>
+          <CircularProgress size={40} />
+        </LoadingContainer>
+      </PageLayout>
+    );
+  }
 
   return (
     <PageLayout title="활동 내역">
-      <PageContainer>
+      {/* 부드러운 등장 효과를 위한 컨테이너 */}
+      <PageContainer
+        style={{
+          opacity: contentReady ? 1 : 0,
+          transform: contentReady ? 'translateY(0)' : 'translateY(20px)',
+          transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+        }}
+      >
         <TabContainer>
           <Tab active={activeTab === 'all'} onClick={() => handleTabChange('all')}>
             전체
@@ -409,31 +656,85 @@ const ActivitiesPage: React.FC = () => {
         <InfoCard
           title={`${activeTab === 'all' ? '전체' : activeTab === 'posts' ? '게시물' : activeTab === 'comments' ? '댓글' : activeTab === 'debates' ? '토론' : '북마크'} 활동`}
         >
-          {isLoading() ? (
-            <LoadingContainer>
-              <CircularProgress size={30} />
-            </LoadingContainer>
-          ) : activities.length === 0 ? (
-            <EmptyState>아직 활동 내역이 없습니다.</EmptyState>
-          ) : (
-            <ActivityList>
-              {activities.map((activity, index) => (
-                <ActivityItem
-                  key={`${activity.type}-${activity.id}-${index}`}
-                  onClick={activity.onClick}
-                >
-                  <ActivityIcon>{renderIcon(activity.type)}</ActivityIcon>
-                  <ActivityContent>
-                    <ActivityTitle>{activity.title}</ActivityTitle>
-                    <ActivityDescription>{activity.description}</ActivityDescription>
-                    <ActivityMeta>
-                      <ActivityDate>{activity.date}</ActivityDate>
-                    </ActivityMeta>
-                  </ActivityContent>
-                </ActivityItem>
-              ))}
-            </ActivityList>
-          )}
+          <ContentWrapper isVisible={isContentVisible}>
+            {/* 탭 변경 시에는 개별 로딩, 초기 로딩은 통합 처리됨 */}
+            {!contentReady || isLoading() ? (
+              <LoadingContainer>
+                <CircularProgress size={30} />
+              </LoadingContainer>
+            ) : activities.length === 0 ? (
+              <EmptyState>아직 활동 내역이 없습니다.</EmptyState>
+            ) : (
+              <>
+                {/* 활동 목록 */}
+                <ActivityList>
+                  {activities.map((activity, index) => (
+                    <ActivityItem
+                      key={`${activity.type}-${activity.id}-${index}-${activeTab}`} // 탭별로 고유 키 생성
+                      onClick={activity.onClick}
+                      animationDelay={index * 30} // 순차적 등장 효과 간격 대폭 단축
+                      className={isContentVisible ? 'tab-enter' : ''}
+                      style={{
+                        // 탭 전환 시 리셋을 위한 애니메이션
+                        animationName: isContentVisible ? 'tabEnter' : 'none',
+                      }}
+                    >
+                      <ActivityIcon className="activity-icon">
+                        {renderIcon(activity.type)}
+                      </ActivityIcon>
+                      <ActivityContent>
+                        <ActivityTitle className="activity-title">{activity.title}</ActivityTitle>
+                        <ActivityDescription>{activity.description}</ActivityDescription>
+                        <ActivityMeta>
+                          <ActivityDate>{formatDate(activity.date)}</ActivityDate>
+                        </ActivityMeta>
+                      </ActivityContent>
+                    </ActivityItem>
+                  ))}
+                </ActivityList>
+
+                {/* 페이지네이션 */}
+                {totalPages > 1 && (
+                  <PaginationContainer>
+                    <Pagination
+                      count={totalPages}
+                      page={currentPages[activeTab]}
+                      onChange={handlePageChange}
+                      color="primary"
+                      size="medium"
+                      showFirstButton
+                      showLastButton
+                      disabled={isTransitioning}
+                      sx={{
+                        '& .MuiPaginationItem-root': {
+                          color: '#666',
+                          '&.Mui-selected': {
+                            backgroundColor: '#FF9999',
+                            color: 'white',
+                            fontWeight: 'bold',
+                            '&:hover': {
+                              backgroundColor: '#e88888',
+                            },
+                          },
+                          '&:hover': {
+                            backgroundColor: '#f5f5f5',
+                          },
+                        },
+                      }}
+                    />
+                  </PaginationContainer>
+                )}
+
+                {/* 활동 개수 정보 */}
+                {totalItems > 0 && (
+                  <ActivityCountInfo>
+                    총 {totalItems}개의 활동 중 {(currentPages[activeTab] - 1) * itemsPerPage + 1}~
+                    {Math.min(currentPages[activeTab] * itemsPerPage, totalItems)}개 표시
+                  </ActivityCountInfo>
+                )}
+              </>
+            )}
+          </ContentWrapper>
         </InfoCard>
       </PageContainer>
     </PageLayout>

@@ -235,7 +235,7 @@ class MypageApi {
         },
       });
 
-      // 프로필 정보 업데이트 API 호출
+      // 프로필 정보 업데이트 API 호출 (기본 정보만)
       const profileUpdateData = {
         name: profileData.name,
         phoneNumber: profileData.phoneNumber || '',
@@ -251,28 +251,45 @@ class MypageApi {
 
       console.log('[API] 프로필 업데이트 응답:', profileResponse);
 
-      // 국가와 언어 정보가 변경되었다면 선호도 데이터도 업데이트
-      if (profileData.country || profileData.language) {
-        const preferenceData = preferenceResponse as UserPreferenceResponse;
+      // 선호도 데이터 업데이트 (자기소개, 국가, 언어 포함)
+      const preferenceData = preferenceResponse as UserPreferenceResponse;
 
-        const preferenceUpdateData = {
-          nation: profileData.country || preferenceData.nation,
-          language: profileData.language || preferenceData.language,
-          gender: preferenceData.gender,
-          visitPurpose: profileData.role || preferenceData.visitPurpose,
-          period: preferenceData.period,
-          onBoardingPreference: preferenceData.onBoardingPreference,
-          isOnBoardDone: preferenceData.isOnBoardDone,
-        };
-
-        const updatedPreference = await apiClient.post('/users/preference', preferenceUpdateData, {
-          headers: {
-            Authorization: token,
-          },
-        });
-
-        console.log('[API] 선호도 업데이트 응답:', updatedPreference);
+      // 현재 온보딩 데이터 파싱
+      let currentOnBoarding: Record<string, any> = {};
+      if (preferenceData.onBoardingPreference) {
+        try {
+          if (typeof preferenceData.onBoardingPreference === 'string') {
+            currentOnBoarding = JSON.parse(preferenceData.onBoardingPreference);
+          } else {
+            currentOnBoarding = preferenceData.onBoardingPreference as Record<string, any>;
+          }
+        } catch (e) {
+          console.error('온보딩 데이터 파싱 실패:', e);
+        }
       }
+
+      // 자기소개 업데이트
+      if (profileData.introduction !== undefined) {
+        currentOnBoarding.introduction = profileData.introduction;
+      }
+
+      const preferenceUpdateData = {
+        nation: profileData.country || preferenceData.nation,
+        language: profileData.language || preferenceData.language,
+        gender: preferenceData.gender,
+        visitPurpose: profileData.role || preferenceData.visitPurpose,
+        period: preferenceData.period,
+        onBoardingPreference: JSON.stringify(currentOnBoarding), // 자기소개 포함
+        isOnBoardDone: preferenceData.isOnBoardDone,
+      };
+
+      const updatedPreference = await apiClient.post('/users/preference', preferenceUpdateData, {
+        headers: {
+          Authorization: token,
+        },
+      });
+
+      console.log('[API] 선호도 업데이트 응답 (자기소개 포함):', updatedPreference);
 
       // 업데이트된 프로필 정보 반환
       return this.getProfileInfo(profileData.userId);
@@ -531,7 +548,7 @@ class MypageApi {
   }
 
   /**
-   * 빈 페이지네이션 응답 반환 (오류 시 사용)
+   * 빈 페이지네이션 응답 반환 (에러 시 사용)
    */
   private getEmptyPaginatedResponse<T>(page: number, size: number): PaginatedResponse<T> {
     return {
@@ -546,6 +563,61 @@ class MypageApi {
       size: 0,
       number: page,
     };
+  }
+
+  /**
+   * 프로필 이미지 업로드
+   */
+  async uploadProfileImage(file: File): Promise<string> {
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        throw new Error('인증 토큰이 없습니다. 로그인이 필요합니다.');
+      }
+
+      console.log('[API] 프로필 이미지 업로드 시작');
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await apiClient.post<string>('/users/profile/image/upload', formData, {
+        headers: {
+          Authorization: token,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      console.log('[API] 프로필 이미지 업로드 성공:', response);
+      return response;
+    } catch (error) {
+      console.error('프로필 이미지 업로드 실패:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 프로필 이미지 삭제
+   */
+  async deleteProfileImage(): Promise<void> {
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        throw new Error('인증 토큰이 없습니다. 로그인이 필요합니다.');
+      }
+
+      console.log('[API] 프로필 이미지 삭제 시작');
+
+      await apiClient.delete<void>('/users/profile/image/delete', {
+        headers: {
+          Authorization: token,
+        },
+      });
+
+      console.log('[API] 프로필 이미지 삭제 성공');
+    } catch (error) {
+      console.error('프로필 이미지 삭제 실패:', error);
+      throw error;
+    }
   }
 }
 

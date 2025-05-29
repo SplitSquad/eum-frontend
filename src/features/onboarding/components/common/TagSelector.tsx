@@ -12,7 +12,9 @@ import {
 import styled from '@emotion/styled';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useThemeStore } from '../../../theme/store/themeStore';
+import { useTranslation } from '@/shared/i18n';
 
+const { t } = useTranslation();
 // 태그 인터페이스
 interface Tag {
   id: string;
@@ -160,7 +162,6 @@ const OnboardingTagSelector: React.FC<OnboardingTagSelectorProps> = ({
     switch (season) {
       case 'spring':
         return '#FFAAA5';
-
       default:
         return '#FFAAA5';
     }
@@ -282,7 +283,7 @@ const OnboardingTagSelector: React.FC<OnboardingTagSelectorProps> = ({
             textAlign: 'right',
           }}
         >
-          태그는 최대 {maxSelection}개까지 선택 가능합니다 ({selectedTags.length}/{maxSelection})
+          {t('tagDes.0')} {maxSelection} {t('tagDes.1')} ({selectedTags.length}/{maxSelection})
         </Typography>
       )}
 

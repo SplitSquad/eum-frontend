@@ -46,7 +46,9 @@ import ReportDialog, {
   ReportTargetType,
   ServiceType,
 } from '../../../common/components/ReportDialog';
-import { useTranslation } from '@/shared/i18n';
+import FlagDisplay from '../../../../shared/components/FlagDisplay';
+import FlagIconSvg from '@/shared/components/FlagIconSvg';
+import 'flag-icons/css/flag-icons.min.css';
 
 interface CommentItemProps {
   comment: DebateComment;
@@ -155,6 +157,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
   // Safely destructure with defaults
   const {
     id,
+    nation,
     userId,
     userName = '',
     userProfileImage,
@@ -186,7 +189,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
 
   // 추가 디버그 로그
   console.log(
-    `[DEBUG] 토론 댓글 ID: ${id}, 작성자 ID: ${userId}, 작성자 이름: ${userName}, 찬반 입장: ${extractedStance}, 원본: ${content}, 표시: ${displayContent}`
+    `[DEBUG] 토론 댓글 ID: ${id}, 작성자 ID: ${userId}, 작성자 이름: ${userName}, 찬반 입장: ${extractedStance}, 원본: ${content}, 표시: ${displayContent}, 국가 코드: ${nation}, `
   );
 
   // Store access
@@ -467,7 +470,6 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
 
   // 안전하게 댓글 목록 가져오기
   const commentReplies = replies && id && replies[id] ? replies[id] : [];
-  const { t } = useTranslation();
 
   return (
     <StyledCard variant="outlined" onClick={handleCardClick}>
@@ -486,9 +488,8 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
         title={
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, alignItems: 'center' }}>
             <Typography variant="subtitle2">{userName || '익명'}</Typography>
-            {countryName && (
-              <CountryChip icon={<FlagIcon fontSize="small" />} label={countryName} size="small" />
-            )}
+            <FlagIconSvg countryCode="ko" /> {/* <- 강제 테스트 */}
+            {countryCode && <FlagIconSvg countryCode={nation ?? ''} />}
             {/* 입장 표시 - 댓글 내용에서 추출한 stance 사용 */}
             <StanceChip
               label={extractedStance === 'con' ? '반대' : '찬성'}
@@ -633,7 +634,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
             onClick={handleReplyClick}
             color={showReplyForm ? 'secondary' : 'primary'}
           >
-            {showReplyForm ? t('debate.reply.cancel') : t('debate.reply.add')}
+            {showReplyForm ? '취소' : '답글 작성'}
           </ActionButton>
 
           {replyCount > 0 && (
@@ -713,13 +714,13 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
           ) : replyCount > 0 ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 2 }}>
               <Typography variant="body2" color="text.secondary">
-                {t('debate.reply.callingReplies')}
+                답글을 불러오는 중...
               </Typography>
             </Box>
           ) : (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 2 }}>
               <Typography variant="body2" color="text.secondary">
-                {t('debate.reply.noReplies')}
+                등록된 답글이 없습니다
               </Typography>
             </Box>
           )}

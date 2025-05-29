@@ -3,22 +3,23 @@ import { DebateReply } from '../../types';
 import { useDebateStore } from '../../store';
 import ReactionButtons from '../shared/ReactionButtons';
 import { formatDateTime, getEditedMark } from '../../../../utils/dateFormat';
-import {
-  Box,
-  Avatar,
-  Typography,
-  Button,
-  TextField,
+import { 
+  Box, 
+  Avatar, 
+  Typography, 
+  Button, 
+  TextField, 
   IconButton,
   Card,
   CardContent,
   Chip,
-  Stack,
+  Stack
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FlagIcon from '@mui/icons-material/Flag';
+import FlagDisplay from '../../../../shared/components/FlagDisplay';
 
 interface ReplyItemProps {
   reply: DebateReply;
@@ -53,7 +54,7 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
     updatedAt,
     reactions,
     countryCode,
-    countryName,
+    countryName
   } = reply;
 
   const { updateReply, deleteReply } = useDebateStore();
@@ -70,27 +71,27 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
       e.preventDefault();
       e.stopPropagation();
     }
-
+    
     if (!editText.trim() || editText === content) {
       setIsEditing(false);
       setEditText(content);
       return;
     }
-
+    
     setIsSubmitting(true);
-
+    
     // 수정 직후 UI 먼저 업데이트 (낙관적 UI 업데이트)
     const originalContent = content;
-
+    
     try {
       // 낙관적 UI 업데이트 - 먼저 로컬 상태 업데이트
       setContent(editText);
       setIsEditing(false);
-
+      
       // 수정 작업은 동기적으로 완료될 때까지 기다림
       const result = await updateReply(id, editText);
       console.log('답글 수정 완료:', result);
-
+      
       // 부모 컴포넌트에 변경 알림 - 리다이렉션 방지를 위해 제거
       console.log('답글 수정 성공 - 리다이렉션 방지를 위해 자동 새로고침 비활성화됨');
       // onUpdate();
@@ -111,12 +112,12 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
       e.preventDefault();
       e.stopPropagation();
     }
-
+    
     if (window.confirm('정말 답글을 삭제하시겠습니까?')) {
       try {
         setIsSubmitting(true);
         await deleteReply(id);
-
+        
         // 리다이렉션 방지를 위해 onUpdate 호출 제거
         console.log('답글 삭제 성공 - 리다이렉션 방지를 위해 자동 새로고침 비활성화됨');
         // onUpdate();
@@ -158,40 +159,33 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
       <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
         <Box sx={{ display: 'flex', gap: 1 }}>
           {/* 프로필 영역 */}
-          <Avatar src={userProfileImage} alt={userName} sx={{ width: 32, height: 32 }}>
+          <Avatar 
+            src={userProfileImage} 
+            alt={userName}
+            sx={{ width: 32, height: 32 }}
+          >
             {userName.charAt(0)}
           </Avatar>
-
+          
           {/* 내용 영역 */}
           <Box sx={{ flexGrow: 1 }}>
             {/* 작성자 정보 */}
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'flex-start',
-                mb: 0.5,
-              }}
-            >
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 0.5 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
                 <Typography variant="subtitle2" fontSize="0.85rem">
                   {userName}
                 </Typography>
-
+                
                 {countryName && (
-                  <CountryChip
-                    icon={<FlagIcon sx={{ fontSize: '0.7rem' }} />}
-                    label={countryName}
-                    size="small"
-                  />
+                  <FlagDisplay nation={countryName} size="small" inline={true} />
                 )}
-
+                
                 <Typography variant="caption" color="text.secondary" sx={{ ml: 0.5 }}>
                   {formatDateTime(createdAt)}
                   {getEditedMark(createdAt, updatedAt)}
                 </Typography>
               </Box>
-
+              
               <Box>
                 <IconButton size="small" onClick={toggleEdit} sx={{ p: 0.5 }}>
                   <EditIcon fontSize="small" sx={{ fontSize: '0.9rem' }} />
@@ -201,7 +195,7 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
                 </IconButton>
               </Box>
             </Box>
-
+            
             {/* 댓글 내용 */}
             {isEditing ? (
               <Box sx={{ mt: 1 }}>
@@ -211,22 +205,22 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
                   minRows={2}
                   maxRows={4}
                   value={editText}
-                  onChange={e => setEditText(e.target.value)}
+                  onChange={(e) => setEditText(e.target.value)}
                   variant="outlined"
                   size="small"
                   sx={{ mb: 1, fontSize: '0.85rem' }}
                   onKeyDown={handleKeyDown}
                   disabled={isSubmitting}
-                  onClick={e => e.stopPropagation()}
+                  onClick={(e) => e.stopPropagation()}
                 />
-                <Stack
-                  direction="row"
-                  spacing={1}
+                <Stack 
+                  direction="row" 
+                  spacing={1} 
                   justifyContent="flex-end"
-                  onClick={e => e.stopPropagation()}
+                  onClick={(e) => e.stopPropagation()}
                 >
-                  <Button
-                    variant="outlined"
+                  <Button 
+                    variant="outlined" 
                     size="small"
                     onClick={cancelEdit}
                     sx={{ py: 0.25, px: 1, minWidth: 'auto', fontSize: '0.75rem' }}
@@ -235,8 +229,8 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
                   >
                     취소
                   </Button>
-                  <Button
-                    variant="contained"
+                  <Button 
+                    variant="contained" 
                     size="small"
                     onClick={handleEdit}
                     sx={{ py: 0.25, px: 1, minWidth: 'auto', fontSize: '0.75rem' }}
@@ -248,21 +242,16 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
                 </Stack>
               </Box>
             ) : (
-              <Typography
-                variant="body2"
-                fontSize="0.85rem"
-                color="text.primary"
-                sx={{ whiteSpace: 'pre-wrap' }}
-              >
+              <Typography variant="body2" fontSize="0.85rem" color="text.primary" sx={{ whiteSpace: 'pre-wrap' }}>
                 {content}
               </Typography>
             )}
-
+            
             {/* 감정표현 */}
             <Box sx={{ mt: 1 }}>
-              <ReactionButtons
-                targetId={id}
-                targetType="reply"
+              <ReactionButtons 
+                targetId={id} 
+                targetType="reply" 
                 reactions={reactions}
                 isState={reply.isState}
                 size="sm"
@@ -275,4 +264,4 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
   );
 };
 
-export default ReplyItem;
+export default ReplyItem; 

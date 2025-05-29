@@ -10,24 +10,18 @@ export const InfoRoutes: React.FC = () => {
       <Route path="" element={<InfoListPage />} />
 
       {/* /info/create     -> 글 쓰기 (관리자만) */}
-      <Route
-        path="create"
-        element={
-          <RoleGuard requiredRole="ROLE_ADMIN">
-            <InfoCreatePage />
-          </RoleGuard>
-        }
-      />
+      <Route path="create" element={
+        <RoleGuard requiredRole="ROLE_ADMIN">
+          <InfoCreatePage />
+        </RoleGuard>
+      } />
 
       {/* /info/edit/:id   -> 글 수정 (관리자만) */}
-      <Route
-        path="edit/:id"
-        element={
-          <RoleGuard requiredRole="ROLE_ADMIN">
-            <InfoCreatePage />
-          </RoleGuard>
-        }
-      />
+      <Route path="edit/:id" element={
+        <RoleGuard requiredRole="ROLE_ADMIN">
+          <InfoCreatePage />
+        </RoleGuard>
+      } />
 
       {/* /info/:id        -> 상세 페이지 */}
       <Route path=":id" element={<InfoDetailPage />} />

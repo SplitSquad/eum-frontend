@@ -32,6 +32,7 @@ const TransparentSnackbar = styled('div')<{ color: string }>(({ color }) => ({
   gap: 12,
 }));
 
+const { t } = useTranslation();
 // 로그인 카드 스타일
 const LoginCard = styled(Paper)<{ colors: typeof seasonalColors.spring }>`
   padding: 2.5rem 2rem;
@@ -147,9 +148,7 @@ const LoginPage: React.FC = () => {
                   color: colors.primary,
                   fontFamily: 'Roboto, Noto Sans KR, sans-serif',
                 }}
-              >
-                봄날의 기억
-              </Typography>
+              ></Typography>
             </LogoContainer>
 
             <PageTitle variant={isMobile ? 'h5' : 'h4'} color={colors.primary}>

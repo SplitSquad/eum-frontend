@@ -21,6 +21,15 @@ const getCategoriesWithTranslation = (t: any): Category[] => [
   { key: 'life', label: t('aiAssistant.categories.life') },
 ];
 
+function formatDateTime(date: Date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  const h = String(date.getHours()).padStart(2, '0');
+  const min = String(date.getMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${h}:${min}`;
+}
+
 /**
  * AiAssistant 컴포넌트
  * - 조선시대 벽보/필사본 느낌의 한지 질감과 현대적 스타일을 조화시킨 AI 전문가 페이지
@@ -134,13 +143,14 @@ export default function AiAssistant() {
                 className="text-sm font-medium"
                 style={{ color: '#8B4513', fontFamily: '"Noto Sans KR", sans-serif' }}
               >
-                {new Intl.DateTimeFormat('ko-KR', {
+                {/* {new Intl.DateTimeFormat('ko-KR', {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric',
                   hour: '2-digit',
                   minute: '2-digit',
-                }).format(new Date())}
+                }).format(new Date())} */}
+                {formatDateTime(new Date())}
               </span>
             </div>
             <p
@@ -153,40 +163,6 @@ export default function AiAssistant() {
             >
               {t('aiAssistant.greeting', { category: selected.label })}
             </p>
-          </div>
-
-          {/* 추천 질문 버튼들 */}
-          <div className="flex flex-wrap justify-center gap-3 mt-6 max-w-4xl mx-auto px-4">
-            {t('aiAssistant.suggestions').map((question: string, index: number) => (
-              <button
-                key={question}
-                className="group relative overflow-hidden transition-all duration-300 hover:scale-105"
-                style={{
-                  background:
-                    'linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(245, 240, 225, 0.9) 100%)',
-                  border: '1px solid rgba(139, 69, 19, 0.2)',
-                  borderRadius: '20px',
-                  padding: '8px 16px',
-                  boxShadow: '0 4px 12px rgba(139, 69, 19, 0.1)',
-                  backdropFilter: 'blur(10px)',
-                }}
-                disabled
-              >
-                <span
-                  className="relative z-10 text-sm font-medium transition-colors duration-300 group-hover:text-amber-800"
-                  style={{ color: '#8B4513' }}
-                >
-                  {question}
-                </span>
-                <div
-                  className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-300"
-                  style={{
-                    background: 'linear-gradient(45deg, #D4AF37, #B8860B)',
-                    borderRadius: '20px',
-                  }}
-                />
-              </button>
-            ))}
           </div>
         </div>
 

@@ -63,6 +63,7 @@ export const getInfoList = async ({
       total = posts.length;
       totalPages = Math.ceil(total / size);
     }
+
     return { posts, total, totalPages };
   } catch (error) {
     console.error('정보 목록 조회 실패:', error);

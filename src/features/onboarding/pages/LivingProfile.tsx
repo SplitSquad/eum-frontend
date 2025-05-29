@@ -47,7 +47,9 @@ import VisaIcon from '@mui/icons-material/DocumentScanner';
 import FamilyRestroomIcon from '@mui/icons-material/FamilyRestroom';
 import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 import { useAuthStore } from '@/features/auth/store/authStore';
+import { useTranslation } from '@/shared/i18n';
 
+const { t } = useTranslation();
 // 스타일링된 컴포넌트
 const StyledPaper = styled(Paper)(({ theme }) => ({
   borderRadius: theme.spacing(3),
@@ -182,68 +184,65 @@ const uiLanguageOptions = [
 ];
 
 // 거주 목적 옵션
-const livingPurposeOptions = [
-  { value: 'family', label: '가족 관계' },
-  { value: 'retirement', label: '은퇴 생활' },
-  { value: 'lifestyle', label: '라이프스타일 변화' },
-  { value: 'business', label: '사업/투자' },
-  { value: 'accompany', label: '배우자/가족 동반' },
-  { value: 'other', label: '기타' },
+const getLivingPurposeOptions = (t: any) => [
+  { value: 'family', label: t('onboarding.living.purpose.family') },
+  { value: 'retirement', label: t('onboarding.living.purpose.retirement') },
+  { value: 'lifestyle', label: t('onboarding.living.purpose.lifestyle') },
+  { value: 'business', label: t('onboarding.living.purpose.business') },
+  { value: 'accompany', label: t('onboarding.living.purpose.accompany') },
+  { value: 'other', label: t('onboarding.living.purpose.other') },
 ];
 
 // 거주 상황 옵션
 const livingSituationOptions = [
-  { value: 'single', label: '혼자 거주' },
-  { value: 'couple', label: '부부/파트너와 거주' },
-  { value: 'family', label: '가족과 거주' },
-  { value: 'friends', label: '룸메이트/친구와 거주' },
-  { value: 'other', label: '기타' },
+  { value: 'single', label: t('onboarding.living.situationOptions.single') },
+  { value: 'couple', label: t('onboarding.living.situationOptions.couple') },
+  { value: 'family', label: t('onboarding.living.situationOptions.family') },
+  { value: 'friends', label: t('onboarding.living.situationOptions.friends') },
+  { value: 'other', label: t('onboarding.living.situationOptions.other') },
 ];
-
 // 주거 유형 옵션
 const housingTypeOptions = [
-  { value: 'apartment', label: '아파트' },
-  { value: 'house', label: '단독주택' },
-  { value: 'villa', label: '빌라/연립' },
-  { value: 'officetel', label: '오피스텔' },
-  { value: 'dormitory', label: '기숙사' },
-  { value: 'goshiwon', label: '고시원' },
-  { value: 'other', label: '기타' },
+  { value: 'apartment', label: t('onboarding.living.housingTypeOptions.apartment') },
+  { value: 'house', label: t('onboarding.living.housingTypeOptions.house') },
+  { value: 'officetel', label: t('onboarding.living.housingTypeOptions.officetel') },
+  { value: 'dormitory', label: t('onboarding.living.housingTypeOptions.dormitory') },
 ];
 
 // 비자 종류 옵션
 const visaTypeOptions = [
-  { code: 'f1_3', name: 'F-1-3 (외교동거)' },
-  { code: 'f1_5', name: 'F-1-5 (결혼이민자 부모 및 가족)' },
-  { code: 'f1_9', name: 'F-1-9 (동포배우자 등)' },
-  { code: 'f2_2', name: 'F-2-2 (국민자녀)' },
-  { code: 'f2_3', name: 'F-2-3 (영주자가족)' },
-  { code: 'f3_1', name: 'F-3-1 (동반)' },
-  { code: 'f4_11', name: 'F-4-11 (재외동포본인)' },
-  { code: 'f4_12', name: 'F-4-12 (재외동포 직계가족)' },
-  { code: 'f5', name: 'F-5 (영주권)' },
-  { code: 'f5_5', name: 'F-5-5 (고액투자)' },
-  { code: 'f6_1', name: 'F-6-1 (국민배우자)' },
-  { code: 'f6_2', name: 'F-6-2 (자녀양육)' },
-  { code: 'd7_1', name: 'D-7-1 (외국기업 주재원)' },
-  { code: 'd7_2', name: 'D-7-2 (내국기업 주재원)' },
-  { code: 'd8_1', name: 'D-8-1 (법인에 투자)' },
-  { code: 'd8_2', name: 'D-8-2 (벤처기업)' },
-  { code: 'd8_3', name: 'D-8-3 (개인기업투자)' },
-  { code: 'd8_4', name: 'D-8-4 (기술창업)' },
-  { code: 'd9_1', name: 'D-9-1 (무역고유거래)' },
-  { code: 'd9_2', name: 'D-9-2 (수출설비)' },
-  { code: 'd9_3', name: 'D-9-3 (선박설비)' },
-  { code: 'd9_4', name: 'D-9-4 (경영영리사업)' },
-  { code: 'g1_10', name: 'G-1-10 (치료요양)' },
-  { code: 'unknown', name: '미정/모름' },
-  { code: 'other', name: '기타' },
+  { code: 'f1_3', name: t('onboarding.living.visaTypeOptions.f1_3') },
+  { code: 'f1_5', name: t('onboarding.living.visaTypeOptions.f1_5') },
+  { code: 'f1_9', name: t('onboarding.living.visaTypeOptions.f1_9') },
+  { code: 'f2_2', name: t('onboarding.living.visaTypeOptions.f2_2') },
+  { code: 'f2_3', name: t('onboarding.living.visaTypeOptions.f2_3') },
+  { code: 'f3_1', name: t('onboarding.living.visaTypeOptions.f3_1') },
+  { code: 'f4_11', name: t('onboarding.living.visaTypeOptions.f4_11') },
+  { code: 'f4_12', name: t('onboarding.living.visaTypeOptions.f4_12') },
+  { code: 'f5', name: t('onboarding.living.visaTypeOptions.f5') },
+  { code: 'f5_5', name: t('onboarding.living.visaTypeOptions.f5_5') },
+  { code: 'f6_1', name: t('onboarding.living.visaTypeOptions.f6_1') },
+  { code: 'f6_2', name: t('onboarding.living.visaTypeOptions.f6_2') },
+  { code: 'd7_1', name: t('onboarding.living.visaTypeOptions.d7_1') },
+  { code: 'd7_2', name: t('onboarding.living.visaTypeOptions.d7_2') },
+  { code: 'd8_1', name: t('onboarding.living.visaTypeOptions.d8_1') },
+  { code: 'd8_2', name: t('onboarding.living.visaTypeOptions.d8_2') },
+  { code: 'd8_3', name: t('onboarding.living.visaTypeOptions.d8_3') },
+  { code: 'd8_4', name: t('onboarding.living.visaTypeOptions.d8_4') },
+  { code: 'd9_1', name: t('onboarding.living.visaTypeOptions.d9_1') },
+  { code: 'd9_2', name: t('onboarding.living.visaTypeOptions.d9_2') },
+  { code: 'd9_3', name: t('onboarding.living.visaTypeOptions.d9_3') },
+  { code: 'd9_4', name: t('onboarding.living.visaTypeOptions.d9_4') },
+  { code: 'g1_10', name: t('onboarding.living.visaTypeOptions.g1_10') },
+  { code: 'unknown', name: t('onboarding.living.visaTypeOptions.unknown') },
+  { code: 'other', name: t('onboarding.living.visaTypeOptions.other') },
 ];
 
 /**
  * 거주 프로필 페이지
  */
 const LivingProfile: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -311,14 +310,14 @@ const LivingProfile: React.FC = () => {
 
   // 스텝 라벨 정의
   const stepLabels = [
-    '거주자 세부 프로필',
-    '거주 목적',
-    '거주 일정',
-    '거주 지역 선택',
-    '가족 및 주거 정보',
-    '언어 능력',
-    '관심사 선택',
-    '응급 상황 설정',
+    t('onboarding.living.steps.profile'),
+    t('onboarding.living.steps.purpose'),
+    t('onboarding.living.steps.schedule'),
+    t('onboarding.living.steps.location'),
+    t('onboarding.living.steps.family'),
+    t('onboarding.living.steps.language'),
+    t('onboarding.living.steps.interests'),
+    t('onboarding.living.steps.emergency'),
   ];
 
   // 스텝 아이콘 정의
@@ -526,7 +525,7 @@ const LivingProfile: React.FC = () => {
             <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
               <Avatar
                 sx={{
-                  bgcolor: alpha(primaryColor, 0.2),
+                  bgcolor: theme.palette.primary.light,
                   color: primaryColor,
                   width: 48,
                   height: 48,
@@ -535,8 +534,8 @@ const LivingProfile: React.FC = () => {
               >
                 <PersonIcon />
               </Avatar>
-              <Typography variant="h5" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                거주자 세부 프로필
+              <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                {t('onboarding.living.profileTitle')}
               </Typography>
             </Box>
 
@@ -549,80 +548,56 @@ const LivingProfile: React.FC = () => {
               }}
             >
               <StyledTextField
-                label="이름"
+                label={t('onboarding.living.form.name')}
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
                 fullWidth
                 required
-                color="primary"
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <PersonIcon sx={{ color: alpha(primaryColor, 0.7) }} />
+                      <PersonIcon sx={{ color: theme.palette.primary.main }} />
                     </InputAdornment>
                   ),
                 }}
               />
 
-              <Box>
-                <FormControl component="fieldset" fullWidth>
-                  <FormLabel
-                    id="gender-label"
-                    sx={{
-                      color: 'text.secondary',
-                      '&.Mui-focused': { color: primaryColor },
-                      mb: 1,
-                    }}
-                  >
-                    성별
-                  </FormLabel>
-                  <RadioGroup
-                    row
-                    aria-labelledby="gender-label"
-                    name="gender"
-                    value={formData.gender}
-                    onChange={handleInputChange}
-                  >
-                    <FormControlLabel
-                      value="male"
-                      control={
-                        <Radio
-                          sx={{
-                            color: theme.palette.grey[400],
-                            '&.Mui-checked': { color: primaryColor },
-                          }}
-                        />
-                      }
-                      label="남성"
-                    />
-                    <FormControlLabel
-                      value="female"
-                      control={
-                        <Radio
-                          sx={{
-                            color: theme.palette.grey[400],
-                            '&.Mui-checked': { color: primaryColor },
-                          }}
-                        />
-                      }
-                      label="여성"
-                    />
-                    <FormControlLabel
-                      value="other"
-                      control={
-                        <Radio
-                          sx={{
-                            color: theme.palette.grey[400],
-                            '&.Mui-checked': { color: primaryColor },
-                          }}
-                        />
-                      }
-                      label="기타"
-                    />
-                  </RadioGroup>
-                </FormControl>
-              </Box>
+              <FormControl component="fieldset" fullWidth>
+                <FormLabel
+                  id="gender-label"
+                  sx={{
+                    color: 'text.secondary',
+                    '&.Mui-focused': { color: primaryColor },
+                    mb: 1,
+                  }}
+                >
+                  {t('onboarding.living.form.gender')}
+                </FormLabel>
+                <RadioGroup
+                  row
+                  aria-labelledby="gender-label"
+                  name="gender"
+                  value={formData.gender}
+                  onChange={handleInputChange}
+                >
+                  <FormControlLabel
+                    value="male"
+                    control={<Radio />}
+                    label={t('onboarding.living.form.male')}
+                  />
+                  <FormControlLabel
+                    value="female"
+                    control={<Radio />}
+                    label={t('onboarding.living.form.female')}
+                  />
+                  <FormControlLabel
+                    value="other"
+                    control={<Radio />}
+                    label={t('onboarding.living.form.other')}
+                  />
+                </RadioGroup>
+              </FormControl>
             </Box>
 
             <Box
@@ -634,22 +609,20 @@ const LivingProfile: React.FC = () => {
               }}
             >
               <StyledTextField
-                label="나이"
+                label={t('onboarding.living.form.age')}
                 name="age"
                 value={formData.age}
                 onChange={handleInputChange}
                 fullWidth
-                color="primary"
                 type="number"
               />
 
               <StyledTextField
-                label="국적"
+                label={t('onboarding.living.form.nationality')}
                 name="nationality"
                 value={formData.nationality}
                 onChange={handleInputChange}
                 fullWidth
-                color="primary"
               />
             </Box>
 
@@ -662,17 +635,16 @@ const LivingProfile: React.FC = () => {
             >
               <StyledTextField
                 select
-                label="UI 언어 선택"
+                label={t('onboarding.living.form.uiLanguage')}
                 name="uiLanguage"
                 value={formData.uiLanguage}
                 onChange={handleInputChange}
                 fullWidth
-                helperText="앱에서 사용할 언어를 선택해주세요"
-                color="primary"
+                helperText={t('onboarding.living.form.uiLanguageHelper')}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <TranslateIcon sx={{ color: alpha(primaryColor, 0.7) }} />
+                      <TranslateIcon sx={{ color: theme.palette.primary.main }} />
                     </InputAdornment>
                   ),
                 }}
@@ -703,14 +675,14 @@ const LivingProfile: React.FC = () => {
                 <HomeIcon />
               </Avatar>
               <Typography variant="h5" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                거주 목적
+                {t('onboarding.living.purposeTitle')}
               </Typography>
             </Box>
 
             <Box sx={{ mb: 3 }}>
               <StyledTextField
                 select
-                label="한국 거주 목적"
+                label={t('onboarding.living.form.purpose')}
                 name="livingPurpose"
                 value={formData.livingPurpose}
                 onChange={handleInputChange}
@@ -726,7 +698,7 @@ const LivingProfile: React.FC = () => {
                   ),
                 }}
               >
-                {livingPurposeOptions.map(option => (
+                {getLivingPurposeOptions(t).map(option => (
                   <MenuItem key={option.value} value={option.value}>
                     {option.label}
                   </MenuItem>
@@ -737,7 +709,7 @@ const LivingProfile: React.FC = () => {
             <Box sx={{ mb: 3 }}>
               <StyledTextField
                 select
-                label="거주 상황"
+                label={t('onboarding.living.form.situation')}
                 name="livingSituation"
                 value={formData.livingSituation}
                 onChange={handleInputChange}
@@ -764,7 +736,7 @@ const LivingProfile: React.FC = () => {
             <Box sx={{ mt: 3 }}>
               <StyledTextField
                 select
-                label="비자 종류"
+                label={t('onboarding.living.form.visaType')}
                 name="visaType"
                 value={formData.visaType}
                 onChange={handleInputChange}
@@ -804,7 +776,7 @@ const LivingProfile: React.FC = () => {
                 <CalendarTodayIcon />
               </Avatar>
               <Typography variant="h5" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                거주 일정
+                {t('onboarding.living.scheduleTitle')}
               </Typography>
             </Box>
 
@@ -817,11 +789,11 @@ const LivingProfile: React.FC = () => {
                   fontWeight: 500,
                 }}
               >
-                예상 거주 기간을 선택해주세요
+                {t('onboarding.living.selectDuration')}
               </Typography>
               <StyledTextField
                 select
-                label="예상 거주 기간"
+                label={t('onboarding.living.durationLabel')}
                 name="livingDuration"
                 value={formData.livingDuration}
                 onChange={handleInputChange}
@@ -837,12 +809,18 @@ const LivingProfile: React.FC = () => {
                   ),
                 }}
               >
-                <MenuItem value="under_6months">6개월 미만</MenuItem>
-                <MenuItem value="6months_1year">6개월~1년</MenuItem>
-                <MenuItem value="1year_3years">1~3년</MenuItem>
-                <MenuItem value="3years_5years">3~5년</MenuItem>
-                <MenuItem value="over_5years">5년 이상</MenuItem>
-                <MenuItem value="permanent">영주</MenuItem>
+                <MenuItem value="underSixMonths">{t('onboarding.living.underSixMonths')}</MenuItem>
+                <MenuItem value="sixMonthsToOneYear">
+                  {t('onboarding.living.sixMonthsToOneYear')}
+                </MenuItem>
+                <MenuItem value="oneYearToThreeYears">
+                  {t('onboarding.living.oneYearToThreeYears')}
+                </MenuItem>
+                <MenuItem value="threeYearsToFiveYears">
+                  {t('onboarding.living.threeYearsToFiveYears')}
+                </MenuItem>
+                <MenuItem value="overFiveYears">{t('onboarding.living.overFiveYears')}</MenuItem>
+                <MenuItem value="permanent">{t('onboarding.living.permanent')}</MenuItem>
               </StyledTextField>
             </Box>
 
@@ -863,10 +841,10 @@ const LivingProfile: React.FC = () => {
                     fontWeight: 500,
                   }}
                 >
-                  거주 시작 예정일
+                  {t('onboarding.living.startDateLabel')}
                 </Typography>
                 <StyledTextField
-                  label="시작 날짜"
+                  label={t('onboarding.living.startDate')}
                   name="startDate"
                   type="date"
                   value={formData.startDate}
@@ -893,10 +871,10 @@ const LivingProfile: React.FC = () => {
                     fontWeight: 500,
                   }}
                 >
-                  거주 종료 예정일 (영주는 비워두세요)
+                  {t('onboarding.living.endDateGuide')}
                 </Typography>
                 <StyledTextField
-                  label="종료 날짜"
+                  label={t('onboarding.living.endDate')}
                   name="endDate"
                   type="date"
                   value={formData.endDate}
@@ -933,13 +911,13 @@ const LivingProfile: React.FC = () => {
                 <LocationOnIcon />
               </Avatar>
               <Typography variant="h5" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                거주 지역 선택
+                {t('onboarding.region.regionTitle')}
               </Typography>
             </Box>
 
             <Box sx={{ mb: 2 }}>
               <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
-                희망하는 거주 지역을 선택해주세요. 여러 개를 선택할 수 있습니다.
+                {t('onboarding.region.selectRegionGuide')}
               </Typography>
 
               <Autocomplete
@@ -976,8 +954,8 @@ const LivingProfile: React.FC = () => {
                 renderInput={params => (
                   <StyledTextField
                     {...params}
-                    label="희망 거주 지역"
-                    placeholder="지역을 선택하세요"
+                    label={t('onboarding.region.regionLabel')}
+                    placeholder={t('onboarding.region.regionPlaceholder')}
                     color="primary"
                     InputProps={{
                       ...params.InputProps,
@@ -1001,7 +979,7 @@ const LivingProfile: React.FC = () => {
                   mt: 1,
                 }}
               >
-                최소 1개 이상의 지역을 선택해주세요.
+                {t('onboarding.region.selectAtLeastOne')}
               </Typography>
             </Box>
 
@@ -1015,7 +993,9 @@ const LivingProfile: React.FC = () => {
                     fontWeight: 600,
                   }}
                 >
-                  선택한 지역 ({formData.preferredRegions.length})
+                  {t('onboarding.region.selectedRegion', {
+                    count: String(formData.preferredRegions.length),
+                  })}
                 </Typography>
                 <Box
                   sx={{
@@ -1092,7 +1072,7 @@ const LivingProfile: React.FC = () => {
                 <FamilyRestroomIcon />
               </Avatar>
               <Typography variant="h5" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                가족 및 주거 정보
+                {t('onboarding.family.familyTitle')}
               </Typography>
             </Box>
 
@@ -1105,7 +1085,7 @@ const LivingProfile: React.FC = () => {
               }}
             >
               <StyledTextField
-                label="가족 구성원 수 (본인 포함)"
+                label={t('onboarding.family.familyMembers')}
                 name="familyMembers"
                 type="number"
                 value={formData.familyMembers}
@@ -1132,7 +1112,7 @@ const LivingProfile: React.FC = () => {
                       mb: 1,
                     }}
                   >
-                    자녀 유무
+                    {t('onboarding.family.hasChildren')}
                   </FormLabel>
                   <RadioGroup
                     row
@@ -1156,7 +1136,7 @@ const LivingProfile: React.FC = () => {
                           }}
                         />
                       }
-                      label="있음"
+                      label={t('onboarding.family.childrenYes')}
                     />
                     <FormControlLabel
                       value="false"
@@ -1168,7 +1148,7 @@ const LivingProfile: React.FC = () => {
                           }}
                         />
                       }
-                      label="없음"
+                      label={t('onboarding.family.childrenNo')}
                     />
                   </RadioGroup>
                 </FormControl>
@@ -1178,7 +1158,7 @@ const LivingProfile: React.FC = () => {
             <Box sx={{ mb: 3 }}>
               <StyledTextField
                 select
-                label="희망 주거 형태"
+                label={t('onboarding.family.housingType')}
                 name="housingType"
                 value={formData.housingType}
                 onChange={handleInputChange}
@@ -1195,7 +1175,7 @@ const LivingProfile: React.FC = () => {
               >
                 {housingTypeOptions.map(option => (
                   <MenuItem key={option.value} value={option.value}>
-                    {option.label}
+                    {t(`onboarding.family.housingTypeOptions.${option.value}`)}
                   </MenuItem>
                 ))}
               </StyledTextField>
@@ -1203,12 +1183,12 @@ const LivingProfile: React.FC = () => {
 
             <Box sx={{ mt: 3 }}>
               <StyledTextField
-                label="월 주거비 예산 (만원)"
+                label={t('onboarding.family.housingBudget')}
                 name="housingBudget"
                 value={formData.housingBudget}
                 onChange={handleInputChange}
                 fullWidth
-                placeholder="예: 100 (100만원)"
+                placeholder={t('onboarding.family.housingBudgetPlaceholder')}
                 color="primary"
                 InputProps={{
                   startAdornment: (
@@ -1221,7 +1201,6 @@ const LivingProfile: React.FC = () => {
             </Box>
           </StyledPaper>
         );
-
       default:
         return null;
     }
@@ -1392,7 +1371,7 @@ const LivingProfile: React.FC = () => {
                 letterSpacing: '-0.01em',
               }}
             >
-              거주 프로필 설정
+              {t('onboarding.living.title')}
             </Typography>
             <Typography
               variant="body2"
@@ -1401,7 +1380,7 @@ const LivingProfile: React.FC = () => {
                 opacity: 0.85,
               }}
             >
-              한국 거주에 필요한 정보를 알려주세요
+              {t('onboarding.living.description')}
             </Typography>
           </Box>
         </Box>
@@ -1446,7 +1425,7 @@ const LivingProfile: React.FC = () => {
               textTransform: 'none',
             }}
           >
-            이전
+            {t('onboarding.travel.back')}
           </Button>
 
           <Button
@@ -1470,7 +1449,11 @@ const LivingProfile: React.FC = () => {
               textTransform: 'none',
             }}
           >
-            {currentStep === totalSteps ? (isSubmitting ? '저장 중...' : '완료') : '다음'}
+            {currentStep === totalSteps
+              ? isSubmitting
+                ? 'onboarding.travel.saving'
+                : 'onboarding.travel.finish'
+              : t('onboarding.travel.next')}
           </Button>
         </Box>
       </Container>

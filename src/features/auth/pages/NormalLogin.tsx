@@ -203,9 +203,7 @@ const LoginPage: React.FC = () => {
                     color: '#FF9999',
                     fontFamily: '"Roboto", "Noto Sans KR", sans-serif',
                   }}
-                >
-                  봄날의 기억
-                </Typography>
+                ></Typography>
               </LogoContainer>
               <PageTitle variant={isMobile ? 'h5' : 'h4'} color={colors.primary}>
                 {t('login.welcome')}

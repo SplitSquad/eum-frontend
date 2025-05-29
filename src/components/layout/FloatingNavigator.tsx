@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import styled from '@emotion/styled';
-import HomeIcon from '@mui/icons-material/Home';
-import ForumIcon from '@mui/icons-material/Forum';
-import ChatIcon from '@mui/icons-material/Chat';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import Tooltip from '@mui/material/Tooltip';
 import { keyframes } from '@emotion/react';
 import { useTranslation } from '@/shared/i18n';
+import homeIcon from '@/assets/icons/navigation/home.svg';
+import forumIcon from '@/assets/icons/navigation/forum.svg';
+import debateIcon from '@/assets/icons/navigation/debate.svg';
+import chatIcon from '@/assets/icons/navigation/chat.svg';
+import infoIcon from '@/assets/icons/navigation/info.svg';
+import accountIcon from '@/assets/icons/navigation/account.svg';
 
 const FireIcon = styled('span')({
   fontSize: 28,
@@ -115,13 +118,39 @@ const FloatingNavigator = ({ isHeaderVisible }: FloatingNavigatorProps) => {
     return null;
   }
 
+  // navItems 배열
   const navItems = [
-    { label: t('common.home'), icon: <HomeIcon />, path: '/dashboard' },
-    { label: t('common.community'), icon: <ForumIcon />, path: '/community' },
-    { label: t('common.info'), icon: <ForumIcon />, path: '/info' },
-    { label: t('common.debate'), icon: <FireIcon>🔥</FireIcon>, path: '/debate' },
-    { label: t('common.aiassistant'), icon: <ChatIcon />, path: '/assistant' },
-    { label: t('common.mypage'), icon: <AccountCircleIcon />, path: '/mypage' },
+    {
+      label: t('common.home'),
+      icon: <img src={homeIcon} alt="Home" style={{ width: 28, height: 28 }} />,
+      path: '/dashboard',
+    },
+    {
+      label: t('common.info'),
+      icon: <img src={infoIcon} alt="Info" style={{ width: 28, height: 28 }} />,
+      path: '/info',
+    },
+    {
+      label: t('common.community'),
+      icon: <img src={forumIcon} alt="Community" style={{ width: 28, height: 28 }} />,
+      path: '/community',
+    },
+
+    {
+      label: t('common.debate'),
+      icon: <img src={debateIcon} alt="Debate" style={{ width: 28, height: 28 }} />,
+      path: '/debate',
+    },
+    {
+      label: t('common.aiassistant'),
+      icon: <img src={chatIcon} alt="AI Assistant" style={{ width: 28, height: 28 }} />,
+      path: '/assistant',
+    },
+    {
+      label: t('common.mypage'),
+      icon: <img src={accountIcon} alt="My Page" style={{ width: 28, height: 28 }} />,
+      path: '/mypage',
+    },
   ];
 
   return (

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Button, styled } from '@mui/material';
+import { useTranslation } from '../../../../shared/i18n';
 
 // 봄 테마 스타일의 탭 버튼
 const SpringTab = styled(Button, {
@@ -85,19 +86,27 @@ interface CategoryTabsProps {
  * 여행, 취업, 유학, 거주 등의 카테고리를 선택할 수 있는 봄 테마 스타일의 탭 UI
  */
 const CategoryTabs: React.FC<CategoryTabsProps> = ({ selectedCategory, onCategoryChange }) => {
-  // 카테고리 목록 정의
-  const categories = ['전체', '여행', '주거', '유학', '취업'];
+  const { t } = useTranslation();
+  
+  // 카테고리 목록 정의 (내부값과 표시값 분리)
+  const categories = [
+    { key: 'all', value: '전체', displayName: t('community.filters.all') }, // 내부값: '전체', 표시값: 번역된 텍스트
+    { key: 'travel', value: 'travel', displayName: t('community.categories.travel') },
+    { key: 'living', value: 'living', displayName: t('community.categories.living') },
+    { key: 'study', value: 'study', displayName: t('community.categories.study') },
+    { key: 'job', value: 'job', displayName: t('community.categories.job') },
+  ];
   
   return (
     <TabContainer>
       {categories.map((category) => (
         <SpringTab
-          key={category}
-          active={selectedCategory === category}
-          onClick={() => onCategoryChange(category)}
+          key={category.key}
+          active={selectedCategory === category.value}
+          onClick={() => onCategoryChange(category.value)}
           disableElevation
         >
-          {category}
+          {category.displayName}
         </SpringTab>
       ))}
     </TabContainer>
