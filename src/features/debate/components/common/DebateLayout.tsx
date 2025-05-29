@@ -1,33 +1,72 @@
 import React from 'react';
-import { Box, Container, styled, Typography, useTheme, useMediaQuery } from '@mui/material';
+import {
+  Box,
+  Container,
+  styled,
+  Typography,
+  useTheme,
+  useMediaQuery,
+  Divider,
+} from '@mui/material';
 import Header, { HeaderProps } from './Header';
 import Toast from './Toast';
 import PageHeaderText from '@/components/layout/PageHeaderText';
+import { useTranslation } from '@/shared/i18n';
+import { useDebateStore } from '@/features/debate/store/debateStore';
 
 const LayoutContent = styled(Box)({
   display: 'flex',
-  flex: 1,
+  flexDirection: 'row',
+  gap: 8,
+  alignItems: 'flex-start',
+  height: 'auto',
+  width: '100%',
   position: 'relative',
   zIndex: 5,
   padding: 0,
 });
-
+const debateCard = {
+  background: 'rgba(255,255,255,0.5)',
+  border: '1.5px solid #222',
+  borderRadius: 10,
+  boxShadow: '0 2px 12px 0 rgba(0,0,0,0.04)',
+  marginBottom: 24,
+  padding: 24,
+  fontFamily: 'Inter, Pretendard, Arial, sans-serif',
+};
 const Sidebar = styled(Box)(({ theme }) => ({
-  width: '240px',
-  backgroundColor: 'rgba(255, 255, 255, 0)',
-  paddingRight: theme.spacing(2),
+  width: 320,
+  background: 'rgba(255,255,255,0.5)',
+  border: '1.5px solid #e5e7eb',
+  borderRadius: 10,
+  padding: '16px 12px',
+  position: 'sticky',
+  top: 200,
+  alignSelf: 'flex-start',
+  height: 'fit-content',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 24,
+  boxShadow: 'none',
+  fontFamily: 'Inter, Pretendard, Arial, sans-serif',
   [theme.breakpoints.down('md')]: {
     display: 'none',
   },
-  position: 'relative',
   zIndex: 5,
 }));
 
 const Main = styled(Box)(({ theme }) => ({
   flex: 1,
-  //padding: theme.spacing(2),
-  [theme.breakpoints.up('md')]: {
-    //padding: theme.spacing(2),
+  paddingRight: 32,
+  background: 'transparent',
+  boxShadow: 'none',
+  fontFamily: 'Inter, Pretendard, Arial, sans-serif',
+  minHeight: 0,
+  width: 'auto',
+  overflow: 'visible',
+  padding: 0,
+  [theme.breakpoints.down('md')]: {
+    padding: 0,
   },
   position: 'relative',
   zIndex: 5,
@@ -52,16 +91,86 @@ const DebateLayout: React.FC<DebateLayoutProps> = ({
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { t } = useTranslation();
+  const { category } = useDebateStore();
+
+  // 한글 카테고리명 → debate.categories 키 매핑
+  const categoryNameMap: Record<string, string> = {
+    '': t('infoPage.content.allInfo'),
+    '정치/사회': t('debate.categories.politics'),
+    경제: t('debate.categories.economy'),
+    '생활/문화': t('debate.categories.culture'),
+    '과학/기술': t('debate.categories.technology'),
+    스포츠: t('debate.categories.sports'),
+    엔터테인먼트: t('debate.categories.entertainment'),
+  };
+
+  t('debate.title');
+  t('debate.description');
   return (
     <div>
       {/* 페이지 헤더 */}
-      <PageHeaderText isMobile={isMobile}>토론 게시판</PageHeaderText>
-
-      <LayoutContent>
-        {showSidebar && sidebar && <Sidebar>{sidebar}</Sidebar>}
-        <Main>{children}</Main>
-      </LayoutContent>
-      <Toast />
+      <div style={{ minHeight: '100vh' }}>
+        {/* 헤더 */}
+        <div style={{ borderBottom: '1.5px solid #e5e7eb' }}>
+          <div style={{ maxWidth: 1120, margin: '0 auto' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '24px 16px',
+              }}
+            >
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <span
+                    style={{
+                      fontSize: 34,
+                      fontWeight: 700,
+                      color: '#111',
+                      fontFamily: debateCard.fontFamily,
+                    }}
+                  >
+                    {t('debate.title')}
+                  </span>
+                </div>
+                <p style={{ color: '#666', marginTop: 6, fontFamily: debateCard.fontFamily }}>
+                  {t('debate.description')}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            marginBottom: 24,
+            padding: '0 16px',
+          }}
+        >
+          <h2
+            style={{
+              fontSize: 22,
+              fontWeight: 700,
+              color: '#111',
+              fontFamily: debateCard.fontFamily,
+              margin: 0,
+            }}
+          >
+            {categoryNameMap[category] || t('infoPage.content.allInfo')}
+          </h2>
+          <div style={{ flex: 1 }}></div>
+        </div>
+        <Divider sx={{ mb: 2, borderColor: '#e5e7eb', mx: 2 }} />
+        <LayoutContent>
+          <Main>{children}</Main>
+          {showSidebar && sidebar && <Sidebar>{sidebar}</Sidebar>}
+        </LayoutContent>
+        <Toast />
+      </div>
     </div>
   );
 };

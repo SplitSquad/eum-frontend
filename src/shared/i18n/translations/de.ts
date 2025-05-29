@@ -1004,6 +1004,40 @@ const de = {
       alreadyJoined: 'Bereits dieser Gruppe beigetreten',
       notMember: 'Kein Gruppenmitglied',
     },
+    sidebar: {
+      popularPosts: 'Beliebte Beiträge',
+      popularInfo: ' Beliebte Infos',
+      emergencyContacts: ' Notrufnummern',
+      emergency: {
+        title: 'Notfall',
+        subtitle: 'Feuer, Medizin',
+        number: '119',
+      },
+      police: {
+        title: 'Polizei',
+        subtitle: 'Straftaten & Verlustmeldung',
+        number: '112',
+      },
+      foreignerCenter: {
+        title: 'Ausländerzentrum',
+        subtitle: '19 Sprachen unterstützt',
+        number: '1345',
+      },
+      usefulSites: '🔗 Nützliche Links',
+      hikorea: {
+        title: 'HiKorea',
+        subtitle: 'Visum & Aufenthalt',
+      },
+      nhis: {
+        title: 'Krankenversicherung',
+        subtitle: 'Anmeldung & Verwaltung',
+      },
+      worknet: {
+        title: 'WorkNet',
+        subtitle: 'Stellenangebote',
+      },
+      currentSearch: 'Aktuelle Suche',
+    },
   },
   widgets: {
     dynamicFeed: {
@@ -1180,6 +1214,9 @@ const de = {
     next: 'Weiter',
   },
   debate: {
+    title: 'Heiße Debatte',
+    description:
+      'Diskutieren Sie frei über die aktuell heißesten gesellschaftlichen Themen und teilen Sie Ihre vielfältigen Meinungen.',
     categories: {
       title: 'Kategorie',
       all: 'Alle',
@@ -1329,6 +1366,15 @@ const de = {
       educationSupport: 'Bildungsunterstützung',
       koreanLearning: 'Koreanisch lernen: 1345 (Multikulturelle Familien-Unterstützungszentrum)',
     },
+    createTitle: 'Information erstellen',
+    editTitle: 'Information bearbeiten',
+    form: {
+      titlePlaceholder: 'Titel eingeben',
+      categoryPlaceholder: 'Kategorie auswählen',
+      createButton: 'Erstellen',
+      editButton: 'Bearbeiten',
+    },
+    categorySelectTitle: 'Thema auswählen',
   },
   aiAssistant: {
     title: 'Korea Leben Assistent',

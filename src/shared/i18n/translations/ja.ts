@@ -977,6 +977,40 @@ const ja = {
       alreadyJoined: 'すでに参加しているグループです',
       notMember: 'グループメンバーではありません',
     },
+    sidebar: {
+      popularInfo: '人気情報',
+      emergencyContacts: '緊急連絡先',
+      emergency: {
+        title: '緊急',
+        subtitle: '火災・医療',
+        number: '119',
+      },
+      police: {
+        title: '警察',
+        subtitle: '犯罪・紛失通報',
+        number: '112',
+      },
+      foreignerCenter: {
+        title: '外国人総合案内',
+        subtitle: '19言語対応',
+        number: '1345',
+      },
+      usefulSites: '🔗 便利なサイト',
+      hikorea: {
+        title: 'HiKorea',
+        subtitle: 'ビザ・滞在関連',
+      },
+      nhis: {
+        title: '国民健康保険',
+        subtitle: '加入・管理',
+      },
+      worknet: {
+        title: 'WorkNet',
+        subtitle: '求人情報',
+      },
+      currentSearch: '現在の検索',
+      popularPosts: '人気の投稿',
+    },
   },
   widgets: {
     dynamicFeed: {
@@ -1159,6 +1193,9 @@ const ja = {
     next: '次へ',
   },
   debate: {
+    title: 'ホットイシューディベート',
+    description:
+      '今最も注目されている社会的な話題について自由に議論し、多様な意見を交換しましょう。',
     categories: {
       title: 'カテゴリ',
       all: '全て',
@@ -1251,8 +1288,8 @@ const ja = {
       createdAt: '作成日',
     },
     sidebar: {
-      popularInfo: '🔥 人気情報',
-      emergencyContacts: '🆘 緊急連絡先',
+      popularInfo: '人気情報',
+      emergencyContacts: '緊急連絡先',
       emergency: {
         title: '緊急',
         subtitle: '火災・医療',
@@ -1308,6 +1345,15 @@ const ja = {
       educationSupport: '教育支援',
       koreanLearning: '韓国語学習: 1345 (多文化家族支援センター)',
     },
+    createTitle: '情報作成',
+    editTitle: '情報編集',
+    form: {
+      titlePlaceholder: 'タイトルを入力してください',
+      categoryPlaceholder: 'カテゴリを選択してください',
+      createButton: '作成する',
+      editButton: '編集する',
+    },
+    categorySelectTitle: 'トピックを選択',
   },
   aiAssistant: {
     title: '韓国生活アシスタント',

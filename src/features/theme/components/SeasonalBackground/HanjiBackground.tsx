@@ -2,7 +2,7 @@ import React from 'react';
 import { Box } from '@mui/material';
 import styled from '@emotion/styled';
 import { keyframes } from '@emotion/react';
-
+import palaceBg from '@/assets/images/backgrounds/palacebg.png';
 const fadeIn = keyframes`
   from { opacity: 0; }
   to { opacity: 1; }
@@ -41,6 +41,21 @@ const HanjiContainer = styled(Box, {
   flex-direction: column;
   margin-top: 0;
 `;
+const BackgroundImage = styled('img')`
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 90vw;
+  height: 90vh;
+  min-width: 240px;
+  min-height: 180px;
+  max-width: 80vw;
+  max-height: 80vh;
+  opacity: 0.2;
+  pointer-events: none;
+  z-index: 1;
+  user-select: none;
+`;
 
 interface HanjiBackgroundProps {
   children: React.ReactNode;
@@ -50,6 +65,7 @@ interface HanjiBackgroundProps {
 const HanjiBackground: React.FC<HanjiBackgroundProps> = ({ children, noPadding = false }) => {
   return (
     <HanjiContainer noPadding={noPadding}>
+      <BackgroundImage src={palaceBg} alt="background" />
       <Box
         sx={{
           position: 'relative',

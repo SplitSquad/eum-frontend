@@ -24,7 +24,7 @@ const PageContainer = styled.div`
 const TabContainer = styled.div`
   display: flex;
   margin-bottom: 20px;
-  border-bottom: 1px solid #eaeaea;
+  border-bottom: 1px solid #e0e0e0;
 `;
 
 const Tab = styled.button<{ active: boolean }>`
@@ -32,8 +32,8 @@ const Tab = styled.button<{ active: boolean }>`
   font-size: 0.95rem;
   background: none;
   border: none;
-  border-bottom: 2px solid ${props => (props.active ? '#FF9999' : 'transparent')};
-  color: ${props => (props.active ? '#333' : '#777')};
+  border-bottom: 2px solid ${props => (props.active ? '#fafafa' : 'transparent')};
+  color: ${props => (props.active ? '#222' : '#555')};
   font-weight: ${props => (props.active ? '600' : '400')};
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -53,16 +53,16 @@ const Tab = styled.button<{ active: boolean }>`
     left: 0;
     right: 0;
     height: 2px;
-    background-color: #FF9999;
-    transform: scaleX(${props => props.active ? 1 : 0});
+    background-color: #ff9999;
+    transform: scaleX(${props => (props.active ? 1 : 0)});
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     transform-origin: center;
   }
 
   /* 호버 시 밑줄 미리보기 */
   &:hover::after {
-    transform: scaleX(${props => props.active ? 1 : 0.3});
-    opacity: ${props => props.active ? 1 : 0.5};
+    transform: scaleX(${props => (props.active ? 1 : 0.3)});
+    opacity: ${props => (props.active ? 1 : 0.5)};
   }
 
   /* 클릭 시 리플 효과 */
@@ -74,7 +74,7 @@ const Tab = styled.button<{ active: boolean }>`
 const EmptyState = styled.div`
   padding: 40px 0;
   text-align: center;
-  color: #777;
+  color: #555;
   font-size: 0.95rem;
   opacity: 0;
   animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
@@ -93,14 +93,16 @@ const EmptyState = styled.div`
 
 // 콘텐츠 전환을 위한 애니메이션 래퍼
 const ContentWrapper = styled.div<{ isVisible: boolean; delay?: number }>`
-  opacity: ${props => props.isVisible ? 1 : 0};
-  transform: ${props => props.isVisible ? 'translateY(0)' : 'translateY(10px)'};
+  opacity: ${props => (props.isVisible ? 1 : 0)};
+  transform: ${props => (props.isVisible ? 'translateY(0)' : 'translateY(10px)')};
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transition-delay: ${props => props.delay || 0}ms;
   will-change: opacity, transform;
 
   /* 콘텐츠가 사라질 때는 더 빠르게 */
-  ${props => !props.isVisible && `
+  ${props =>
+    !props.isVisible &&
+    `
     transition-duration: 0.2s;
   `}
 `;
@@ -156,19 +158,19 @@ const ActivityItem = styled.div<{ animationDelay?: number }>`
     background-color: #f9f9f9;
     transform: translateY(-1px);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    
+
     /* 호버 시 아이콘 배경색 변경 */
     .activity-icon {
       background-color: #ffe6e6;
-      
+
       svg {
         transform: scale(1.05);
       }
     }
-    
+
     /* 호버 시 제목 색상 변경 */
     .activity-title {
-      color: #FF9999;
+      color: #ff9999;
     }
   }
 
@@ -233,14 +235,18 @@ const LoadingContainer = styled.div`
   display: flex;
   justify-content: center;
   padding: 40px 0;
-  
+
   .MuiCircularProgress-root {
     animation: fadeIn 0.3s ease-in;
   }
 
   @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
   }
 `;
 
@@ -302,7 +308,7 @@ const ActivitiesPage: React.FC = () => {
   // 통합 로딩 상태 관리 (깜빡임 방지)
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [contentReady, setContentReady] = useState(false);
-  
+
   // 탭 전환 애니메이션을 위한 상태
   const [isContentVisible, setIsContentVisible] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -384,15 +390,23 @@ const ActivitiesPage: React.FC = () => {
     };
 
     initializeData();
-  }, [isAuthenticated, user?.userId, userId, fetchMyPosts, fetchMyComments, fetchMyDebates, fetchMyBookmarks]);
+  }, [
+    isAuthenticated,
+    user?.userId,
+    userId,
+    fetchMyPosts,
+    fetchMyComments,
+    fetchMyDebates,
+    fetchMyBookmarks,
+  ]);
 
   // 탭 변경 핸들러 - 부드러운 전환 애니메이션
   const handleTabChange = (tab: typeof activeTab) => {
     if (tab === activeTab) return;
-    
+
     setIsTransitioning(true);
     setIsContentVisible(false);
-    
+
     // 콘텐츠가 사라진 후 탭 변경
     setTimeout(() => {
       setActiveTab(tab);
@@ -415,7 +429,7 @@ const ActivitiesPage: React.FC = () => {
       ...prev,
       [activeTab]: value,
     }));
-    
+
     // 페이지 변경 시 부드러운 전환
     setIsContentVisible(false);
     setTimeout(() => {
@@ -467,7 +481,7 @@ const ActivitiesPage: React.FC = () => {
   // 로딩 상태 확인
   const isLoading = () => {
     if (isTransitioning) return true; // 전환 중일 때도 로딩으로 처리
-    
+
     if (activeTab === 'all') {
       return (
         postsLoading === 'loading' ||
@@ -503,17 +517,17 @@ const ActivitiesPage: React.FC = () => {
   // 날짜 포맷팅 함수
   const formatDate = (dateString: string) => {
     if (!dateString) return '';
-    
+
     try {
       const date = new Date(dateString);
-      
+
       // YYYY.MM.DD HH:mm 형식으로 표시
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const day = String(date.getDate()).padStart(2, '0');
       const hours = String(date.getHours()).padStart(2, '0');
       const minutes = String(date.getMinutes()).padStart(2, '0');
-      
+
       return `${year}.${month}.${day} ${hours}:${minutes}`;
     } catch (error) {
       // 날짜 파싱 실패 시 원본 문자열의 앞부분만 표시
@@ -582,13 +596,15 @@ const ActivitiesPage: React.FC = () => {
     }
 
     // 날짜순으로 정렬 (최신순)
-    const sortedActivities = allActivities.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    
+    const sortedActivities = allActivities.sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+
     // 페이지네이션 적용
     const currentPage = currentPages[activeTab];
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    
+
     return {
       activities: sortedActivities.slice(startIndex, endIndex),
       totalPages: Math.ceil(sortedActivities.length / itemsPerPage),
@@ -663,7 +679,9 @@ const ActivitiesPage: React.FC = () => {
                         animationName: isContentVisible ? 'tabEnter' : 'none',
                       }}
                     >
-                      <ActivityIcon className="activity-icon">{renderIcon(activity.type)}</ActivityIcon>
+                      <ActivityIcon className="activity-icon">
+                        {renderIcon(activity.type)}
+                      </ActivityIcon>
                       <ActivityContent>
                         <ActivityTitle className="activity-title">{activity.title}</ActivityTitle>
                         <ActivityDescription>{activity.description}</ActivityDescription>
@@ -710,7 +728,8 @@ const ActivitiesPage: React.FC = () => {
                 {/* 활동 개수 정보 */}
                 {totalItems > 0 && (
                   <ActivityCountInfo>
-                    총 {totalItems}개의 활동 중 {((currentPages[activeTab] - 1) * itemsPerPage) + 1}~{Math.min(currentPages[activeTab] * itemsPerPage, totalItems)}개 표시
+                    총 {totalItems}개의 활동 중 {(currentPages[activeTab] - 1) * itemsPerPage + 1}~
+                    {Math.min(currentPages[activeTab] * itemsPerPage, totalItems)}개 표시
                   </ActivityCountInfo>
                 )}
               </>

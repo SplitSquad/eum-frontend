@@ -502,7 +502,7 @@ const PostDetailPage: React.FC = () => {
 
   const formatDateToAbsolute = (dateString: string) => {
     try {
-      return format(new Date(dateString), 'yyyy년 MM월 dd일 HH:mm', { locale: ko });
+      return format(new Date(dateString), 'yyyy-MM-dd HH:mm', { locale: ko });
     } catch (e) {
       console.error('날짜 형식 변환 오류:', e);
       return t('community.posts.noDate');

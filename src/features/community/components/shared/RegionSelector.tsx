@@ -11,22 +11,21 @@ import {
   useTheme,
   useMediaQuery,
 } from '@mui/material';
-import { useTranslation } from '../../../../shared/i18n';
 import { useRegionStore } from '../../store/regionStore';
 import { regionTree } from '@/constants/regionTree';
+import { useThemeStore } from '@/features/theme/store/themeStore';
+import { seasonalColors } from '@/components/layout/springTheme';
 
 interface RegionSelectorProps {
   // 선택이 바뀔 때 콜백 (optional)
   onChange?: (city: string | null, district: string | null, neighborhood: string | null) => void;
-  // 비활성화 여부 (optional)
-  disabled?: boolean;
 }
 
-const RegionSelector: React.FC<RegionSelectorProps> = ({ onChange, disabled = false }) => {
-  const { t } = useTranslation();
+const RegionSelector: React.FC<RegionSelectorProps> = ({ onChange }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
+  const season = useThemeStore(state => state.season);
+  const colors = seasonalColors[season] || seasonalColors.spring;
   const {
     selectedCity,
     selectedDistrict,
@@ -47,17 +46,16 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({ onChange, disabled = fa
   return (
     <Box sx={{ mb: 2 }}>
       <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: '#666' }}>
-        {t('community.regions.regionSelection')}
+        지역 선택
       </Typography>
       <Box sx={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 2 }}>
         {/* 시/도 선택 */}
         <FormControl size="small" sx={{ minWidth: 120, flex: 1 }}>
-          <InputLabel id="city-label">{t('community.regions.cityProvince')}</InputLabel>
+          <InputLabel id="city-label">시/도</InputLabel>
           <Select
             labelId="city-label"
             value={selectedCity || ''}
-            label={t('community.regions.cityProvince')}
-            disabled={disabled}
+            label="시/도"
             onChange={e => {
               setCity(e.target.value);
               if (onChange) onChange(e.target.value, null, null);
@@ -65,14 +63,14 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({ onChange, disabled = fa
             sx={{
               bgcolor: 'rgba(255, 255, 255, 0.8)',
               '& .MuiOutlinedInput-notchedOutline': {
-                borderColor: '#FFD7D7',
+                borderColor: colors.primary,
               },
               '&:hover .MuiOutlinedInput-notchedOutline': {
-                borderColor: '#FFAAA5',
+                borderColor: colors.secondary,
               },
             }}
           >
-            <MenuItem value="">{t('community.regions.all')}</MenuItem>
+            <MenuItem value="">전체</MenuItem>
             {regionTree.map(city => (
               <MenuItem key={city.value} value={city.value}>
                 {city.value}
@@ -84,12 +82,11 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({ onChange, disabled = fa
         {/* 구/군 선택 (시/도 선택 시) */}
         {selectedCity && (
           <FormControl size="small" sx={{ minWidth: 120, flex: 1 }}>
-            <InputLabel id="district-label">{t('community.regions.districtCounty')}</InputLabel>
+            <InputLabel id="district-label">구/군</InputLabel>
             <Select
               labelId="district-label"
               value={selectedDistrict || ''}
-              label={t('community.regions.districtCounty')}
-              disabled={disabled}
+              label="구/군"
               onChange={e => {
                 setDistrict(e.target.value);
                 if (onChange) onChange(selectedCity, e.target.value, null);
@@ -97,14 +94,14 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({ onChange, disabled = fa
               sx={{
                 bgcolor: 'rgba(255, 255, 255, 0.8)',
                 '& .MuiOutlinedInput-notchedOutline': {
-                  borderColor: '#FFD7D7',
+                  borderColor: colors.primary,
                 },
                 '&:hover .MuiOutlinedInput-notchedOutline': {
-                  borderColor: '#FFAAA5',
+                  borderColor: colors.secondary,
                 },
               }}
             >
-              <MenuItem value="">{t('community.regions.all')}</MenuItem>
+              <MenuItem value="">전체</MenuItem>
               {districts.map(district => (
                 <MenuItem key={district} value={district}>
                   {district}
@@ -117,14 +114,11 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({ onChange, disabled = fa
         {/* 동/읍/면 선택 (구/군 선택 시) */}
         {selectedCity && selectedDistrict && neighborhoods.length > 0 && (
           <FormControl size="small" sx={{ minWidth: 120, flex: 1 }}>
-            <InputLabel id="neighborhood-label">
-              {t('community.regions.neighborhoodTownship')}
-            </InputLabel>
+            <InputLabel id="neighborhood-label">동/읍/면</InputLabel>
             <Select
               labelId="neighborhood-label"
               value={selectedNeighborhood || ''}
-              label={t('community.regions.neighborhoodTownship')}
-              disabled={disabled}
+              label="동/읍/면"
               onChange={e => {
                 setNeighborhood(e.target.value);
                 if (onChange) onChange(selectedCity, selectedDistrict, e.target.value);
@@ -132,14 +126,14 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({ onChange, disabled = fa
               sx={{
                 bgcolor: 'rgba(255, 255, 255, 0.8)',
                 '& .MuiOutlinedInput-notchedOutline': {
-                  borderColor: '#FFD7D7',
+                  borderColor: colors.primary,
                 },
                 '&:hover .MuiOutlinedInput-notchedOutline': {
-                  borderColor: '#FFAAA5',
+                  borderColor: colors.secondary,
                 },
               }}
             >
-              <MenuItem value="">{t('community.regions.all')}</MenuItem>
+              <MenuItem value="">전체</MenuItem>
               {neighborhoods.map(neighborhood => (
                 <MenuItem key={neighborhood} value={neighborhood}>
                   {neighborhood}
@@ -155,7 +149,7 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({ onChange, disabled = fa
         <Chip
           label={
             !selectedCity
-              ? t('community.regions.nationwide')
+              ? '전국'
               : !selectedDistrict
                 ? selectedCity
                 : !selectedNeighborhood
@@ -164,17 +158,22 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({ onChange, disabled = fa
           }
           size="small"
           sx={{
-            bgcolor: '#FFAAA5',
-            color: 'white',
+            bgcolor: '#fafafa',
+            color: '#222',
             fontWeight: 600,
           }}
         />
-        {(selectedCity || selectedDistrict || selectedNeighborhood) && !disabled && (
+        {(selectedCity || selectedDistrict || selectedNeighborhood) && (
           <Chip
-            label={t('community.regions.reset')}
+            label="초기화"
             size="small"
             onClick={resetRegion}
-            sx={{ bgcolor: '#FFD7D7', color: '#FF7777', fontWeight: 600, cursor: 'pointer' }}
+            sx={{
+              bgcolor: '#fafafa',
+              color: '#222',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
           />
         )}
       </Box>

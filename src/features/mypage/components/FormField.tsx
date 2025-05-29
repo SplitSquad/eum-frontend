@@ -25,7 +25,7 @@ const Label = styled.label`
 `;
 
 const Required = styled.span`
-  color: #f56565;
+  color: rgba(219, 219, 219, 0.95);
   margin-left: 4px;
 `;
 
@@ -37,7 +37,7 @@ const HelpText = styled.div`
 
 const ErrorText = styled.div`
   font-size: 0.75rem;
-  color: #f56565;
+  color: rgb(252, 154, 154);
   margin-top: 4px;
 `;
 
@@ -51,19 +51,19 @@ export const StyledInput = styled.input`
   color: #333;
   background-color: white;
   transition: all 0.2s ease;
-  
+
   &:focus {
     outline: none;
-    border-color: #FFC0CB;
+    border-color: #e5e7eb;
     box-shadow: 0 0 0 3px rgba(255, 192, 203, 0.2);
   }
-  
+
   &:hover:not(:focus) {
-    border-color: #CBD5E0;
+    border-color: rgb(214, 214, 214);
   }
-  
+
   &:disabled {
-    background-color: #F7FAFC;
+    background-color: #f7fafc;
     cursor: not-allowed;
   }
 `;
@@ -79,19 +79,19 @@ export const StyledTextarea = styled.textarea`
   transition: all 0.2s ease;
   resize: vertical;
   min-height: 120px;
-  
+
   &:focus {
     outline: none;
-    border-color: #FFC0CB;
+    border-color: #e5e7eb;
     box-shadow: 0 0 0 3px rgba(255, 192, 203, 0.2);
   }
-  
+
   &:hover:not(:focus) {
-    border-color: #CBD5E0;
+    border-color: rgb(214, 214, 214);
   }
-  
+
   &:disabled {
-    background-color: #F7FAFC;
+    background-color: #f7fafc;
     cursor: not-allowed;
   }
 `;
@@ -105,19 +105,19 @@ export const StyledSelect = styled.select`
   color: #333;
   background-color: white;
   transition: all 0.2s ease;
-  
+
   &:focus {
     outline: none;
-    border-color: #FFC0CB;
-    box-shadow: 0 0 0 3px rgba(255, 192, 203, 0.2);
+    border-color: #e5e7eb;
+    box-shadow: 0 0 0 3px rgba(227, 227, 227, 0.55);
   }
-  
+
   &:hover:not(:focus) {
-    border-color: #CBD5E0;
+    border-color: rgb(214, 214, 214);
   }
-  
+
   &:disabled {
-    background-color: #F7FAFC;
+    background-color: #f7fafc;
     cursor: not-allowed;
   }
 `;
@@ -144,4 +144,4 @@ const FormField: React.FC<FormFieldProps> = ({
   );
 };
 
-export default FormField; 
+export default FormField;

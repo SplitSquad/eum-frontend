@@ -1379,6 +1379,40 @@ const ko = {
       alreadyJoined: '이미 참가한 모임입니다',
       notMember: '모임 멤버가 아닙니다',
     },
+    sidebar: {
+      popularInfo: '인기 정보',
+      emergencyContacts: '긴급 연락처',
+      emergency: {
+        title: '응급상황',
+        subtitle: '화재, 의료응급',
+        number: '119',
+      },
+      police: {
+        title: '경찰서',
+        subtitle: '범죄신고, 분실신고',
+        number: '112',
+      },
+      foreignerCenter: {
+        title: '외국인종합안내센터',
+        subtitle: '19개 언어 지원',
+        number: '1345',
+      },
+      usefulSites: '유용한 사이트',
+      hikorea: {
+        title: '하이코리아',
+        subtitle: '비자, 체류 관련 업무',
+      },
+      nhis: {
+        title: '국민건강보험공단',
+        subtitle: '건강보험 가입 및 관리',
+      },
+      worknet: {
+        title: '워크넷',
+        subtitle: '취업정보 및 구직활동',
+      },
+      currentSearch: '현재 검색',
+      popularPosts: '인기 게시글',
+    },
   },
   widgets: {
     dynamicFeed: {
@@ -1570,6 +1604,8 @@ const ko = {
     next: '다음',
   },
   debate: {
+    title: '핫 이슈 토론',
+    description: '지금 가장 뜨거운 사회 이슈에 대해 자유롭게 토론하고 다양한 의견을 나눠보세요.',
     categories: {
       title: '카테고리',
       all: '전체',
@@ -1661,8 +1697,8 @@ const ko = {
       createdAt: '작성일',
     },
     sidebar: {
-      popularInfo: '🔥 인기 정보',
-      emergencyContacts: '🆘 긴급 연락처',
+      popularInfo: '인기 정보',
+      emergencyContacts: '긴급 연락처',
       emergency: {
         title: '응급상황',
         subtitle: '화재, 의료응급',
@@ -1678,7 +1714,7 @@ const ko = {
         subtitle: '19개 언어 지원',
         number: '1345',
       },
-      usefulSites: '🔗 유용한 사이트',
+      usefulSites: '유용한 사이트',
       hikorea: {
         title: '하이코리아',
         subtitle: '비자, 체류 관련 업무',
@@ -1718,6 +1754,15 @@ const ko = {
       educationSupport: '교육 지원',
       koreanLearning: '한국어 학습: 1345 (다문화가족지원센터)',
     },
+    createTitle: '정보글 작성',
+    editTitle: '정보글 수정',
+    form: {
+      titlePlaceholder: '제목을 입력하세요',
+      categoryPlaceholder: '카테고리를 선택하세요',
+      createButton: '작성하기',
+      editButton: '수정하기',
+    },
+    categorySelectTitle: '주제 선택',
   },
   aiAssistant: {
     title: '한국생활 도우미',

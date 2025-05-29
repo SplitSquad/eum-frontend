@@ -1005,6 +1005,40 @@ const fr = {
       '⚠️ Ajouter de Nouveaux Fichiers (Tous les fichiers existants seront supprimés)',
     editModeFileWarning:
       'La sélection de nouveaux fichiers supprimera toutes les pièces jointes existantes\nChoisissez avec précaution',
+    sidebar: {
+      popularPosts: 'Articles populaires',
+      popularInfo: 'Infos populaires',
+      emergencyContacts: "Contacts d'urgence",
+      emergency: {
+        title: 'Urgence',
+        subtitle: 'Incendie, médical',
+        number: '119',
+      },
+      police: {
+        title: 'Police',
+        subtitle: 'Signalement crime/perte',
+        number: '112',
+      },
+      foreignerCenter: {
+        title: "Centre d'aide",
+        subtitle: '19 langues',
+        number: '1345',
+      },
+      usefulSites: '🔗 Sites utiles',
+      hikorea: {
+        title: 'HiKorea',
+        subtitle: 'Visa & séjour',
+      },
+      nhis: {
+        title: 'Assurance maladie',
+        subtitle: 'Inscription & gestion',
+      },
+      worknet: {
+        title: 'WorkNet',
+        subtitle: "Offres d'emploi",
+      },
+      currentSearch: 'Recherche actuelle',
+    },
   },
   widgets: {
     dynamicFeed: {
@@ -1187,6 +1221,9 @@ const fr = {
     next: 'Suivant',
   },
   debate: {
+    title: 'Débat sur les sujets brûlants',
+    description:
+      'Participez à la discussion sur les sujets de société les plus brûlants du moment et partagez vos opinions variées.',
     categories: {
       title: 'Catégorie',
       all: 'Tous',
@@ -1337,6 +1374,15 @@ const fr = {
       koreanLearning:
         'Apprentissage du coréen: 1345 (Centre de soutien aux familles multiculturelles)',
     },
+    createTitle: 'Créer une information',
+    editTitle: 'Modifier une information',
+    form: {
+      titlePlaceholder: 'Entrez un titre',
+      categoryPlaceholder: 'Sélectionnez une catégorie',
+      createButton: 'Créer',
+      editButton: 'Modifier',
+    },
+    categorySelectTitle: 'Choisir un sujet',
   },
   aiAssistant: {
     title: 'Assistant de Vie en Corée',
