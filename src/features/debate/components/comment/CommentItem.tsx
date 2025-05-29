@@ -46,7 +46,7 @@ import ReportDialog, {
   ReportTargetType,
   ServiceType,
 } from '../../../common/components/ReportDialog';
-import { useTranslation } from '@/shared/i18n';
+import FlagDisplay from '../../../../shared/components/FlagDisplay';
 
 interface CommentItemProps {
   comment: DebateComment;
@@ -467,7 +467,6 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
 
   // 안전하게 댓글 목록 가져오기
   const commentReplies = replies && id && replies[id] ? replies[id] : [];
-  const { t } = useTranslation();
 
   return (
     <StyledCard variant="outlined" onClick={handleCardClick}>
@@ -487,7 +486,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, alignItems: 'center' }}>
             <Typography variant="subtitle2">{userName || '익명'}</Typography>
             {countryName && (
-              <CountryChip icon={<FlagIcon fontSize="small" />} label={countryName} size="small" />
+              <FlagDisplay nation={countryName} size="small" inline={true} />
             )}
             {/* 입장 표시 - 댓글 내용에서 추출한 stance 사용 */}
             <StanceChip
@@ -633,7 +632,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
             onClick={handleReplyClick}
             color={showReplyForm ? 'secondary' : 'primary'}
           >
-            {showReplyForm ? t('debate.reply.cancel') : t('debate.reply.add')}
+            {showReplyForm ? '취소' : '답글 작성'}
           </ActionButton>
 
           {replyCount > 0 && (
@@ -713,13 +712,13 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
           ) : replyCount > 0 ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 2 }}>
               <Typography variant="body2" color="text.secondary">
-                {t('debate.reply.callingReplies')}
+                답글을 불러오는 중...
               </Typography>
             </Box>
           ) : (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 2 }}>
               <Typography variant="body2" color="text.secondary">
-                {t('debate.reply.noReplies')}
+                등록된 답글이 없습니다
               </Typography>
             </Box>
           )}

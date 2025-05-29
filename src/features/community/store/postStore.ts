@@ -77,7 +77,7 @@ interface PostActions {
   fetchRecentPosts: (count?: number) => Promise<void>;
   fetchPostById: (postId: number) => Promise<Post | null>;
   createPost: (postDto: ApiCreatePostRequest, files?: File[]) => Promise<void>;
-  updatePost: (postId: number, postDto: ApiUpdatePostRequest, files?: File[]) => Promise<void>;
+  updatePost: (postId: number, postDto: ApiUpdatePostRequest, files?: File[], removeFileIds?: number[]) => Promise<void>;
   deletePost: (postId: number) => Promise<void>;
   reactToPost: (postId: number, option: string) => Promise<void>;
 
@@ -274,6 +274,8 @@ export const usePostStore = create<PostState & PostActions>()(
 
       // 액션: 게시글 관련
       fetchPosts: async filter => {
+        let normalizedFilter: any = null; // 함수 시작 시 선언
+        
         try {
           console.log('[DEBUG] fetchPosts 시작 - 필터:', filter);
 
@@ -334,8 +336,8 @@ export const usePostStore = create<PostState & PostActions>()(
             category: filter?.category || currentState.postFilter.category || '전체',
             // 지역 처리
             location: filter?.location || currentState.postFilter.location,
-            // 태그 처리
-            tag: filter?.tag || currentState.postFilter.tag,
+            // 태그 처리 - 새 필터에서 tag가 명시적으로 전달된 경우 해당 값 사용 (undefined, 빈 문자열 포함)
+            tag: filter && 'tag' in filter ? filter.tag : currentState.postFilter.tag,
             // postType 처리 - 빈 문자열이거나 undefined이면 '전체'로 설정
             postType:
               filter?.postType !== undefined
@@ -350,13 +352,16 @@ export const usePostStore = create<PostState & PostActions>()(
             postType: mergedFilter.postType || '전체',
           });
 
-          // 캐시 키 생성 - 페이지, 카테고리, 정렬, 지역, postType, 태그 포함
+          // 필터 정규화 적용 (백엔드에는 한국어 원본값 전달)
+          normalizedFilter = { ...mergedFilter };
+
+          // 캐시 키 생성 - 정규화된 필터 사용
           const postTypeForCache =
-            !mergedFilter.postType || mergedFilter.postType === ('ALL' as any)
+            !normalizedFilter.postType || normalizedFilter.postType === ('ALL' as any)
               ? '전체'
-              : mergedFilter.postType;
-          const tagForCache = mergedFilter.tag || 'notag';
-          const cacheKey = `${mergedFilter.page}_${mergedFilter.category || '전체'}_${mergedFilter.sortBy || 'latest'}_${mergedFilter.location || '전체'}_${postTypeForCache}_${tagForCache}`;
+              : normalizedFilter.postType;
+          const tagForCache = normalizedFilter.tag || 'notag';
+          const cacheKey = `${normalizedFilter.page}_${normalizedFilter.category || '전체'}_${normalizedFilter.sortBy || 'latest'}_${normalizedFilter.location || '전체'}_${postTypeForCache}_${tagForCache}`;
 
           console.log(`[DEBUG] 생성된 캐시 키: ${cacheKey}`);
 
@@ -367,7 +372,7 @@ export const usePostStore = create<PostState & PostActions>()(
           if (
             currentState.postLoading &&
             activeRequest &&
-            areFiltersEqual(lastFetchedFilter, mergedFilter)
+            areFiltersEqual(lastFetchedFilter, normalizedFilter)
           ) {
             console.log('[DEBUG] 이미 동일한 요청이 진행 중입니다. 중복 요청 방지.');
             return await activeRequest;
@@ -381,7 +386,7 @@ export const usePostStore = create<PostState & PostActions>()(
             set({
               posts: pageCache[cacheKey].data.posts,
               postPageInfo: pageCache[cacheKey].data.pageInfo,
-              postFilter: mergedFilter,
+              postFilter: normalizedFilter,
             });
 
             return;
@@ -389,9 +394,9 @@ export const usePostStore = create<PostState & PostActions>()(
 
           // postType 변경 시는 강제로 캐시 무시
           if (
-            filter &&
-            filter.postType !== undefined &&
-            filter.postType !== lastFetchedFilter?.postType
+            normalizedFilter &&
+            normalizedFilter.postType !== undefined &&
+            normalizedFilter.postType !== lastFetchedFilter?.postType
           ) {
             console.log('[DEBUG] postType 변경됨, 캐시 무시 및 새 요청 시작');
             lastFetchTimestamp = 0; // 캐시 무효화
@@ -400,9 +405,9 @@ export const usePostStore = create<PostState & PostActions>()(
           }
           // 카테고리 변경 시는 강제로 캐시 무시
           else if (
-            filter &&
-            filter.category !== undefined &&
-            filter.category !== lastFetchedFilter?.category
+            normalizedFilter &&
+            normalizedFilter.category !== undefined &&
+            normalizedFilter.category !== lastFetchedFilter?.category
           ) {
             console.log('[DEBUG] 카테고리 변경됨, 캐시 무시 및 새 요청 시작');
             lastFetchTimestamp = 0; // 캐시 무효화
@@ -410,7 +415,7 @@ export const usePostStore = create<PostState & PostActions>()(
             pageCache = {};
           }
           // 태그 변경 시는 강제로 캐시 무시
-          else if (filter && filter.tag !== undefined && filter.tag !== lastFetchedFilter?.tag) {
+          else if (normalizedFilter && normalizedFilter.tag !== undefined && normalizedFilter.tag !== lastFetchedFilter?.tag) {
             console.log('[DEBUG] 태그 변경됨, 캐시 무시 및 새 요청 시작');
             lastFetchTimestamp = 0; // 캐시 무효화
             // 페이지 캐시도 초기화
@@ -419,7 +424,7 @@ export const usePostStore = create<PostState & PostActions>()(
             // 3. 일반 캐시 확인 - 동일 필터 요청이 최근에 있었는지
             if (
               currentState.posts.length > 0 &&
-              areFiltersEqual(lastFetchedFilter, mergedFilter) &&
+              areFiltersEqual(lastFetchedFilter, normalizedFilter) &&
               now - lastFetchTimestamp < CACHE_TTL
             ) {
               console.log('[DEBUG] 일반 캐시 사용 (5초 이내), API 요청 스킵');
@@ -437,7 +442,7 @@ export const usePostStore = create<PostState & PostActions>()(
             set({ postLoading: true, postError: null });
           }
           // 페이지네이션 이동 시 100ms 후에만 로딩 상태 표시 (깜빡임 방지)
-          else if (filter?.page !== undefined && currentState.posts.length > 0) {
+          else if (normalizedFilter?.page !== undefined && currentState.posts.length > 0) {
             loadingTimeout = setTimeout(() => {
               // 이 요청이 여전히 최신 요청인 경우에만 로딩 상태 설정
               if (currentRequestId === lastRequestId && activeRequest) {
@@ -450,10 +455,10 @@ export const usePostStore = create<PostState & PostActions>()(
           }
 
           // 현재 필터 저장 (중복 요청 방지용)
-          lastFetchedFilter = { ...mergedFilter };
+          lastFetchedFilter = { ...normalizedFilter };
 
           // 최종 필터로 상태 업데이트
-          set({ postFilter: mergedFilter });
+          set({ postFilter: normalizedFilter });
 
           // API 요청 생성 및 추적
           const fetchData = async () => {
@@ -475,22 +480,28 @@ export const usePostStore = create<PostState & PostActions>()(
 
               // API 호출용 파라미터 - size는 항상 6으로 고정
               const apiParams = {
-                page: mergedFilter.page,
+                page: normalizedFilter.page,
                 size: 6, // 항상 6으로 고정
-                category: mergedFilter.category,
-                sortBy: mergedFilter.sortBy,
-                location: mergedFilter.location,
-                tag: mergedFilter.tag,
-                postType: mergedFilter.postType, // postType도 확실히 전달
+                category: normalizedFilter.category,
+                sortBy: normalizedFilter.sortBy,
+                location: normalizedFilter.location,
+                tag: normalizedFilter.tag,
+                postType: normalizedFilter.postType, // postType도 확실히 전달
               };
 
-              console.log('[DEBUG] API 요청 파라미터:', apiParams);
+              console.log('[DEBUG] API 요청 파라미터 (수정 전):', apiParams);
 
               // API 요청 시작
               let response;
 
               try {
+                // undefined나 빈 값들을 API에서 제외
                 if (apiParams.postType === '전체') apiParams.postType = undefined as any;
+                if (!apiParams.tag || apiParams.tag === '') {
+                  delete (apiParams as any).tag;
+                }
+                
+                console.log('[DEBUG] API 요청 파라미터 (최종):', apiParams);
                 response = await postApi.PostApi.getPosts(apiParams as any);
                 console.log('[DEBUG] API 응답 받음:', response);
               } catch (apiError) {
@@ -545,7 +556,7 @@ export const usePostStore = create<PostState & PostActions>()(
                   set({
                     posts: [],
                     postPageInfo: {
-                      page: mergedFilter.page,
+                      page: normalizedFilter.page,
                       size: 6,
                       totalElements: 0,
                       totalPages: 0,
@@ -577,7 +588,7 @@ export const usePostStore = create<PostState & PostActions>()(
 
               // 페이지 정보 구성
               const pageInfo = {
-                page: mergedFilter.page,
+                page: normalizedFilter.page,
                 size: 6, // 항상 6으로 고정
                 totalElements: totalCount,
                 totalPages: totalPages,
@@ -609,7 +620,7 @@ export const usePostStore = create<PostState & PostActions>()(
 
               // 로그에 페이지네이션 상태 출력
               console.log('[DEBUG] 페이지네이션 상태:', {
-                currentPage: mergedFilter.page,
+                currentPage: normalizedFilter.page,
                 pageSize: 6, // 항상 6으로 고정
                 totalElements: totalCount,
                 totalPages: totalPages,
@@ -662,7 +673,7 @@ export const usePostStore = create<PostState & PostActions>()(
           console.error('fetchPosts 전체 실패:', error);
           
           // 언어 변경으로 인한 요청인 경우 기존 데이터 유지
-          const isLanguageRefresh = filter && filter._forceRefresh;
+          const isLanguageRefresh = normalizedFilter && normalizedFilter._forceRefresh;
           if (isLanguageRefresh) {
             console.log('[DEBUG] 언어 변경 중 최외부 에러 - 기존 데이터 유지');
             set({
@@ -762,7 +773,7 @@ export const usePostStore = create<PostState & PostActions>()(
         }
       },
 
-      updatePost: async (postId, postDto, files) => {
+      updatePost: async (postId, postDto, files, removeFileIds) => {
         set({ isLoading: true, error: null });
         try {
           console.log('[DEBUG] 게시글 수정 시작:', {
@@ -772,10 +783,11 @@ export const usePostStore = create<PostState & PostActions>()(
               content: postDto.content ? postDto.content.substring(0, 50) + '...' : '',
             },
             filesCount: files?.length || 0,
+            removeFileIds,
           });
 
           if (postDto.postType === '전체') postDto.postType = undefined as any;
-          const updatedPost = await postApi.PostApi.updatePost(postId, postDto as any, files);
+          const updatedPost = await postApi.PostApi.updatePost(postId, postDto as any, files, removeFileIds);
 
           console.log('[DEBUG] 게시글 수정 성공:', {
             updatedPost: {
@@ -1119,51 +1131,9 @@ export const usePostStore = create<PostState & PostActions>()(
           // 번역된 검색 타입을 한국어로 변환
           let convertedSearchType = searchType;
           if (searchType) {
-            // 번역 키에서 한국어로 변환하는 매핑
-            const searchTypeMapping: Record<string, string> = {
-              'Title+Content': '제목_내용',
-              'Title': '제목',
-              'Content': '내용',
-              'Author': '작성자',
-              // 영어
-              'title': '제목',
-              'content': '내용',
-              'author': '작성자',
-              'title_content': '제목_내용',
-              // 스페인어
-              'Título+Contenido': '제목_내용',
-              'Título': '제목',
-              'Contenido': '내용',
-              'Autor': '작성자',
-              // 프랑스어
-              'Titre+Contenu': '제목_내용',
-              'Titre': '제목',
-              'Contenu': '내용',
-              'Auteur': '작성자',
-              // 독일어
-              'Titel+Inhalt': '제목_내용',
-              'Titel': '제목',
-              'Inhalt': '내용',
-              'Autor_de': '작성자',
-              // 일본어
-              'タイトル+内容': '제목_내용',
-              'タイトル': '제목',
-              '内容_ja': '내용',
-              '作成者': '작성자',
-              // 중국어
-              '标题+内容': '제목_내용',
-              '标题': '제목',
-              '内容_zh': '내용',
-              '作者': '작성자',
-              // 러시아어
-              'Заголовок+Содержание': '제목_내용',
-              'Заголовок': '제목',
-              'Содержание': '내용',
-              'Автор': '작성자',
-            };
-            
-            convertedSearchType = searchTypeMapping[searchType] || searchType;
-            console.log('[DEBUG] 검색 타입 변환:', { 원본: searchType, 변환: convertedSearchType });
+            // 검색 타입은 UI에서 선택되므로 한국어 기본값으로 처리
+            convertedSearchType = searchType;
+            console.log('[DEBUG] 검색 타입:', { 검색타입: convertedSearchType });
           }
 
           // 검색 API 호출 시 필터 적용

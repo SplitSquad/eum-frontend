@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useState, useCallback, memo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Card,
@@ -12,78 +12,21 @@ import {
   Tooltip,
   styled,
   CardActions,
+  IconButton,
 } from '@mui/material';
 import ThumbUpOutlinedIcon from '@mui/icons-material/ThumbUpOutlined';
 import ThumbDownOutlinedIcon from '@mui/icons-material/ThumbDownOutlined';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
-import { PostSummary } from '../../types-folder/index';
-import { format } from 'date-fns';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
+import FlagDisplay from '../../../../shared/components/FlagDisplay';
 //import GroupsIcon from '@mui/icons-material/Groups';
 //import PersonIcon from '@mui/icons-material/Person';
 import { ko } from 'date-fns/locale';
 import { useTranslation } from '../../../../shared/i18n';
-
-/**-----------------------------------웹로그 관련------------------------------------ **/
-// userId 꺼내오는 헬퍼
-export function getUserId(): number | null {
-  try {
-    const raw = localStorage.getItem('auth-storage');
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    return parsed?.state?.user?.userId ?? null;
-  } catch {
-    return null;
-  }
-}
-
-// 로그 전송 타입 정의
-interface WebLog {
-  userId: number;
-  content: string;
-}
-
-// BASE URL에 엔드포인트 설정
-const BASE = import.meta.env.VITE_API_BASE_URL;
-
-// 로그 전송 함수
-export function sendWebLog(log: WebLog) {
-  // jwt token 가져오기
-  const token = localStorage.getItem('auth_token');
-  if (!token) {
-    throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
-  }
-  fetch(`${BASE}/logs`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: token },
-    body: JSON.stringify(log),
-  }).catch(err => {
-    console.error('WebLog 전송 실패:', err);
-  });
-  // 전송 완료
-  console.log('WebLog 전송 성공:', log);
-}
-
-// useTrackedPost 훅
-export function useTrackedPost() {
-  const location = useLocation();
-
-  return (title: string, content: string, tag: string | null = null) => {
-    const userId = getUserId() || 0;
-    const postLogPayload = {
-      UID: userId,
-      ClickPath: location.pathname,
-      TAG: tag,
-      CurrentPath: location.pathname,
-      Event: 'click',
-      Content: { title: title, content: content },
-      Timestamp: new Date().toISOString(),
-    };
-    sendWebLog({ userId, content: JSON.stringify(postLogPayload) });
-  };
-}
-/**------------------------------------------------------------------------------------**/
+import { PostSummary } from '../../types-folder/index';
+import { format } from 'date-fns';
+import { ViewTracker } from '../../utils/viewTracker';
 
 // 스타일 컴포넌트
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -207,19 +150,43 @@ const MetaContainer = styled(Box)(({ theme }) => ({
 const AuthorContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  gap: '8px',
+  gap: '6px',
+  minWidth: 0, // flex shrink 허용
+  flex: '0 1 auto', // 필요시 축소
 }));
 
 const StyledAvatar = styled(Avatar)(({ theme }) => ({
-  width: '28px',
-  height: '28px',
+  width: '24px',
+  height: '24px',
   border: '2px solid rgba(255, 170, 165, 0.4)',
+  fontSize: '0.7rem',
+  flexShrink: 0, // 아바타는 축소 방지
 }));
 
 const AuthorName = styled(Typography)(({ theme }) => ({
-  fontSize: '0.85rem',
+  fontSize: '0.75rem',
   color: '#666',
   fontWeight: 500,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+  minWidth: 0, // text overflow 작동 허용
+}));
+
+const AuthorInfoBox = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  minWidth: 0, // flex shrink 허용
+  gap: '2px',
+}));
+
+const FlagContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '2px',
+  minWidth: 0,
+  overflow: 'hidden',
 }));
 
 // 툴크 스타일 개선
@@ -329,175 +296,185 @@ interface PostCardProps {
 }
 
 /**
- * 게시글 카드 컴포넌트
- * 게시글 목록에서 각 게시글을 카드 형태로 표시합니다.
+ * 게시글 카드 컴포넌트 (성능 최적화 버전)
+ * React.memo로 최적화하여 불필요한 리렌더링 방지
  */
-const PostCard: React.FC<PostCardProps> = ({ post, hideImage = false, onClick }) => {
-  const { t } = useTranslation();
-  const navigate = useNavigate();
-  const location = useLocation();
+const PostCard: React.FC<PostCardProps> = memo(
+  ({ post, hideImage = false, onClick }) => {
+    const { t } = useTranslation();
+    const navigate = useNavigate();
+    const location = useLocation();
 
-  // 태그 번역 함수
-  const translateTag = (tagName: string): string => {
-    // 태그 이름을 번역 키로 매핑
-    const tagTranslationMap: Record<string, string> = {
-      '관광/체험': t('community.tags.tourism'),
-      '식도락/맛집': t('community.tags.food'),
-      '교통/이동': t('community.tags.transport'),
-      '숙소/지역정보': t('community.tags.accommodation'),
-      '대사관/응급': t('community.tags.embassy'),
-      '부동산/계약': t('community.tags.realEstate'),
-      '생활환경/편의': t('community.tags.livingEnvironment'),
-      '문화/생활': t('community.tags.culture'),
-      '주거지 관리/유지': t('community.tags.housing'),
-      '학사/캠퍼스': t('community.tags.academic'),
-      '학업지원/시설': t('community.tags.studySupport'),
-      '행정/비자/서류': t('community.tags.visa'),
-      '기숙사/주거': t('community.tags.dormitory'),
-      '이력/채용준비': t('community.tags.career'),
-      '비자/법률/노동': t('community.tags.labor'),
-      '잡페어/네트워킹': t('community.tags.jobFair'),
-      '알바/파트타임': t('community.tags.partTime'),
-      테스트: t('community.tags.test'),
+    // 태그 번역 함수
+    const translateTag = (tagName: string): string => {
+      // 태그 이름을 번역 키로 매핑
+      const tagTranslationMap: Record<string, string> = {
+        '관광/체험': t('community.tags.tourism'),
+        '식도락/맛집': t('community.tags.food'),
+        '교통/이동': t('community.tags.transport'),
+        '숙소/지역정보': t('community.tags.accommodation'),
+        '대사관/응급': t('community.tags.embassy'),
+        '부동산/계약': t('community.tags.realEstate'),
+        '생활환경/편의': t('community.tags.livingEnvironment'),
+        '문화/생활': t('community.tags.culture'),
+        '주거지 관리/유지': t('community.tags.housing'),
+        '학사/캠퍼스': t('community.tags.academic'),
+        '학업지원/시설': t('community.tags.studySupport'),
+        '행정/비자/서류': t('community.tags.visa'),
+        '기숙사/주거': t('community.tags.dormitory'),
+        '이력/채용준비': t('community.tags.career'),
+        '비자/법률/노동': t('community.tags.labor'),
+        '잡페어/네트워킹': t('community.tags.jobFair'),
+        '알바/파트타임': t('community.tags.partTime'),
+        테스트: t('community.tags.test'),
+      };
+
+      return tagTranslationMap[tagName] || tagName;
     };
 
-    return tagTranslationMap[tagName] || tagName;
-  };
+    const handleCardClick = async () => {
+      // ViewTracker를 사용하여 게시글 클릭 추적 (조회수 증가는 PostDetailPage에서 처리)
+      const tags = Array.isArray(post.tags)
+        ? post.tags.map(tag => (typeof tag === 'string' ? tag : tag.name || ''))
+        : [];
 
-  const handleCardClick = async () => {
-    const uid = getUserId() || 0;
-    // content는 받아 올 수가 없어, api 호출 후 값을 받아와서 웹 로그로 전송
-    // noViewCount=true 파라미터를 추가하여 조회수 증가 방지
-    const res = await fetch(`${BASE}/community/post/${post.postId}?noViewCount=true`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: localStorage.getItem('auth_token') || '',
-      },
-    });
-    const postContent = await res.json();
+      ViewTracker.trackPostClick(post.postId, post.title, tags, location.pathname);
 
-    if (onClick) {
-      onClick(post);
-    } else {
-      navigate(`/community/post/${post.postId}`);
-    }
+      // 네비게이션 처리
+      if (onClick) {
+        onClick(post);
+      } else {
+        // PostDetailPage에서 조회수 처리가 이루어짐을 표시
+        sessionStorage.setItem('fromPostList', 'true');
+        navigate(`/community/post/${post.postId}`);
+      }
+    };
 
-    // 웹로그 전송
-    sendWebLog({
-      userId: uid,
-      content: JSON.stringify({
-        UID: uid,
-        ClickPath: location.pathname,
-        TAG: Array.isArray(post.tags) ? post.tags.join(',') : post.tags,
-        CurrentPath: location.pathname,
-        Event: 'click',
-        Content: null,
-        Timestamp: new Date().toISOString(),
-      }),
-    });
-  };
+    // 기본 썸네일 이미지
+    const defaultThumbnail = '../../../../assets/images/default-post-thumbnail.jpg';
 
-  // 기본 썸네일 이미지
-  const defaultThumbnail = '../../../../assets/images/default-post-thumbnail.jpg';
+    // 게시글 섬네일 이미지 결정 (files, thumbnail 속성 확인)
+    const thumbnailUrl = post.files && post.files.length > 0 ? post.files[0] : undefined;
 
-  // 게시글 섬네일 이미지 결정 (files, thumbnail 속성 확인)
-  const thumbnailUrl = post.files && post.files.length > 0 ? post.files[0] : undefined;
+    // 날짜 포맷팅
+    const formattedDate = post.createdAt
+      ? format(new Date(post.createdAt), 'yyyy-MM-dd HH:mm', { locale: ko })
+      : t('community.posts.noDate');
 
-  // 날짜 포맷팅
-  const formattedDate = post.createdAt
-    ? format(new Date(post.createdAt), 'yyyy-MM-dd HH:mm', { locale: ko })
-    : t('community.posts.noDate');
-
-  return (
-    <StyledCard>
-      {/* 게시글 이미지 */}
-      {!hideImage && (
-        <CardMediaWrapper onClick={handleCardClick}>
-          <CardMedia
-            component="img"
-            className="post-card-image"
-            image={thumbnailUrl || defaultThumbnail}
-            alt={post.title}
-          />
-        </CardMediaWrapper>
-      )}
-
-      <CardContentStyled onClick={handleCardClick}>
-        {/* 지역 정보 (모임일 경우) - 제목 위, 왼쪽 정렬 */}
-        {post.postType === '모임' && post.address && post.address !== '자유' && (
-          <AddressInfo sx={{ mb: 0.5, ml: 0, justifyContent: 'flex-start' }}>
-            <LocationOnIcon fontSize="small" />
-            <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
-              {post.address}
-            </Typography>
-          </AddressInfo>
+    return (
+      <StyledCard>
+        {/* 게시글 이미지 */}
+        {!hideImage && (
+          <CardMediaWrapper onClick={handleCardClick}>
+            <CardMedia
+              component="img"
+              className="post-card-image"
+              image={thumbnailUrl || defaultThumbnail}
+              alt={post.title}
+            />
+          </CardMediaWrapper>
         )}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-          <PostTitle variant="h6" sx={{ mb: 0, flexShrink: 0 }}>
+
+        <CardContentStyled onClick={handleCardClick}>
+          {/* 지역 정보 (모임일 경우) - 제목 위, 왼쪽 정렬 */}
+          {post.postType === '모임' && post.address && post.address !== '자유' && (
+            <AddressInfo sx={{ mb: 0.5, ml: 0, justifyContent: 'flex-start' }}>
+              <LocationOnIcon fontSize="small" />
+              <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
+                {post.address}
+              </Typography>
+            </AddressInfo>
+          )}
+
+          {/* 제목 */}
+          <PostTitle variant="h6" sx={{ mb: 1 }}>
             {post.title}
           </PostTitle>
-          {/* 작성자 정보 */}
-          <AuthorContainer sx={{ ml: 1 }}>
-            <StyledAvatar>{post.writer?.nickname?.charAt(0) || '?'}</StyledAvatar>
-            <AuthorName variant="body2">
-              {post.writer?.nickname || t('community.posts.anonymous')}
-            </AuthorName>
-          </AuthorContainer>
-        </Box>
-        <PostContent variant="body2">{post.content}</PostContent>
-        {/* 태그 표시 */}
-        {post.tags && post.tags.length > 0 && (
-          <TagsContainer>
-            {post.tags.map((tag, index) => {
-              const tagName = typeof tag === 'string' ? tag : (tag as any)?.name || '';
-              return <TagChip key={index} label={translateTag(tagName)} size="small" />;
-            })}
-          </TagsContainer>
-        )}
-      </CardContentStyled>
 
-      <CardActionsStyled
-        sx={{ flexDirection: 'column', alignItems: 'flex-start', gap: 0.5, height: 'auto' }}
-      >
-        {/* 메타 정보 (조회수, 좋아요, 싫어요, 댓글 수) */}
-        <MetaContainer sx={{ flexDirection: 'row', alignItems: 'center', gap: 2, mb: 0 }}>
-          <EnhancedTooltip title={t('community.posts.viewCount')}>
-            <MetaItem>
-              <VisibilityOutlinedIcon fontSize="small" />
-              <Typography variant="body2">{post.viewCount || post.views || 0}</Typography>
-            </MetaItem>
-          </EnhancedTooltip>
-          <EnhancedTooltip title={t('community.posts.likeCount')}>
-            <MetaItem>
-              <ThumbUpOutlinedIcon fontSize="small" />
-              <Typography variant="body2">{post.likeCount || post.like || 0}</Typography>
-            </MetaItem>
-          </EnhancedTooltip>
-          <EnhancedTooltip title={t('community.posts.dislikeCount')}>
-            <MetaItem>
-              <ThumbDownOutlinedIcon fontSize="small" />
-              <Typography variant="body2">{post.dislikeCount || post.dislike || 0}</Typography>
-            </MetaItem>
-          </EnhancedTooltip>
-          <EnhancedTooltip title={t('community.posts.commentCount')}>
-            <MetaItem>
-              <ChatBubbleOutlineIcon sx={{ fontSize: 18, color: '#888', mr: 0.5 }} />
-              <span>{post.commentCount ?? 0}</span>
-            </MetaItem>
-          </EnhancedTooltip>
-        </MetaContainer>
-        {/* 날짜 표시 - 아래쪽, 작게 */}
-        <Typography
-          variant="caption"
-          color="text.secondary"
-          sx={{ fontSize: '0.75rem', mt: 0, alignSelf: 'flex-end' }}
+          {/* 작성자 정보 */}
+          <AuthorContainer sx={{ mb: 1 }}>
+            <StyledAvatar>{post.writer?.nickname?.charAt(0) || '?'}</StyledAvatar>
+            <AuthorInfoBox>
+              <AuthorName variant="body2">
+                {post.writer?.nickname || t('community.posts.anonymous')}
+              </AuthorName>
+              {/* 국가 정보 표시 */}
+              {post.writer?.nation && (
+                <FlagContainer>
+                  <FlagDisplay nation={post.writer.nation} size="small" />
+                </FlagContainer>
+              )}
+            </AuthorInfoBox>
+          </AuthorContainer>
+          <PostContent variant="body2">{post.content}</PostContent>
+          {/* 태그 표시 */}
+          {post.tags && post.tags.length > 0 && (
+            <TagsContainer>
+              {post.tags.map((tag, index) => {
+                const tagName = typeof tag === 'string' ? tag : (tag as any)?.name || '';
+                return <TagChip key={index} label={translateTag(tagName)} size="small" />;
+              })}
+            </TagsContainer>
+          )}
+        </CardContentStyled>
+
+        <CardActionsStyled
+          sx={{ flexDirection: 'column', alignItems: 'flex-start', gap: 0.5, height: 'auto' }}
         >
-          {formattedDate}
-        </Typography>
-      </CardActionsStyled>
-    </StyledCard>
-  );
-};
+          {/* 메타 정보 (조회수, 좋아요, 싫어요, 댓글 수) */}
+          <MetaContainer sx={{ flexDirection: 'row', alignItems: 'center', gap: 2, mb: 0 }}>
+            <EnhancedTooltip title={t('community.posts.viewCount')}>
+              <MetaItem>
+                <VisibilityOutlinedIcon fontSize="small" />
+                <Typography variant="body2">{post.viewCount || post.views || 0}</Typography>
+              </MetaItem>
+            </EnhancedTooltip>
+            <EnhancedTooltip title={t('community.posts.likeCount')}>
+              <MetaItem>
+                <ThumbUpOutlinedIcon fontSize="small" />
+                <Typography variant="body2">{post.likeCount || post.like || 0}</Typography>
+              </MetaItem>
+            </EnhancedTooltip>
+            <EnhancedTooltip title={t('community.posts.dislikeCount')}>
+              <MetaItem>
+                <ThumbDownOutlinedIcon fontSize="small" />
+                <Typography variant="body2">{post.dislikeCount || post.dislike || 0}</Typography>
+              </MetaItem>
+            </EnhancedTooltip>
+            <EnhancedTooltip title={t('community.posts.commentCount')}>
+              <MetaItem>
+                <ChatBubbleOutlineIcon sx={{ fontSize: 18, color: '#888', mr: 0.5 }} />
+                <span>{post.commentCount ?? 0}</span>
+              </MetaItem>
+            </EnhancedTooltip>
+          </MetaContainer>
+          {/* 날짜 표시 - 아래쪽, 작게 */}
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ fontSize: '0.75rem', mt: 0, alignSelf: 'flex-end' }}
+          >
+            {formattedDate}
+          </Typography>
+        </CardActionsStyled>
+      </StyledCard>
+    );
+  },
+  (prevProps, nextProps) => {
+    // 커스텀 비교 함수: 의미있는 변경사항만 리렌더링
+    return (
+      prevProps.post.postId === nextProps.post.postId &&
+      prevProps.post.title === nextProps.post.title &&
+      prevProps.post.content === nextProps.post.content &&
+      prevProps.post.viewCount === nextProps.post.viewCount &&
+      prevProps.post.likeCount === nextProps.post.likeCount &&
+      prevProps.post.commentCount === nextProps.post.commentCount &&
+      prevProps.hideImage === nextProps.hideImage &&
+      prevProps.onClick === nextProps.onClick
+    );
+  }
+);
+
+PostCard.displayName = 'PostCard';
 
 export default PostCard;

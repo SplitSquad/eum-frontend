@@ -450,12 +450,15 @@ interface PageLayoutProps {
  */
 const PageLayout: React.FC<PageLayoutProps> = ({ children, title }) => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const [contentVisible, setContentVisible] = useState(true);
-  const [isLeaving, setIsLeaving] = useState(false);
-  const [content, setContent] = useState<React.ReactNode>(children);
+  
+  // 페이지 전환 애니메이션 제거 - 이중 깜빡임 방지
+  // const [contentVisible, setContentVisible] = useState(true);
+  // const [isLeaving, setIsLeaving] = useState(false);
+  // const [content, setContent] = useState<React.ReactNode>(children);
   const location = useLocation();
 
-  // 페이지 전환 감지 및 애니메이션 처리 - 부드러운 전환을 위한 개선
+  // 페이지 전환 감지 및 애니메이션 처리 - 제거하여 이중 애니메이션 방지
+  /*
   useEffect(() => {
     if (location && content !== children) {
       // 1. 페이드 아웃
@@ -472,6 +475,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({ children, title }) => {
       return () => clearTimeout(timer);
     }
   }, [children, location.pathname]);
+  */
 
   const toggleMobileSidebar = () => {
     setIsMobileSidebarOpen(!isMobileSidebarOpen);
@@ -519,13 +523,13 @@ const PageLayout: React.FC<PageLayoutProps> = ({ children, title }) => {
               )}
             </MobileMenuButton>
 
-            {/* 내용 영역 - 페이지 전환 시 이 부분만 변경됨 */}
-            <ContentArea isVisible={contentVisible} isLeaving={isLeaving}>
+            {/* 내용 영역 - 이중 애니메이션 제거로 즉시 표시 */}
+            <ContentArea isVisible={true} isLeaving={false}>
               <CornerOrnament />
               <BottomOrnament />
               <PageContent>
                 <BookTitle>{title}</BookTitle>
-                {content}
+                {children}
               </PageContent>
             </ContentArea>
           </Book>

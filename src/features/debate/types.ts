@@ -82,6 +82,7 @@ export interface DebateComment {
   replyCount: number;
   
   // 국가 정보
+  nation?: string; // 국가 정보 추가
   countryCode?: string;
   countryName?: string;
   
@@ -111,6 +112,7 @@ export interface DebateReply {
   };
   
   // 국가 정보
+  nation?: string; // 국가 정보 추가
   countryCode?: string;
   countryName?: string;
   
@@ -230,6 +232,9 @@ export interface CommentResDto {
   userId?: number; // 백엔드에서 userId를 제공할 수 있음
   createdAt: string;
   stance?: 'pro' | 'con';
+  nation?: string; // 국가 정보 추가
+  countryCode?: string; // 국가 코드 추가
+  countryName?: string; // 국가명 추가
 }
 
 export interface ReplyResDto {
@@ -241,6 +246,9 @@ export interface ReplyResDto {
   userName: string;
   userId?: number; // 백엔드에서 userId를 제공할 수 있음
   createdAt: string;
+  nation?: string; // 국가 정보 추가
+  countryCode?: string; // 국가 코드 추가
+  countryName?: string; // 국가명 추가
 }
 
 // API 응답을 프론트엔드 타입으로 변환하는 유틸리티 함수
@@ -292,6 +300,7 @@ export function mapDebateResToFrontend(dto: DebateResDto): Debate {
 export function mapCommentResToFrontend(dto: CommentResDto, debateId: number): DebateComment {
   // 디버그를 위한 로그 추가
   console.log(`[DEBUG] 댓글 매핑 (ID: ${dto.commentId}):`, dto);
+  console.log(`[DEBUG] 국가 정보 확인 - nation: ${dto.nation}, countryCode: ${dto.countryCode}, countryName: ${dto.countryName}`);
   
   // 댓글 내용으로부터 stance 값 추출
   let extractedStance: 'pro' | 'con' = 'pro'; // 기본값은 pro
@@ -326,13 +335,17 @@ export function mapCommentResToFrontend(dto: CommentResDto, debateId: number): D
     },
     stance: dto.stance || extractedStance, // 1순위: 백엔드 응답의 stance, 2순위: 내용에서 추출한 값, 3순위: 기본값 'pro'
     replyCount: dto.reply || 0,
-    isState: dto.isState
+    isState: dto.isState,
+    nation: dto.nation,
+    countryCode: dto.countryCode,
+    countryName: dto.countryName
   };
 }
 
 export function mapReplyResToFrontend(dto: ReplyResDto, commentId: number): DebateReply {
   // 디버그를 위한 로그 추가
   console.log(`[DEBUG] 답글 매핑 (ID: ${dto.replyId}):`, dto);
+  console.log(`[DEBUG] 답글 국가 정보 확인 - nation: ${dto.nation}, countryCode: ${dto.countryCode}, countryName: ${dto.countryName}`);
   
   return {
     id: dto.replyId,
@@ -349,7 +362,10 @@ export function mapReplyResToFrontend(dto: ReplyResDto, commentId: number): Deba
       sad: 0, // 백엔드에 없음
       unsure: 0, // 백엔드에 없음
     },
-    isState: dto.isState
+    isState: dto.isState,
+    nation: dto.nation,
+    countryCode: dto.countryCode,
+    countryName: dto.countryName
   };
 }
 

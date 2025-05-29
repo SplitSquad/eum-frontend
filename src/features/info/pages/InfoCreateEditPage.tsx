@@ -18,7 +18,6 @@ import { Selection } from '@tiptap-editor/components/tiptap-extension/selection-
 import { ImageUploadNode } from '@tiptap-editor/components/tiptap-node/image-upload-node/image-upload-node-extension';
 import { TrailingNode } from '@tiptap-editor/components/tiptap-extension/trailing-node-extension';
 import { handleImageUpload, MAX_FILE_SIZE } from '@tiptap-editor/lib/tiptap-utils';
-import { createInfo, updateInfo, uploadInfoImage, getInfoDetail } from '../api/infoApi';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 const categoryOptions = [
@@ -49,10 +48,10 @@ export default function InfoCreatePage() {
           navigate('/info');
           return;
         }
-
+        
         const parsed = JSON.parse(stored);
         const role = parsed?.state?.user?.role;
-
+        
         if (role !== 'ROLE_ADMIN') {
           alert('관리자만 접근할 수 있습니다.');
           navigate('/info');
@@ -82,7 +81,12 @@ export default function InfoCreatePage() {
     if (!isEdit) return;
     (async () => {
       try {
-        const data = await getInfoDetail(id!);
+        const token = localStorage.getItem('auth_token') || '';
+        const res = await fetch(`${API_BASE}/information/${id}`, {
+          headers: { Authorization: token },
+        });
+        if (!res.ok) throw new Error(res.statusText);
+        const data = await res.json();
         setTitle(data.title);
         setCategory(data.category);
         setContent(data.content); // JSON 문자열
@@ -122,7 +126,7 @@ export default function InfoCreatePage() {
         accept: 'image/*',
         maxSize: MAX_FILE_SIZE,
         limit: 3,
-        upload: uploadInfoImage,
+        upload: handleImageUpload,
       }),
       TrailingNode,
       Link.configure({ openOnClick: false }),
@@ -144,6 +148,8 @@ export default function InfoCreatePage() {
   // 제출 핸들러: POST vs PATCH 분기
   const handleSubmit = async () => {
     try {
+      const token = localStorage.getItem('auth_token') || '';
+
       // 에디터 JSON에서 이미지 URL만 뽑아서 배열로
       const doc = JSON.parse(content) as {
         type: string;
@@ -153,13 +159,42 @@ export default function InfoCreatePage() {
         .filter(node => node.type === 'image' && node.attrs?.src)
         .map(node => node.attrs!.src!);
 
+      let url = `${API_BASE}/information`;
+      let method: 'POST' | 'PATCH' = 'POST';
+      let body: any;
+
       if (isEdit) {
-        await updateInfo({ id: id!, title, content, files: imgs });
-        navigate(`/info/${id}`);
+        method = 'PATCH';
+        url += `/${id}`;
+        // PATCH 요청은 title, content, file 만
+        body = {
+          title,
+          content,
+          files: imgs,
+        };
       } else {
-        await createInfo({ title, content, category, files: imgs });
-        navigate('/info');
+        method = 'POST';
+        // POST 요청에는 category 추가
+        body = {
+          title,
+          content,
+          category,
+          files: imgs,
+        };
       }
+
+      const res = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token,
+        },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error(`${method} 실패: ${res.status}`);
+
+      // 등록 후 목록, 수정 후 상세로 이동
+      isEdit ? navigate(`/info/${id}`) : navigate('/info');
     } catch (err) {
       console.error(isEdit ? '게시글 수정 실패:' : '게시글 등록 실패:', err);
       alert(isEdit ? '수정에 실패했습니다.' : '등록에 실패했습니다.');

@@ -38,6 +38,7 @@ import TuneIcon from '@mui/icons-material/Tune';
 import CreateIcon from '@mui/icons-material/Create';
 import ClearIcon from '@mui/icons-material/Clear';
 import { styled } from '@mui/system';
+import { useSnackbar } from 'notistack';
 
 import SpringBackground from '../components/shared/SpringBackground';
 import CategoryTabs from '../components/shared/CategoryTabs';
@@ -99,7 +100,7 @@ interface LocalPostFilter {
   postType: PostType;
   location: string;
   tag?: string;
-  sortBy: 'latest' | 'popular';
+  sortBy: 'latest' | 'popular' | 'oldest';
   size: number;
   page: number;
   keyword?: string;
@@ -112,15 +113,17 @@ const PostListPage: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
   const location = useLocation();
+  const { enqueueSnackbar } = useSnackbar();
 
   // 상태 관리
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [showFilters, setShowFilters] = useState<boolean>(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [selectedRegion, setSelectedRegion] = useState<string>(t('community.filters.all'));
+  const [selectedRegion, setSelectedRegion] = useState<string>('전체');
   const [searchType, setSearchType] = useState<string>(t('community.searchType.titleContent'));
   const [isSearchMode, setIsSearchMode] = useState<boolean>(false);
   const [selectedPostType, setSelectedPostType] = useState<SelectablePostType>('ALL');
+  const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
 
   // 태그 번역 역변환 함수 (번역된 태그 → 한국어 원본 태그)
   const getOriginalTagName = (translatedTag: string): string => {
@@ -157,7 +160,40 @@ const PostListPage: React.FC = () => {
     living: [t('community.tags.realEstate'), t('community.tags.livingEnvironment'), t('community.tags.culture'), t('community.tags.housing')],
     study: [t('community.tags.academic'), t('community.tags.studySupport'), t('community.tags.visa'), t('community.tags.dormitory')],
     job: [t('community.tags.career'), t('community.tags.labor'), t('community.tags.jobFair'), t('community.tags.partTime')],
-    전체: [],
+    '전체': [], // 한국어 고정값 사용 (내부값)
+  };
+
+  // 내부 카테고리값 ↔ 표시값 매핑
+  const CATEGORY_INTERNAL_VALUES = {
+    ALL: '전체',
+    TRAVEL: 'travel', 
+    LIVING: 'living',
+    STUDY: 'study',
+    JOB: 'job',
+  } as const;
+
+  // 표시값 → 내부값 변환
+  const getInternalCategoryValue = (displayValue: string): string => {
+    // 이미 내부값이면 그대로 반환
+    if (Object.values(CATEGORY_INTERNAL_VALUES).includes(displayValue as any)) {
+      return displayValue;
+    }
+    
+    // 번역된 표시값을 내부값으로 변환
+    if (displayValue === t('community.filters.all')) return CATEGORY_INTERNAL_VALUES.ALL;
+    return displayValue; // 기본값
+  };
+
+  // 내부값 → 표시값 변환 
+  const getDisplayCategoryValue = (internalValue: string): string => {
+    switch (internalValue) {
+      case CATEGORY_INTERNAL_VALUES.ALL: return t('community.filters.all');
+      case CATEGORY_INTERNAL_VALUES.TRAVEL: return t('community.categories.travel');
+      case CATEGORY_INTERNAL_VALUES.LIVING: return t('community.categories.living');
+      case CATEGORY_INTERNAL_VALUES.STUDY: return t('community.categories.study');
+      case CATEGORY_INTERNAL_VALUES.JOB: return t('community.categories.job');
+      default: return internalValue;
+    }
   };
 
   // 현재 선택된 카테고리에 해당하는 태그 목록
@@ -178,15 +214,15 @@ const PostListPage: React.FC = () => {
   // 현재 URL에서 쿼리 파라미터 가져오기
   const queryParams = new URLSearchParams(location.search);
 
-  // URL 쿼리 파라미터에서 필터 상태 초기화
+  // URL 쿼리 파라미터에서 필터 상태 초기화 (상수 사용)
   const [filter, setFilter] = useState<LocalPostFilter>({
-    category: queryParams.get('category') || t('community.filters.all'),
-    location: queryParams.get('location') || t('community.filters.all'),
-    tag: queryParams.get('tag') || '',
-    sortBy: (queryParams.get('sortBy') as 'latest' | 'popular') || 'latest',
-    page: queryParams.get('page') ? parseInt(queryParams.get('page') as string) - 1 : 0,
+    category: queryParams.get('category') || '전체',
+    location: queryParams.get('location') || '자유',
+    tag: queryParams.get('tag') || undefined,
+    postType: (queryParams.get('postType') as PostType) || '자유',
+    sortBy: (queryParams.get('sortBy') as 'latest' | 'popular' | 'oldest') || 'latest',
     size: 6,
-    postType: (queryParams.get('postType') as PostType) || '',
+    page: parseInt(queryParams.get('page') || '1') - 1, // URL은 1부터 시작, 내부는 0부터
   });
 
   // 컴포넌트 마운트 시 게시글 목록 조회를 위한 트래킹
@@ -206,8 +242,16 @@ const PostListPage: React.FC = () => {
 
     console.log('PostListPage 컴포넌트 마운트, 게시글 목록 조회 시작');
 
+    // selectedCategory를 내부값으로 강제 설정 (번역된 값이 올 수 있으므로)
+    const currentCategory = selectedCategory;
+    const internalCategory = getInternalCategoryValue(currentCategory);
+    if (currentCategory !== internalCategory) {
+      console.log('[DEBUG] selectedCategory 내부값으로 수정:', currentCategory, '->', internalCategory);
+      setSelectedCategory(internalCategory);
+    }
+
     // 현재 카테고리에 맞는 태그 목록 설정
-    if (filter.category && filter.category !== t('community.filters.all')) {
+    if (filter.category && filter.category !== '전체') {
       setAvailableTags(
         categoryTags[filter.category as keyof typeof categoryTags] || []
       );
@@ -219,7 +263,7 @@ const PostListPage: React.FC = () => {
     }
 
     // 초기 로드 시 명시적으로 기본 필터 설정 (자유 게시글, 자유 지역)
-    const initialFilter = {
+    const initialFilter: LocalPostFilter = {
       ...filter,
       postType: '자유' as PostType,
       location: '자유',
@@ -247,6 +291,8 @@ const PostListPage: React.FC = () => {
 
     console.log('[DEBUG] 언어 변경 감지됨:', language);
     
+    // 언어 변경 시에는 현재 필터 상태 유지 (번역 정규화 제거)
+    
     // 검색 상태인 경우 검색 상태를 유지하면서 새로고침
     if (isSearchMode && searchTerm) {
       console.log('[DEBUG] 검색 상태에서 언어 변경 - 검색 상태 유지');
@@ -255,7 +301,13 @@ const PostListPage: React.FC = () => {
       setTimeout(() => {
         handleSearch();
       }, 100);
+    } else {
+      // 검색 상태가 아니면 일반 게시글 목록 새로고침
+      setTimeout(() => {
+        fetchPosts(filter);
+      }, 100);
     }
+    
     // 언어 변경 시 초기 데이터 로드 플래그 리셋
     hasInitialDataLoaded.current = false;
   }, [language]);
@@ -266,13 +318,13 @@ const PostListPage: React.FC = () => {
 
     // 현재 적용된 필터 정보 표시
     const filterInfo: string[] = [];
-    if (filter.category && filter.category !== t('community.filters.all')) {
+    if (filter.category && filter.category !== '전체') {
       filterInfo.push(`${t('community.filters.category')}: ${filter.category}`);
     }
     if (filter.postType) {
       filterInfo.push(`${t('community.postTypes.all')}: ${filter.postType}`);
     }
-    if (filter.location && filter.location !== t('community.filters.all') && filter.location !== '자유') {
+    if (filter.location && filter.location !== '전체' && filter.location !== '자유') {
       filterInfo.push(`${t('community.filters.region')}: ${filter.location}`);
     }
 
@@ -374,31 +426,42 @@ const PostListPage: React.FC = () => {
   const handleCategoryChange = (category: string) => {
     console.log('[DEBUG] 카테고리 변경:', category);
 
+    // 표시값을 내부값으로 변환
+    const internalCategory = getInternalCategoryValue(category);
+    console.log('[DEBUG] 내부 카테고리값:', internalCategory);
+
     // 이전 카테고리와 같으면 변경 없음
-    if (category === selectedCategory) {
+    if (internalCategory === selectedCategory) {
       console.log('[DEBUG] 같은 카테고리 선택, 변경 없음');
       return;
     }
 
-    // 카테고리 상태 업데이트
-    setSelectedCategory(category);
+    // 즉시 UI 상태 변경으로 깜빡임 방지
+    setIsTransitioning(true);
+
+    // 카테고리 상태 업데이트 (내부값으로)
+    setSelectedCategory(internalCategory);
 
     // 카테고리에 맞는 태그 목록 설정
-    if (category && category !== t('community.filters.all')) {
-      setAvailableTags(categoryTags[category as keyof typeof categoryTags] || []);
+    if (internalCategory && internalCategory !== '전체') {
+      setAvailableTags(categoryTags[internalCategory as keyof typeof categoryTags] || []);
     } else {
       setAvailableTags([]);
     }
 
-    // 새 필터 생성
+    // 새 필터 생성 (내부값으로)
     const newFilter = {
       ...filter,
-      category,
+      category: internalCategory,
       page: 0,
     };
 
+    // 약간의 지연 후 데이터 로드 (UI 상태 변경 후)
+    setTimeout(() => {
     // 필터 적용 (검색 상태 유지하면서)
     applyFilterWithSearchState(newFilter);
+      setIsTransitioning(false);
+    }, 50);
   };
 
   // 태그 선택 핸들러
@@ -480,6 +543,41 @@ const PostListPage: React.FC = () => {
       'Title': '제목',
       'Content': '내용',
       'Author': '작성자',
+      // 프랑스어
+      'Titre+Contenu': '제목_내용',
+      'Titre': '제목',
+      'Contenu': '내용',
+      'Auteur': '작성자',
+      // 독일어
+      'Titel+Inhalt': '제목_내용',
+      'Titel': '제목',
+      'Inhalt': '내용',
+      'Autor': '작성자',
+      // 스페인어
+      'Título+Contenido': '제목_내용',
+      'Título': '제목',
+      'Contenido': '내용',
+      'Autor_ES': '작성자', // 스페인어 작성자 구분
+      // 러시아어
+      'Заголовок+Содержание': '제목_내용',
+      'Заголовок': '제목',
+      'Содержание': '내용',
+      'Автор': '작성자',
+      // 일본어
+      'タイトル+内용': '제목_내용',
+      'タイトル': '제목',
+      '内容': '내용',
+      '作成者': '작성자',
+      // 중국어 간체
+      '标题+内容': '제목_내용',
+      '标题': '제목',
+      '内容_CN': '내용', // 중국어 간체 내용 구분
+      '作者_CN': '작성자', // 중국어 간체 작성자 구분
+      // 중국어 번체
+      '標題+內容': '제목_내용',
+      '標題': '제목',
+      '內容_TW': '내용', // 중국어 번체 내용 구분
+      '作者_TW': '작성자', // 중국어 번체 작성자 구분
     };
     
     convertedSearchType = searchTypeMapping[searchType] || searchType;
@@ -569,6 +667,9 @@ const PostListPage: React.FC = () => {
       return;
     }
 
+    // 즉시 UI 상태 변경으로 깜빡임 방지
+    setIsTransitioning(true);
+
     // 상태 업데이트
     setSelectedPostType(newPostType);
 
@@ -604,8 +705,12 @@ const PostListPage: React.FC = () => {
     // 페이지 초기화
     newFilter.page = 0;
 
+    // 약간의 지연 후 데이터 로드 (UI 상태 변경 후)
+    setTimeout(() => {
     // 필터 적용 (검색 상태 유지하면서)
     applyFilterWithSearchState(newFilter);
+      setIsTransitioning(false);
+    }, 50);
   };
 
   // 지역 변경 핸들러
@@ -709,6 +814,66 @@ const PostListPage: React.FC = () => {
         >
           {t('community.posts.writePost')}
         </Button>
+      </Box>
+
+      {/* 커뮤니티 타입 전환 버튼 */}
+      <Box
+        sx={{
+          mb: 3,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        <ToggleButtonGroup
+          color="primary"
+          value={location.pathname.includes('/groups') ? 'groups' : 'board'}
+          exclusive
+          onChange={(e, newType) => {
+            if (newType === 'groups') {
+              navigate('/community/groups');
+            } else if (newType === 'board') {
+              navigate('/community/board');
+            }
+          }}
+          size="large"
+          sx={{
+            bgcolor: 'rgba(255, 255, 255, 0.9)',
+            borderRadius: '50px',
+            border: '2px solid rgba(255, 170, 165, 0.3)',
+            boxShadow: '0 8px 24px rgba(255, 170, 165, 0.2)',
+            '& .MuiToggleButton-root': {
+              borderRadius: '50px',
+              border: 'none',
+              px: 4,
+              py: 1.5,
+              minWidth: '140px',
+              fontSize: '1.1rem',
+              fontWeight: 600,
+              transition: 'all 0.3s ease',
+              '&.Mui-selected': {
+                bgcolor: 'rgba(255, 170, 165, 0.9)',
+                color: 'white',
+                '&:hover': {
+                  bgcolor: 'rgba(255, 107, 107, 0.9)',
+                },
+              },
+              '&:not(.Mui-selected)': {
+                color: '#666',
+                '&:hover': {
+                  bgcolor: 'rgba(255, 235, 235, 0.5)',
+                },
+              },
+            },
+          }}
+        >
+          <ToggleButton value="groups">
+            소모임
+          </ToggleButton>
+          <ToggleButton value="board">
+            자유게시판
+          </ToggleButton>
+        </ToggleButtonGroup>
       </Box>
 
       {/* 상단 필터링 및 검색 영역 */}
@@ -973,19 +1138,19 @@ const PostListPage: React.FC = () => {
                   },
                 }}
               >
-                <ToggleButton value={t('community.filters.all')} sx={{ minWidth: isMobile ? '30%' : '20%' }}>
+                <ToggleButton value={CATEGORY_INTERNAL_VALUES.ALL} sx={{ minWidth: isMobile ? '30%' : '20%' }}>
                   {t('community.filters.all')}
                 </ToggleButton>
-                <ToggleButton value="travel" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
+                <ToggleButton value={CATEGORY_INTERNAL_VALUES.TRAVEL} sx={{ minWidth: isMobile ? '30%' : '20%' }}>
                   {t('community.categories.travel')}
                 </ToggleButton>
-                <ToggleButton value="living" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
+                <ToggleButton value={CATEGORY_INTERNAL_VALUES.LIVING} sx={{ minWidth: isMobile ? '30%' : '20%' }}>
                   {t('community.categories.living')}
                 </ToggleButton>
-                <ToggleButton value="study" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
+                <ToggleButton value={CATEGORY_INTERNAL_VALUES.STUDY} sx={{ minWidth: isMobile ? '30%' : '20%' }}>
                   {t('community.categories.study')}
                 </ToggleButton>
-                <ToggleButton value="job" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
+                <ToggleButton value={CATEGORY_INTERNAL_VALUES.JOB} sx={{ minWidth: isMobile ? '30%' : '20%' }}>
                   {t('community.categories.job')}
                 </ToggleButton>
               </ToggleButtonGroup>
@@ -1038,7 +1203,7 @@ const PostListPage: React.FC = () => {
       <SearchStatusIndicator />
 
       {/* 로딩 상태 표시 */}
-      {postLoading ? (
+      {postLoading || isTransitioning ? (
         <Box
           sx={{
             display: 'flex',

@@ -28,6 +28,7 @@ import useAuthStore from '../../../auth/store/authStore';
 import ReplyForm from '../ReplyForm';
 import ReportDialog, { ReportTargetType } from '../../../common/components/ReportDialog';
 import { useComments } from '../../hooks';
+import { useTranslation } from '../../../../shared/i18n';
 
 // 스타일링된 컴포넌트
 const CommentBox = styled(Box)(({ theme }) => ({
@@ -83,6 +84,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
   isReply = false,
   parentId,
 }) => {
+  const { t } = useTranslation();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [repliesVisible, setRepliesVisible] = useState(true);
@@ -228,10 +230,10 @@ const CommentItem: React.FC<CommentItemProps> = ({
 
           <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
             <MenuItem onClick={handleEditStart} sx={{ color: '#2196F3' }}>
-              수정하기
+              {t('community.comments.editComment')}
             </MenuItem>
             <MenuItem onClick={handleDelete} sx={{ color: '#f44336' }}>
-              삭제하기
+              {t('community.comments.deleteComment')}
             </MenuItem>
           </Menu>
         </Box>
@@ -275,7 +277,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
                   },
                 }}
               >
-                취소
+                {t('common.cancel')}
               </Button>
               <Button
                 size="small"
@@ -290,7 +292,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
                   boxShadow: '0 2px 4px rgba(255, 170, 165, 0.3)',
                 }}
               >
-                수정완료
+                {t('common.save')}
               </Button>
             </Box>
           </Box>

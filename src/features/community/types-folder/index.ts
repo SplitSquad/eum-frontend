@@ -208,6 +208,7 @@ export type User = {
   profileImage: string;
   profileImageUrl?: string;
   role?: string;
+  nation?: string;
 };
 
 export interface CommentType {

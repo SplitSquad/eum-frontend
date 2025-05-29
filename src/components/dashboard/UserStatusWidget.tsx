@@ -15,32 +15,35 @@ import {
   Button,
   CircularProgress,
 } from '@mui/material';
+
 import StarIcon from '@mui/icons-material/Star';
-import RecommendIcon from '@mui/icons-material/Recommend';
-import SmartToyIcon from '@mui/icons-material/SmartToy';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import WbSunnyIcon from '@mui/icons-material/WbSunny';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import ErrorIcon from '@mui/icons-material/Error';
 import UserService, {
   UserProfile,
   UserPreference,
   UserActivity,
+  UserActivityStats,
+  UserBadge as ServiceUserBadge,
 } from '../../services/user/userService';
 // @ts-ignore - 모듈을 찾을 수 없다는 오류를 무시
 import WeatherService, { WeatherInfo } from '../../services/weather/weatherService';
 import { useTranslation } from '../../shared/i18n';
 
-interface RecommendItem {
-  id: string;
-  text: string;
-  category: 'travel' | 'food' | 'activity' | 'event';
-  match: number; // 매칭 점수 (0-100)
+// 사용자 뱃지 인터페이스 추가
+interface UserBadge {
+  id: number;
+  name: string;
+  icon: string;
+  description: string;
+  unlocked: boolean;
 }
 
 // 카카오맵 API 스크립트 로드 함수 - 싱글톤 패턴 적용
@@ -99,6 +102,7 @@ const UserStatusWidget: React.FC = () => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [userPreference, setUserPreference] = useState<UserPreference | null>(null);
   const [userActivities, setUserActivities] = useState<UserActivity[]>([]);
+  const [userBadges, setUserBadges] = useState<UserBadge[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   // 날씨 정보 상태 추가
@@ -124,54 +128,29 @@ const UserStatusWidget: React.FC = () => {
   });
   const [isMapScriptLoaded, setIsMapScriptLoaded] = useState(false);
 
-  // 샘플 AI 추천 데이터
-  const recommendations: RecommendItem[] = [
-    { id: '1', text: '석촌호수 벚꽃 축제', category: 'event', match: 95 },
-    { id: '2', text: '북촌 한옥마을 탐방', category: 'travel', match: 88 },
-    { id: '3', text: '강남 신상 카페 탐방', category: 'food', match: 82 },
-    { id: '4', text: '남산 둘레길 트레킹', category: 'activity', match: 76 },
-  ];
-
-  // 카테고리별 색상
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case 'travel':
-        return { color: '#2196f3', bg: '#e3f2fd' };
-      case 'food':
-        return { color: '#f44336', bg: '#ffebee' };
-      case 'activity':
-        return { color: '#4caf50', bg: '#e8f5e9' };
-      case 'event':
-        return { color: '#9c27b0', bg: '#f3e5f5' };
-      default:
-        return { color: '#757575', bg: '#f5f5f5' };
-    }
-  };
-
-  const getCategoryLabel = (category: string) => {
-    switch (category) {
-      case 'travel':
-        return t('dashboard.categories.travel');
-      case 'food':
-        return t('dashboard.categories.food');
-      case 'activity':
-        return t('dashboard.categories.activity');
-      case 'event':
-        return t('dashboard.categories.event');
-      default:
-        return '';
-    }
-  };
-
   // 유저 경험치
   const userExp = 75; // 백분율 (0-100)
   const userLevel = userProfile?.userId ? Math.floor((userProfile.userId % 20) + 1) : 1; // 임시로 userId를 이용해 레벨 생성
   const nextLevel = userLevel + 1;
 
-  // 현재 시간
-  const now = new Date();
-  const hours = now.getHours();
-  const minutes = now.getMinutes();
+  // 현재 시간 상태 (실시간 업데이트)
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  // 실시간 시간 업데이트 useEffect
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000); // 1분마다 업데이트 (60,000ms)
+
+    // 컴포넌트 언마운트 시 타이머 정리
+    return () => {
+      clearInterval(timer);
+    };
+  }, []);
+
+  // 현재 시간 포맷팅
+  const hours = currentTime.getHours();
+  const minutes = currentTime.getMinutes();
   const formattedTime = `${hours}:${minutes < 10 ? '0' + minutes : minutes}`;
 
   // 시간대별 인사말
@@ -181,12 +160,62 @@ const UserStatusWidget: React.FC = () => {
     return t('dashboard.greeting.evening');
   };
 
-  // 최근 달성한 뱃지
-  const recentAchievement = {
-    name: t('dashboard.achievements.explorer'),
-    description: t('dashboard.achievements.explorerDescription'),
+  // 사용자 뱃지 생성 함수 (마이페이지와 동일한 로직)
+  const generateUserBadges = (postsCount: number, commentsCount: number, debatesCount: number, bookmarksCount: number): UserBadge[] => {
+    const totalActivities = postsCount + commentsCount + debatesCount;
+    const badges: UserBadge[] = [];
+
+    if (postsCount > 0) {
+      badges.push({
+        id: 1,
+        name: '첫 게시글',
+        icon: '📝',
+        description: '첫 번째 게시글을 작성했습니다!',
+        unlocked: true,
+      });
+    }
+
+    if (commentsCount >= 10) {
+      badges.push({
+        id: 2,
+        name: '소통왕',
+        icon: '💬',
+        description: '10개 이상의 댓글을 작성했습니다!',
+        unlocked: true,
+      });
+    }
+
+    if (debatesCount > 0) {
+      badges.push({
+        id: 3,
+        name: '토론 참여자',
+        icon: '🗳️',
+        description: '토론에 참여하여 의견을 표현했습니다!',
+        unlocked: true,
+      });
+    }
+
+    if (bookmarksCount > 0) {
+      badges.push({
+        id: 4,
+        name: '지식 수집가',
+        icon: '📚',
+        description: '첫 번째 북마크를 추가했습니다!',
+        unlocked: true,
+      });
+    }
+
+    if (totalActivities >= 10) {
+      badges.push({
+        id: 5,
+        name: '활발한 활동가',
     icon: '🌟',
-    date: t('dashboard.achievements.today'),
+        description: '10개 이상의 활동을 완료했습니다!',
+        unlocked: true,
+      });
+    }
+
+    return badges;
   };
 
   // 컴포넌트 마운트 시 카카오맵 스크립트 미리 로드
@@ -200,7 +229,7 @@ const UserStatusWidget: React.FC = () => {
       });
   }, []);
 
-  // 사용자 정보 및 날씨 정보 가져오기
+  // 사용자 데이터 로드
   useEffect(() => {
     const fetchUserData = async () => {
       setIsLoading(true);
@@ -218,6 +247,31 @@ const UserStatusWidget: React.FC = () => {
         // 사용자 활동 정보 가져오기
         const activities = await UserService.getRecentActivities();
         setUserActivities(activities);
+
+        // 사용자 활동 통계 및 뱃지 정보 가져오기
+        try {
+          // 실제 API에서 활동 통계 가져오기
+          const activityStats = await UserService.getActivityStats();
+          
+          // 활동 통계를 기반으로 뱃지 생성
+          const badges = generateUserBadges(
+            activityStats.postsCount,
+            activityStats.commentsCount,
+            activityStats.debatesCount,
+            activityStats.bookmarksCount
+          );
+          setUserBadges(badges);
+        } catch (badgeError) {
+          console.warn('뱃지 정보 가져오기 실패, 임시 데이터 사용:', badgeError);
+          // API 실패 시 임시 데이터 사용
+          const postsCount = Math.floor(Math.random() * 15);
+          const commentsCount = Math.floor(Math.random() * 25);
+          const debatesCount = Math.floor(Math.random() * 8);
+          const bookmarksCount = Math.floor(Math.random() * 12);
+          
+          const badges = generateUserBadges(postsCount, commentsCount, debatesCount, bookmarksCount);
+          setUserBadges(badges);
+        }
 
         // 사용자 위치 정보 가져오기
         try {
@@ -322,6 +376,10 @@ const UserStatusWidget: React.FC = () => {
           { id: '2', type: '리뷰 작성', date: '3일 전', streak: 0 },
           { id: '3', type: '장소 저장', date: '1주일 전', streak: 0 },
         ]);
+
+        // 에러 발생 시에도 임시 뱃지 데이터 설정
+        const badges = generateUserBadges(5, 12, 3, 8);
+        setUserBadges(badges);
       } finally {
         setIsLoading(false);
       }
@@ -531,7 +589,7 @@ const UserStatusWidget: React.FC = () => {
                       {formattedTime}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      {now.toLocaleDateString('ko-KR', {
+                      {currentTime.toLocaleDateString('ko-KR', {
                         weekday: 'short',
                         month: 'short',
                         day: 'numeric',
@@ -665,43 +723,31 @@ const UserStatusWidget: React.FC = () => {
                     fontSize: '1.5rem',
                   }}
                 >
-                  {recentAchievement.icon}
+                  {userBadges.length > 0 ? userBadges[0].icon : '🌟'}
                 </Box>
                 <Box sx={{ flex: 1 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <EmojiEventsIcon sx={{ fontSize: 16, color: 'warning.main', mr: 0.5 }} />
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                      {t('dashboard.userStatus.newBadgeEarned')}
+                      {userBadges.length > 0 ? userBadges[0].name : t('dashboard.userStatus.newBadgeEarned')}
                     </Typography>
                   </Box>
                   <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                    {recentAchievement.name}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {recentAchievement.description}
+                    {userBadges.length > 0 ? userBadges[0].description : t('dashboard.userStatus.newBadgeDescription')}
                   </Typography>
                 </Box>
-                <Chip
-                  label={recentAchievement.date}
-                  size="small"
-                  sx={{
-                    height: 20,
-                    fontSize: '0.65rem',
-                    bgcolor: 'background.default',
-                  }}
-                />
               </Box>
             </Box>
           </Box>
 
-          {/* 우측 컬럼: AI 추천 + 관심사 */}
+          {/* 우측 컬럼: 날씨 기반 활동 추천 */}
           <Box sx={{ flex: { xs: '1', md: '5' }, width: { xs: '100%', md: '40%' } }}>
-            {/* AI 추천 섹션 */}
+            {/* 날씨 기반 활동 추천 섹션 */}
             <Box sx={{ mb: 2 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                <SmartToyIcon sx={{ mr: 1, color: 'primary.main' }} />
+                <WbSunnyIcon sx={{ mr: 1, color: 'primary.main' }} />
                 <Typography variant="subtitle1" fontWeight={600}>
-                  {t('dashboard.userStatus.aiRecommendations')}
+                  {t('dashboard.userStatus.weatherBasedRecommendations')}
                 </Typography>
               </Box>
 
@@ -714,80 +760,7 @@ const UserStatusWidget: React.FC = () => {
                   mb: 2,
                 }}
               >
-                <List disablePadding>
-                  {recommendations.map(item => (
-                    <ListItem key={item.id} disablePadding sx={{ mb: 1.5, display: 'block' }}>
-                      <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
-                        <RecommendIcon sx={{ mt: 0.5, mr: 1.5, color: 'primary.light' }} />
-                        <Box sx={{ flex: 1 }}>
-                          <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>
-                            {item.text}
-                          </Typography>
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'space-between',
-                            }}
-                          >
-                            <Chip
-                              label={getCategoryLabel(item.category)}
-                              size="small"
-                              sx={{
-                                height: 20,
-                                fontSize: '0.65rem',
-                                bgcolor: getCategoryColor(item.category).bg,
-                                color: getCategoryColor(item.category).color,
-                              }}
-                            />
-                            <Typography
-                              variant="caption"
-                              sx={{
-                                color:
-                                  item.match > 90
-                                    ? 'success.main'
-                                    : item.match > 80
-                                      ? 'primary.main'
-                                      : 'text.secondary',
-                              }}
-                            >
-                              {item.match}% 매치
-                            </Typography>
-                          </Box>
-                        </Box>
-                      </Box>
-                    </ListItem>
-                  ))}
-                </List>
-
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  size="small"
-                  endIcon={<OpenInNewIcon />}
-                  sx={{ mt: 1, borderRadius: 2, textTransform: 'none' }}
-                >
-                  더 많은 추천 보기
-                </Button>
-              </Box>
-            </Box>
-
-            {/* 관심사 섹션 */}
-            <Box>
-              <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
-                {t('dashboard.userStatus.weatherBasedTitle')}
-              </Typography>
-
-              <Box
-                sx={{
-                  p: 2,
-                  bgcolor: 'background.paper',
-                  borderRadius: 2,
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-                  mb: 2,
-                }}
-              >
-                {/* 날씨 정보 표시 */}
+                {/* 현재 날씨 정보 */}
                 <Box
                   sx={{
                     display: 'flex',
@@ -823,9 +796,9 @@ const UserStatusWidget: React.FC = () => {
                     </Typography>
                     {weatherInfo.humidity && (
                       <Typography variant="caption" color="text.secondary">
-                        {t('dashboard.userStatus.humidity')}: {weatherInfo.humidity}% |
+                        습도: {weatherInfo.humidity}% |
                         {weatherInfo.forecast[0].precipitationProbability
-                          ? ` ${t('dashboard.userStatus.precipitationProbability')}: ${weatherInfo.forecast[0].precipitationProbability}%`
+                          ? ` 강수확률: ${weatherInfo.forecast[0].precipitationProbability}%`
                           : ''}
                       </Typography>
                     )}
@@ -868,7 +841,7 @@ const UserStatusWidget: React.FC = () => {
                         )}
                         {day.precipitationProbability !== undefined && (
                           <Typography variant="caption" color="text.secondary" display="block">
-                            {t('dashboard.userStatus.precipitationProbability')}: {day.precipitationProbability}%
+                            강수확률: {day.precipitationProbability}%
                           </Typography>
                         )}
                       </Box>
@@ -878,11 +851,14 @@ const UserStatusWidget: React.FC = () => {
 
                 {/* 날씨 기반 추천 활동 */}
                 <Typography variant="body2" sx={{ fontWeight: 600, mb: 1.5 }}>
-                  {t('dashboard.userStatus.weatherBasedRecommendations')}
+                  오늘 같은 날씨에 어울리는 활동
                 </Typography>
 
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                  {getWeatherBasedRecommendations(weatherInfo.current, t).map((item, index) => (
+                  {getWeatherBasedRecommendations(weatherInfo.current, t)
+                    .sort(() => Math.random() - 0.5) // 랜덤 정렬
+                    .slice(0, 3) // 3개만 선택
+                    .map((item, index) => (
                     <Box
                       key={index}
                       sx={{
@@ -905,51 +881,110 @@ const UserStatusWidget: React.FC = () => {
                     </Box>
                   ))}
                 </Box>
-
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  size="small"
-                  sx={{ mt: 2, borderRadius: 2, textTransform: 'none' }}
-                >
-                  {t('dashboard.userStatus.moreRecommendations')}
-                </Button>
               </Box>
             </Box>
 
-            {/* 알림 섹션 */}
+            {/* 사용자 관심사 기반 콘텐츠 */}
+            <Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                <StarIcon sx={{ mr: 1, color: 'primary.main' }} />
+                <Typography variant="subtitle1" fontWeight={600}>
+                  나의 관심사
+                </Typography>
+              </Box>
+
             <Box
               sx={{
                 p: 2,
                 bgcolor: 'background.paper',
                 borderRadius: 2,
                 boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-                display: 'flex',
-                alignItems: 'center',
-              }}
-            >
-              <NotificationsActiveIcon sx={{ fontSize: 20, color: 'primary.main', mr: 1.5 }} />
-              <Box sx={{ flex: 1 }}>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                  {t('dashboard.userStatus.notificationSettings')}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {t('dashboard.userStatus.notificationDescription')}
-                </Typography>
-              </Box>
-              <Button
-                variant="outlined"
-                size="small"
-                sx={{
-                  minWidth: 'unset',
-                  borderRadius: 2,
-                  boxShadow: 'none',
-                  px: 2,
-                  textTransform: 'none',
                 }}
               >
-{t('dashboard.userStatus.settings')}
-              </Button>
+                {/* 관심사 태그들 */}
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+                  {userPreference?.interests?.map((interest, index) => (
+                    <Chip
+                      key={index}
+                      label={interest}
+                      size="small"
+                      sx={{
+                        bgcolor: getInterestColor(interest).bg,
+                        color: getInterestColor(interest).color,
+                        fontWeight: 500,
+                      }}
+                    />
+                  )) || (
+                    <Typography variant="caption" color="text.secondary">
+                      관심사를 설정해보세요!
+                    </Typography>
+                  )}
+                </Box>
+
+                {/* 관심사 기반 랜덤 이미지/콘텐츠 */}
+                {userPreference?.interests && userPreference.interests.length > 0 && (
+                  <Box
+                    sx={{
+                      position: 'relative',
+                      height: 120,
+                      borderRadius: 2,
+                      overflow: 'hidden',
+                      background: getRandomGradient(userPreference.interests),
+                display: 'flex',
+                alignItems: 'center',
+                      justifyContent: 'center',
+                      mb: 2,
+              }}
+            >
+                    <Box
+                      sx={{
+                        textAlign: 'center',
+                        color: 'white',
+                        textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                      }}
+                    >
+                      <Typography variant="h4" sx={{ mb: 1 }}>
+                        {getRandomEmoji(userPreference.interests)}
+                </Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        {getRandomQuote(userPreference.interests)}
+                </Typography>
+              </Box>
+                  </Box>
+                )}
+
+                {/* 관심사 기반 추천 콘텐츠 */}
+                <Typography variant="body2" sx={{ fontWeight: 600, mb: 1.5 }}>
+                  관심사 기반 추천
+                </Typography>
+
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  {getInterestBasedContent(userPreference?.interests || [])
+                    .slice(0, 2)
+                    .map((item, index) => (
+                    <Box
+                      key={index}
+                sx={{
+                        p: 1.5,
+                        borderRadius: 1.5,
+                        bgcolor: item.bgColor,
+                        display: 'flex',
+                        alignItems: 'center',
+                }}
+              >
+                      <Box sx={{ fontSize: '1.2rem', mr: 1.5 }}>{item.icon}</Box>
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          {item.title}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {item.description}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
             </Box>
           </Box>
         </Box>
@@ -968,6 +1003,120 @@ const getWeatherIcon = (status: string): string => {
   return '☀️'; // 기본값은 맑음
 };
 
+// 관심사별 색상 매핑
+const getInterestColor = (interest: string) => {
+  const colorMap: { [key: string]: { color: string; bg: string } } = {
+    '여행': { color: '#2196f3', bg: '#e3f2fd' },
+    '음식': { color: '#f44336', bg: '#ffebee' },
+    '사진': { color: '#9c27b0', bg: '#f3e5f5' },
+    '음악': { color: '#ff9800', bg: '#fff3e0' },
+    '역사': { color: '#795548', bg: '#efebe9' },
+    '문화': { color: '#607d8b', bg: '#eceff1' },
+    '스포츠': { color: '#4caf50', bg: '#e8f5e9' },
+    '예술': { color: '#e91e63', bg: '#fce4ec' },
+    '기술': { color: '#3f51b5', bg: '#e8eaf6' },
+    '자연': { color: '#8bc34a', bg: '#f1f8e9' },
+  };
+  return colorMap[interest] || { color: '#757575', bg: '#f5f5f5' };
+};
+
+// 관심사 기반 랜덤 그라디언트 생성
+const getRandomGradient = (interests: string[]): string => {
+  const gradients = [
+    'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+    'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+    'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+    'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+    'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+    'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
+    'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
+  ];
+  
+  // 관심사에 따라 특정 그라디언트 선택하거나 랜덤 선택
+  const index = interests.length > 0 ? interests[0].length % gradients.length : Math.floor(Math.random() * gradients.length);
+  return gradients[index];
+};
+
+// 관심사 기반 랜덤 이모지 생성
+const getRandomEmoji = (interests: string[]): string => {
+  const emojiMap: { [key: string]: string[] } = {
+    '여행': ['✈️', '🗺️', '🏖️', '🏔️', '🎒'],
+    '음식': ['🍕', '🍜', '🍰', '🥘', '🍣'],
+    '사진': ['📸', '🎨', '🖼️', '📷', '🌅'],
+    '음악': ['🎵', '🎸', '🎹', '🎤', '🎧'],
+    '역사': ['🏛️', '📚', '⚱️', '🗿', '📜'],
+    '문화': ['🎭', '🎪', '🎨', '🏛️', '📖'],
+    '스포츠': ['⚽', '🏀', '🎾', '🏃', '🚴'],
+    '예술': ['🎨', '🖌️', '🎭', '🖼️', '✨'],
+    '기술': ['💻', '🔬', '🚀', '⚡', '🤖'],
+    '자연': ['🌿', '🌸', '🦋', '🌳', '🌺'],
+  };
+  
+  const allEmojis = interests.flatMap(interest => emojiMap[interest] || ['✨']);
+  return allEmojis.length > 0 ? allEmojis[Math.floor(Math.random() * allEmojis.length)] : '✨';
+};
+
+// 관심사 기반 랜덤 명언 생성
+const getRandomQuote = (interests: string[]): string => {
+  const quotes: { [key: string]: string[] } = {
+    '여행': ['여행은 마음을 넓혀줍니다', '새로운 곳에서 새로운 나를 발견하세요', '모험이 기다리고 있어요'],
+    '음식': ['맛있는 음식은 행복의 시작', '새로운 맛을 탐험해보세요', '요리는 사랑의 표현입니다'],
+    '사진': ['순간을 영원히 담아보세요', '렌즈 너머의 세상을 발견하세요', '아름다운 순간을 기록하세요'],
+    '음악': ['음악은 마음의 언어입니다', '멜로디가 당신을 위로해줄 거예요', '리듬에 몸을 맡겨보세요'],
+    '역사': ['과거에서 미래를 배워요', '역사는 최고의 스승입니다', '시간을 거슬러 올라가보세요'],
+    '문화': ['다양성 속에서 아름다움을 찾아요', '문화는 우리를 연결합니다', '새로운 문화를 경험해보세요'],
+    '스포츠': ['건강한 몸에 건강한 정신', '도전하고 성장하세요', '운동으로 활력을 충전하세요'],
+    '예술': ['창의성을 발휘해보세요', '예술은 영혼의 표현입니다', '아름다움을 창조하세요'],
+    '기술': ['기술로 세상을 바꿔보세요', '혁신은 상상에서 시작됩니다', '미래를 만들어가세요'],
+    '자연': ['자연과 하나가 되어보세요', '푸른 자연에서 힐링하세요', '자연의 소중함을 느껴보세요'],
+  };
+  
+  const allQuotes = interests.flatMap(interest => quotes[interest] || ['오늘도 좋은 하루 되세요!']);
+  return allQuotes.length > 0 ? allQuotes[Math.floor(Math.random() * allQuotes.length)] : '오늘도 좋은 하루 되세요!';
+};
+
+// 관심사 기반 추천 콘텐츠 생성
+const getInterestBasedContent = (interests: string[]): Array<{
+  icon: string;
+  title: string;
+  description: string;
+  bgColor: string;
+}> => {
+  const contentMap: { [key: string]: Array<{ icon: string; title: string; description: string; bgColor: string }> } = {
+    '여행': [
+      { icon: '🗺️', title: '서울 숨은 명소 탐방', description: '현지인만 아는 특별한 장소들', bgColor: 'rgba(33, 150, 243, 0.1)' },
+      { icon: '📍', title: '주변 관광지 추천', description: '가까운 곳의 아름다운 여행지', bgColor: 'rgba(33, 150, 243, 0.1)' },
+    ],
+    '음식': [
+      { icon: '🍜', title: '맛집 탐방 코스', description: '이 지역 최고의 맛집들', bgColor: 'rgba(244, 67, 54, 0.1)' },
+      { icon: '👨‍🍳', title: '요리 클래스 추천', description: '새로운 요리 기술을 배워보세요', bgColor: 'rgba(244, 67, 54, 0.1)' },
+    ],
+    '사진': [
+      { icon: '📸', title: '포토 스팟 추천', description: '인스타그램에 올릴 완벽한 장소', bgColor: 'rgba(156, 39, 176, 0.1)' },
+      { icon: '🌅', title: '사진 촬영 팁', description: '더 나은 사진을 위한 노하우', bgColor: 'rgba(156, 39, 176, 0.1)' },
+    ],
+    '음악': [
+      { icon: '🎵', title: '콘서트 정보', description: '이번 주 열리는 공연들', bgColor: 'rgba(255, 152, 0, 0.1)' },
+      { icon: '🎸', title: '음악 레슨 추천', description: '새로운 악기를 배워보세요', bgColor: 'rgba(255, 152, 0, 0.1)' },
+    ],
+    '역사': [
+      { icon: '🏛️', title: '역사 박물관 투어', description: '과거로의 시간 여행', bgColor: 'rgba(121, 85, 72, 0.1)' },
+      { icon: '📚', title: '역사 도서 추천', description: '흥미진진한 역사 이야기', bgColor: 'rgba(121, 85, 72, 0.1)' },
+    ],
+  };
+  
+  const defaultContent = [
+    { icon: '✨', title: '새로운 취미 찾기', description: '관심사를 설정하고 맞춤 추천을 받아보세요', bgColor: 'rgba(96, 125, 139, 0.1)' },
+    { icon: '🎯', title: '목표 설정하기', description: '새로운 도전을 시작해보세요', bgColor: 'rgba(76, 175, 80, 0.1)' },
+  ];
+  
+  if (interests.length === 0) return defaultContent;
+  
+  const allContent = interests.flatMap(interest => contentMap[interest] || []);
+  return allContent.length > 0 ? allContent : defaultContent;
+};
+
 // 날씨 기반 추천 활동 생성
 const getWeatherBasedRecommendations = (
   weatherStatus: string,
@@ -979,69 +1128,135 @@ const getWeatherBasedRecommendations = (
   bgColor: string;
 }> => {
   if (weatherStatus.includes('비')) {
-    // 비 오는 날 추천
+    // 비 오는 날 추천 (6개 활동)
     return [
       {
         icon: '📚',
-        title: t('dashboard.userStatus.activities.readingDay'),
-        description: t('dashboard.userStatus.activities.readingDescription'),
+        title: '독서하기',
+        description: '비 오는 날엔 따뜻한 실내에서 책 읽기',
         bgColor: 'rgba(96, 125, 139, 0.1)',
       },
       {
         icon: '🎬',
-        title: t('dashboard.userStatus.activities.movieWatching'),
-        description: t('dashboard.userStatus.activities.movieDescription'),
+        title: '영화 감상',
+        description: '집에서 편안하게 영화 보기',
         bgColor: 'rgba(233, 30, 99, 0.1)',
       },
       {
         icon: '🍲',
-        title: t('dashboard.userStatus.activities.cooking'),
-        description: t('dashboard.userStatus.activities.cookingDescription'),
+        title: '요리하기',
+        description: '새로운 레시피로 요리 도전',
         bgColor: 'rgba(0, 188, 212, 0.1)',
+      },
+      {
+        icon: '🎨',
+        title: '그림 그리기',
+        description: '창의적인 시간 보내기',
+        bgColor: 'rgba(255, 193, 7, 0.1)',
+      },
+      {
+        icon: '🧘',
+        title: '명상하기',
+        description: '빗소리와 함께 마음 정리',
+        bgColor: 'rgba(103, 58, 183, 0.1)',
+      },
+      {
+        icon: '🎵',
+        title: '음악 듣기',
+        description: '감성적인 음악과 함께',
+        bgColor: 'rgba(233, 30, 99, 0.1)',
       },
     ];
   } else if (weatherStatus.includes('흐림')) {
-    // 흐린 날 추천
+    // 흐린 날 추천 (6개 활동)
     return [
       {
         icon: '🎭',
-        title: t('dashboard.userStatus.activities.exhibition'),
-        description: t('dashboard.userStatus.activities.exhibitionDescription'),
+        title: '전시회 관람',
+        description: '실내 문화 활동 즐기기',
         bgColor: 'rgba(255, 152, 0, 0.1)',
       },
       {
         icon: '☕',
-        title: t('dashboard.userStatus.activities.cafeTour'),
-        description: t('dashboard.userStatus.activities.cafeDescription'),
+        title: '카페 투어',
+        description: '분위기 좋은 카페에서 휴식',
         bgColor: 'rgba(121, 85, 72, 0.1)',
       },
       {
         icon: '🛍️',
-        title: t('dashboard.userStatus.activities.shopping'),
-        description: t('dashboard.userStatus.activities.shoppingDescription'),
+        title: '쇼핑하기',
+        description: '실내 쇼핑몰에서 여유롭게',
         bgColor: 'rgba(156, 39, 176, 0.1)',
+      },
+      {
+        icon: '📖',
+        title: '도서관 가기',
+        description: '조용한 공간에서 공부하기',
+        bgColor: 'rgba(63, 81, 181, 0.1)',
+      },
+      {
+        icon: '🎪',
+        title: '박물관 방문',
+        description: '역사와 문화 탐방',
+        bgColor: 'rgba(255, 87, 34, 0.1)',
+      },
+      {
+        icon: '🎯',
+        title: '실내 스포츠',
+        description: '볼링, 당구 등 실내 활동',
+        bgColor: 'rgba(76, 175, 80, 0.1)',
       },
     ];
   } else {
-    // 맑은 날 추천
+    // 맑은 날 추천 (8개 활동)
     return [
       {
         icon: '🏞️',
-        title: t('dashboard.userStatus.activities.hanriverPicnic'),
-        description: t('dashboard.userStatus.activities.picnicDescription'),
+        title: '한강 피크닉',
+        description: '맑은 날씨에 야외 피크닉',
         bgColor: 'rgba(33, 150, 243, 0.1)',
       },
       {
         icon: '🚲',
-        title: t('dashboard.userStatus.activities.bikeRiding'),
-        description: t('dashboard.userStatus.activities.bikeDescription'),
+        title: '자전거 타기',
+        description: '상쾌한 바람과 함께 라이딩',
         bgColor: 'rgba(76, 175, 80, 0.1)',
       },
       {
         icon: '📸',
-        title: t('dashboard.userStatus.activities.photography'),
-        description: t('dashboard.userStatus.activities.photoDescription'),
+        title: '사진 촬영',
+        description: '아름다운 풍경 담기',
         bgColor: 'rgba(156, 39, 176, 0.1)',
+      },
+      {
+        icon: '🥾',
+        title: '등산하기',
+        description: '산에서 자연과 함께',
+        bgColor: 'rgba(139, 195, 74, 0.1)',
+      },
+      {
+        icon: '🏃',
+        title: '조깅하기',
+        description: '공원에서 가벼운 운동',
+        bgColor: 'rgba(255, 152, 0, 0.1)',
+      },
+      {
+        icon: '🌸',
+        title: '공원 산책',
+        description: '여유롭게 자연 감상',
+        bgColor: 'rgba(233, 30, 99, 0.1)',
+      },
+      {
+        icon: '⛵',
+        title: '수상 스포츠',
+        description: '강이나 바다에서 액티비티',
+        bgColor: 'rgba(0, 188, 212, 0.1)',
+      },
+      {
+        icon: '🎪',
+        title: '야외 축제',
+        description: '지역 축제나 이벤트 참여',
+        bgColor: 'rgba(255, 193, 7, 0.1)',
       },
     ];
   }
