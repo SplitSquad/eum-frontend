@@ -42,6 +42,7 @@ interface PostListProps {
   error?: string | null;
   showPagination?: boolean;
   emptyMessage?: string;
+  isGroup?: boolean;
 }
 
 /**
@@ -55,6 +56,7 @@ const PostList: React.FC<PostListProps> = ({
   error: propError,
   showPagination = true,
   emptyMessage,
+  isGroup = false,
 }) => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -272,6 +274,7 @@ const PostList: React.FC<PostListProps> = ({
           border: '1px solid rgba(255, 170, 165, 0.3)',
         }}
       >*/}
+      {/*}
       <Typography
         variant="body1"
         sx={{
@@ -288,7 +291,7 @@ const PostList: React.FC<PostListProps> = ({
             : t('community.messages.totalPosts', {
                 count: (totalItems || displayPosts.length).toString(),
               })}
-      </Typography>
+      </Typography>*/}
       {/*</Paper>*/}
 
       {title && (
@@ -310,7 +313,7 @@ const PostList: React.FC<PostListProps> = ({
       {/* 전체 화면 로딩은 초기 로딩시에만 표시 */}
       {loading && !isDataAvailableDuringLoading && (
         <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
-          <CircularProgress size={40} sx={{ color: '#FF9999' }} />
+          <CircularProgress size={40} sx={{ color: '#bdbdbd' }} />
         </Box>
       )}
 
@@ -324,14 +327,14 @@ const PostList: React.FC<PostListProps> = ({
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+            gridTemplateColumns: isMobile ? '1fr' : isGroup ? 'repeat(3, 1fr)' : 'repeat(1, 1fr)',
             gap: 3,
             width: '100%',
             opacity: isDataAvailableDuringLoading ? 0.7 : 1, // 로딩 중일 때 살짝 투명하게
           }}
         >
           {displayPosts.map(post => (
-            <PostCard key={post.postId} post={post as PostSummary} />
+            <PostCard key={post.postId} post={post as PostSummary} isGroup={isGroup} />
           ))}
         </Box>
       </Fade>
@@ -343,9 +346,9 @@ const PostList: React.FC<PostListProps> = ({
             justifyContent: 'center',
             alignItems: 'center',
             height: '200px',
-            backgroundColor: 'rgba(255, 240, 240, 0.5)',
+            backgroundColor: '#f5f5f5',
             borderRadius: '8px',
-            border: '1px dashed #FFAAA5',
+            border: '1px dashed #bdbdbd',
           }}
         >
           <Typography
@@ -372,7 +375,7 @@ const PostList: React.FC<PostListProps> = ({
               '& .MuiPaginationItem-root': {
                 color: '#555',
                 '&.Mui-selected': {
-                  backgroundColor: '#FFD7D7',
+                  backgroundColor: '#e0e0e0',
                   fontWeight: 'bold',
                 },
               },
@@ -390,7 +393,7 @@ const PostList: React.FC<PostListProps> = ({
 
           {/* 작은 로딩 인디케이터 - 페이지 전환 중에만 표시 */}
           {isDataAvailableDuringLoading && (
-            <CircularProgress size={20} sx={{ color: '#FF9999', ml: 2 }} />
+            <CircularProgress size={20} sx={{ color: '#bdbdbd', ml: 2 }} />
           )}
         </Box>
       )}

@@ -30,7 +30,7 @@ const StyledButton = styled.button<{
   cursor: ${props => (props.disabled || props.isLoading ? 'not-allowed' : 'pointer')};
   opacity: ${props => (props.disabled ? 0.6 : 1)};
   width: ${props => (props.fullWidth ? '100%' : 'auto')};
-  
+
   /* 크기 */
   ${props => {
     switch (props.size) {
@@ -54,7 +54,7 @@ const StyledButton = styled.button<{
         `;
     }
   }}
-  
+
   /* 스타일 변형 */
   ${props => {
     switch (props.variant) {
@@ -205,4 +205,4 @@ const Button: React.FC<ButtonProps> = ({
   );
 };
 
-export default Button; 
+export default Button;

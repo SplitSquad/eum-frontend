@@ -672,6 +672,9 @@ const ja = {
     next: '次へ',
   },
   debate: {
+    title: 'ホットイシューディベート',
+    description:
+      '今最も注目されている社会的な話題について自由に議論し、多様な意見を交換しましょう。',
     categories: {
       title: 'カテゴリ',
       all: '全て',

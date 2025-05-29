@@ -573,327 +573,319 @@ const ProGroupListPage: React.FC = () => {
 
   return (
     <div>
-      {/* 페이지 헤더 */}
-      <Box
-        sx={{
-          mb: 3,
-          display: 'flex',
-          flexDirection: isMobile ? 'column' : 'row',
-          justifyContent: 'space-between',
-          alignItems: isMobile ? 'flex-start' : 'center',
-          gap: 2,
-        }}
-      >
-        <Typography
-          variant={isMobile ? 'h5' : 'h4'}
-          component="h1"
-          sx={{
-            fontWeight: 700,
-            color: '#555',
-            fontFamily: '"Noto Sans KR", sans-serif',
-          }}
-        >
-          {t('community.groups.title')}
-        </Typography>
-
-        {/* 글쓰기 버튼 */}
-        <Button
-          variant="contained"
-          startIcon={<CreateIcon />}
-          onClick={handleCreatePost}
-          sx={{
-            bgcolor: '#FFAAA5',
-            '&:hover': {
-              bgcolor: '#FF8B8B',
-            },
-            borderRadius: '24px',
-            boxShadow: '0 2px 8px rgba(255, 170, 165, 0.5)',
-            color: 'white',
-            fontWeight: 600,
-          }}
-        >
-          {t('community.posts.writePost')}
-        </Button>
-      </Box>
-
-      {/* 상단 필터링 및 검색 영역 */}
-      <Paper
-        elevation={0}
-        sx={{
-          mb: 3,
-          p: 2,
-          bgcolor: 'rgba(255, 255, 255, 0.85)',
-          borderRadius: '16px',
-          border: '1px solid rgba(255, 170, 165, 0.3)',
-          boxShadow: '0 8px 20px rgba(255, 170, 165, 0.15)',
-          backdropFilter: 'blur(8px)',
-        }}
-      >
-        {/* 필터 토글 버튼과 정렬 버튼 */}
-        <Box
-          sx={{
-            mb: 2,
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: 1,
-          }}
-        >
-          {/* 필터 토글 버튼 */}
-          <Button
-            variant="outlined"
-            onClick={toggleFilters}
-            startIcon={showFilters ? <ExpandLessIcon /> : <TuneIcon />}
-            size="small"
-            sx={{
-              textTransform: 'none',
-              borderColor: '#FFD7D7',
-              color: '#666',
-              fontWeight: 500,
-              '&:hover': {
-                borderColor: '#FFAAA5',
-                bgcolor: 'rgba(255, 235, 235, 0.2)',
-              },
-              borderRadius: '20px',
-              px: 2,
+      {/* 헤더 */}
+      <div style={{ borderBottom: '1.5px solid #e5e7eb' }}>
+        <div style={{ maxWidth: 1120, margin: '0 auto' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '24px 16px',
             }}
           >
-            {showFilters ? t('community.actions.hideFilters') : t('community.actions.showFilters')}
-          </Button>
-
-          {/* 정렬 버튼 */}
-          <ButtonGroup
-            variant="outlined"
-            size="small"
-            aria-label={t('community.filters.sortBy')}
-            sx={{
-              '& .MuiButton-outlined': {
-                borderColor: '#FFD7D7',
-                color: '#666',
-                '&:hover': {
-                  borderColor: '#FFAAA5',
-                  bgcolor: 'rgba(255, 235, 235, 0.2)',
-                },
-                borderRadius: '20px',
-              },
-              '& .MuiButtonGroup-grouped:not(:last-of-type)': {
-                borderColor: '#FFD7D7',
-              },
-            }}
-          >
-            <Button
-              onClick={() => handleSortChange('latest')}
-              sx={{
-                fontWeight: filter.sortBy === 'latest' ? 'bold' : 'normal',
-                bgcolor: filter.sortBy === 'latest' ? 'rgba(255, 235, 235, 0.4)' : 'transparent',
-              }}
-            >
-              {t('community.filters.latest')}
-            </Button>
-            <Button
-              onClick={() => handleSortChange('popular')}
-              sx={{
-                fontWeight: filter.sortBy === 'popular' ? 'bold' : 'normal',
-                bgcolor: filter.sortBy === 'popular' ? 'rgba(255, 235, 235, 0.4)' : 'transparent',
-              }}
-            >
-              {t('community.filters.popular')}
-            </Button>
-          </ButtonGroup>
-        </Box>
-
-        {/* 검색 필드 */}
-        <Box
-          sx={{
-            mb: 2,
-            display: 'flex',
-            gap: 1,
-            flexWrap: 'wrap',
-          }}
-        >
-          {/* 검색 타입 선택 */}
-          <FormControl variant="outlined" size="small" sx={{ minWidth: 120 }}>
-            <InputLabel id="search-type-label">{t('community.searchType.titleContent')}</InputLabel>
-            <Select
-              labelId="search-type-label"
-              id="search-type"
-              value={searchType}
-              onChange={handleSearchTypeChange}
-              label={t('community.searchType.titleContent')}
-              sx={{
-                bgcolor: 'rgba(255, 255, 255, 0.5)',
-                '& .MuiOutlinedInput-notchedOutline': {
-                  borderColor: '#FFD7D7',
-                },
-                '&:hover .MuiOutlinedInput-notchedOutline': {
-                  borderColor: '#FFAAA5',
-                },
-                borderRadius: '8px',
-              }}
-            >
-              <MenuItem value={t('community.searchType.titleContent')}>
-                {t('community.searchType.titleContent')}
-              </MenuItem>
-              <MenuItem value={t('community.searchType.author')}>
-                {t('community.searchType.author')}
-              </MenuItem>
-            </Select>
-          </FormControl>
-
-          {/* 검색창 */}
-          <TextField
-            placeholder={t('community.searchPlaceholder')}
-            variant="outlined"
-            size="small"
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-            onKeyPress={handleKeyPress}
-            sx={{
-              flexGrow: 1,
-              '& .MuiOutlinedInput-root': {
-                bgcolor: 'rgba(255, 255, 255, 0.5)',
-                borderRadius: '8px',
-                '& fieldset': {
-                  borderColor: '#FFD7D7',
-                },
-                '&:hover fieldset': {
-                  borderColor: '#FFAAA5',
-                },
-                '&.Mui-focused fieldset': {
-                  borderColor: '#FF9999',
-                },
-              },
-            }}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton size="small" onClick={handleSearch} title={t('common.search')}>
-                    <SearchIcon fontSize="small" sx={{ color: '#FF9999' }} />
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-          />
-        </Box>
-
-        {/* 필터 영역 */}
-        <Collapse in={showFilters}>
-          <Divider sx={{ mb: 2, borderColor: 'rgba(255, 170, 165, 0.2)' }} />
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: 2,
-            }}
-          >
-            {/* 지역 선택  */}
-            <Box>
-              <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600, color: '#555' }}>
-                {t('community.filters.region')}
-              </Typography>
-              <RegionSelector onChange={handleRegionChange} />
-            </Box>
-
-            {/* 카테고리와 태그 영역(통합) */}
-            <Box sx={{ gridColumn: isMobile ? 'auto' : '1 / -1' }}>
-              <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600, color: '#555' }}>
-                {t('community.filters.category')}
-              </Typography>
-
-              {/* 카테고리 선택 버튼 */}
-              <ToggleButtonGroup
-                color="primary"
-                value={selectedCategory}
-                exclusive
-                onChange={(e, newValue) => newValue && handleCategoryChange(newValue)}
-                size="small"
-                sx={{
-                  width: '100%',
-                  flexWrap: 'wrap',
-                  mb: 2,
-                  '& .MuiToggleButton-root': {
-                    borderRadius: '8px',
-                    border: '1px solid #FFD7D7',
-                    mb: 1,
-                    '&.Mui-selected': {
-                      bgcolor: 'rgba(255, 170, 165, 0.2)',
-                      color: '#FF6B6B',
-                      fontWeight: 'bold',
-                    },
-                    '&:hover': {
-                      bgcolor: 'rgba(255, 235, 235, 0.4)',
-                    },
-                  },
-                  '& .MuiToggleButtonGroup-grouped': {
-                    borderRadius: '8px !important',
-                    mx: 0.5,
-                  },
-                }}
-              >
-                <ToggleButton value="전체" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
-                  {t('community.categories.all')}
-                </ToggleButton>
-                <ToggleButton value="travel" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
-                  {t('community.categories.travel')}
-                </ToggleButton>
-                <ToggleButton value="living" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
-                  {t('community.categories.living')}
-                </ToggleButton>
-                <ToggleButton value="study" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
-                  {t('community.categories.study')}
-                </ToggleButton>
-                <ToggleButton value="job" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
-                  {t('community.categories.job')}
-                </ToggleButton>
-              </ToggleButtonGroup>
-
-              {/* 카테고리에 따른 태그 선택 */}
-              <Typography
-                variant="subtitle2"
-                gutterBottom
-                sx={{ fontWeight: 600, color: '#555', mt: 2 }}
-              >
-                {t('community.filters.tags')}
-              </Typography>
-              <Box
-                sx={{
+            <div style={{ width: '100%' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span
+                  style={{
+                    fontSize: 34,
+                    fontWeight: 700,
+                    color: '#111',
+                    fontFamily: '"Noto Sans KR", sans-serif',
+                  }}
+                >
+                  {t('community.groups.title')}
+                </span>
+              </div>
+              <div
+                style={{
                   display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: 1,
-                  mt: 1,
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginTop: 6,
                 }}
               >
-                {availableTags.map(tag => (
-                  <Chip
-                    key={tag}
-                    label={tag}
-                    onClick={() => handleTagSelect(tag)}
-                    color={selectedTags.includes(tag) ? 'primary' : 'default'}
-                    variant={selectedTags.includes(tag) ? 'filled' : 'outlined'}
-                    sx={{
-                      borderRadius: '16px',
-                      borderColor: selectedTags.includes(tag) ? '#FF6B6B' : '#FFD7D7',
-                      backgroundColor: selectedTags.includes(tag)
-                        ? 'rgba(255, 170, 165, 0.2)'
-                        : 'transparent',
-                      color: selectedTags.includes(tag) ? '#FF6B6B' : '#666',
-                      '&:hover': {
-                        backgroundColor: selectedTags.includes(tag)
-                          ? 'rgba(255, 170, 165, 0.3)'
-                          : 'rgba(255, 235, 235, 0.2)',
-                      },
+                <p
+                  style={{
+                    color: '#666',
+                    fontFamily: '"Noto Sans KR", sans-serif',
+                    margin: 0,
+                    flex: 1,
+                    marginRight: 32,
+                  }}
+                >
+                  {t('community.groups.description')}
+                </p>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    width: isMobile ? '100%' : 320,
+                  }}
+                >
+                  <FormControl
+                    variant="outlined"
+                    size="small"
+                    style={{
+                      minWidth: 120,
+                      background: '#fafafa',
+                      borderRadius: 8,
+                      border: '1.5px solid #bbb',
+                      color: '#222',
+                    }}
+                  >
+                    <InputLabel id="search-type-label">
+                      {t('community.searchType.titleContent')}
+                    </InputLabel>
+                    <Select
+                      labelId="search-type-label"
+                      id="search-type"
+                      value={searchType}
+                      onChange={handleSearchTypeChange}
+                      label={t('community.searchType.titleContent')}
+                      style={{ background: '#fafafa', borderRadius: 8, color: '#222' }}
+                    >
+                      <MenuItem value={t('community.searchType.titleContent')}>
+                        {t('community.searchType.titleContent')}
+                      </MenuItem>
+                      <MenuItem value={t('community.searchType.author')}>
+                        {t('community.searchType.author')}
+                      </MenuItem>
+                    </Select>
+                  </FormControl>
+                  <TextField
+                    placeholder={t('community.searchPlaceholder')}
+                    variant="outlined"
+                    size="small"
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    style={{
+                      background: '#fafafa',
+                      borderRadius: 8,
+                      border: '1.5px solid #bbb',
+                      color: '#222',
+                      minWidth: 160,
+                    }}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            size="small"
+                            onClick={handleSearch}
+                            title={t('common.search')}
+                          >
+                            <SearchIcon fontSize="small" sx={{ color: '#888' }} />
+                          </IconButton>
+                        </InputAdornment>
+                      ),
                     }}
                   />
-                ))}
-              </Box>
-            </Box>
-          </Box>
-        </Collapse>
-      </Paper>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        style={{
+          maxWidth: 1120,
+          margin: '0 auto',
+          padding: '32px 16px',
+          height: 'auto',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            gap: 8,
+            alignItems: 'flex-start',
+            height: 'auto',
+          }}
+        >
+          {/* 메인 컨텐츠 */}
+          <div
+            style={{
+              flex: 1,
+              paddingRight: 32,
+            }}
+          >
+            {/* 카테고리/아이콘 영역 */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24 }}>
+              {/*<img
+                src={squareImg}
+                alt="logo"
+                style={{ height: 24, width: 24, objectFit: 'contain' }}
+              />*/}
+              <h2
+                style={{
+                  fontSize: 22,
+                  fontWeight: 700,
+                  color: '#111',
+                  fontFamily: proCard.fontFamily,
+                  margin: 0,
+                }}
+              >
+                {selectedCategory === '전체'
+                  ? t('infoPage.content.allInfo')
+                  : t(`community.categories.${selectedCategory}`) || selectedCategory}
+              </h2>
+              {/* 글쓰기 버튼 왼쪽, 정렬 드롭다운 오른쪽, 둘 다 오른쪽 정렬 */}
 
-      {/* 검색 상태 표시기 */}
-      <SearchStatusIndicator />
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  flex: 1,
+                  justifyContent: 'flex-end',
+                }}
+              >
+                <button
+                  onClick={handleCreatePost}
+                  style={{
+                    ...proButton,
+                    padding: '6px 16px',
+                    fontSize: 14,
+                    background: selectedCategory === 'all' ? '#222' : '#f3f4f6',
+                    color: selectedCategory === 'all' ? '#fff' : '#222',
+                    border: selectedCategory === 'all' ? '1.5px solid #222' : '1.5px solid #e5e7eb',
+                    borderRadius: 6,
+                    margin: 0,
+                  }}
+                >
+                  {t('community.posts.writePost')}
+                </button>
+                <select
+                  value={filter.sortBy}
+                  onChange={e => handleSortChange(e.target.value as 'latest' | 'popular')}
+                  style={{
+                    padding: '6px 16px',
+                    fontSize: 14,
+                    border: '1.5px solid #222',
+                    borderRadius: 6,
+                    background: '#fff',
+                    color: '#222',
+                    fontWeight: 600,
+                    fontFamily: proCard.fontFamily,
+                    outline: 'none',
+                    cursor: 'pointer',
+                    minWidth: 100,
+                    marginRight: 0,
+                  }}
+                >
+                  <option value="latest">{t('community.filters.latest')}</option>
+                  <option value="popular">{t('community.filters.popular')}</option>
+                </select>
+              </div>
+            </div>
+
+            {/* 필터 영역 */}
+            <Divider sx={{ mb: 2, borderColor: '#e5e7eb' }} />
+
+            {/* 카테고리와 태그 영역(통합) */}
+            <Paper
+              elevation={0}
+              sx={{
+                mb: 3,
+                p: 2,
+                bgcolor: 'rgba(255, 255, 255, 0.09)',
+                borderRadius: '16px',
+              }}
+            >
+              {/* 지역 선택  */}
+              <Box
+                sx={{
+                  display: isMobile ? 'block' : 'flex',
+                  flexDirection: isMobile ? 'column' : 'row',
+                  alignItems: isMobile ? 'stretch' : 'center',
+                  gap: isMobile ? 2 : 3,
+                  width: '100%',
+                  mb: 2,
+                }}
+              >
+                <RegionSelector onChange={handleRegionChange} />
+                {/* 카테고리 선택 버튼 */}
+                <ToggleButtonGroup
+                  color="primary"
+                  value={selectedCategory}
+                  exclusive
+                  onChange={(e, newValue) => newValue && handleCategoryChange(newValue)}
+                  size="small"
+                  sx={{
+                    width: isMobile ? '100%' : 'auto',
+                    flexWrap: 'wrap',
+                    mb: 0,
+                    '& .MuiToggleButton-root': {
+                      borderRadius: '8px',
+                      border: '1px solid #e5e7eb',
+                      mb: 1,
+                      '&.Mui-selected': {
+                        bgcolor: '#fafafa',
+                        color: '#222',
+                        fontWeight: 'bold',
+                      },
+                      '&:hover': {
+                        bgcolor: '#fafafa',
+                      },
+                    },
+                    '& .MuiToggleButtonGroup-grouped': {
+                      borderRadius: '8px !important',
+                      mx: 0.5,
+                    },
+                  }}
+                >
+                  <ToggleButton value="전체" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
+                    {t('community.categories.all')}
+                  </ToggleButton>
+                  <ToggleButton value="travel" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
+                    {t('community.categories.travel')}
+                  </ToggleButton>
+                  <ToggleButton value="living" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
+                    {t('community.categories.living')}
+                  </ToggleButton>
+                  <ToggleButton value="study" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
+                    {t('community.categories.study')}
+                  </ToggleButton>
+                  <ToggleButton value="job" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
+                    {t('community.categories.job')}
+                  </ToggleButton>
+                </ToggleButtonGroup>
+                {/* 태그 선택 영역: 전체가 아닐 때만 렌더링 */}
+                {selectedCategory !== '전체' && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
+                    {availableTags.map(tag => (
+                      <Chip
+                        key={tag}
+                        label={tag}
+                        onClick={() => handleTagSelect(tag)}
+                        color={selectedTags.includes(tag) ? 'primary' : 'default'}
+                        variant={selectedTags.includes(tag) ? 'filled' : 'outlined'}
+                        sx={{
+                          borderRadius: '16px',
+                          borderColor: selectedTags.includes(tag) ? '#222' : '#e5e7eb',
+                          backgroundColor: selectedTags.includes(tag) ? '#fafafa' : 'transparent',
+                          color: selectedTags.includes(tag) ? '#222' : '#666',
+                          '&:hover': {
+                            backgroundColor: selectedTags.includes(tag)
+                              ? '#fafafa'
+                              : 'rgba(255, 235, 235, 0.2)',
+                          },
+                        }}
+                      />
+                    ))}
+                  </Box>
+                )}
+              </Box>
+            </Paper>
+
+            {/* 검색 상태 표시기 */}
+            <SearchStatusIndicator />
+          </div>
+        </div>
+      </div>
+      {/* 상단 필터링 및 검색 영역 */}
 
       {/* 로딩 상태 표시 */}
       {postLoading ? (
@@ -908,8 +900,8 @@ const ProGroupListPage: React.FC = () => {
             flexGrow: 1,
             backgroundColor: 'rgba(255,255,255,0.7)',
             borderRadius: '16px',
-            border: '1px solid rgba(255, 170, 165, 0.2)',
-            boxShadow: '0 8px 20px rgba(255, 170, 165, 0.1)',
+            border: '1px solid #e5e7eb',
+            boxShadow: '0 8px 20px rgba(226, 225, 225, 0.15)',
           }}
         >
           <CircularProgress size={60} sx={{ color: '#FFAAA5', mb: 3 }} />
@@ -930,8 +922,8 @@ const ProGroupListPage: React.FC = () => {
             flexGrow: 1,
             backgroundColor: 'rgba(255,255,255,0.7)',
             borderRadius: '16px',
-            border: '1px solid rgba(255, 170, 165, 0.2)',
-            boxShadow: '0 8px 20px rgba(255, 170, 165, 0.1)',
+            border: '1px solid #e5e7eb',
+            boxShadow: '0 8px 20px rgba(226, 225, 225, 0.15)',
           }}
         >
           <Box sx={{ mb: 3, textAlign: 'center' }}>
@@ -973,12 +965,12 @@ const ProGroupListPage: React.FC = () => {
             flexGrow: 1,
             backgroundColor: 'rgba(255,255,255,0.7)',
             borderRadius: '16px',
-            border: '1px solid rgba(255, 170, 165, 0.2)',
-            boxShadow: '0 8px 20px rgba(255, 170, 165, 0.1)',
+            border: '1px solid #e5e7eb',
+            boxShadow: '0 8px 20px rgba(226, 225, 225, 0.15)',
           }}
         >
           <Box sx={{ mb: 3, textAlign: 'center' }}>
-            <SearchIcon sx={{ fontSize: '3rem', color: '#FFAAA5', mb: 2 }} />
+            <SearchIcon sx={{ fontSize: '3rem', color: '#222', mb: 2 }} />
             <Typography variant="h5" color="textSecondary" gutterBottom>
               {t('community.messages.noResults')}
             </Typography>
@@ -1005,7 +997,7 @@ const ProGroupListPage: React.FC = () => {
       ) : (
         /* 게시글 목록 */
         <Box sx={{ flex: 1, minHeight: '400px' }}>
-          <PostList />
+          <PostList isGroup={true} />
         </Box>
       )}
     </div>

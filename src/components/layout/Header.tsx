@@ -114,9 +114,9 @@ const StyledAppBar = styled(AppBar)<{ season: string }>`
     props.season === 'spring' || props.season === 'hanji' || props.season === 'professional'
       ? `
     background: linear-gradient(to bottom, ${seasonalColors[props.season]?.background}, #fff 98%);
-    box-shadow: none;
-    border-bottom: 0px solid rgba(0, 0, 0, 0);
-    backdrop-filter: blur(10px);
+  box-shadow: none;
+  border-bottom: 0px solid rgba(0, 0, 0, 0);
+  backdrop-filter: blur(10px);
     color: ${seasonalColors[props.season]?.text || '#333333'};
   `
       : ''}

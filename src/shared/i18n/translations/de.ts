@@ -679,6 +679,9 @@ const de = {
     next: 'Weiter',
   },
   debate: {
+    title: 'Heiße Debatte',
+    description:
+      'Diskutieren Sie frei über die aktuell heißesten gesellschaftlichen Themen und teilen Sie Ihre vielfältigen Meinungen.',
     categories: {
       title: 'Kategorie',
       all: 'Alle',
