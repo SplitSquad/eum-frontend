@@ -25,7 +25,7 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
       try {
         // 먼저 유효한 토큰이 있는지 확인
         const validToken = getValidToken();
-        
+
         if (!validToken) {
           // 유효한 토큰이 없으면 인증 상태 정리하고 리다이렉트
           console.log('AuthGuard: 유효한 토큰이 없습니다. 인증 상태를 정리합니다.');
@@ -85,13 +85,13 @@ export const GuestGuard = ({ children }: GuestGuardProps) => {
     // 토큰 유효성 확인
     const checkTokenValidity = () => {
       const validToken = getValidToken();
-      
+
       if (!validToken && isAuthenticated) {
         // 토큰이 유효하지 않은데 인증 상태가 true라면 상태 정리
         console.log('GuestGuard: 토큰이 유효하지 않아 인증 상태를 정리합니다.');
         clearAuthState();
       }
-      
+
       setIsChecking(false);
     };
 

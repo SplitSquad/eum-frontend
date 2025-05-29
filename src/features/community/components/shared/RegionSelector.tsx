@@ -14,8 +14,6 @@ import {
 import { useTranslation } from '../../../../shared/i18n';
 import { useRegionStore } from '../../store/regionStore';
 import { regionTree } from '@/constants/regionTree';
-import { useThemeStore } from '@/features/theme/store/themeStore';
-import { seasonalColors } from '@/components/layout/springTheme';
 
 interface RegionSelectorProps {
   // 선택이 바뀔 때 콜백 (optional)
@@ -67,10 +65,10 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({ onChange, disabled = fa
             sx={{
               bgcolor: 'rgba(255, 255, 255, 0.8)',
               '& .MuiOutlinedInput-notchedOutline': {
-                borderColor: colors.primary,
+                borderColor: '#FFD7D7',
               },
               '&:hover .MuiOutlinedInput-notchedOutline': {
-                borderColor: colors.secondary,
+                borderColor: '#FFAAA5',
               },
             }}
           >
@@ -99,10 +97,10 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({ onChange, disabled = fa
               sx={{
                 bgcolor: 'rgba(255, 255, 255, 0.8)',
                 '& .MuiOutlinedInput-notchedOutline': {
-                  borderColor: colors.primary,
+                  borderColor: '#FFD7D7',
                 },
                 '&:hover .MuiOutlinedInput-notchedOutline': {
-                  borderColor: colors.secondary,
+                  borderColor: '#FFAAA5',
                 },
               }}
             >
@@ -134,10 +132,10 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({ onChange, disabled = fa
               sx={{
                 bgcolor: 'rgba(255, 255, 255, 0.8)',
                 '& .MuiOutlinedInput-notchedOutline': {
-                  borderColor: colors.primary,
+                  borderColor: '#FFD7D7',
                 },
                 '&:hover .MuiOutlinedInput-notchedOutline': {
-                  borderColor: colors.secondary,
+                  borderColor: '#FFAAA5',
                 },
               }}
             >
@@ -166,8 +164,8 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({ onChange, disabled = fa
           }
           size="small"
           sx={{
-            bgcolor: colors.secondary,
-            color: colors.text,
+            bgcolor: '#FFAAA5',
+            color: 'white',
             fontWeight: 600,
           }}
         />
@@ -176,7 +174,7 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({ onChange, disabled = fa
             label={t('community.regions.reset')}
             size="small"
             onClick={resetRegion}
-            sx={{ bgcolor: colors.primary, color: colors.text, fontWeight: 600, cursor: 'pointer' }}
+            sx={{ bgcolor: '#FFD7D7', color: '#FF7777', fontWeight: 600, cursor: 'pointer' }}
           />
         )}
       </Box>
