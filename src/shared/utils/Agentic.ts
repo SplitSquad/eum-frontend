@@ -28,7 +28,7 @@ export async function callAgentic(
       'Content-Type': 'application/json',
       Authorization: token,
     },
-    body: JSON.stringify({ query, uid, state: 'first' }),
+    body: JSON.stringify({ query, uid, state: 'initial' }),
   });
 
   if (!res.ok) {

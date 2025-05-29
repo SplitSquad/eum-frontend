@@ -6,6 +6,7 @@ import {
 } from '@/services/notification/alarmService';
 import { useSseWithPolling } from '@/shared/hooks/UseSse';
 import Bell from '@/components/animations/Bell';
+import { useTranslation } from '@/shared/i18n';
 
 export function getUserId(): number | null {
   try {
@@ -17,6 +18,8 @@ export function getUserId(): number | null {
     return null;
   }
 }
+
+const { t } = useTranslation();
 
 export function AlarmCenter() {
   const userId = getUserId();
@@ -90,7 +93,7 @@ export function AlarmCenter() {
     return () => document.removeEventListener('mousedown', onClick);
   }, []);
 
-  if (loading) return <p>알람 로딩 중…</p>;
+  if (loading) return <p>{t('alarm.loading')}</p>;
   if (!userId) return null;
 
   return (
@@ -167,7 +170,9 @@ export function AlarmCenter() {
               borderBottom: '1px solid #eee',
             }}
           >
-            <strong>알림 ({alarms.length})</strong>
+            <strong>
+              {t('alarm.alarm')} ({alarms.length})
+            </strong>
             {alarms.length > 0 && (
               <button
                 onClick={markAllRead}
@@ -179,14 +184,14 @@ export function AlarmCenter() {
                   fontSize: '0.85rem',
                 }}
               >
-                모두 읽음
+                {t('alarm.markAllRead')}
               </button>
             )}
           </div>
 
           {alarms.length === 0 ? (
             <div style={{ padding: 12, textAlign: 'center', color: '#666' }}>
-              새 알람이 없습니다.
+              {t('alarm.noAlarms')}
             </div>
           ) : (
             <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>

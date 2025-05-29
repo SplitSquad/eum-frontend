@@ -80,9 +80,12 @@ export default function CategorySidebar({ categories, selectedKey }: CategorySid
               <div
                 key={cat.key}
                 className={`
-                  relative group transition-all duration-300 cursor-pointer
+                  relative group transition-all duration-300
                   ${isSelected ? 'transform scale-105' : 'hover:scale-102'}
                 `}
+                style={{
+                  cursor: 'default',
+                }}
               >
                 {/* 선택된 항목 배경 */}
                 {isSelected && (
@@ -96,7 +99,7 @@ export default function CategorySidebar({ categories, selectedKey }: CategorySid
                   />
                 )}
 
-                {/* 호버 효과 */}
+                {/* 호버 효과
                 <div
                   className={`
                     absolute inset-0 rounded-lg opacity-0 transition-opacity duration-300
@@ -106,7 +109,7 @@ export default function CategorySidebar({ categories, selectedKey }: CategorySid
                     background:
                       'linear-gradient(135deg, rgba(139, 69, 19, 0.05) 0%, rgba(160, 82, 45, 0.05) 100%)',
                   }}
-                />
+                /> */}
 
                 {/* 카테고리 내용 */}
                 <div
