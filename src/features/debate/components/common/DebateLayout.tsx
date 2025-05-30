@@ -8,7 +8,6 @@ import {
   useMediaQuery,
   Divider,
 } from '@mui/material';
-import Header, { HeaderProps } from './Header';
 import Toast from './Toast';
 import PageHeaderText from '@/components/layout/PageHeaderText';
 import { useTranslation } from '@/shared/i18n';
@@ -36,8 +35,6 @@ const debateCard = {
 };
 const Sidebar = styled(Box)(({ theme }) => ({
   width: 320,
-  background: 'rgba(255,255,255,0.5)',
-  border: '1.5px solid #e5e7eb',
   borderRadius: 10,
   padding: '16px 12px',
   position: 'sticky',
@@ -46,7 +43,7 @@ const Sidebar = styled(Box)(({ theme }) => ({
   height: 'fit-content',
   display: 'flex',
   flexDirection: 'column',
-  gap: 24,
+  gap: 8,
   boxShadow: 'none',
   fontFamily: 'Inter, Pretendard, Arial, sans-serif',
   [theme.breakpoints.down('md')]: {
@@ -57,14 +54,13 @@ const Sidebar = styled(Box)(({ theme }) => ({
 
 const Main = styled(Box)(({ theme }) => ({
   flex: 1,
-  paddingRight: 32,
+  paddingRight: 16,
   background: 'transparent',
   boxShadow: 'none',
   fontFamily: 'Inter, Pretendard, Arial, sans-serif',
   minHeight: 0,
   width: 'auto',
   overflow: 'visible',
-  padding: 0,
   [theme.breakpoints.down('md')]: {
     padding: 0,
   },
@@ -76,7 +72,7 @@ export interface DebateLayoutProps {
   children: React.ReactNode;
   sidebar?: React.ReactNode;
   showSidebar?: boolean;
-  headerProps?: HeaderProps;
+  specialLabelText?: string;
 }
 
 /**
@@ -87,16 +83,16 @@ const DebateLayout: React.FC<DebateLayoutProps> = ({
   children,
   sidebar,
   showSidebar = true,
-  headerProps = {},
+  specialLabelText,
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { t } = useTranslation();
   const { category } = useDebateStore();
 
-  // 한글 카테고리명 → debate.categories 키 매핑
-  const categoryNameMap: Record<string, string> = {
-    '': t('infoPage.content.allInfo'),
+  // 카테고리 목록 (key: 한글, value: 번역 텍스트)
+  const categories: Record<string, string> = {
+    //'': t('debate.categories.all'), // 전체
     '정치/사회': t('debate.categories.politics'),
     경제: t('debate.categories.economy'),
     '생활/문화': t('debate.categories.culture'),
@@ -148,7 +144,7 @@ const DebateLayout: React.FC<DebateLayoutProps> = ({
             alignItems: 'center',
             gap: 8,
             marginBottom: 24,
-            padding: '0 16px',
+            padding: '32px 16px 0 16px',
           }}
         >
           <h2
@@ -160,7 +156,7 @@ const DebateLayout: React.FC<DebateLayoutProps> = ({
               margin: 0,
             }}
           >
-            {categoryNameMap[category] || t('infoPage.content.allInfo')}
+            {specialLabelText}
           </h2>
           <div style={{ flex: 1 }}></div>
         </div>

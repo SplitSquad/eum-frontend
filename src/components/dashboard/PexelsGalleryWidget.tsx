@@ -18,12 +18,14 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ImageIcon from '@mui/icons-material/Image';
 import DownloadIcon from '@mui/icons-material/Download';
+import { env } from '@/config/env';
 
 interface ImageItem {
   id: string;
   src: string;
   alt: string;
   photographer: string;
+  photographer_url: string;
   liked: boolean;
   tags: string[];
 }
@@ -32,68 +34,74 @@ interface ImageItem {
 const sampleImages: ImageItem[] = [
   {
     id: '1',
-    src: 'https://images.unsplash.com/photo-1538485399081-7c438a4d63c5',
+    src: 'https://images.pexels.com/photos/1036944/pexels-photo-1036944.jpeg?auto=compress&cs=tinysrgb&w=400',
     alt: '남산타워',
-    photographer: 'Unsplash User',
+    photographer: 'Pexels User',
+    photographer_url: '#',
     liked: false,
     tags: ['서울', '랜드마크'],
   },
   {
     id: '2',
-    src: 'https://images.unsplash.com/photo-1548115184-bc6544d06a58',
+    src: 'https://images.pexels.com/photos/9506/pexels-photo-9506.jpeg?auto=compress&cs=tinysrgb&w=400',
     alt: '한옥마을',
-    photographer: 'Unsplash User',
+    photographer: 'Pexels User',
+    photographer_url: '#',
     liked: false,
     tags: ['전통', '한옥'],
   },
   {
     id: '3',
-    src: 'https://images.unsplash.com/photo-1578037571214-25e07ed4a487',
+    src: 'https://images.pexels.com/photos/259984/pexels-photo-259984.jpeg?auto=compress&cs=tinysrgb&w=400',
     alt: '부산 해운대',
-    photographer: 'Unsplash User',
+    photographer: 'Pexels User',
+    photographer_url: '#',
     liked: false,
     tags: ['부산', '바다'],
   },
   {
     id: '4',
-    src: 'https://images.unsplash.com/photo-1588401273876-39568d3e851f',
+    src: 'https://images.pexels.com/photos/2506923/pexels-photo-2506923.jpeg?auto=compress&cs=tinysrgb&w=400',
     alt: '경복궁',
-    photographer: 'Unsplash User',
+    photographer: 'Pexels User',
+    photographer_url: '#',
     liked: false,
     tags: ['서울', '궁궐'],
   },
   {
     id: '5',
-    src: 'https://images.unsplash.com/photo-1625043484590-a64ea41074bd',
+    src: 'https://images.pexels.com/photos/2365457/pexels-photo-2365457.jpeg?auto=compress&cs=tinysrgb&w=400',
     alt: '제주도 성산일출봉',
-    photographer: 'Unsplash User',
+    photographer: 'Pexels User',
+    photographer_url: '#',
     liked: false,
     tags: ['제주', '자연'],
   },
   {
     id: '6',
-    src: 'https://images.unsplash.com/photo-1617541086271-4d43983805cf',
+    src: 'https://images.pexels.com/photos/374074/pexels-photo-374074.jpeg?auto=compress&cs=tinysrgb&w=400',
     alt: '한강 야경',
-    photographer: 'Unsplash User',
+    photographer: 'Pexels User',
+    photographer_url: '#',
     liked: false,
     tags: ['서울', '야경'],
   },
 ];
 
-const UnsplashGalleryWidget: React.FC = () => {
+const PexelsGalleryWidget: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [images, setImages] = useState<ImageItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [apiKeyMissing, setApiKeyMissing] = useState<boolean>(false);
 
-  // Check if Unsplash API key is available
-  const unsplashAccessKey = import.meta.env.VITE_UNSPLASH_ACCESS_KEY;
+  // Check if Pexels API key is available
+  const pexelsAccessKey = env.PEXELS_ACCESS_KEY;
 
-  // Fetch images from Unsplash API
+  // Fetch images from Pexels API
   const fetchImages = async (query: string = 'korea') => {
     // If API key is missing, use sample images
-    if (!unsplashAccessKey) {
+    if (!pexelsAccessKey) {
       setApiKeyMissing(true);
       setImages(sampleImages);
       setLoading(false);
@@ -104,29 +112,28 @@ const UnsplashGalleryWidget: React.FC = () => {
     setError(null);
     try {
       const response = await fetch(
-        `https://api.unsplash.com/search/photos?query=${query}&per_page=6&orientation=landscape`,
+        `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=6&orientation=landscape`,
         {
           headers: {
-            Authorization: `Client-ID ${unsplashAccessKey}`,
+            Authorization: pexelsAccessKey,
           },
         }
       );
 
       if (!response.ok) {
-        throw new Error('Failed to fetch images from Unsplash');
+        throw new Error('Failed to fetch images from Pexels');
       }
 
       const data = await response.json();
       
-      const formattedImages: ImageItem[] = data.results.map((image: any) => ({
-        id: image.id,
-        src: image.urls.small,
-        alt: image.alt_description || 'Unsplash image',
-        photographer: image.user.name,
+      const formattedImages: ImageItem[] = data.photos.map((photo: any) => ({
+        id: photo.id.toString(),
+        src: photo.src.medium,
+        alt: photo.alt || 'Pexels image',
+        photographer: photo.photographer,
+        photographer_url: photo.photographer_url,
         liked: false,
-        tags: image.tags?.length ? 
-          image.tags.map((tag: any) => tag.title).slice(0, 2) : 
-          (query.split(',').map(tag => tag.trim()).filter(Boolean).slice(0, 2)),
+        tags: query.split(',').map(tag => tag.trim()).filter(Boolean).slice(0, 2),
       }));
 
       setImages(formattedImages);
@@ -191,7 +198,7 @@ const UnsplashGalleryWidget: React.FC = () => {
 
       {apiKeyMissing && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          Unsplash API 키가 설정되지 않았습니다. 샘플 이미지가 표시됩니다.
+          Pexels API 키가 설정되지 않았습니다. 샘플 이미지가 표시됩니다.
         </Alert>
       )}
 
@@ -328,11 +335,11 @@ const UnsplashGalleryWidget: React.FC = () => {
         sx={{ textAlign: 'center', mt: 2, pt: 1, borderTop: '1px solid', borderColor: 'divider' }}
       >
         <Typography variant="caption" color="text.secondary">
-          Powered by Unsplash API
+          Powered by Pexels API
         </Typography>
       </Box>
     </Paper>
   );
 };
 
-export default UnsplashGalleryWidget;
+export default PexelsGalleryWidget;

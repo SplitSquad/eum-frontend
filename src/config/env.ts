@@ -4,11 +4,13 @@
 export interface ENV {
   API_BASE_URL: string;
   KAKAO_MAP_API_KEY: string;
+  KAKAO_REST_API_KEY: string;
   WEATHER_API_KEY: string;
   TOUR_API_KEY: string;
   YOUTUBE_API_KEY: string;
   NAVER_API_KEY: string;
   GPT_API_KEY: string;
+  PEXELS_ACCESS_KEY: string;
 }
 
 /**
@@ -17,12 +19,14 @@ export interface ENV {
  */
 export const env: ENV = {
   API_BASE_URL: import.meta.env.VITE_API_BASE_URL,
-  KAKAO_MAP_API_KEY: import.meta.env.VITE_KAKAO_MAP_API_KEY || '',
+  KAKAO_MAP_API_KEY: import.meta.env.VITE_KAKAO_MAP_API_KEY || import.meta.env.VITE_KAKAO_REST_API_KEY || '',
+  KAKAO_REST_API_KEY: import.meta.env.VITE_KAKAO_REST_API_KEY || '',
   WEATHER_API_KEY: import.meta.env.VITE_WEATHER_API_KEY || '',
   TOUR_API_KEY: import.meta.env.VITE_TOUR_API_KEY || '',
   YOUTUBE_API_KEY: import.meta.env.VITE_YOUTUBE_API_KEY || '',
   NAVER_API_KEY: import.meta.env.VITE_NAVER_API_KEY || '',
   GPT_API_KEY: import.meta.env.VITE_GPT_API_KEY || '',
+  PEXELS_ACCESS_KEY: import.meta.env.VITE_PEXELS_ACCESS_KEY || '',
 };
 
 /**

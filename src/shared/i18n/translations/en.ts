@@ -478,7 +478,7 @@ const en = {
       advancedDescription: 'Can converse naturally in most situations',
     },
     languageNote:
-      'No Korean skills? No problem. We’ll provide translation and language support as needed.',
+      "No Korean skills? No problem. We'll provide translation and language support as needed.",
     purpose: {
       welcome: 'Select your purpose for visiting',
       description: 'Choose the option that fits you best for tailored information',
@@ -539,7 +539,7 @@ const en = {
       purpose: {
         title: 'Choose Travel Purposes',
         description:
-          'Pick the activities or experiences you’re most interested in. Multiple selections allowed for tailored recommendations.',
+          "Pick the activities or experiences you're most interested in. Multiple selections allowed for tailored recommendations.",
         helper: 'Select at least one purpose. You can update anytime.',
       },
       languageAbility: {
@@ -588,7 +588,7 @@ const en = {
       startDateLabel: 'Departure Date',
       endDateLabel: 'Return Date',
       visaTypeLabel: 'Visa Type',
-      visaHelper: 'Select the visa you’ll use for your visit',
+      visaHelper: "Select the visa you'll use for your visit",
       scheduleTitle: 'Travel Schedule',
       scheduleSelect: 'Select travel dates',
       durationLabel: 'Expected Duration',
@@ -784,7 +784,7 @@ const en = {
       interests: {
         title: 'Select Interests',
         subtitle: 'Choose your areas of interest',
-        description: 'Select areas you like. We’ll provide info tailored to your selections.',
+        description: "Select areas you like. We'll provide info tailored to your selections.",
         categories: {
           info: 'Info',
           community: 'Community',
@@ -804,6 +804,7 @@ const en = {
         },
       },
     },
+    specialIssues: 'View All Issues',
   },
   buttons: {
     next: 'Next',
@@ -1456,13 +1457,13 @@ const en = {
       },
       info: {
         photographer: 'By',
-        poweredBy: 'Powered by Unsplash API',
+        poweredBy: 'Powered by Pexels API',
       },
       messages: {
         loading: 'Loading images...',
         error: 'Failed to load images',
         noResults: 'No search results',
-        apiKeyMissing: 'Unsplash API key not configured. Sample images are displayed.',
+        apiKeyMissing: 'Pexels API key not configured. Sample images are displayed.',
       },
     },
     youtubeGallery: {
@@ -1602,6 +1603,8 @@ const en = {
       noReplies: 'No replies yet. Be the first to reply!',
       cancel: 'Cancel',
     },
+    specialIssues: 'View All Issues',
+    noVotesYet: 'No votes yet. Be the first to vote!',
   },
   infoPage: {
     title: 'Korea Life Guide',

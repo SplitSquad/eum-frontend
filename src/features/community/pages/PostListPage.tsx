@@ -150,23 +150,44 @@ const PostListPage: React.FC = () => {
       [t('community.tags.jobFair')]: '잡페어/네트워킹',
       [t('community.tags.partTime')]: '알바/파트타임',
     };
-    
+
     return tagReverseMapping[translatedTag] || translatedTag;
   };
 
   // 카테고리별 태그 매핑
   const categoryTags = {
-    travel: [t('community.tags.tourism'), t('community.tags.food'), t('community.tags.transport'), t('community.tags.accommodation'), t('community.tags.embassy')],
-    living: [t('community.tags.realEstate'), t('community.tags.livingEnvironment'), t('community.tags.culture'), t('community.tags.housing')],
-    study: [t('community.tags.academic'), t('community.tags.studySupport'), t('community.tags.visa'), t('community.tags.dormitory')],
-    job: [t('community.tags.career'), t('community.tags.labor'), t('community.tags.jobFair'), t('community.tags.partTime')],
-    '전체': [], // 한국어 고정값 사용 (내부값)
+    travel: [
+      t('community.tags.tourism'),
+      t('community.tags.food'),
+      t('community.tags.transport'),
+      t('community.tags.accommodation'),
+      t('community.tags.embassy'),
+    ],
+    living: [
+      t('community.tags.realEstate'),
+      t('community.tags.livingEnvironment'),
+      t('community.tags.culture'),
+      t('community.tags.housing'),
+    ],
+    study: [
+      t('community.tags.academic'),
+      t('community.tags.studySupport'),
+      t('community.tags.visa'),
+      t('community.tags.dormitory'),
+    ],
+    job: [
+      t('community.tags.career'),
+      t('community.tags.labor'),
+      t('community.tags.jobFair'),
+      t('community.tags.partTime'),
+    ],
+    전체: [], // 한국어 고정값 사용 (내부값)
   };
 
   // 내부 카테고리값 ↔ 표시값 매핑
   const CATEGORY_INTERNAL_VALUES = {
     ALL: '전체',
-    TRAVEL: 'travel', 
+    TRAVEL: 'travel',
     LIVING: 'living',
     STUDY: 'study',
     JOB: 'job',
@@ -178,21 +199,27 @@ const PostListPage: React.FC = () => {
     if (Object.values(CATEGORY_INTERNAL_VALUES).includes(displayValue as any)) {
       return displayValue;
     }
-    
+
     // 번역된 표시값을 내부값으로 변환
     if (displayValue === t('community.filters.all')) return CATEGORY_INTERNAL_VALUES.ALL;
     return displayValue; // 기본값
   };
 
-  // 내부값 → 표시값 변환 
+  // 내부값 → 표시값 변환
   const getDisplayCategoryValue = (internalValue: string): string => {
     switch (internalValue) {
-      case CATEGORY_INTERNAL_VALUES.ALL: return t('community.filters.all');
-      case CATEGORY_INTERNAL_VALUES.TRAVEL: return t('community.categories.travel');
-      case CATEGORY_INTERNAL_VALUES.LIVING: return t('community.categories.living');
-      case CATEGORY_INTERNAL_VALUES.STUDY: return t('community.categories.study');
-      case CATEGORY_INTERNAL_VALUES.JOB: return t('community.categories.job');
-      default: return internalValue;
+      case CATEGORY_INTERNAL_VALUES.ALL:
+        return t('community.filters.all');
+      case CATEGORY_INTERNAL_VALUES.TRAVEL:
+        return t('community.categories.travel');
+      case CATEGORY_INTERNAL_VALUES.LIVING:
+        return t('community.categories.living');
+      case CATEGORY_INTERNAL_VALUES.STUDY:
+        return t('community.categories.study');
+      case CATEGORY_INTERNAL_VALUES.JOB:
+        return t('community.categories.job');
+      default:
+        return internalValue;
     }
   };
 
@@ -227,7 +254,7 @@ const PostListPage: React.FC = () => {
 
   // 컴포넌트 마운트 시 게시글 목록 조회를 위한 트래킹
   const initialDataLoadedRef = useRef(false);
-  
+
   // 언어 변경 감지를 위한 ref
   const hasInitialDataLoaded = useRef(false);
   const { language } = useLanguageStore();
@@ -246,15 +273,18 @@ const PostListPage: React.FC = () => {
     const currentCategory = selectedCategory;
     const internalCategory = getInternalCategoryValue(currentCategory);
     if (currentCategory !== internalCategory) {
-      console.log('[DEBUG] selectedCategory 내부값으로 수정:', currentCategory, '->', internalCategory);
+      console.log(
+        '[DEBUG] selectedCategory 내부값으로 수정:',
+        currentCategory,
+        '->',
+        internalCategory
+      );
       setSelectedCategory(internalCategory);
     }
 
     // 현재 카테고리에 맞는 태그 목록 설정
     if (filter.category && filter.category !== '전체') {
-      setAvailableTags(
-        categoryTags[filter.category as keyof typeof categoryTags] || []
-      );
+      setAvailableTags(categoryTags[filter.category as keyof typeof categoryTags] || []);
     }
 
     // 태그가 있으면 선택된 태그 상태 설정
@@ -290,13 +320,13 @@ const PostListPage: React.FC = () => {
     }
 
     console.log('[DEBUG] 언어 변경 감지됨:', language);
-    
+
     // 언어 변경 시에는 현재 필터 상태 유지 (번역 정규화 제거)
-    
+
     // 검색 상태인 경우 검색 상태를 유지하면서 새로고침
     if (isSearchMode && searchTerm) {
       console.log('[DEBUG] 검색 상태에서 언어 변경 - 검색 상태 유지');
-      
+
       // 약간의 지연 후 검색 재실행 (번역이 완료된 후)
       setTimeout(() => {
         handleSearch();
@@ -307,7 +337,7 @@ const PostListPage: React.FC = () => {
         fetchPosts(filter);
       }, 100);
     }
-    
+
     // 언어 변경 시 초기 데이터 로드 플래그 리셋
     hasInitialDataLoaded.current = false;
   }, [language]);
@@ -343,7 +373,10 @@ const PostListPage: React.FC = () => {
       >
         <SearchIcon color="secondary" fontSize="small" />
         <Typography variant="body2" color="secondary.dark">
-          "{searchTerm}" {t('community.messages.searchActive')} {searchType === t('community.searchType.titleContent') ? `(${t('community.searchType.titleContent')})` : `(${searchType})`}
+          "{searchTerm}" {t('community.messages.searchActive')}{' '}
+          {searchType === t('community.searchType.titleContent')
+            ? `(${t('community.searchType.titleContent')})`
+            : `(${searchType})`}
           {filterInfo.length > 0 && <span> - {filterInfo.join(' / ')}</span>}
         </Typography>
         <Box sx={{ flexGrow: 1 }} />
@@ -458,8 +491,8 @@ const PostListPage: React.FC = () => {
 
     // 약간의 지연 후 데이터 로드 (UI 상태 변경 후)
     setTimeout(() => {
-    // 필터 적용 (검색 상태 유지하면서)
-    applyFilterWithSearchState(newFilter);
+      // 필터 적용 (검색 상태 유지하면서)
+      applyFilterWithSearchState(newFilter);
       setIsTransitioning(false);
     }, 50);
   };
@@ -535,51 +568,51 @@ const PostListPage: React.FC = () => {
     const searchTypeMapping: Record<string, string> = {
       // 한국어 (이미 변환된 상태)
       '제목+내용': '제목_내용',
-      '제목': '제목',
-      '내용': '내용',
-      '작성자': '작성자',
+      제목: '제목',
+      내용: '내용',
+      작성자: '작성자',
       // 영어
       'Title+Content': '제목_내용',
-      'Title': '제목',
-      'Content': '내용',
-      'Author': '작성자',
+      Title: '제목',
+      Content: '내용',
+      Author: '작성자',
       // 프랑스어
       'Titre+Contenu': '제목_내용',
-      'Titre': '제목',
-      'Contenu': '내용',
-      'Auteur': '작성자',
+      Titre: '제목',
+      Contenu: '내용',
+      Auteur: '작성자',
       // 독일어
       'Titel+Inhalt': '제목_내용',
-      'Titel': '제목',
-      'Inhalt': '내용',
-      'Autor': '작성자',
+      Titel: '제목',
+      Inhalt: '내용',
+      Autor: '작성자',
       // 스페인어
       'Título+Contenido': '제목_내용',
-      'Título': '제목',
-      'Contenido': '내용',
-      'Autor_ES': '작성자', // 스페인어 작성자 구분
+      Título: '제목',
+      Contenido: '내용',
+      Autor_ES: '작성자', // 스페인어 작성자 구분
       // 러시아어
       'Заголовок+Содержание': '제목_내용',
-      'Заголовок': '제목',
-      'Содержание': '내용',
-      'Автор': '작성자',
+      Заголовок: '제목',
+      Содержание: '내용',
+      Автор: '작성자',
       // 일본어
       'タイトル+内용': '제목_내용',
-      'タイトル': '제목',
-      '内容': '내용',
-      '作成者': '작성자',
+      タイトル: '제목',
+      内容: '내용',
+      作成者: '작성자',
       // 중국어 간체
       '标题+内容': '제목_내용',
-      '标题': '제목',
-      '内容_CN': '내용', // 중국어 간체 내용 구분
-      '作者_CN': '작성자', // 중국어 간체 작성자 구분
+      标题: '제목',
+      内容_CN: '내용', // 중국어 간체 내용 구분
+      作者_CN: '작성자', // 중국어 간체 작성자 구분
       // 중국어 번체
       '標題+內容': '제목_내용',
-      '標題': '제목',
-      '內容_TW': '내용', // 중국어 번체 내용 구분
-      '作者_TW': '작성자', // 중국어 번체 작성자 구분
+      標題: '제목',
+      內容_TW: '내용', // 중국어 번체 내용 구분
+      作者_TW: '작성자', // 중국어 번체 작성자 구분
     };
-    
+
     convertedSearchType = searchTypeMapping[searchType] || searchType;
     console.log('[DEBUG] 검색 타입 변환:', { 원본: searchType, 변환: convertedSearchType });
 
@@ -707,8 +740,8 @@ const PostListPage: React.FC = () => {
 
     // 약간의 지연 후 데이터 로드 (UI 상태 변경 후)
     setTimeout(() => {
-    // 필터 적용 (검색 상태 유지하면서)
-    applyFilterWithSearchState(newFilter);
+      // 필터 적용 (검색 상태 유지하면서)
+      applyFilterWithSearchState(newFilter);
       setIsTransitioning(false);
     }, 50);
   };
@@ -867,12 +900,8 @@ const PostListPage: React.FC = () => {
             },
           }}
         >
-          <ToggleButton value="groups">
-            소모임
-          </ToggleButton>
-          <ToggleButton value="board">
-            자유게시판
-          </ToggleButton>
+          <ToggleButton value="groups">소모임</ToggleButton>
+          <ToggleButton value="board">자유게시판</ToggleButton>
         </ToggleButtonGroup>
       </Box>
 
@@ -992,10 +1021,18 @@ const PostListPage: React.FC = () => {
                 borderRadius: '8px',
               }}
             >
-              <MenuItem value={t('community.searchType.titleContent')}>{t('community.searchType.titleContent')}</MenuItem>
-              <MenuItem value={t('community.searchType.title')}>{t('community.searchType.title')}</MenuItem>
-              <MenuItem value={t('community.searchType.content')}>{t('community.searchType.content')}</MenuItem>
-              <MenuItem value={t('community.searchType.author')}>{t('community.searchType.author')}</MenuItem>
+              <MenuItem value={t('community.searchType.titleContent')}>
+                {t('community.searchType.titleContent')}
+              </MenuItem>
+              <MenuItem value={t('community.searchType.title')}>
+                {t('community.searchType.title')}
+              </MenuItem>
+              <MenuItem value={t('community.searchType.content')}>
+                {t('community.searchType.content')}
+              </MenuItem>
+              <MenuItem value={t('community.searchType.author')}>
+                {t('community.searchType.author')}
+              </MenuItem>
             </Select>
           </FormControl>
 
@@ -1026,7 +1063,11 @@ const PostListPage: React.FC = () => {
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
-                  <IconButton size="small" onClick={handleSearch} title={t('community.actions.search')}>
+                  <IconButton
+                    size="small"
+                    onClick={handleSearch}
+                    title={t('community.actions.search')}
+                  >
                     <SearchIcon fontSize="small" sx={{ color: '#FF9999' }} />
                   </IconButton>
                 </InputAdornment>
@@ -1138,19 +1179,34 @@ const PostListPage: React.FC = () => {
                   },
                 }}
               >
-                <ToggleButton value={CATEGORY_INTERNAL_VALUES.ALL} sx={{ minWidth: isMobile ? '30%' : '20%' }}>
+                <ToggleButton
+                  value={CATEGORY_INTERNAL_VALUES.ALL}
+                  sx={{ minWidth: isMobile ? '30%' : '20%' }}
+                >
                   {t('community.filters.all')}
                 </ToggleButton>
-                <ToggleButton value={CATEGORY_INTERNAL_VALUES.TRAVEL} sx={{ minWidth: isMobile ? '30%' : '20%' }}>
+                <ToggleButton
+                  value={CATEGORY_INTERNAL_VALUES.TRAVEL}
+                  sx={{ minWidth: isMobile ? '30%' : '20%' }}
+                >
                   {t('community.categories.travel')}
                 </ToggleButton>
-                <ToggleButton value={CATEGORY_INTERNAL_VALUES.LIVING} sx={{ minWidth: isMobile ? '30%' : '20%' }}>
+                <ToggleButton
+                  value={CATEGORY_INTERNAL_VALUES.LIVING}
+                  sx={{ minWidth: isMobile ? '30%' : '20%' }}
+                >
                   {t('community.categories.living')}
                 </ToggleButton>
-                <ToggleButton value={CATEGORY_INTERNAL_VALUES.STUDY} sx={{ minWidth: isMobile ? '30%' : '20%' }}>
+                <ToggleButton
+                  value={CATEGORY_INTERNAL_VALUES.STUDY}
+                  sx={{ minWidth: isMobile ? '30%' : '20%' }}
+                >
                   {t('community.categories.study')}
                 </ToggleButton>
-                <ToggleButton value={CATEGORY_INTERNAL_VALUES.JOB} sx={{ minWidth: isMobile ? '30%' : '20%' }}>
+                <ToggleButton
+                  value={CATEGORY_INTERNAL_VALUES.JOB}
+                  sx={{ minWidth: isMobile ? '30%' : '20%' }}
+                >
                   {t('community.categories.job')}
                 </ToggleButton>
               </ToggleButtonGroup>

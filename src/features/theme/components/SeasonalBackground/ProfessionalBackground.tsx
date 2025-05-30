@@ -20,13 +20,12 @@ const ProfessionalContainer = styled(Box, {
   width: 100%;
   min-height: 100vh;
   background: linear-gradient(to bottom, #fff 0%, #f5f5f5 100%);
-  padding: ${p => (p.noPadding ? '0' : '2rem 0')};
-  padding-bottom: ${p => (p.noPadding ? '0' : '6rem')};
+  padding: ${p => (p.noPadding ? '0' : '0')};
+  padding-bottom: ${p => (p.noPadding ? '0' : '0')};
   position: relative;
   box-shadow:
     0 4px 32px 0 rgba(60, 60, 60, 0.07),
     0 1.5px 4px 0 rgba(60, 60, 60, 0.03);
-  border-radius: 24px;
   animation: ${fadeIn} 0.6s ease-in-out;
   display: flex;
   flex-direction: column;

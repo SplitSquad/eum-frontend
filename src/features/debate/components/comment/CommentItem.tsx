@@ -48,7 +48,7 @@ import ReportDialog, {
 } from '../../../common/components/ReportDialog';
 import FlagDisplay from '../../../../shared/components/FlagDisplay';
 import FlagIconSvg from '@/shared/components/FlagIconSvg';
-import 'flag-icons/css/flag-icons.min.css';
+//import 'flag-icons/css/flag-icons.min.css';
 
 interface CommentItemProps {
   comment: DebateComment;

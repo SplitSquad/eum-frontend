@@ -122,7 +122,7 @@ export const loadKakaoMapScript = (): Promise<any> => {
   // API 키 유효성 검사
   if (!validateApiKey()) {
     const error = new Error(
-      '카카오맵 API 키가 설정되지 않았습니다. .env 파일에 VITE_KAKAO_MAP_API_KEY를 설정해주세요.'
+      '카카오맵 API 키가 설정되지 않았습니다. .env 파일에 VITE_KAKAO_JAVASCRIPT_KEY 또는 VITE_KAKAO_REST_API_KEY를 설정해주세요. 웹사이트에서 지도 표시용으로는 JavaScript Key를 권장합니다.'
     );
     console.error(error.message);
     return Promise.reject(error);

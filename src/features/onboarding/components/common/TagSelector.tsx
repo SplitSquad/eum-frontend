@@ -28,81 +28,41 @@ interface Category {
 }
 
 // 스타일드 컴포넌트
-const ThemedAccordion = styled(Accordion)<{ season: string }>`
-  background: rgba(255, 255, 255, 0.9);
+const ThemedAccordion = styled(Accordion)`
+  background: #fafbfc;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
   margin-bottom: 8px;
-  border: 1px solid
-    ${props =>
-      props.season === 'spring' ? 'rgba(255, 235, 235, 0.8)' : 'rgba(230, 235, 250, 0.8)'};
-
+  border: 1px solid #e0e0e0;
   &:before {
     display: none;
   }
-
   &.Mui-expanded {
     margin-bottom: 16px;
-    box-shadow: 0 6px 16px
-      ${props =>
-        props.season === 'spring' ? 'rgba(255, 170, 180, 0.15)' : 'rgba(135, 149, 181, 0.15)'};
+    box-shadow: 0 6px 16px rgba(173, 173, 173, 0.1);
   }
 `;
 
-const ThemedSummary = styled(AccordionSummary)<{ season: string }>`
+const ThemedSummary = styled(AccordionSummary)`
   border-radius: 12px;
-  background: linear-gradient(
-    135deg,
-    ${props =>
-      props.season === 'spring'
-        ? 'rgba(255, 245, 245, 0.7) 0%, rgba(255, 235, 235, 0.7) 100%'
-        : 'rgba(245, 250, 255, 0.7) 0%, rgba(235, 240, 255, 0.7) 100%'}
-  );
-
+  background: linear-gradient(135deg, #f5f6f7 0%, #e9e9e9 100%);
   .MuiAccordionSummary-content {
     margin: 10px 0;
   }
 `;
 
-const ThemedChip = styled(Chip)<{ season: string; selected?: boolean }>`
+const ThemedChip = styled(Chip)<{ selected?: boolean }>`
   margin: 4px;
-  background-color: ${props => {
-    if (props.selected) {
-      return props.season === 'spring' ? '#FFAAA5' : '#8795B5';
-    } else {
-      return props.season === 'spring' ? '#FFF5F5' : '#F5F8FF';
-    }
-  }};
-  color: ${props => (props.selected ? '#FFF' : '#666')};
-  border: 1px solid
-    ${props => {
-      if (props.selected) {
-        return props.season === 'spring' ? '#FFAAA5' : '#8795B5';
-      } else {
-        return props.season === 'spring' ? '#FFD7D7' : '#D6E1FF';
-      }
-    }};
-  box-shadow: ${props =>
-    props.selected
-      ? props.season === 'spring'
-        ? '0 2px 8px rgba(255, 170, 165, 0.3)'
-        : '0 2px 8px rgba(135, 149, 181, 0.3)'
-      : 'none'};
-
+  background-color: ${props => (props.selected ? '#636363' : '#e6e6e6')};
+  color: ${props => (props.selected ? '#fff' : '#666')};
+  border: 1px solid ${props => (props.selected ? '#636363' : '#d6d6d6')};
+  box-shadow: ${props => (props.selected ? '0 2px 8px rgba(135,149,181,0.15)' : 'none')};
   &:hover {
-    background-color: ${props => {
-      if (props.selected) {
-        return props.season === 'spring' ? '#FF9999' : '#768AAA';
-      } else {
-        return props.season === 'spring' ? '#FFE5E5' : '#E6EEFF';
-      }
-    }};
+    background-color: ${props => (props.selected ? '#636363' : '#ededed')};
   }
-
   &:active {
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
   }
-
   transition: all 0.3s ease;
 `;
 
@@ -157,17 +117,8 @@ const OnboardingTagSelector: React.FC<OnboardingTagSelectorProps> = ({
     }
   };
 
-  // 계절에 따른 색상 가져오기
-  const getColorByTheme = () => {
-    switch (season) {
-      case 'spring':
-        return '#FFAAA5';
-      default:
-        return '#FFAAA5';
-    }
-  };
-
-  const primaryColor = getColorByTheme();
+  // 고정된 그레이 컬러
+  const primaryColor = '#636363';
 
   // 태그를 카테고리별로 그룹화 (grouped가 true이고 groupMapping이 제공된 경우)
   const renderGroupedTags = () => {
@@ -176,9 +127,8 @@ const OnboardingTagSelector: React.FC<OnboardingTagSelectorProps> = ({
         key={category.id}
         expanded={expanded === category.id}
         onChange={handleAccordionChange(category.id)}
-        season={season}
       >
-        <ThemedSummary expandIcon={<ExpandMoreIcon sx={{ color: primaryColor }} />} season={season}>
+        <ThemedSummary expandIcon={<ExpandMoreIcon sx={{ color: primaryColor }} />}>
           <Typography
             variant="subtitle1"
             sx={{
@@ -220,7 +170,6 @@ const OnboardingTagSelector: React.FC<OnboardingTagSelectorProps> = ({
                     key={tag.id}
                     label={tag.name}
                     clickable
-                    season={season}
                     selected={selectedTags.includes(tag.id)}
                     onClick={() => handleTagToggle(tag.id)}
                     size={isMobile ? 'small' : 'medium'}
@@ -249,7 +198,6 @@ const OnboardingTagSelector: React.FC<OnboardingTagSelectorProps> = ({
             key={tag.id}
             label={tag.name}
             clickable
-            season={season}
             selected={selectedTags.includes(tag.id)}
             onClick={() => handleTagToggle(tag.id)}
             size={isMobile ? 'small' : 'medium'}

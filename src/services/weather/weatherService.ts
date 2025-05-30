@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { env } from '@/config/env';
 
 // 날씨 정보 인터페이스
 export interface WeatherInfo {
@@ -239,7 +240,7 @@ const WeatherService = {
       const baseTime = String(baseHour).padStart(2, '0') + '00';
 
       // 기상청 API 키
-      let apiKey = import.meta.env.VITE_WEATHER_API_KEY;
+      let apiKey = env.WEATHER_API_KEY;
 
       console.log('UltraSrtNcst API Request:', {
         baseDate,
@@ -314,7 +315,7 @@ const WeatherService = {
       const { baseDate, baseTime } = getFormattedDateTime();
 
       // 기상청 API 키
-      let apiKey = import.meta.env.VITE_WEATHER_API_KEY;
+      let apiKey = env.WEATHER_API_KEY;
 
       // 운영 환경이 아닌 경우 실제 API 호출 대신 더미 데이터 반환
       if (!apiKey) {
@@ -408,79 +409,76 @@ const WeatherService = {
       // 현재 날씨 상태
       const current = PTY_STATUS[currentWeather.PTY] || SKY_STATUS[currentWeather.SKY] || '맑음';
 
-      // 예보 데이터 가공
-      const forecastData: { day: string; icon: string; temp: number }[] = [];
+      // 예보 데이터 가공 - 하루 전체 최저/최고기온과 강수확률 포함
+      const forecastData: { day: string; icon: string; temp: number; minTemp?: number; maxTemp?: number; precipitationProbability?: number }[] = [];
 
-      // 오늘 정오 예보
-      const today = new Date();
-      const todayStr = today.toISOString().split('T')[0].replace(/-/g, '');
-
-      // 내일 정오 예보
+      // 내일 데이터 처리
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
       const tomorrowStr = tomorrow.toISOString().split('T')[0].replace(/-/g, '');
 
-      // 모레 정오 예보
+      // 모레 데이터 처리
       const dayAfterTomorrow = new Date();
       dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
       const dayAfterTomorrowStr = dayAfterTomorrow.toISOString().split('T')[0].replace(/-/g, '');
 
-      // 날짜별 정오 데이터 찾기
-      const findNoonData = (date: string, category: string) => {
-        const items = forecast.filter(
-          (item: any) =>
-            item.fcstDate === date && item.fcstTime === '1200' && item.category === category
+      // 특정 날짜의 하루 전체 데이터 분석
+      const getDayForecast = (date: string, dayName: string) => {
+        // 해당 날짜의 모든 데이터 필터링
+        const dayData = forecast.filter((item: any) => item.fcstDate === date);
+        
+        // 최저/최고 기온 찾기
+        const temps = dayData.filter((item: any) => item.category === 'TMP').map((item: any) => parseFloat(item.fcstValue));
+        const minTemp = temps.length > 0 ? Math.min(...temps) : null;
+        const maxTemp = temps.length > 0 ? Math.max(...temps) : null;
+        
+        // 강수확률 찾기 (하루 중 최대값)
+        const precipProbs = dayData.filter((item: any) => item.category === 'POP').map((item: any) => parseInt(item.fcstValue));
+        const maxPrecipProb = precipProbs.length > 0 ? Math.max(...precipProbs) : null;
+        
+        // 대표 날씨 (오후 시간대 기준 - 12시 또는 15시)
+        const representativeTime = dayData.find((item: any) => 
+          (item.fcstTime === '1200' || item.fcstTime === '1500') && item.category === 'SKY'
         );
-        return items.length > 0 ? items[0].fcstValue : null;
+        const representativePty = dayData.find((item: any) => 
+          (item.fcstTime === '1200' || item.fcstTime === '1500') && item.category === 'PTY'
+        );
+        
+        const skyValue = representativeTime?.fcstValue || '1';
+        const ptyValue = representativePty?.fcstValue || '0';
+        
+        // 평균 기온 (최저+최고)/2
+        const avgTemp = (minTemp && maxTemp) ? Math.round((minTemp + maxTemp) / 2) : 24;
+        
+        return {
+          day: dayName,
+          icon: getWeatherIcon(skyValue, ptyValue),
+          temp: avgTemp,
+          minTemp: minTemp ? Math.round(minTemp) : undefined,
+          maxTemp: maxTemp ? Math.round(maxTemp) : undefined,
+          precipitationProbability: maxPrecipProb || undefined
+        };
       };
 
-      // 오늘 정오 예보
-      const todayTemp = findNoonData(todayStr, 'TMP');
-      const todaySky = findNoonData(todayStr, 'SKY');
-      const todayPty = findNoonData(todayStr, 'PTY');
+      // 내일 예보 추가
+      const tomorrowForecast = getDayForecast(tomorrowStr, '내일');
+      // minTemp/maxTemp가 없어도 기본값으로 추가
+      forecastData.push({
+        ...tomorrowForecast,
+        minTemp: tomorrowForecast.minTemp || 20,
+        maxTemp: tomorrowForecast.maxTemp || 28,
+        precipitationProbability: tomorrowForecast.precipitationProbability || 30
+      });
 
-      if (todayTemp && todaySky) {
-        forecastData.push({
-          day: '오늘',
-          icon: getWeatherIcon(todaySky, todayPty || '0'),
-          temp: parseFloat(todayTemp),
-        });
-      }
-
-      // 내일 정오 예보
-      const tomorrowTemp = findNoonData(tomorrowStr, 'TMP');
-      const tomorrowSky = findNoonData(tomorrowStr, 'SKY');
-      const tomorrowPty = findNoonData(tomorrowStr, 'PTY');
-
-      if (tomorrowTemp && tomorrowSky) {
-        forecastData.push({
-          day: '내일',
-          icon: getWeatherIcon(tomorrowSky, tomorrowPty || '0'),
-          temp: parseFloat(tomorrowTemp),
-        });
-      }
-
-      // 모레 정오 예보
-      const dayAfterTomorrowTemp = findNoonData(dayAfterTomorrowStr, 'TMP');
-      const dayAfterTomorrowSky = findNoonData(dayAfterTomorrowStr, 'SKY');
-      const dayAfterTomorrowPty = findNoonData(dayAfterTomorrowStr, 'PTY');
-
-      if (dayAfterTomorrowTemp && dayAfterTomorrowSky) {
-        forecastData.push({
-          day: '모레',
-          icon: getWeatherIcon(dayAfterTomorrowSky, dayAfterTomorrowPty || '0'),
-          temp: parseFloat(dayAfterTomorrowTemp),
-        });
-      }
-
-      // 예보 데이터가 없는 경우 기본 데이터 생성
-      if (forecastData.length === 0) {
-        forecastData.push(
-          { day: '오늘', icon: '☀️', temp: 24 },
-          { day: '내일', icon: '⛅', temp: 26 },
-          { day: '모레', icon: '🌧️', temp: 22 }
-        );
-      }
+      // 모레 예보 추가  
+      const dayAfterTomorrowForecast = getDayForecast(dayAfterTomorrowStr, '모레');
+      // minTemp/maxTemp가 없어도 기본값으로 추가
+      forecastData.push({
+        ...dayAfterTomorrowForecast,
+        minTemp: dayAfterTomorrowForecast.minTemp || 18,
+        maxTemp: dayAfterTomorrowForecast.maxTemp || 26,
+        precipitationProbability: dayAfterTomorrowForecast.precipitationProbability || 50
+      });
 
       // 최종 날씨 정보 반환
       return {
@@ -498,9 +496,8 @@ const WeatherService = {
         temperature: 24,
         location: locationName || '알 수 없음',
         forecast: [
-          { day: '오늘', icon: '☀️', temp: 24 },
-          { day: '내일', icon: '⛅', temp: 26 },
-          { day: '모레', icon: '🌧️', temp: 22 },
+          { day: '내일', icon: '⛅', temp: 26, minTemp: 20, maxTemp: 30, precipitationProbability: 20 },
+          { day: '모레', icon: '🌧️', temp: 22, minTemp: 18, maxTemp: 26, precipitationProbability: 70 },
         ],
       };
     }

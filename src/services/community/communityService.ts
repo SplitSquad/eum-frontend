@@ -3,6 +3,7 @@ import * as CommunityApi from '../../features/community/api/communityApi';
 import { Post as CommunityPost } from '../../features/community/types';
 import DebateApi from '../../features/debate/api/debateApi';
 import { Debate } from '../../features/debate/types';
+import { env } from '@/config/env';
 
 /**
  * 커뮤니티 게시글 타입 (위젯용)
@@ -265,7 +266,7 @@ const CommunityService = {
             }
 
             const script = document.createElement('script');
-            script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${import.meta.env.VITE_KAKAO_MAP_KEY}&libraries=services&autoload=false`;
+            script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${env.KAKAO_MAP_API_KEY}&libraries=services&autoload=false`;
             script.onload = () => {
               window.kakao.maps.load(() => resolve());
             };

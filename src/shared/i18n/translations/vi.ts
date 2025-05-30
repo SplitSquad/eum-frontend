@@ -15,6 +15,9 @@ const vi = {
       popularPosts: 'Bài viết nổi bật',
     },
   },
+  debate: {
+    noVotesYet: 'Chưa có phiếu bầu nào. Hãy là người đầu tiên bỏ phiếu!',
+  },
   header: {
     study: 'Du học',
     country: 'Hàn Quốc',

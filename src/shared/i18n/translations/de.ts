@@ -1137,14 +1137,13 @@ const de = {
       },
       info: {
         photographer: 'Von',
-        poweredBy: 'Bereitgestellt von Unsplash API',
+        poweredBy: 'Bereitgestellt von Pexels API',
       },
       messages: {
         loading: 'Bilder werden geladen...',
         error: 'Fehler beim Laden der Bilder',
         noResults: 'Keine Suchergebnisse',
-        apiKeyMissing:
-          'Unsplash API-Schlüssel nicht konfiguriert. Beispielbilder werden angezeigt.',
+        apiKeyMissing: 'Pexels API-Schlüssel nicht konfiguriert. Beispielbilder werden angezeigt.',
       },
     },
     youtubeGallery: {
@@ -1278,6 +1277,9 @@ const de = {
       noReplies: 'Noch keine Antworten. Sei der Erste und antworte!',
       cancel: 'Abbrechen',
     },
+    specialIssue: 'Spezielle Themen',
+    specialIssues: 'Alle Themen anzeigen',
+    noVotesYet: 'Noch keine Stimmen. Sei der Erste, der abstimmt!',
   },
   infoPage: {
     title: 'Korea Leben Guide',

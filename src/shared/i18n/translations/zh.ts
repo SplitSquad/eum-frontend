@@ -1095,13 +1095,13 @@ const zh = {
       },
       info: {
         photographer: '摄影师',
-        poweredBy: '由Unsplash API提供',
+        poweredBy: '由Pexels API提供',
       },
       messages: {
         loading: '图片加载中...',
         error: '图片加载失败',
         noResults: '没有搜索结果',
-        apiKeyMissing: '未配置Unsplash API密钥。显示示例图片。',
+        apiKeyMissing: '未配置Pexels API密钥。显示示例图片。',
       },
     },
     youtubeGallery: {
@@ -1239,6 +1239,9 @@ const zh = {
       noReplies: '暂无回复，欢迎发表第一个回复！',
       cancel: '取消',
     },
+    specialIssue: '特别议题',
+    specialIssues: '查看所有议题',
+    noVotesYet: '还没有投票。快来成为第一个投票的人吧！',
   },
   infoPage: {
     title: '韩国生活指南',

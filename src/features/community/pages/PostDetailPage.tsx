@@ -118,28 +118,28 @@ type Post = {
 
 // 스타일 컴포넌트
 const StyledChip = styled(Chip)(({ theme }) => ({
-  backgroundColor: 'rgba(255, 170, 165, 0.2)',
-  color: '#FF6B6B',
+  backgroundColor: 'rgba(202, 202, 202, 0.2)',
+  color: '#b9b9b9',
   marginRight: theme.spacing(1),
   marginBottom: theme.spacing(1),
   '&:hover': {
-    backgroundColor: 'rgba(255, 170, 165, 0.4)',
+    backgroundColor: 'rgba(202, 202, 202, 0.4)',
   },
 }));
 
 const ReactionButton = styled(Button)(({ theme, active }: { theme: any; active: boolean }) => ({
-  backgroundColor: active ? 'rgba(255, 170, 165, 0.4)' : 'transparent',
-  border: '1px solid rgba(255, 170, 165, 0.5)',
+  backgroundColor: active ? 'rgba(202, 202, 202, 0.4)' : 'transparent',
+  border: '1px solid rgba(202, 202, 202, 0.5)',
   borderRadius: '20px',
-  color: active ? '#FF6B6B' : '#666',
+  color: active ? '#b9b9b9' : '#666',
   fontWeight: active ? 600 : 400,
   fontSize: '0.85rem',
   padding: '4px 10px',
-  boxShadow: active ? '0 2px 5px rgba(255, 107, 107, 0.2)' : 'none',
+  boxShadow: active ? '0 2px 5px rgba(202, 202, 202, 0.2)' : 'none',
   transition: 'all 0.2s ease-in-out',
   '&:hover': {
-    backgroundColor: active ? 'rgba(255, 170, 165, 0.5)' : 'rgba(255, 170, 165, 0.3)',
-    boxShadow: active ? '0 3px 8px rgba(255, 107, 107, 0.3)' : '0 2px 5px rgba(255, 107, 107, 0.1)',
+    backgroundColor: active ? 'rgba(202, 202, 202, 0.5)' : 'rgba(202, 202, 202, 0.3)',
+    boxShadow: active ? '0 3px 8px rgba(202, 202, 202, 0.3)' : '0 2px 5px rgba(202, 202, 202, 0.1)',
   },
   '&.Mui-disabled': {
     backgroundColor: 'rgba(0, 0, 0, 0.05)',
@@ -152,13 +152,13 @@ const CommentInput = styled(TextField)({
     borderRadius: '20px',
     backgroundColor: 'rgba(255, 255, 255, 0.8)',
     '& fieldset': {
-      borderColor: '#FFD7D7',
+      borderColor: '#b9b9b9',
     },
     '&:hover fieldset': {
-      borderColor: '#FFAAA5',
+      borderColor: '#b9b9b9',
     },
     '&.Mui-focused fieldset': {
-      borderColor: '#FF9999',
+      borderColor: '#b9b9b9',
     },
   },
 });
@@ -210,7 +210,7 @@ const PostDetailPage: React.FC = () => {
       '비자/법률/노동': t('community.tags.labor'),
       '잡페어/네트워킹': t('community.tags.jobFair'),
       '알바/파트타임': t('community.tags.partTime'),
-      '테스트': t('community.tags.test'),
+      테스트: t('community.tags.test'),
     };
 
     return tagTranslationMap[tagName] || tagName;
@@ -293,7 +293,7 @@ const PostDetailPage: React.FC = () => {
         if (!noViewCount) {
           const alreadyViewed = ViewTracker.hasViewedPost(numericPostId);
           shouldIncreaseViewCount = !alreadyViewed;
-          
+
           console.log('[DEBUG] ViewTracker 조회 확인:', {
             postId: numericPostId,
             alreadyViewed,
@@ -343,16 +343,16 @@ const PostDetailPage: React.FC = () => {
         if (shouldIncreaseViewCount) {
           // 조회 기록 추가
           ViewTracker.markAsViewed(numericPostId);
-          
+
           // 웹 로그 전송
           ViewTracker.sendViewLog(
             numericPostId,
             mappedPost.title,
             mappedPost.content,
-            mappedPost.tags?.map(tag => typeof tag === 'string' ? tag : tag.name),
+            mappedPost.tags?.map(tag => (typeof tag === 'string' ? tag : tag.name)),
             location.pathname
           );
-          
+
           console.log('[DEBUG] 새로운 게시글 조회 기록됨:', {
             postId: numericPostId,
             title: mappedPost.title,
@@ -371,7 +371,6 @@ const PostDetailPage: React.FC = () => {
         // 상태 업데이트 (React 18 자동 배칭 활용)
         setPost(mappedPost);
         setLoading(false);
-        
       } catch (apiError: any) {
         // 요청이 중단된 경우는 에러로 처리하지 않음
         if (signal.aborted) {
@@ -419,7 +418,7 @@ const PostDetailPage: React.FC = () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
-      
+
       // ViewTracker 정리 (메모리 누수 방지)
       ViewTracker.cleanup();
     };
@@ -475,7 +474,7 @@ const PostDetailPage: React.FC = () => {
       await communityStore.deletePost(post.postId);
       console.log('[DEBUG] 게시글 삭제 완료');
       setDeleteDialogOpen(false);
-      
+
       // 게시글 타입에 따라 적절한 페이지로 돌아가기
       if (post.postType === '모임') {
         navigate('/community/groups'); // 소모임 페이지로
@@ -483,9 +482,9 @@ const PostDetailPage: React.FC = () => {
         navigate('/community/board'); // 자유게시판으로
       } else {
         // 기본값: 소모임 페이지
-      navigate('/community');
+        navigate('/community');
       }
-      
+
       enqueueSnackbar(t('community.posts.deleteSuccess'), { variant: 'success' });
     } catch (error) {
       console.error('[ERROR] 게시글 삭제 실패:', error);
@@ -517,7 +516,7 @@ const PostDetailPage: React.FC = () => {
       navigate('/community/board'); // 자유게시판으로
     } else {
       // 기본값: 소모임 페이지 (기존 /community는 GroupListPage로 이동)
-    navigate('/community');
+      navigate('/community');
     }
   };
 
@@ -656,11 +655,9 @@ const PostDetailPage: React.FC = () => {
   if (loading) {
     return (
       <Container maxWidth="lg">
-        <SpringBackground>
-          <Box mt={4} display="flex" justifyContent="center">
-            <CircularProgress />
-          </Box>
-        </SpringBackground>
+        <Box mt={4} display="flex" justifyContent="center">
+          <CircularProgress />
+        </Box>
       </Container>
     );
   }
@@ -669,14 +666,12 @@ const PostDetailPage: React.FC = () => {
   if (error) {
     return (
       <Container maxWidth="lg">
-        <SpringBackground>
-          <Box mt={4}>
-            <Alert severity="error">{error}</Alert>
-            <Button startIcon={<ArrowBackIcon />} onClick={handleBack} sx={{ mt: 2 }}>
-              {t('community.posts.back')}
-            </Button>
-          </Box>
-        </SpringBackground>
+        <Box mt={4}>
+          <Alert severity="error">{error}</Alert>
+          <Button startIcon={<ArrowBackIcon />} onClick={handleBack} sx={{ mt: 2 }}>
+            {t('community.posts.back')}
+          </Button>
+        </Box>
       </Container>
     );
   }
@@ -685,243 +680,247 @@ const PostDetailPage: React.FC = () => {
   if (!post) {
     return (
       <Container maxWidth="lg">
-        <SpringBackground>
-          <Box mt={4}>
-            <Alert severity="warning">{t('community.posts.loadFailed')}</Alert>
-            <Button startIcon={<ArrowBackIcon />} onClick={handleBack} sx={{ mt: 2 }}>
-              {t('community.posts.back')}
-            </Button>
-          </Box>
-        </SpringBackground>
+        <Box mt={4}>
+          <Alert severity="warning">{t('community.posts.loadFailed')}</Alert>
+          <Button startIcon={<ArrowBackIcon />} onClick={handleBack} sx={{ mt: 2 }}>
+            {t('community.posts.back')}
+          </Button>
+        </Box>
       </Container>
     );
   }
 
   return (
-    <SpringBackground>
-      <Container maxWidth="md" sx={{ py: 4, minHeight: 'calc(100vh - 70px)' }}>
-        {loading ? (
+    <Container maxWidth="md" sx={{ py: 4, minHeight: 'calc(100vh - 70px)' }}>
+      {loading ? (
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '200px',
+          }}
+        >
+          <CircularProgress color="secondary" />
+        </Box>
+      ) : error ? (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      ) : post ? (
+        <>
+          {/* 뒤로가기 버튼 */}
           <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              height: '200px',
-            }}
+            sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}
           >
-            <CircularProgress color="secondary" />
-          </Box>
-        ) : error ? (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        ) : post ? (
-          <>
-            {/* 뒤로가기 버튼 */}
-            <Box
-              sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}
-            >
-              <IconButton onClick={handleBack} sx={{ color: '#666' }}>
-                <ArrowBackIcon />
-              </IconButton>
+            <IconButton onClick={handleBack} sx={{ color: '#666' }}>
+              <ArrowBackIcon />
+            </IconButton>
 
-              {/* 게시글 작성자 또는 관리자일 경우 수정/삭제 버튼 표시 */}
-              {canEditDelete ? (
-                <Box>
-                  <Button
-                    startIcon={<EditIcon />}
-                    sx={{ mr: 1, color: '#666', borderColor: '#ccc' }}
-                    variant="outlined"
-                    size="small"
-                    onClick={handleEditPost}
-                  >
-                    {t('community.posts.edit')}
-                  </Button>
-                  <Button
-                    startIcon={<DeleteIcon />}
-                    sx={{ color: '#f44336', borderColor: '#f44336' }}
-                    variant="outlined"
-                    size="small"
-                    onClick={() => setDeleteDialogOpen(true)}
-                  >
-                    {t('community.posts.delete')}
-                  </Button>
-                </Box>
-              ) : (
-                /* 신고 버튼 - 작성자가 아닌 로그인한 사용자에게만 표시 */
-                currentUser && (
-                  <Box>
-                    <Button
-                      startIcon={<FlagIcon />}
-                      sx={{ color: '#f57c00', borderColor: '#f57c00' }}
-                      variant="outlined"
-                      size="small"
-                      onClick={handleOpenReportDialog}
-                    >
-                      {t('community.posts.report')}
-                    </Button>
-                  </Box>
-                )
-              )}
-            </Box>
-
-            {/* 게시글 삭제 확인 다이얼로그 */}
-            <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-              <DialogTitle>{t('community.posts.delete')}</DialogTitle>
-              <DialogContent>
-                <Typography>{t('community.posts.deleteConfirm')}</Typography>
-                <Typography variant="caption" color="error">
-                  삭제된 게시글은 복구할 수 없습니다.
-                </Typography>
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={() => setDeleteDialogOpen(false)}>{t('buttons.cancel')}</Button>
-                <Button onClick={handleDeletePost} color="error">
+            {/* 게시글 작성자 또는 관리자일 경우 수정/삭제 버튼 표시 */}
+            {canEditDelete ? (
+              <Box>
+                <Button
+                  startIcon={<EditIcon />}
+                  sx={{ mr: 1, color: '#666', borderColor: '#ccc' }}
+                  variant="outlined"
+                  size="small"
+                  onClick={handleEditPost}
+                >
+                  {t('community.posts.edit')}
+                </Button>
+                <Button
+                  startIcon={<DeleteIcon />}
+                  sx={{ color: '#f44336', borderColor: '#f44336' }}
+                  variant="outlined"
+                  size="small"
+                  onClick={() => setDeleteDialogOpen(true)}
+                >
                   {t('community.posts.delete')}
                 </Button>
-              </DialogActions>
-            </Dialog>
-
-            {/* 게시글 제목 및 정보 */}
-            <Box mb={3}>
-              <Typography variant="h4" fontWeight="bold" gutterBottom>
-                {post.title}
-              </Typography>
-              <Box display="flex" alignItems="center" mb={1}>
-                <Avatar alt={post.userName} sx={{ width: 32, height: 32, mr: 1 }} />
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', mr: 2 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                    {post.userName}
-                  </Typography>
-                  {/* 국가 정보 표시 */}
-                  {post.writer?.nation && (
-                    <Typography variant="caption" sx={{ fontSize: '0.7rem', color: '#999' }}>
-                      <FlagDisplay nation={post.writer.nation} size="small" />
-                    </Typography>
-                  )}
-                </Box>
-                <Typography variant="body2" color="text.secondary" sx={{ mr: 2 }}>
-                  {formatDateToAbsolute(post.createdAt ?? '')}
-                </Typography>
-                <Box display="flex" alignItems="center" sx={{ mr: 2 }}>
-                  <VisibilityIcon sx={{ fontSize: 16, mr: 0.5 }} color="action" />
-                  <Typography variant="body2" color="text.secondary">
-                    {post.viewCount}
-                  </Typography>
-                </Box>
               </Box>
-
-              {/* 태그 표시 */}
-              {post.tags && post.tags.length > 0 && (
-                <Box mb={2}>
-                  {post.tags.map((tag: any, index) => {
-                    const tagName = tag.name || tag;
-                    return (
-                      <StyledChip key={index} label={translateTag(tagName)} size="small" />
-                    );
-                  })}
+            ) : (
+              /* 신고 버튼 - 작성자가 아닌 로그인한 사용자에게만 표시 */
+              currentUser && (
+                <Box>
+                  <Button
+                    startIcon={<FlagIcon />}
+                    sx={{ color: '#f57c00', borderColor: '#f57c00' }}
+                    variant="outlined"
+                    size="small"
+                    onClick={handleOpenReportDialog}
+                  >
+                    {t('community.posts.report')}
+                  </Button>
                 </Box>
-              )}
+              )
+            )}
+          </Box>
+
+          {/* 게시글 삭제 확인 다이얼로그 */}
+          <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+            <DialogTitle>{t('community.posts.delete')}</DialogTitle>
+            <DialogContent>
+              <Typography>{t('community.posts.deleteConfirm')}</Typography>
+              <Typography variant="caption" color="error">
+                삭제된 게시글은 복구할 수 없습니다.
+              </Typography>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setDeleteDialogOpen(false)}>{t('buttons.cancel')}</Button>
+              <Button onClick={handleDeletePost} color="error">
+                {t('community.posts.delete')}
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* 게시글 제목 및 정보 */}
+          <Box mb={3}>
+            <Typography variant="h4" fontWeight="bold" gutterBottom>
+              {post.title}
+            </Typography>
+            <Box display="flex" alignItems="center" mb={1}>
+              <Avatar alt={post.userName} sx={{ width: 32, height: 32, mr: 1 }} />
+              <Box
+                sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', mr: 2 }}
+              >
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                  {post.userName}
+                </Typography>
+                {/* 국가 정보 표시 */}
+                {post.writer?.nation && (
+                  <Typography variant="caption" sx={{ fontSize: '0.7rem', color: '#999' }}>
+                    <FlagDisplay nation={post.writer.nation} size="small" />
+                  </Typography>
+                )}
+              </Box>
+              <Typography variant="body2" color="text.secondary" sx={{ mr: 2 }}>
+                {formatDateToAbsolute(post.createdAt ?? '')}
+              </Typography>
+              <Box display="flex" alignItems="center" sx={{ mr: 2 }}>
+                <VisibilityIcon sx={{ fontSize: 16, mr: 0.5 }} color="action" />
+                <Typography variant="body2" color="text.secondary">
+                  {post.viewCount}
+                </Typography>
+              </Box>
             </Box>
 
-            {/* 게시글 내용 */}
-            <Box
-              mb={4}
+            {/* 태그 표시 */}
+            {post.tags && post.tags.length > 0 && (
+              <Box mb={2}>
+                {post.tags.map((tag: any, index) => {
+                  const tagName = tag.name || tag;
+                  return <StyledChip key={index} label={translateTag(tagName)} size="small" />;
+                })}
+              </Box>
+            )}
+          </Box>
+
+          {/* 게시글 내용 */}
+          <Box
+            mb={4}
+            sx={{
+              backgroundColor: 'rgba(255,255,255,0.7)',
+              p: 3,
+              borderRadius: 2,
+            }}
+          >
+            <Typography
+              variant="body1"
+              component="div"
               sx={{
-                backgroundColor: 'rgba(255,255,255,0.7)',
-                p: 3,
-                borderRadius: 2,
+                whiteSpace: 'pre-wrap',
+                overflowWrap: 'break-word',
+                minHeight: '150px',
               }}
             >
-              <Typography
-                variant="body1"
-                component="div"
-                sx={{
-                  whiteSpace: 'pre-wrap',
-                  overflowWrap: 'break-word',
-                  minHeight: '150px',
-                }}
-              >
-                {post.content}
-              </Typography>
+              {post.content}
+            </Typography>
 
-              {/* 첨부파일 표시 (있는 경우) */}
-              {post.files && post.files.length > 0 && (
-                <Box mt={3}>
-                  <Typography variant="subtitle2" fontWeight="bold" gutterBottom sx={{ mb: 2 }}>
-                    {t('community.posts.attachFiles')}
-                  </Typography>
-                  
-                  {/* 이미지 파일과 일반 파일 분리 */}
-                  {(() => {
-                    const imageFiles = post.files.filter((file: any) => {
-                      const url = file.url || file;
-                      const fileName = file.name || url.split('/').pop() || '';
-                      return /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(fileName) || /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(url);
-                    });
-                    
-                    const nonImageFiles = post.files.filter((file: any) => {
-                      const url = file.url || file;
-                      const fileName = file.name || url.split('/').pop() || '';
-                      return !/\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(fileName) && !/\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(url);
-                    });
+            {/* 첨부파일 표시 (있는 경우) */}
+            {post.files && post.files.length > 0 && (
+              <Box mt={3}>
+                <Typography variant="subtitle2" fontWeight="bold" gutterBottom sx={{ mb: 2 }}>
+                  {t('community.posts.attachFiles')}
+                </Typography>
 
+                {/* 이미지 파일과 일반 파일 분리 */}
+                {(() => {
+                  const imageFiles = post.files.filter((file: any) => {
+                    const url = file.url || file;
+                    const fileName = file.name || url.split('/').pop() || '';
                     return (
-                      <>
-                        {/* 이미지 갤러리 */}
-                        {imageFiles.length > 0 && (
-                          <Box mb={nonImageFiles.length > 0 ? 3 : 0}>
-                            <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-                              이미지 ({imageFiles.length}개)
-                            </Typography>
-                            <Box
-                              sx={{
-                                display: 'grid',
-                                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-                                gap: 2,
-                                maxHeight: '400px',
-                                overflowY: 'auto',
-                              }}
-                            >
-                              {imageFiles.map((file: any, index: number) => {
-                                const imageUrl = file.url || file;
-                                const fileName = file.name || imageUrl.split('/').pop() || `이미지 ${index + 1}`;
-                                
-                                return (
-                                  <Box
-                                    key={index}
-                                    sx={{
-                                      position: 'relative',
-                                      borderRadius: 2,
-                                      overflow: 'hidden',
-                                      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                                      transition: 'all 0.3s ease',
-                                      cursor: 'pointer',
-                                      '&:hover': {
-                                        transform: 'translateY(-4px)',
-                                        boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
-                                        '& .zoom-icon': {
-                                          opacity: 1,
-                                        }
-                                      }
+                      /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(fileName) ||
+                      /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(url)
+                    );
+                  });
+
+                  const nonImageFiles = post.files.filter((file: any) => {
+                    const url = file.url || file;
+                    const fileName = file.name || url.split('/').pop() || '';
+                    return (
+                      !/\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(fileName) &&
+                      !/\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(url)
+                    );
+                  });
+
+                  return (
+                    <>
+                      {/* 이미지 갤러리 */}
+                      {imageFiles.length > 0 && (
+                        <Box mb={nonImageFiles.length > 0 ? 3 : 0}>
+                          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+                            이미지 ({imageFiles.length}개)
+                          </Typography>
+                          <Box
+                            sx={{
+                              display: 'grid',
+                              gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                              gap: 2,
+                              maxHeight: '400px',
+                              overflowY: 'auto',
+                            }}
+                          >
+                            {imageFiles.map((file: any, index: number) => {
+                              const imageUrl = file.url || file;
+                              const fileName =
+                                file.name || imageUrl.split('/').pop() || `이미지 ${index + 1}`;
+
+                              return (
+                                <Box
+                                  key={index}
+                                  sx={{
+                                    position: 'relative',
+                                    borderRadius: 2,
+                                    overflow: 'hidden',
+                                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                                    transition: 'all 0.3s ease',
+                                    cursor: 'pointer',
+                                    '&:hover': {
+                                      transform: 'translateY(-4px)',
+                                      boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
+                                      '& .zoom-icon': {
+                                        opacity: 1,
+                                      },
+                                    },
+                                  }}
+                                  onClick={() => window.open(imageUrl, '_blank')}
+                                >
+                                  <img
+                                    src={imageUrl}
+                                    alt={fileName}
+                                    style={{
+                                      width: '100%',
+                                      height: '150px',
+                                      objectFit: 'cover',
+                                      display: 'block',
                                     }}
-                                    onClick={() => window.open(imageUrl, '_blank')}
-                                  >
-                                    <img
-                                      src={imageUrl}
-                                      alt={fileName}
-                                      style={{
-                                        width: '100%',
-                                        height: '150px',
-                                        objectFit: 'cover',
-                                        display: 'block',
-                                      }}
-                                      onError={(e) => {
-                                        e.currentTarget.style.display = 'none';
-                                        // 이미지 로드 실패 시 폴백 표시
-                                        const parent = e.currentTarget.parentElement;
-                                        if (parent) {
-                                          parent.innerHTML = `
+                                    onError={e => {
+                                      e.currentTarget.style.display = 'none';
+                                      // 이미지 로드 실패 시 폴백 표시
+                                      const parent = e.currentTarget.parentElement;
+                                      if (parent) {
+                                        parent.innerHTML = `
                                             <div style="
                                               width: 100%;
                                               height: 150px;
@@ -938,179 +937,184 @@ const PostDetailPage: React.FC = () => {
                                               <span style="margin-top: 8px; font-size: 12px;">이미지 로드 실패</span>
                                             </div>
                                           `;
-                                        }
-                                      }}
-                                    />
-                                    
-                                    {/* 이미지 오버레이 정보 */}
-                                    <Box
-                                      sx={{
-                                        position: 'absolute',
-                                        bottom: 0,
-                                        left: 0,
-                                        right: 0,
-                                        background: 'linear-gradient(transparent, rgba(0,0,0,0.7))',
-                                        color: 'white',
-                                        p: 1.5,
-                                        fontSize: '0.75rem',
-                                      }}
+                                      }
+                                    }}
+                                  />
+
+                                  {/* 이미지 오버레이 정보 */}
+                                  <Box
+                                    sx={{
+                                      position: 'absolute',
+                                      bottom: 0,
+                                      left: 0,
+                                      right: 0,
+                                      background: 'linear-gradient(transparent, rgba(0,0,0,0.7))',
+                                      color: 'white',
+                                      p: 1.5,
+                                      fontSize: '0.75rem',
+                                    }}
+                                  >
+                                    <Typography
+                                      variant="caption"
+                                      sx={{ fontWeight: 500, display: 'block' }}
                                     >
-                                      <Typography variant="caption" sx={{ fontWeight: 500, display: 'block' }}>
-                                        {fileName.length > 25 ? fileName.substring(0, 25) + '...' : fileName}
+                                      {fileName.length > 25
+                                        ? fileName.substring(0, 25) + '...'
+                                        : fileName}
+                                    </Typography>
+                                    {file.size && (
+                                      <Typography variant="caption" sx={{ opacity: 0.8 }}>
+                                        {(file.size / 1024).toFixed(1)} KB
                                       </Typography>
-                                      {file.size && (
-                                        <Typography variant="caption" sx={{ opacity: 0.8 }}>
-                                          {(file.size / 1024).toFixed(1)} KB
-                                        </Typography>
-                                      )}
-                                    </Box>
-                                    
-                                    {/* 확대 아이콘 */}
-                                    <Box
-                                      sx={{
-                                        position: 'absolute',
-                                        top: 8,
-                                        right: 8,
-                                        width: 24,
-                                        height: 24,
-                                        borderRadius: '50%',
-                                        background: 'rgba(0,0,0,0.5)',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        opacity: 0,
-                                        transition: 'opacity 0.3s ease',
-                                      }}
-                                      className="zoom-icon"
-                                    >
-                                      <svg width="14" height="14" fill="white" viewBox="0 0 24 24">
-                                        <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-                                        <path d="M12 10h-2v2H9v-2H7V9h2V7h1v2h2v1z"/>
-                                      </svg>
-                                    </Box>
+                                    )}
                                   </Box>
-                                );
-                              })}
-                            </Box>
+
+                                  {/* 확대 아이콘 */}
+                                  <Box
+                                    sx={{
+                                      position: 'absolute',
+                                      top: 8,
+                                      right: 8,
+                                      width: 24,
+                                      height: 24,
+                                      borderRadius: '50%',
+                                      background: 'rgba(0,0,0,0.5)',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      opacity: 0,
+                                      transition: 'opacity 0.3s ease',
+                                    }}
+                                    className="zoom-icon"
+                                  >
+                                    <svg width="14" height="14" fill="white" viewBox="0 0 24 24">
+                                      <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                                      <path d="M12 10h-2v2H9v-2H7V9h2V7h1v2h2v1z" />
+                                    </svg>
+                                  </Box>
+                                </Box>
+                              );
+                            })}
                           </Box>
-                        )}
+                        </Box>
+                      )}
 
-                        {/* 일반 파일 목록 */}
-                        {nonImageFiles.length > 0 && (
-                          <Box>
-                            <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-                              첨부파일 ({nonImageFiles.length}개)
-                            </Typography>
-                            <List dense sx={{ bgcolor: '#f9f9f9', borderRadius: 2, p: 1 }}>
-                              {nonImageFiles.map((file: any, index: number) => (
-                                <ListItem 
-                                  key={index} 
-                                  sx={{ 
-                                    px: 2,
-                                    py: 1,
-                                    mb: 1,
-                                    bgcolor: 'white',
-                                    borderRadius: 1,
-                                    '&:last-child': { mb: 0 },
-                                    '&:hover': { bgcolor: '#f5f5f5' },
-                                    transition: 'background-color 0.2s ease',
-                                  }}
-                                >
-                                  <ListItemAvatar sx={{ minWidth: 40 }}>
-                                    <InsertDriveFileIcon fontSize="small" sx={{ color: '#FF9999' }} />
-                        </ListItemAvatar>
-                        <ListItemText
-                          primary={
-                            <Typography
-                              variant="body2"
-                              component="a"
-                              href={file.url || file}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              sx={{
-                                          color: '#FF9999',
-                                textDecoration: 'none',
-                                          fontWeight: 500,
-                                          '&:hover': { 
-                                            textDecoration: 'underline',
-                                            color: '#ff7777', 
-                                          },
-                              }}
-                            >
-                              {file.name || `${t('community.posts.attachFiles')} ${index + 1}`}
-                            </Typography>
-                          }
-                                    secondary={
-                                      file.size && (
-                                        <Typography variant="caption" sx={{ color: '#999' }}>
-                                          {(file.size / 1024).toFixed(1)} KB
-                                        </Typography>
-                                      )
-                                    }
-                        />
-                      </ListItem>
-                    ))}
-                  </List>
-                          </Box>
-                        )}
-                      </>
-                    );
-                  })()}
-                </Box>
-              )}
-            </Box>
-
-            {/* 게시글 평가 버튼 - disabled 속성 추가 */}
-            <Box
-              display="flex"
-              justifyContent="center"
-              gap={2}
-              mb={4}
-              sx={{ maxWidth: 500, mx: 'auto' }}
-            >
-              <ReactionButton
-                active={post.myReaction === 'LIKE'}
-                startIcon={post.myReaction === 'LIKE' ? <ThumbUpIcon /> : <ThumbUpOutlinedIcon />}
-                onClick={() => handlePostReaction('LIKE')}
-                fullWidth
-                disabled={post.myReaction === 'DISLIKE'}
-                theme={undefined as any}
-              >
-                {t('community.posts.likePost')} {post.likeCount || 0}
-              </ReactionButton>
-              <ReactionButton
-                active={post.myReaction === 'DISLIKE'}
-                startIcon={
-                  post.myReaction === 'DISLIKE' ? <ThumbDownIcon /> : <ThumbDownOutlinedIcon />
-                }
-                onClick={() => handlePostReaction('DISLIKE')}
-                fullWidth
-                disabled={post.myReaction === 'LIKE'}
-                theme={undefined as any}
-              >
-                {t('community.posts.dislikePost')} {post.dislikeCount || 0}
-              </ReactionButton>
-            </Box>
-
-            {/* 댓글 섹션 */}
-            <Divider sx={{ my: 4 }} />
-            <CommentSection postId={numericPostId} />
-
-            {/* 신고 다이얼로그 */}
-            {post && (
-              <ReportDialog
-                open={reportDialogOpen}
-                onClose={handleCloseReportDialog}
-                targetId={post.postId}
-                targetType="POST"
-                serviceType="COMMUNITY"
-                reportedUserId={post.userId || 0}
-              />
+                      {/* 일반 파일 목록 */}
+                      {nonImageFiles.length > 0 && (
+                        <Box>
+                          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+                            첨부파일 ({nonImageFiles.length}개)
+                          </Typography>
+                          <List dense sx={{ bgcolor: '#f9f9f9', borderRadius: 2, p: 1 }}>
+                            {nonImageFiles.map((file: any, index: number) => (
+                              <ListItem
+                                key={index}
+                                sx={{
+                                  px: 2,
+                                  py: 1,
+                                  mb: 1,
+                                  bgcolor: 'white',
+                                  borderRadius: 1,
+                                  '&:last-child': { mb: 0 },
+                                  '&:hover': { bgcolor: '#f5f5f5' },
+                                  transition: 'background-color 0.2s ease',
+                                }}
+                              >
+                                <ListItemAvatar sx={{ minWidth: 40 }}>
+                                  <InsertDriveFileIcon fontSize="small" sx={{ color: '#FF9999' }} />
+                                </ListItemAvatar>
+                                <ListItemText
+                                  primary={
+                                    <Typography
+                                      variant="body2"
+                                      component="a"
+                                      href={file.url || file}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      sx={{
+                                        color: '#FF9999',
+                                        textDecoration: 'none',
+                                        fontWeight: 500,
+                                        '&:hover': {
+                                          textDecoration: 'underline',
+                                          color: '#ff7777',
+                                        },
+                                      }}
+                                    >
+                                      {file.name ||
+                                        `${t('community.posts.attachFiles')} ${index + 1}`}
+                                    </Typography>
+                                  }
+                                  secondary={
+                                    file.size && (
+                                      <Typography variant="caption" sx={{ color: '#999' }}>
+                                        {(file.size / 1024).toFixed(1)} KB
+                                      </Typography>
+                                    )
+                                  }
+                                />
+                              </ListItem>
+                            ))}
+                          </List>
+                        </Box>
+                      )}
+                    </>
+                  );
+                })()}
+              </Box>
             )}
-          </>
-        ) : null}
-      </Container>
-    </SpringBackground>
+          </Box>
+
+          {/* 게시글 평가 버튼 - disabled 속성 추가 */}
+          <Box
+            display="flex"
+            justifyContent="center"
+            gap={2}
+            mb={4}
+            sx={{ maxWidth: 500, mx: 'auto' }}
+          >
+            <ReactionButton
+              active={post.myReaction === 'LIKE'}
+              startIcon={post.myReaction === 'LIKE' ? <ThumbUpIcon /> : <ThumbUpOutlinedIcon />}
+              onClick={() => handlePostReaction('LIKE')}
+              fullWidth
+              disabled={post.myReaction === 'DISLIKE'}
+              theme={undefined as any}
+            >
+              {t('community.posts.likePost')} {post.likeCount || 0}
+            </ReactionButton>
+            <ReactionButton
+              active={post.myReaction === 'DISLIKE'}
+              startIcon={
+                post.myReaction === 'DISLIKE' ? <ThumbDownIcon /> : <ThumbDownOutlinedIcon />
+              }
+              onClick={() => handlePostReaction('DISLIKE')}
+              fullWidth
+              disabled={post.myReaction === 'LIKE'}
+              theme={undefined as any}
+            >
+              {t('community.posts.dislikePost')} {post.dislikeCount || 0}
+            </ReactionButton>
+          </Box>
+
+          {/* 댓글 섹션 */}
+          <Divider sx={{ my: 4 }} />
+          <CommentSection postId={numericPostId} />
+
+          {/* 신고 다이얼로그 */}
+          {post && (
+            <ReportDialog
+              open={reportDialogOpen}
+              onClose={handleCloseReportDialog}
+              targetId={post.postId}
+              targetType="POST"
+              serviceType="COMMUNITY"
+              reportedUserId={post.userId || 0}
+            />
+          )}
+        </>
+      ) : null}
+    </Container>
   );
 };
 

@@ -16,7 +16,7 @@ const Loading: React.FC = () => {
         width: '100%',
       }}
     >
-      <CircularProgress sx={{ color: 'rgba(255, 170, 165, 0.8)', mb: 2 }} />
+      <CircularProgress sx={{ color: 'rgba(173, 173, 173, 0.8)', mb: 2 }} />
       <Typography variant="h6" color="textSecondary">
         로딩 중...
       </Typography>

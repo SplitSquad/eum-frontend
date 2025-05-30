@@ -1512,13 +1512,13 @@ const ko = {
       },
       info: {
         photographer: '촬영자',
-        poweredBy: 'Unsplash API를 통해 제공됩니다',
+        poweredBy: 'Pexels API를 통해 제공됩니다',
       },
       messages: {
         loading: '이미지를 불러오는 중...',
         error: '이미지를 불러오는데 실패했습니다',
         noResults: '검색 결과가 없습니다',
-        apiKeyMissing: 'Unsplash API 키가 설정되지 않았습니다. 샘플 이미지가 표시됩니다.',
+        apiKeyMissing: 'Pexels API 키가 설정되지 않았습니다. 샘플 이미지가 표시됩니다.',
       },
     },
     youtubeGallery: {
@@ -1666,6 +1666,9 @@ const ko = {
       noReplies: '답글이 없습니다. 첫 답글을 남겨주세요!',
       cancel: '취소',
     },
+    specialIssue: '특별 이슈',
+    specialIssues: '이슈 모아보기',
+    noVotesYet: '아직 투표가 없습니다. 첫 투표를 해보세요!',
   },
   infoPage: {
     title: '한국생활 가이드',
