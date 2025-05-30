@@ -974,7 +974,226 @@ const DebateDetailPage: React.FC = () => {
     (enhancedDebate.category &&
       categoryColors[enhancedDebate.category as keyof typeof categoryColors]) ||
     '#757575';
+  // 토론 콘텐츠 파싱 함수
+  const parseDebateContent = (content: string) => {
+    if (!content)
+      return {
+        topic: '',
+        proOpinion: '',
+        conOpinion: '',
+        rawContent: content,
+        beforeContent: '',
+        afterContent: '',
+      };
 
+    // 실제 데이터 형태에 맞는 간단한 파싱
+    // "토론주제:", "찬성측의견:", "반대측의견:" 형태를 찾음
+
+    let beforeContent = '';
+    let topic = '';
+    let proOpinion = '';
+    let conOpinion = '';
+    let afterContent = '';
+
+    // 토론주제 위치 찾기
+    const topicMatch = content.match(/(.*?)토론주제\s*:\s*(.*?)(?=\s*찬성측의견|$)/is);
+    if (topicMatch) {
+      beforeContent = topicMatch[1].trim();
+
+      // 토론주제 이후 부분에서 찬성/반대 의견 찾기
+      const afterTopic = content.substring(topicMatch[0].length);
+      topic = topicMatch[2].trim();
+
+      // 찬성측의견 찾기
+      const proMatch = afterTopic.match(/찬성측의견\s*:\s*(.*?)(?=\s*반대측의견|$)/is);
+      if (proMatch) {
+        proOpinion = proMatch[1].trim();
+
+        // 반대측의견 찾기
+        const conMatch = afterTopic.match(/반대측의견\s*:\s*(.*?)$/is);
+        if (conMatch) {
+          conOpinion = conMatch[1].trim();
+        }
+      }
+
+      return {
+        beforeContent,
+        topic,
+        proOpinion,
+        conOpinion,
+        afterContent: '', // 현재 예시에서는 이후 내용이 없음
+        rawContent: content,
+        isParsed: !!(topic && (proOpinion || conOpinion)),
+      };
+    }
+
+    // 다른 형태의 구분자도 시도 (대안 패턴들)
+    const altPatterns = [
+      // "토론 주제:", "찬성측 의견:", "반대측 의견:" 형태
+      {
+        topic: /토론\s*주제\s*:\s*(.*?)(?=\s*찬성|$)/is,
+        pro: /찬성(?:측)?\s*(?:의견)?\s*:\s*(.*?)(?=\s*반대|$)/is,
+        con: /반대(?:측)?\s*(?:의견)?\s*:\s*(.*?)$/is,
+      },
+      // "주제:", "찬성:", "반대:" 형태
+      {
+        topic: /주제\s*:\s*(.*?)(?=\s*찬성|$)/is,
+        pro: /찬성\s*:\s*(.*?)(?=\s*반대|$)/is,
+        con: /반대\s*:\s*(.*?)$/is,
+      },
+    ];
+
+    for (const patterns of altPatterns) {
+      const topicMatch = content.match(patterns.topic);
+      const proMatch = content.match(patterns.pro);
+      const conMatch = content.match(patterns.con);
+
+      if (topicMatch && topicMatch[1]) {
+        // 토론주제 이전 내용 추출
+        const topicIndex = content.indexOf(topicMatch[0]);
+        beforeContent = content.substring(0, topicIndex).trim();
+
+        topic = topicMatch[1].trim();
+        proOpinion = proMatch && proMatch[1] ? proMatch[1].trim() : '';
+        conOpinion = conMatch && conMatch[1] ? conMatch[1].trim() : '';
+
+        if (topic && (proOpinion || conOpinion)) {
+          return {
+            beforeContent,
+            topic,
+            proOpinion,
+            conOpinion,
+            afterContent: '',
+            rawContent: content,
+            isParsed: true,
+          };
+        }
+      }
+    }
+
+    // 파싱 실패 시 원본 반환
+    return {
+      beforeContent: '',
+      topic: '',
+      proOpinion: '',
+      conOpinion: '',
+      afterContent: '',
+      rawContent: content,
+      isParsed: false,
+    };
+  };
+
+  /* 파싱 관련 데이터 변경 렌더링 파트*/
+  // 토론 콘텐츠 렌더링 컴포넌트
+  const DebateContentRenderer: React.FC<{ content: string }> = ({ content }) => {
+    const parsed = parseDebateContent(content);
+
+    // 파싱이 성공한 경우 구조화된 형태로 표시
+    if (parsed.isParsed) {
+      return (
+        <Box sx={{ my: 3 }}>
+          {/* 이전 내용 (구조화 이전 텍스트) */}
+          {parsed.beforeContent && (
+            <Typography variant="body1" sx={{ mb: 3, lineHeight: 1.7 }}>
+              {parsed.beforeContent}
+            </Typography>
+          )}
+
+          {/* 토론 주제 */}
+          {parsed.topic && (
+            <Paper
+              sx={{
+                p: 2.5,
+                mb: 2,
+                bgcolor: 'rgba(63, 81, 181, 0.05)',
+                borderLeft: '4px solid #3f51b5',
+              }}
+            >
+              <Typography
+                variant="subtitle1"
+                fontWeight={600}
+                sx={{ mb: 1, color: '#3f51b5', display: 'flex', alignItems: 'center' }}
+              >
+                <Box
+                  component="span"
+                  sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#3f51b5', mr: 1 }}
+                />
+                토론 주제
+              </Typography>
+              <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
+                {parsed.topic}
+              </Typography>
+            </Paper>
+          )}
+
+          <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', md: 'row' } }}>
+            {/* 찬성측 의견 */}
+            {parsed.proOpinion && (
+              <Paper
+                sx={{
+                  flex: 1,
+                  p: 2.5,
+                  bgcolor: 'rgba(76, 175, 80, 0.05)',
+                  borderLeft: '4px solid #4caf50',
+                }}
+              >
+                <Typography
+                  variant="subtitle1"
+                  fontWeight={600}
+                  sx={{ mb: 1, color: '#4caf50', display: 'flex', alignItems: 'center' }}
+                >
+                  <SentimentSatisfiedAltIcon sx={{ fontSize: 18, mr: 1 }} />
+                  찬성측 의견
+                </Typography>
+                <Typography variant="body2" sx={{ lineHeight: 1.6 }}>
+                  {parsed.proOpinion}
+                </Typography>
+              </Paper>
+            )}
+
+            {/* 반대측 의견 */}
+            {parsed.conOpinion && (
+              <Paper
+                sx={{
+                  flex: 1,
+                  p: 2.5,
+                  bgcolor: 'rgba(244, 67, 54, 0.05)',
+                  borderLeft: '4px solid #f44336',
+                }}
+              >
+                <Typography
+                  variant="subtitle1"
+                  fontWeight={600}
+                  sx={{ mb: 1, color: '#f44336', display: 'flex', alignItems: 'center' }}
+                >
+                  <SentimentVeryDissatisfiedIcon sx={{ fontSize: 18, mr: 1 }} />
+                  반대측 의견
+                </Typography>
+                <Typography variant="body2" sx={{ lineHeight: 1.6 }}>
+                  {parsed.conOpinion}
+                </Typography>
+              </Paper>
+            )}
+          </Box>
+
+          {/* 이후 내용 (구조화 이후 텍스트) */}
+          {parsed.afterContent && (
+            <Typography variant="body1" sx={{ mt: 3, lineHeight: 1.7 }}>
+              {parsed.afterContent}
+            </Typography>
+          )}
+        </Box>
+      );
+    }
+
+    // 파싱이 실패한 경우 원본 텍스트 그대로 표시
+    return (
+      <Typography variant="body1" sx={{ my: 3, lineHeight: 1.7 }}>
+        {content}
+      </Typography>
+    );
+  };
+  /////////////////////////////////////////////////////////////////////////////////////////////////
   // 투표 차트 영역 컴포넌트
   const VoteChartSection: React.FC<{
     voteRatio: { agree: number; disagree: number };
@@ -1335,9 +1554,7 @@ const DebateDetailPage: React.FC = () => {
               </Box>
             </Box>
 
-            <Typography variant="body1" sx={{ my: 3, lineHeight: 1.7 }}>
-              {enhancedDebate.content}
-            </Typography>
+            <DebateContentRenderer content={enhancedDebate.content} />
           </Box>
         </DebateCard>
         {/* 댓글 섹션 */}

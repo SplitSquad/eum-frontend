@@ -1095,13 +1095,13 @@ const zh = {
       },
       info: {
         photographer: '摄影师',
-        poweredBy: '由Unsplash API提供',
+        poweredBy: '由Pexels API提供',
       },
       messages: {
         loading: '图片加载中...',
         error: '图片加载失败',
         noResults: '没有搜索结果',
-        apiKeyMissing: '未配置Unsplash API密钥。显示示例图片。',
+        apiKeyMissing: '未配置Pexels API密钥。显示示例图片。',
       },
     },
     youtubeGallery: {

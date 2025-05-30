@@ -11,8 +11,6 @@ import {
   Chip,
   Divider,
   LinearProgress,
-  AvatarGroup,
-  Button,
   CircularProgress,
 } from '@mui/material';
 
@@ -23,9 +21,13 @@ import WbSunnyIcon from '@mui/icons-material/WbSunny';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
-
+import ForumIcon from '@mui/icons-material/Forum';
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+import HowToVoteIcon from '@mui/icons-material/HowToVote';
+import BookmarkIcon from '@mui/icons-material/Bookmark';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import ErrorIcon from '@mui/icons-material/Error';
+
 import UserService, {
   UserProfile,
   UserPreference,
@@ -36,6 +38,9 @@ import UserService, {
 // @ts-ignore - 모듈을 찾을 수 없다는 오류를 무시
 import WeatherService, { WeatherInfo } from '../../services/weather/weatherService';
 import { useTranslation } from '../../shared/i18n';
+import { env } from '@/config/env';
+import { useMypageStore } from '../../features/mypage/store/mypageStore';
+import { useAuthStore } from '../../features/auth/store/authStore';
 
 // 사용자 뱃지 인터페이스 추가
 interface UserBadge {
@@ -44,6 +49,16 @@ interface UserBadge {
   icon: string;
   description: string;
   unlocked: boolean;
+}
+
+// 최근 활동 인터페이스
+interface RecentActivity {
+  id: number;
+  type: 'post' | 'comment' | 'debate' | 'bookmark';
+  title: string;
+  description: string;
+  date: string;
+  icon: React.ReactNode;
 }
 
 // 카카오맵 API 스크립트 로드 함수 - 싱글톤 패턴 적용
@@ -62,7 +77,7 @@ const loadKakaoMapScript = (): Promise<void> => {
   // 새 프로미스 생성 및 저장
   kakaoMapPromise = new Promise((resolve, reject) => {
     // 카카오맵 API 키 가져오기
-    const apiKey = import.meta.env.VITE_KAKAO_MAP_API_KEY;
+    const apiKey = env.KAKAO_MAP_API_KEY;
     if (!apiKey) {
       reject(new Error('Kakao Map API key is not defined'));
       return;
@@ -97,25 +112,42 @@ declare global {
 
 const UserStatusWidget: React.FC = () => {
   const { t } = useTranslation();
+  const { user } = useAuthStore();
+  
+  // 마이페이지 스토어 사용 - level 정보 포함
+  const {
+    profile,
+    posts,
+    comments,
+    debates,
+    bookmarks,
+    fetchProfile,
+    fetchMyPosts,
+    fetchMyComments,
+    fetchMyDebates,
+    fetchMyBookmarks,
+  } = useMypageStore();
   
   // 사용자 정보 상태
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [userPreference, setUserPreference] = useState<UserPreference | null>(null);
-  const [userActivities, setUserActivities] = useState<UserActivity[]>([]);
   const [userBadges, setUserBadges] = useState<UserBadge[]>([]);
+  const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
+  const [activityStreak, setActivityStreak] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
   // 날씨 정보 상태 추가
   const [weatherInfo, setWeatherInfo] = useState<WeatherInfo>({
     current: '맑음',
     temperature: 24,
     location: '서울시 강남구',
     forecast: [
-      { day: '오늘', icon: '☀️', temp: 24 },
-      { day: '내일', icon: '⛅', temp: 26 },
-      { day: '모레', icon: '🌧️', temp: 22 },
+      { day: '내일', icon: '⛅', temp: 26, minTemp: 20, maxTemp: 30, precipitationProbability: 20 },
+      { day: '모레', icon: '🌧️', temp: 22, minTemp: 18, maxTemp: 26, precipitationProbability: 70 },
     ],
   });
+  
   // 위치 정보 상태 추가
   const [userLocation, setUserLocation] = useState<{
     latitude: number;
@@ -128,10 +160,35 @@ const UserStatusWidget: React.FC = () => {
   });
   const [isMapScriptLoaded, setIsMapScriptLoaded] = useState(false);
 
-  // 유저 경험치
-  const userExp = 75; // 백분율 (0-100)
-  const userLevel = userProfile?.userId ? Math.floor((userProfile.userId % 20) + 1) : 1; // 임시로 userId를 이용해 레벨 생성
+  // 유저 경험치 - 실제 활동 수 기반으로 레벨 계산
+  const postsCount = posts?.content?.length || 0;
+  const commentsCount = comments?.content?.length || 0;
+  const debatesCount = debates?.content?.length || 0;
+  const bookmarksCount = bookmarks?.content?.length || 0;
+  const totalActivities = postsCount + commentsCount + debatesCount + bookmarksCount;
+  
+  const userLevel = Math.min(Math.floor(totalActivities / 5) + 1, 10); // 최대 10레벨 (마이페이지와 동일)
   const nextLevel = userLevel + 1;
+  const userExp = userLevel >= 10 ? 100 : ((totalActivities % 5) / 5) * 100; // 다음 레벨까지의 진행률
+  
+  // 레벨별 칭호 시스템
+  const getUserTitle = (level: number): { title: string; color: string; icon: string } => {
+    const titles = {
+      1: { title: '새싹 이웃', color: '#4caf50', icon: '🌱' },
+      2: { title: '친근한 메이트', color: '#8bc34a', icon: '🤝' },
+      3: { title: '활발한 프렌드', color: '#cddc39', icon: '💪' },
+      4: { title: '열정 파트너', color: '#ffeb3b', icon: '🔥' },
+      5: { title: '커뮤니티 멤버', color: '#ffc107', icon: '🌏' },
+      6: { title: '한국생활 베테랑', color: '#ff9800', icon: '🏠' },
+      7: { title: '글로벌 인플루언서', color: '#ff5722', icon: '✨' },
+      8: { title: '다문화 리더', color: '#e91e63', icon: '🌈' },
+      9: { title: '커뮤니티 엑스퍼트', color: '#9c27b0', icon: '🎯' },
+      10: { title: '레전드 멤버', color: '#673ab7', icon: '👑' },
+    };
+    return titles[level as keyof typeof titles] || titles[1];
+  };
+  
+  const userTitle = getUserTitle(userLevel);
 
   // 현재 시간 상태 (실시간 업데이트)
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -147,6 +204,27 @@ const UserStatusWidget: React.FC = () => {
       clearInterval(timer);
     };
   }, []);
+
+  // 실시간 날씨 업데이트 useEffect 추가
+  useEffect(() => {
+    const weatherTimer = setInterval(async () => {
+      try {
+        const weather = await WeatherService.getWeatherInfo(
+          userLocation.latitude,
+          userLocation.longitude,
+          userLocation.address
+        );
+        setWeatherInfo(weather);
+        console.log('날씨 정보 실시간 업데이트:', weather);
+      } catch (error) {
+        console.log('실시간 날씨 업데이트 실패:', error);
+      }
+    }, 30 * 60 * 1000); // 30분마다 날씨 업데이트
+
+    return () => {
+      clearInterval(weatherTimer);
+    };
+  }, [userLocation]);
 
   // 현재 시간 포맷팅
   const hours = currentTime.getHours();
@@ -198,195 +276,295 @@ const UserStatusWidget: React.FC = () => {
     if (bookmarksCount > 0) {
       badges.push({
         id: 4,
-        name: '지식 수집가',
-        icon: '📚',
-        description: '첫 번째 북마크를 추가했습니다!',
+        name: '정보 수집가',
+        icon: '🔖',
+        description: '유용한 정보를 북마크했습니다!',
         unlocked: true,
       });
     }
 
-    if (totalActivities >= 10) {
+    if (totalActivities >= 50) {
       badges.push({
         id: 5,
-        name: '활발한 활동가',
-    icon: '🌟',
-        description: '10개 이상의 활동을 완료했습니다!',
+        name: '활발한 유저',
+        icon: '⭐',
+        description: '50개 이상의 활동을 완료했습니다!',
         unlocked: true,
       });
     }
 
-    return badges;
+    if (totalActivities >= 100) {
+      badges.push({
+        id: 6,
+        name: '커뮤니티 전문가',
+        icon: '🏆',
+        description: '100개 이상의 활동을 완료했습니다!',
+        unlocked: true,
+      });
+    }
+
+    return badges.slice(0, 3); // 최대 3개 표시
   };
 
-  // 컴포넌트 마운트 시 카카오맵 스크립트 미리 로드
-  useEffect(() => {
-    loadKakaoMapScript()
-      .then(() => {
-        setIsMapScriptLoaded(true);
-      })
-      .catch(error => {
-        console.error('카카오맵 스크립트 로드 실패:', error);
-      });
-  }, []);
+  // 최근 활동 3개 생성 함수
+  const generateRecentActivities = (): RecentActivity[] => {
+    const allActivities: RecentActivity[] = [];
 
-  // 사용자 데이터 로드
+    // 게시글 활동
+    if (posts?.content) {
+      const postActivities = posts.content.map(post => ({
+        id: post.id || 0,
+        type: 'post' as const,
+        title: '게시글 작성',
+        description: post.title || '',
+        date: post.createdAt || '',
+        icon: <ForumIcon sx={{ fontSize: 16, color: '#2196f3' }} />,
+      }));
+      allActivities.push(...postActivities);
+    }
+
+    // 댓글 활동
+    if (comments?.content) {
+      const commentActivities = comments.content.map(comment => ({
+        id: comment.postId || 0,
+        type: 'comment' as const,
+        title: '댓글 작성',
+        description: `${comment.postTitle || ''}: ${(comment.content || '').substring(0, 30)}...`,
+        date: comment.createdAt || '',
+        icon: <ChatBubbleOutlineIcon sx={{ fontSize: 16, color: '#4caf50' }} />,
+      }));
+      allActivities.push(...commentActivities);
+    }
+
+    // 토론 활동
+    if (debates?.content) {
+      const debateActivities = debates.content.map(debate => ({
+        id: debate.id || 0,
+        type: 'debate' as const,
+        title: '토론 참여',
+        description: debate.title || '',
+        date: debate.createdAt || '',
+        icon: <HowToVoteIcon sx={{ fontSize: 16, color: '#9c27b0' }} />,
+      }));
+      allActivities.push(...debateActivities);
+    }
+
+    // 북마크 활동
+    if (bookmarks?.content) {
+      const bookmarkActivities = bookmarks.content.map(bookmark => ({
+        id: bookmark.id || 0,
+        type: 'bookmark' as const,
+        title: '북마크 추가',
+        description: bookmark.title || '',
+        date: bookmark.createdAt || '',
+        icon: <BookmarkIcon sx={{ fontSize: 16, color: '#ff9800' }} />,
+      }));
+      allActivities.push(...bookmarkActivities);
+    }
+
+    // 날짜순으로 정렬하고 최신 3개만 반환
+    return allActivities
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, 3);
+  };
+
+  // 연속 활동 일수 계산 함수
+  const calculateActivityStreak = (): number => {
+    const allActivities: { date: string }[] = [];
+
+    // 모든 활동의 날짜를 수집
+    if (posts?.content) {
+      posts.content.forEach(post => {
+        if (post.createdAt) allActivities.push({ date: post.createdAt });
+      });
+    }
+    if (comments?.content) {
+      comments.content.forEach(comment => {
+        if (comment.createdAt) allActivities.push({ date: comment.createdAt });
+      });
+    }
+    if (debates?.content) {
+      debates.content.forEach(debate => {
+        if (debate.createdAt) allActivities.push({ date: debate.createdAt });
+      });
+    }
+    if (bookmarks?.content) {
+      bookmarks.content.forEach(bookmark => {
+        if (bookmark.createdAt) allActivities.push({ date: bookmark.createdAt });
+      });
+    }
+
+    // 날짜별로 그룹화 (YYYY-MM-DD 형식)
+    const activityDates = [...new Set(
+      allActivities.map(activity => 
+        new Date(activity.date).toISOString().split('T')[0]
+      )
+    )].sort().reverse(); // 최신순 정렬
+
+    if (activityDates.length === 0) return 0;
+
+    // 오늘부터 역산해서 연속 일수 계산
+    const today = new Date().toISOString().split('T')[0];
+    let streak = 0;
+    let currentDate = new Date(today);
+
+    for (let i = 0; i < activityDates.length; i++) {
+      const checkDate = currentDate.toISOString().split('T')[0];
+      
+      if (activityDates.includes(checkDate)) {
+        streak++;
+        currentDate.setDate(currentDate.getDate() - 1); // 하루 전으로
+      } else if (i === 0 && checkDate !== today) {
+        // 오늘 활동이 없으면 연속성 끊어짐
+        break;
+      } else {
+        // 연속성 끊어짐
+        break;
+      }
+    }
+
+    return streak;
+  };
+
+  // 컴포넌트 마운트 시 데이터 로딩
   useEffect(() => {
     const fetchUserData = async () => {
       setIsLoading(true);
-      setError(null);
-
       try {
-        // 사용자 프로필 가져오기
-        const profile = await UserService.getProfile();
-        setUserProfile(profile);
-
-        // 사용자 선호도 정보 가져오기
-        const preference = await UserService.getPreference();
+        // 사용자 기본 정보 로딩
+        const [userProfileData, preference] = await Promise.all([
+          UserService.getProfile(),
+          UserService.getPreference(),
+        ]);
+        
+        setUserProfile(userProfileData);
         setUserPreference(preference);
 
-        // 사용자 활동 정보 가져오기
-        const activities = await UserService.getRecentActivities();
-        setUserActivities(activities);
-
-        // 사용자 활동 통계 및 뱃지 정보 가져오기
-        try {
-          // 실제 API에서 활동 통계 가져오기
-          const activityStats = await UserService.getActivityStats();
-          
-          // 활동 통계를 기반으로 뱃지 생성
-          const badges = generateUserBadges(
-            activityStats.postsCount,
-            activityStats.commentsCount,
-            activityStats.debatesCount,
-            activityStats.bookmarksCount
-          );
-          setUserBadges(badges);
-        } catch (badgeError) {
-          console.warn('뱃지 정보 가져오기 실패, 임시 데이터 사용:', badgeError);
-          // API 실패 시 임시 데이터 사용
-          const postsCount = Math.floor(Math.random() * 15);
-          const commentsCount = Math.floor(Math.random() * 25);
-          const debatesCount = Math.floor(Math.random() * 8);
-          const bookmarksCount = Math.floor(Math.random() * 12);
-          
-          const badges = generateUserBadges(postsCount, commentsCount, debatesCount, bookmarksCount);
-          setUserBadges(badges);
+        // 마이페이지 프로필 로딩
+        if (!profile) {
+          await fetchProfile();
         }
 
-        // 사용자 위치 정보 가져오기
+        // 위치 및 날씨 정보 로딩 (카카오맵 방식)
         try {
-          // 사용자의 실제 위치 가져오기
           const position = await WeatherService.getCurrentPosition();
-
-          // 카카오맵에서 위치 정보 가져오기
-          let address = '';
-
-          try {
-            // 위치 정보 변환을 위해 항상 먼저 카카오맵 스크립트가 로드되어 있는지 확인
-            await loadKakaoMapScript();
-
-            // 지오코더 객체 생성
-            const geocoder = new window.kakao.maps.services.Geocoder();
-
-            // 위도/경도를 행정구역 정보로 변환
-            address = await new Promise((resolve, reject) => {
+          
+          // 카카오맵 API로 상세 주소 가져오기
+          await new Promise<void>((resolve, reject) => {
+            if (window.kakao && window.kakao.maps) {
+              resolve();
+              return;
+            }
+            
+            const script = document.createElement('script');
+            script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${env.KAKAO_MAP_API_KEY}&libraries=services&autoload=false`;
+            script.onload = () => {
+              window.kakao.maps.load(() => resolve());
+            };
+            script.onerror = reject;
+            document.head.appendChild(script);
+          });
+          
+          const geocoder = new window.kakao.maps.services.Geocoder();
+          const detailedAddress = await new Promise<string>((resolve) => {
               geocoder.coord2RegionCode(
                 position.longitude,
                 position.latitude,
                 (result: any, status: any) => {
-                  if (status === window.kakao.maps.services.Status.OK) {
-                    if (result[0]) {
-                      // 행정구역 정보 추출
-                      const region =
-                        result[0].region_1depth_name + ' ' + result[0].region_2depth_name;
-
-                      // 동/읍/면 정보가 있으면 추가
-                      if (result[0].region_3depth_name) {
-                        resolve(region + ' ' + result[0].region_3depth_name);
+                if (status === window.kakao.maps.services.Status.OK && result[0]) {
+                  const city = result[0].region_1depth_name;
+                  const district = result[0].region_2depth_name;
+                  const dong = result[0].region_3depth_name || '';
+                  
+                  // 상세 주소 포맷팅
+                  let formattedAddress = '';
+                  if (dong) {
+                    // "가"가 포함된 주소는 그대로 사용 (장충동2가 형태)
+                    if (dong.endsWith('가')) {
+                      formattedAddress = `${city} ${district} ${dong}`;
+                    } else if (dong.endsWith('동')) {
+                      // 숫자를 제거하되 '동' 부분은 유지 (목2동 -> 목동)
+                      const cleanDong = dong.replace(/(\D+)(\d+)(동)/, '$1$3');
+                      formattedAddress = `${city} ${district} ${cleanDong}`;
                       } else {
-                        resolve(region);
+                      formattedAddress = `${city} ${district} ${dong}`;
                       }
                     } else {
-                      resolve('');
+                    formattedAddress = `${city} ${district}`;
                     }
+                  
+                  resolve(formattedAddress);
                   } else {
-                    console.error('Region code conversion failed:', status);
-                    resolve('');
+                  resolve('현재 위치');
                   }
                 }
               );
             });
-          } catch (geoError) {
-            console.error('주소 변환 실패:', geoError);
-            // 주소 변환 실패 시 사용자에게 알림
-            setError('위치 정보를 변환하는 중 문제가 발생했습니다. 기본 위치 정보를 사용합니다.');
-          }
-
-          // 주소 변환 실패 시 프로필 주소 사용 또는 위도/경도 표시
-          if (!address) {
-            address =
-              profile?.address ||
-              `위도 ${position.latitude.toFixed(4)}, 경도 ${position.longitude.toFixed(4)}`;
-          }
-
-          setUserLocation({
-            latitude: position.latitude,
-            longitude: position.longitude,
-            address,
-          });
-
-          // 기상청 API로 실제 날씨 정보 가져오기
+          
+          // 날씨 정보도 함께 가져오기
           const weather = await WeatherService.getWeatherInfo(
             position.latitude,
             position.longitude,
-            address
+            detailedAddress
           );
-
-          setWeatherInfo(weather);
-          console.log('날씨 정보 로드 성공:', weather);
-        } catch (weatherError) {
-          console.error('날씨 정보 가져오기 실패:', weatherError);
-          // 날씨 정보 가져오기 실패 시 사용자에게 알림
-          setError('날씨 정보를 가져오는 중 문제가 발생했습니다. 기본 날씨 정보를 사용합니다.');
-          // 기본 날씨 정보 유지
+          
+          setWeatherInfo({
+            ...weather,
+            location: detailedAddress // 상세 주소로 설정
+          });
+          
+          setUserLocation({
+            latitude: position.latitude,
+            longitude: position.longitude,
+            address: detailedAddress
+          });
+        } catch (error) {
+          console.log('위치/날씨 정보 로딩 실패:', error);
+          // 기본값 유지
         }
-      } catch (err) {
-        console.error('사용자 정보 가져오기 실패:', err);
-        setError('사용자 정보를 가져오는 중 오류가 발생했습니다.');
 
-        // 에러 발생 시 더미 데이터 설정 (개발 중에만 사용)
-        setUserProfile({
-          userId: 1234,
-          email: 'user@example.com',
-          name: '홍길동',
-          phoneNumber: '010-1234-5678',
-          address: '서울시 강남구',
-          role: 'ROLE_USER',
-        });
+        // 마이페이지 데이터 로딩
+        if (user) {
+          await Promise.all([
+            fetchMyPosts(),
+            fetchMyComments(),
+            fetchMyDebates(),
+            fetchMyBookmarks(),
+          ]);
+        }
 
-        setUserPreference({
-          userId: 1234,
-          language: 'ko',
-          nation: 'KR',
-          interests: ['여행', '음식', '사진', '음악', '역사'],
-        });
-
-        setUserActivities([
-          { id: '1', type: '로그인', date: '오늘', streak: 7 },
-          { id: '2', type: '리뷰 작성', date: '3일 전', streak: 0 },
-          { id: '3', type: '장소 저장', date: '1주일 전', streak: 0 },
-        ]);
-
-        // 에러 발생 시에도 임시 뱃지 데이터 설정
-        const badges = generateUserBadges(5, 12, 3, 8);
-        setUserBadges(badges);
+      } catch (error) {
+        console.error('사용자 데이터 로딩 실패:', error);
+        setError('사용자 정보를 불러오는 중 오류가 발생했습니다.');
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchUserData();
-  }, []);
+  }, [user, profile, fetchProfile, fetchMyPosts, fetchMyComments, fetchMyDebates, fetchMyBookmarks]);
+
+  // 마이페이지 데이터가 변경될 때 분석 데이터 업데이트
+  useEffect(() => {
+    if (!isLoading && (posts || comments || debates || bookmarks)) {
+      // 뱃지 생성
+      const postsCount = posts?.content?.length || 0;
+      const commentsCount = comments?.content?.length || 0;
+      const debatesCount = debates?.content?.length || 0;
+      const bookmarksCount = bookmarks?.content?.length || 0;
+      
+      const badges = generateUserBadges(postsCount, commentsCount, debatesCount, bookmarksCount);
+      setUserBadges(badges);
+
+      // 최근 활동 생성
+      const activities = generateRecentActivities();
+      setRecentActivities(activities);
+
+      // 연속 활동 일수 계산
+      const streak = calculateActivityStreak();
+      setActivityStreak(streak);
+    }
+  }, [posts, comments, debates, bookmarks, isLoading]);
 
   // 로딩 중이면 로딩 화면 표시
   if (isLoading) {
@@ -405,9 +583,7 @@ const UserStatusWidget: React.FC = () => {
       >
         <CircularProgress size={40} />
         <Typography variant="body2" sx={{ mt: 2, color: 'text.secondary' }}>
-          {isMapScriptLoaded
-            ? '사용자 정보를 불러오는 중입니다...'
-            : '지도 정보를 준비하는 중입니다...'}
+          사용자 정보를 불러오는 중입니다...
         </Typography>
       </Paper>
     );
@@ -417,7 +593,7 @@ const UserStatusWidget: React.FC = () => {
     <Paper
       elevation={1}
       sx={{
-        p: 2.5,
+        p: 2,
         height: '100%',
         borderRadius: 3,
         boxShadow: '0 10px 25px rgba(0,0,0,0.05)',
@@ -433,11 +609,11 @@ const UserStatusWidget: React.FC = () => {
         <Box
           sx={{
             p: 1,
-            mb: 2,
+            mb: 1.5,
             bgcolor: 'error.light',
             color: 'error.dark',
             borderRadius: 1,
-            fontSize: '0.875rem',
+            fontSize: '0.8rem',
             display: 'flex',
             alignItems: 'center',
           }}
@@ -451,539 +627,449 @@ const UserStatusWidget: React.FC = () => {
       <Box
         sx={{
           position: 'absolute',
-          top: -50,
-          left: -50,
-          width: 200,
-          height: 200,
+          top: -30,
+          left: -30,
+          width: 150,
+          height: 150,
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(241,245,255,0.5) 0%, rgba(241,245,255,0) 70%)',
+          background: 'radial-gradient(circle, rgba(241,245,255,0.4) 0%, rgba(241,245,255,0) 70%)',
           zIndex: 0,
+          animation: 'pulse 3s ease-in-out infinite',
+          '@keyframes pulse': {
+            '0%': { transform: 'scale(1)', opacity: 0.4 },
+            '50%': { transform: 'scale(1.1)', opacity: 0.6 },
+            '100%': { transform: 'scale(1)', opacity: 0.4 }
+          }
         }}
       />
 
-      {/* 스크롤 가능한 메인 컨텐츠 */}
-      <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', pb: 1, zIndex: 1 }}>
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: { xs: 'column', md: 'row' },
-            gap: 2,
-            position: 'relative',
-            zIndex: 1,
-            height: '100%',
-          }}
-        >
-          {/* 좌측 컬럼: 유저 프로필 + 액티비티 */}
-          <Box sx={{ flex: { xs: '1', md: '7' }, width: { xs: '100%', md: '60%' } }}>
-            {/* 유저 프로필 헤더 */}
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
-              <Box sx={{ position: 'relative' }}>
-                <Avatar
-                  src={userProfile?.profileImagePath || ''}
-                  alt={userProfile?.name || '사용자'}
+      {/* 메인 컨텐츠 */}
+      <Box sx={{ flex: 1, minHeight: 0, zIndex: 1, display: 'flex', flexDirection: 'column' }}>
+        {/* 유저 프로필 헤더 - 최적화 */}
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
+          <Box sx={{ position: 'relative' }}>
+            <Avatar
+              src={profile?.profileImage || userProfile?.profileImagePath || ''}
+              alt={profile?.name || userProfile?.name || '사용자'}
+              sx={{
+                width: 48,
+                height: 48,
+                mr: 1.5,
+                border: '2px solid white',
+                boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
+              }}
+            >
+              {!(profile?.profileImage || userProfile?.profileImagePath) && <PersonOutlineIcon />}
+            </Avatar>
+            <Box
+              sx={{
+                position: 'absolute',
+                bottom: -1,
+                right: 8,
+                bgcolor: '#00c853',
+                width: 8,
+                height: 8,
+                borderRadius: '50%',
+                border: '2px solid white',
+              }}
+            />
+          </Box>
+
+          <Box sx={{ flex: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Typography variant="h6" sx={{ fontWeight: 700, mr: 1, fontSize: '1rem' }}>
+                  {profile?.name || userProfile?.name || '사용자'}
+                </Typography>
+                <Chip
+                  size="small"
+                  label={`${userTitle.icon} Lv.${userLevel}`}
                   sx={{
-                    width: 64,
-                    height: 64,
-                    mr: 2,
-                    border: '2px solid white',
-                    boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
+                    bgcolor: userTitle.color,
+                    color: 'white',
+                    fontWeight: 600,
+                    height: 18,
+                    fontSize: '0.65rem',
+                    mr: 0.5,
                   }}
-                >
-                  {!userProfile?.profileImagePath && <PersonOutlineIcon />}
-                </Avatar>
-                <Box
+                />
+                {/* 칭호 표시 */}
+                <Chip
+                  size="small"
+                  label={userTitle.title}
+                  variant="outlined"
                   sx={{
-                    position: 'absolute',
-                    bottom: -2,
-                    right: 12,
-                    bgcolor: '#00c853',
-                    width: 12,
-                    height: 12,
-                    borderRadius: '50%',
-                    border: '2px solid white',
+                    height: 18,
+                    fontSize: '0.6rem',
+                    borderColor: userTitle.color,
+                    color: userTitle.color,
+                    fontWeight: 500,
                   }}
                 />
               </Box>
-
-              <Box sx={{ flex: 1 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 700, mr: 1 }}>
-                    {userProfile?.name || '사용자'}
-                  </Typography>
-                  <Chip
-                    size="small"
-                    label={`Lv.${userLevel}`}
-                    sx={{
-                      bgcolor: 'primary.main',
-                      color: 'white',
-                      fontWeight: 600,
-                      height: 20,
-                      fontSize: '0.7rem',
-                    }}
-                  />
-                </Box>
-
-                <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5, color: 'primary.main' }}>
-                  {getGreeting()}!
+              
+              {/* 현재 시간 표시 */}
+              <Box sx={{ display: 'flex', alignItems: 'center', ml: 1 }}>
+                <AccessTimeIcon sx={{ fontSize: 12, mr: 0.5, color: 'text.secondary' }} />
+                <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.secondary', fontWeight: 500 }}>
+                  {formattedTime}
                 </Typography>
+              </Box>
+            </Box>
 
-                {/* 레벨 진행바 */}
-                <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                  <Box sx={{ flex: 1, mr: 1 }}>
-                    <LinearProgress
-                      variant="determinate"
-                      value={userExp}
+            <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5, color: userTitle.color, fontSize: '0.85rem' }}>
+              {getGreeting()}, {userTitle.title}!
+            </Typography>
+
+            {/* 레벨 진행바 - 더 컴팩트하게 */}
+            <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+              <Box sx={{ flex: 1, mr: 1 }}>
+                <LinearProgress
+                  variant="determinate"
+                  value={userExp}
+                  sx={{
+                    height: 4,
+                    borderRadius: 2,
+                    bgcolor: 'rgba(0,0,0,0.05)',
+                    '& .MuiLinearProgress-bar': {
+                      background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
+                      borderRadius: 2,
+                    }
+                  }}
+                />
+              </Box>
+              <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
+                {userExp}%
+              </Typography>
+            </Box>
+            
+            {/* 다음 칭호 정보 */}
+            {userLevel < 10 && (
+              <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary', mt: 0.3, display: 'block' }}>
+                다음 칭호: {getUserTitle(nextLevel).icon} {getUserTitle(nextLevel).title} 
+                <span style={{ color: getUserTitle(nextLevel).color, fontWeight: 600 }}>
+                  ({5 - (totalActivities % 5)}개 활동 남음)
+                </span>
+              </Typography>
+            )}
+          </Box>
+        </Box>
+
+        {/* 메인 콘텐츠 영역 - 2열 레이아웃 */}
+        <Box sx={{ flex: 1, display: 'flex', gap: 1.5, minHeight: 0 }}>
+          
+          {/* 왼쪽: 연속활동/뱃지 + 달성뱃지 + 최근활동 */}
+          <Box sx={{ flex: 1.2, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+            {/* 연속활동 & 뱃지 통계 */}
+            <Box sx={{ display: 'flex', gap: 0.8, mb: 0.5 }}>
+              <Box
+                sx={{
+                  flex: 1,
+                  p: 1.2,
+                  borderRadius: 2,
+                  background: 'linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%)',
+                  color: 'white',
+                  textAlign: 'center',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  minWidth: 0,
+                  height: 'fit-content',
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: '-100%',
+                    width: '100%',
+                    height: '100%',
+                    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+                    animation: 'shimmer 2s infinite',
+                    '@keyframes shimmer': {
+                      '0%': { left: '-100%' },
+                      '100%': { left: '100%' }
+                    }
+                  }
+                }}
+              >
+                <LocalFireDepartmentIcon sx={{ fontSize: 14, mb: 0.3 }} />
+                <Typography variant="h6" fontWeight={700} sx={{ fontSize: '0.9rem', lineHeight: 1 }}>
+                  {activityStreak}일
+                </Typography>
+                <Typography variant="caption" sx={{ fontSize: '0.6rem', opacity: 0.9 }}>연속활동</Typography>
+              </Box>
+              
+              <Box
+                sx={{
+                  flex: 1,
+                  p: 1.2,
+                  borderRadius: 2,
+                  background: 'linear-gradient(135deg, #4fc3f7 0%, #29b6f6 100%)',
+                  color: 'white',
+                  textAlign: 'center',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  minWidth: 0,
+                  height: 'fit-content',
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: '-100%',
+                    width: '100%',
+                    height: '100%',
+                    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+                    animation: 'shimmer 2s infinite 1s',
+                  }
+                }}
+              >
+                <StarIcon sx={{ fontSize: 14, mb: 0.3 }} />
+                <Typography variant="h6" fontWeight={700} sx={{ fontSize: '0.9rem', lineHeight: 1 }}>
+                  {userBadges.filter(b => b.unlocked).length}개
+                </Typography>
+                <Typography variant="caption" sx={{ fontSize: '0.6rem', opacity: 0.9 }}>뱃지</Typography>
+              </Box>
+            </Box>
+
+            {/* 달성 뱃지 */}
+            <Box sx={{ mb: 0.5 }}>
+              <Typography
+                variant="subtitle2"
+                sx={{ fontWeight: 700, mb: 0.5, display: 'flex', alignItems: 'center', fontSize: '0.8rem' }}
+              >
+                <EmojiEventsIcon sx={{ fontSize: 12, mr: 0.5 }} />
+                달성 뱃지
+              </Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.6 }}>
+                {userBadges.length > 0 ? (
+                  userBadges.slice(0, 4).map(badge => (
+                    <Chip
+                      key={badge.id}
+                      label={badge.name}
+                      icon={<span style={{ fontSize: '0.6rem' }}>{badge.icon}</span>}
+                      size="small"
                       sx={{
-                        height: 8,
-                        borderRadius: 4,
-                        bgcolor: 'rgba(0,0,0,0.05)',
+                        bgcolor: badge.unlocked ? 'success.light' : 'grey.300',
+                        color: badge.unlocked ? 'success.dark' : 'grey.600',
+                        fontWeight: 500,
+                        height: 20,
+                        fontSize: '0.65rem',
                       }}
                     />
-                  </Box>
-                  <Typography variant="caption" color="text.secondary">
-                    {userExp}% / Lv.{nextLevel}
-                  </Typography>
-                </Box>
-              </Box>
-            </Box>
-
-            {/* 유저 상태 컨테이너 */}
-            <Box sx={{ mb: 2 }}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  flexWrap: 'wrap',
-                  gap: 1,
-                  p: 2,
-                  bgcolor: 'background.paper',
-                  borderRadius: 2,
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-                }}
-              >
-                {/* 날씨 정보 */}
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <WbSunnyIcon sx={{ color: 'warning.main', mr: 1, fontSize: 20 }} />
-                  <Box>
-                    <Typography
-                      variant="subtitle2"
-                      sx={{ fontWeight: 600, display: 'flex', alignItems: 'center' }}
-                    >
-                      {weatherInfo.temperature}°C {weatherInfo.current}
-                    </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <LocationOnIcon sx={{ fontSize: 12, mr: 0.5, color: 'text.secondary' }} />
-                      <Typography variant="caption" color="text.secondary">
-                        {weatherInfo.location}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Box>
-
-                {/* 시간 정보 */}
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <AccessTimeIcon sx={{ color: 'primary.main', mr: 1, fontSize: 20 }} />
-                  <Box>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                      {formattedTime}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {currentTime.toLocaleDateString('ko-KR', {
-                        weekday: 'short',
-                        month: 'short',
-                        day: 'numeric',
-                      })}
-                    </Typography>
-                  </Box>
-                </Box>
-
-                {/* 활동 연속 일수 */}
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <LocalFireDepartmentIcon sx={{ color: 'error.main', mr: 1, fontSize: 20 }} />
-                  <Box>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                      {userActivities.length > 0 ? userActivities[0].streak : 0}일 연속
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {t('dashboard.userStatus.activeStatus')}
-                    </Typography>
-                  </Box>
-                </Box>
-              </Box>
-            </Box>
-
-            {/* 유저 활동 리스트 */}
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
-                {t('dashboard.userStatus.recentActivity')}
-              </Typography>
-
-              <List
-                disablePadding
-                sx={{
-                  bgcolor: 'background.paper',
-                  borderRadius: 2,
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-                  mb: 2,
-                }}
-              >
-                {userActivities.length > 0 ? (
-                  userActivities.map((activity, index) => (
-                    <React.Fragment key={activity.id}>
-                      <ListItem sx={{ py: 1 }}>
-                        <ListItemIcon sx={{ minWidth: 36 }}>
-                          <Box
-                            sx={{
-                              width: 24,
-                              height: 24,
-                              borderRadius: '50%',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              bgcolor: 'primary.light',
-                              color: 'primary.main',
-                              fontSize: '0.75rem',
-                              fontWeight: 600,
-                            }}
-                          >
-                            {index + 1}
-                          </Box>
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                              {activity.type}
-                            </Typography>
-                          }
-                          secondary={
-                            <Typography variant="caption" color="text.secondary">
-                              {activity.date}
-                            </Typography>
-                          }
-                        />
-                        {activity.streak > 0 && (
-                          <Chip
-                            size="small"
-                            icon={<LocalFireDepartmentIcon fontSize="small" />}
-                            label={`${activity.streak}${t('dashboard.userStatus.continuousDays')}`}
-                            sx={{
-                              height: 24,
-                              bgcolor: 'rgba(244, 67, 54, 0.1)',
-                              color: 'error.main',
-                              '& .MuiChip-icon': {
-                                color: 'error.main',
-                                marginLeft: '4px',
-                              },
-                            }}
-                          />
-                        )}
-                      </ListItem>
-                      {index < userActivities.length - 1 && <Divider component="li" />}
-                    </React.Fragment>
                   ))
                 ) : (
-                  <ListItem>
-                    <ListItemText
-                      primary={
-                                              <Typography
-                        variant="body2"
-                        sx={{ color: 'text.secondary', textAlign: 'center' }}
-                      >
-                        {t('dashboard.userStatus.noActivity')}
-                      </Typography>
-                      }
-                    />
-                  </ListItem>
-                )}
-              </List>
-
-              {/* 최근 달성 뱃지 */}
-              <Box
-                sx={{
-                  p: 2,
-                  bgcolor: 'background.paper',
-                  borderRadius: 2,
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-                  display: 'flex',
-                  alignItems: 'center',
-                }}
-              >
-                <Box
-                  sx={{
-                    mr: 2,
-                    width: 40,
-                    height: 40,
-                    bgcolor: 'warning.light',
-                    color: 'warning.dark',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: '50%',
-                    fontSize: '1.5rem',
-                  }}
-                >
-                  {userBadges.length > 0 ? userBadges[0].icon : '🌟'}
-                </Box>
-                <Box sx={{ flex: 1 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <EmojiEventsIcon sx={{ fontSize: 16, color: 'warning.main', mr: 0.5 }} />
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                      {userBadges.length > 0 ? userBadges[0].name : t('dashboard.userStatus.newBadgeEarned')}
-                    </Typography>
-                  </Box>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                    {userBadges.length > 0 ? userBadges[0].description : t('dashboard.userStatus.newBadgeDescription')}
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                    활동을 시작해 뱃지를 획득하세요!
                   </Typography>
-                </Box>
+                )}
+              </Box>
+            </Box>
+
+            {/* 최근 활동 */}
+            <Box sx={{ flex: 1, minHeight: 0 }}>
+              <Typography
+                variant="subtitle2"
+                sx={{ fontWeight: 700, mb: 0.5, display: 'flex', alignItems: 'center', fontSize: '0.8rem' }}
+              >
+                <NotificationsActiveIcon sx={{ fontSize: 12, mr: 0.5 }} />
+                최근 활동
+              </Typography>
+              <Box sx={{ maxHeight: 160, overflowY: 'auto', overflowX: 'hidden' }}>
+                {recentActivities.length > 0 ? (
+                  recentActivities.slice(0, 3).map((activity, index) => (
+                    <Box
+                      key={activity.id}
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        p: 0.8,
+                        mb: index < 2 ? 0.5 : 0, // 마지막 항목은 마진 없음
+                        borderRadius: 1,
+                        bgcolor: 'rgba(0,0,0,0.02)',
+                        border: '1px solid rgba(0,0,0,0.05)',
+                      }}
+                    >
+                      <Box sx={{ mr: 1 }}>{activity.icon}</Box>
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography variant="body2" fontWeight={500} sx={{ fontSize: '0.75rem' }}>
+                          {activity.title}
+                        </Typography>
+                        <Typography 
+                          variant="caption" 
+                          color="text.secondary" 
+                          sx={{ 
+                            fontSize: '0.65rem',
+                            display: 'block',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis'
+                          }}
+                        >
+                          {activity.description.length > 25
+                            ? `${activity.description.substring(0, 25)}...`
+                            : activity.description}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  ))
+                ) : (
+                  <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ py: 1.5, fontSize: '0.75rem' }}>
+                    아직 활동이 없습니다.
+                  </Typography>
+                )}
               </Box>
             </Box>
           </Box>
 
-          {/* 우측 컬럼: 날씨 기반 활동 추천 */}
-          <Box sx={{ flex: { xs: '1', md: '5' }, width: { xs: '100%', md: '40%' } }}>
-            {/* 날씨 기반 활동 추천 섹션 */}
-            <Box sx={{ mb: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                <WbSunnyIcon sx={{ mr: 1, color: 'primary.main' }} />
-                <Typography variant="subtitle1" fontWeight={600}>
-                  {t('dashboard.userStatus.weatherBasedRecommendations')}
-                </Typography>
-              </Box>
-
+          {/* 오른쪽: 날씨 정보 + 추천 활동 */}
+          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+            {/* 날씨 정보 */}
+            <Box sx={{ mb: 1.5 }}>
+              <Typography
+                variant="subtitle2"
+                sx={{ fontWeight: 700, mb: 1, display: 'flex', alignItems: 'center', fontSize: '0.8rem' }}
+              >
+                <WbSunnyIcon sx={{ fontSize: 12, mr: 0.5 }} />
+                날씨 정보
+              </Typography>
               <Box
                 sx={{
-                  p: 2,
-                  bgcolor: 'background.paper',
+                  p: 1.2,
                   borderRadius: 2,
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-                  mb: 2,
+                  background: 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)',
+                  textAlign: 'center',
+                  mb: 1,
                 }}
               >
-                {/* 현재 날씨 정보 */}
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    mb: 2,
-                    pb: 2,
-                    borderBottom: '1px solid',
-                    borderColor: 'divider',
-                  }}
-                >
+                <Typography variant="h5" sx={{ mb: 0.3, fontSize: '1.5rem' }}>
+                  {getWeatherIcon(weatherInfo.current)}
+                </Typography>
+                <Typography variant="h6" fontWeight={700} sx={{ fontSize: '1rem', lineHeight: 1 }}>
+                  {weatherInfo.temperature}°C
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                  {weatherInfo.current}
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mt: 0.3 }}>
+                  <LocationOnIcon sx={{ fontSize: 10, mr: 0.3 }} />
+                  <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>{weatherInfo.location}</Typography>
+                </Box>
+              </Box>
+
+              {/* 2일 날씨 예보 - 최저/최고기온과 강수확률 포함 */}
+              <Box sx={{ display: 'flex', gap: 0.5 }}>
+                {weatherInfo.forecast.slice(0, 2).map((day, index) => (
                   <Box
+                    key={index}
                     sx={{
-                      mr: 2,
-                      width: 50,
-                      height: 50,
-                      bgcolor: 'primary.light',
-                      color: 'primary.main',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      borderRadius: '50%',
-                      fontSize: '1.8rem',
+                      flex: 1,
+                      p: 0.8,
+                      borderRadius: 1,
+                      bgcolor: 'rgba(33, 150, 243, 0.08)',
+                      textAlign: 'center',
                     }}
                   >
-                    {getWeatherIcon(weatherInfo.current)}
-                  </Box>
-                  <Box>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                      {weatherInfo.temperature}°C {weatherInfo.current}
+                    <Typography variant="caption" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                      {day.day}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {weatherInfo.location}
-                    </Typography>
-                    {weatherInfo.humidity && (
-                      <Typography variant="caption" color="text.secondary">
-                        습도: {weatherInfo.humidity}% |
-                        {weatherInfo.forecast[0].precipitationProbability
-                          ? ` 강수확률: ${weatherInfo.forecast[0].precipitationProbability}%`
-                          : ''}
+                    <Typography sx={{ fontSize: '1rem', my: 0.3 }}>{day.icon}</Typography>
+                    
+                    {/* 최저/최고 기온 표시 */}
+                    {day.minTemp && day.maxTemp ? (
+                      <Box>
+                        <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'primary.main', fontWeight: 600 }}>
+                          {day.maxTemp}°
+                        </Typography>
+                        <Typography variant="caption" sx={{ fontSize: '0.6rem', color: 'text.secondary', mx: 0.3 }}>
+                          /
+                        </Typography>
+                        <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary' }}>
+                          {day.minTemp}°
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <Typography variant="caption" sx={{ fontSize: '0.7rem' }}>{day.temp}°</Typography>
+                    )}
+                    
+                    {/* 강수확률 표시 */}
+                    {day.precipitationProbability && day.precipitationProbability > 0 && (
+                      <Typography variant="caption" sx={{ fontSize: '0.6rem', color: 'info.main', display: 'block', mt: 0.2 }}>
+                        💧{day.precipitationProbability}%
                       </Typography>
                     )}
                   </Box>
-                </Box>
-
-                {/* 날씨 예보 정보 */}
-                <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'space-around',
-                    mb: 2,
-                    pb: 2,
-                    borderBottom: '1px solid',
-                    borderColor: 'divider',
-                  }}
-                >
-                  {weatherInfo.forecast.map(
-                    (
-                      day: {
-                        day: string;
-                        icon: string;
-                        temp: number;
-                        minTemp?: number;
-                        maxTemp?: number;
-                        precipitationProbability?: number;
-                      },
-                      index: number
-                    ) => (
-                      <Box key={index} sx={{ textAlign: 'center' }}>
-                        <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>
-                          {day.day}
-                        </Typography>
-                        <Box sx={{ fontSize: '1.8rem', mb: 0.5 }}>{day.icon}</Box>
-                        <Typography variant="body2">{day.temp}°C</Typography>
-                        {day.minTemp !== undefined && day.maxTemp !== undefined && (
-                          <Typography variant="caption" color="text.secondary">
-                            {day.minTemp}° / {day.maxTemp}°
-                          </Typography>
-                        )}
-                        {day.precipitationProbability !== undefined && (
-                          <Typography variant="caption" color="text.secondary" display="block">
-                            강수확률: {day.precipitationProbability}%
-                          </Typography>
-                        )}
-                      </Box>
-                    )
-                  )}
-                </Box>
-
-                {/* 날씨 기반 추천 활동 */}
-                <Typography variant="body2" sx={{ fontWeight: 600, mb: 1.5 }}>
-                  오늘 같은 날씨에 어울리는 활동
-                </Typography>
-
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                  {getWeatherBasedRecommendations(weatherInfo.current, t)
-                    .sort(() => Math.random() - 0.5) // 랜덤 정렬
-                    .slice(0, 3) // 3개만 선택
-                    .map((item, index) => (
-                    <Box
-                      key={index}
-                      sx={{
-                        p: 1.5,
-                        borderRadius: 1.5,
-                        bgcolor: item.bgColor,
-                        display: 'flex',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <Box sx={{ fontSize: '1.2rem', mr: 1.5 }}>{item.icon}</Box>
-                      <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          {item.title}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {item.description}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  ))}
-                </Box>
+                ))}
               </Box>
             </Box>
 
-            {/* 사용자 관심사 기반 콘텐츠 */}
-            <Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                <StarIcon sx={{ mr: 1, color: 'primary.main' }} />
-                <Typography variant="subtitle1" fontWeight={600}>
-                  나의 관심사
-                </Typography>
-              </Box>
-
-            <Box
-              sx={{
-                p: 2,
-                bgcolor: 'background.paper',
-                borderRadius: 2,
-                boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+            {/* 오늘의 추천 활동 */}
+            <Box sx={{ flex: 1, minHeight: 0 }}>
+              <Typography
+                variant="subtitle2"
+                sx={{ fontWeight: 700, mb: 1, display: 'flex', alignItems: 'center', fontSize: '0.8rem' }}
+              >
+                <StarIcon sx={{ fontSize: 12, mr: 0.5 }} />
+                오늘의 추천
+              </Typography>
+              <Box 
+                sx={{ 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  gap: 0.6, 
+                  maxHeight: '100%', 
+                  overflowY: 'auto',
+                  overflowX: 'hidden',
+                  '&::-webkit-scrollbar': {
+                    width: '4px',
+                  },
+                  '&::-webkit-scrollbar-track': {
+                    background: 'rgba(0,0,0,0.05)',
+                    borderRadius: '2px',
+                  },
+                  '&::-webkit-scrollbar-thumb': {
+                    background: 'rgba(0,0,0,0.2)',
+                    borderRadius: '2px',
+                  },
+                  '&::-webkit-scrollbar-thumb:hover': {
+                    background: 'rgba(0,0,0,0.3)',
+                  }
                 }}
               >
-                {/* 관심사 태그들 */}
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-                  {userPreference?.interests?.map((interest, index) => (
-                    <Chip
-                      key={index}
-                      label={interest}
-                      size="small"
-                      sx={{
-                        bgcolor: getInterestColor(interest).bg,
-                        color: getInterestColor(interest).color,
-                        fontWeight: 500,
-                      }}
-                    />
-                  )) || (
-                    <Typography variant="caption" color="text.secondary">
-                      관심사를 설정해보세요!
-                    </Typography>
-                  )}
-                </Box>
-
-                {/* 관심사 기반 랜덤 이미지/콘텐츠 */}
-                {userPreference?.interests && userPreference.interests.length > 0 && (
+                {getWeatherBasedRecommendations(weatherInfo.current, t).map((rec, index) => (
                   <Box
+                    key={index}
                     sx={{
-                      position: 'relative',
-                      height: 120,
-                      borderRadius: 2,
-                      overflow: 'hidden',
-                      background: getRandomGradient(userPreference.interests),
-                display: 'flex',
-                alignItems: 'center',
-                      justifyContent: 'center',
-                      mb: 2,
-              }}
-            >
-                    <Box
-                      sx={{
-                        textAlign: 'center',
-                        color: 'white',
-                        textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                      }}
-                    >
-                      <Typography variant="h4" sx={{ mb: 1 }}>
-                        {getRandomEmoji(userPreference.interests)}
-                </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {getRandomQuote(userPreference.interests)}
-                </Typography>
-              </Box>
-                  </Box>
-                )}
-
-                {/* 관심사 기반 추천 콘텐츠 */}
-                <Typography variant="body2" sx={{ fontWeight: 600, mb: 1.5 }}>
-                  관심사 기반 추천
-                </Typography>
-
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  {getInterestBasedContent(userPreference?.interests || [])
-                    .slice(0, 2)
-                    .map((item, index) => (
-                    <Box
-                      key={index}
-                sx={{
-                        p: 1.5,
-                        borderRadius: 1.5,
-                        bgcolor: item.bgColor,
-                        display: 'flex',
-                        alignItems: 'center',
-                }}
-              >
-                      <Box sx={{ fontSize: '1.2rem', mr: 1.5 }}>{item.icon}</Box>
-                      <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          {item.title}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {item.description}
-                        </Typography>
-                      </Box>
+                      p: 0.8,
+                      borderRadius: 1,
+                      bgcolor: rec.bgColor,
+                      display: 'flex',
+                      alignItems: 'center',
+                      transition: 'transform 0.2s ease',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        transform: 'scale(1.02)',
+                      }
+                    }}
+                  >
+                    <Typography sx={{ fontSize: '0.9rem', mr: 1 }}>{rec.icon}</Typography>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography variant="body2" fontWeight={500} sx={{ fontSize: '0.75rem' }}>
+                        {rec.title}
+                      </Typography>
+                      <Typography 
+                        variant="caption" 
+                        color="text.secondary" 
+                        sx={{ 
+                          fontSize: '0.65rem',
+                          display: 'block',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis'
+                        }}
+                      >
+                        {rec.description}
+                      </Typography>
                     </Box>
-                  ))}
-                </Box>
+                  </Box>
+                ))}
               </Box>
             </Box>
           </Box>
@@ -993,131 +1079,20 @@ const UserStatusWidget: React.FC = () => {
   );
 };
 
-// 날씨 상태에 따른 아이콘 반환
+// 날씨 아이콘 매핑
 const getWeatherIcon = (status: string): string => {
-  if (status.includes('비') && status.includes('눈')) return '🌨️';
-  if (status.includes('비')) return '🌧️';
-  if (status.includes('눈')) return '❄️';
-  if (status.includes('구름많음')) return '⛅';
-  if (status.includes('흐림')) return '☁️';
-  return '☀️'; // 기본값은 맑음
-};
-
-// 관심사별 색상 매핑
-const getInterestColor = (interest: string) => {
-  const colorMap: { [key: string]: { color: string; bg: string } } = {
-    '여행': { color: '#2196f3', bg: '#e3f2fd' },
-    '음식': { color: '#f44336', bg: '#ffebee' },
-    '사진': { color: '#9c27b0', bg: '#f3e5f5' },
-    '음악': { color: '#ff9800', bg: '#fff3e0' },
-    '역사': { color: '#795548', bg: '#efebe9' },
-    '문화': { color: '#607d8b', bg: '#eceff1' },
-    '스포츠': { color: '#4caf50', bg: '#e8f5e9' },
-    '예술': { color: '#e91e63', bg: '#fce4ec' },
-    '기술': { color: '#3f51b5', bg: '#e8eaf6' },
-    '자연': { color: '#8bc34a', bg: '#f1f8e9' },
+  const iconMap: { [key: string]: string } = {
+    맑음: '☀️',
+    구름: '⛅',
+    흐림: '☁️',
+    비: '🌧️',
+    눈: '🌨️',
+    안개: '🌫️',
   };
-  return colorMap[interest] || { color: '#757575', bg: '#f5f5f5' };
+  return iconMap[status] || '☀️';
 };
 
-// 관심사 기반 랜덤 그라디언트 생성
-const getRandomGradient = (interests: string[]): string => {
-  const gradients = [
-    'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-    'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-    'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-    'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-    'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
-    'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
-    'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
-  ];
-  
-  // 관심사에 따라 특정 그라디언트 선택하거나 랜덤 선택
-  const index = interests.length > 0 ? interests[0].length % gradients.length : Math.floor(Math.random() * gradients.length);
-  return gradients[index];
-};
-
-// 관심사 기반 랜덤 이모지 생성
-const getRandomEmoji = (interests: string[]): string => {
-  const emojiMap: { [key: string]: string[] } = {
-    '여행': ['✈️', '🗺️', '🏖️', '🏔️', '🎒'],
-    '음식': ['🍕', '🍜', '🍰', '🥘', '🍣'],
-    '사진': ['📸', '🎨', '🖼️', '📷', '🌅'],
-    '음악': ['🎵', '🎸', '🎹', '🎤', '🎧'],
-    '역사': ['🏛️', '📚', '⚱️', '🗿', '📜'],
-    '문화': ['🎭', '🎪', '🎨', '🏛️', '📖'],
-    '스포츠': ['⚽', '🏀', '🎾', '🏃', '🚴'],
-    '예술': ['🎨', '🖌️', '🎭', '🖼️', '✨'],
-    '기술': ['💻', '🔬', '🚀', '⚡', '🤖'],
-    '자연': ['🌿', '🌸', '🦋', '🌳', '🌺'],
-  };
-  
-  const allEmojis = interests.flatMap(interest => emojiMap[interest] || ['✨']);
-  return allEmojis.length > 0 ? allEmojis[Math.floor(Math.random() * allEmojis.length)] : '✨';
-};
-
-// 관심사 기반 랜덤 명언 생성
-const getRandomQuote = (interests: string[]): string => {
-  const quotes: { [key: string]: string[] } = {
-    '여행': ['여행은 마음을 넓혀줍니다', '새로운 곳에서 새로운 나를 발견하세요', '모험이 기다리고 있어요'],
-    '음식': ['맛있는 음식은 행복의 시작', '새로운 맛을 탐험해보세요', '요리는 사랑의 표현입니다'],
-    '사진': ['순간을 영원히 담아보세요', '렌즈 너머의 세상을 발견하세요', '아름다운 순간을 기록하세요'],
-    '음악': ['음악은 마음의 언어입니다', '멜로디가 당신을 위로해줄 거예요', '리듬에 몸을 맡겨보세요'],
-    '역사': ['과거에서 미래를 배워요', '역사는 최고의 스승입니다', '시간을 거슬러 올라가보세요'],
-    '문화': ['다양성 속에서 아름다움을 찾아요', '문화는 우리를 연결합니다', '새로운 문화를 경험해보세요'],
-    '스포츠': ['건강한 몸에 건강한 정신', '도전하고 성장하세요', '운동으로 활력을 충전하세요'],
-    '예술': ['창의성을 발휘해보세요', '예술은 영혼의 표현입니다', '아름다움을 창조하세요'],
-    '기술': ['기술로 세상을 바꿔보세요', '혁신은 상상에서 시작됩니다', '미래를 만들어가세요'],
-    '자연': ['자연과 하나가 되어보세요', '푸른 자연에서 힐링하세요', '자연의 소중함을 느껴보세요'],
-  };
-  
-  const allQuotes = interests.flatMap(interest => quotes[interest] || ['오늘도 좋은 하루 되세요!']);
-  return allQuotes.length > 0 ? allQuotes[Math.floor(Math.random() * allQuotes.length)] : '오늘도 좋은 하루 되세요!';
-};
-
-// 관심사 기반 추천 콘텐츠 생성
-const getInterestBasedContent = (interests: string[]): Array<{
-  icon: string;
-  title: string;
-  description: string;
-  bgColor: string;
-}> => {
-  const contentMap: { [key: string]: Array<{ icon: string; title: string; description: string; bgColor: string }> } = {
-    '여행': [
-      { icon: '🗺️', title: '서울 숨은 명소 탐방', description: '현지인만 아는 특별한 장소들', bgColor: 'rgba(33, 150, 243, 0.1)' },
-      { icon: '📍', title: '주변 관광지 추천', description: '가까운 곳의 아름다운 여행지', bgColor: 'rgba(33, 150, 243, 0.1)' },
-    ],
-    '음식': [
-      { icon: '🍜', title: '맛집 탐방 코스', description: '이 지역 최고의 맛집들', bgColor: 'rgba(244, 67, 54, 0.1)' },
-      { icon: '👨‍🍳', title: '요리 클래스 추천', description: '새로운 요리 기술을 배워보세요', bgColor: 'rgba(244, 67, 54, 0.1)' },
-    ],
-    '사진': [
-      { icon: '📸', title: '포토 스팟 추천', description: '인스타그램에 올릴 완벽한 장소', bgColor: 'rgba(156, 39, 176, 0.1)' },
-      { icon: '🌅', title: '사진 촬영 팁', description: '더 나은 사진을 위한 노하우', bgColor: 'rgba(156, 39, 176, 0.1)' },
-    ],
-    '음악': [
-      { icon: '🎵', title: '콘서트 정보', description: '이번 주 열리는 공연들', bgColor: 'rgba(255, 152, 0, 0.1)' },
-      { icon: '🎸', title: '음악 레슨 추천', description: '새로운 악기를 배워보세요', bgColor: 'rgba(255, 152, 0, 0.1)' },
-    ],
-    '역사': [
-      { icon: '🏛️', title: '역사 박물관 투어', description: '과거로의 시간 여행', bgColor: 'rgba(121, 85, 72, 0.1)' },
-      { icon: '📚', title: '역사 도서 추천', description: '흥미진진한 역사 이야기', bgColor: 'rgba(121, 85, 72, 0.1)' },
-    ],
-  };
-  
-  const defaultContent = [
-    { icon: '✨', title: '새로운 취미 찾기', description: '관심사를 설정하고 맞춤 추천을 받아보세요', bgColor: 'rgba(96, 125, 139, 0.1)' },
-    { icon: '🎯', title: '목표 설정하기', description: '새로운 도전을 시작해보세요', bgColor: 'rgba(76, 175, 80, 0.1)' },
-  ];
-  
-  if (interests.length === 0) return defaultContent;
-  
-  const allContent = interests.flatMap(interest => contentMap[interest] || []);
-  return allContent.length > 0 ? allContent : defaultContent;
-};
-
-// 날씨 기반 추천 활동 생성
+// 날씨 기반 추천 활동
 const getWeatherBasedRecommendations = (
   weatherStatus: string,
   t: (key: string) => string
@@ -1127,139 +1102,43 @@ const getWeatherBasedRecommendations = (
   description: string;
   bgColor: string;
 }> => {
-  if (weatherStatus.includes('비')) {
-    // 비 오는 날 추천 (6개 활동)
-    return [
-      {
-        icon: '📚',
-        title: '독서하기',
-        description: '비 오는 날엔 따뜻한 실내에서 책 읽기',
-        bgColor: 'rgba(96, 125, 139, 0.1)',
-      },
-      {
-        icon: '🎬',
-        title: '영화 감상',
-        description: '집에서 편안하게 영화 보기',
-        bgColor: 'rgba(233, 30, 99, 0.1)',
-      },
-      {
-        icon: '🍲',
-        title: '요리하기',
-        description: '새로운 레시피로 요리 도전',
-        bgColor: 'rgba(0, 188, 212, 0.1)',
-      },
-      {
-        icon: '🎨',
-        title: '그림 그리기',
-        description: '창의적인 시간 보내기',
-        bgColor: 'rgba(255, 193, 7, 0.1)',
-      },
-      {
-        icon: '🧘',
-        title: '명상하기',
-        description: '빗소리와 함께 마음 정리',
-        bgColor: 'rgba(103, 58, 183, 0.1)',
-      },
-      {
-        icon: '🎵',
-        title: '음악 듣기',
-        description: '감성적인 음악과 함께',
-        bgColor: 'rgba(233, 30, 99, 0.1)',
-      },
-    ];
-  } else if (weatherStatus.includes('흐림')) {
-    // 흐린 날 추천 (6개 활동)
-    return [
-      {
-        icon: '🎭',
-        title: '전시회 관람',
-        description: '실내 문화 활동 즐기기',
-        bgColor: 'rgba(255, 152, 0, 0.1)',
-      },
-      {
-        icon: '☕',
-        title: '카페 투어',
-        description: '분위기 좋은 카페에서 휴식',
-        bgColor: 'rgba(121, 85, 72, 0.1)',
-      },
-      {
-        icon: '🛍️',
-        title: '쇼핑하기',
-        description: '실내 쇼핑몰에서 여유롭게',
-        bgColor: 'rgba(156, 39, 176, 0.1)',
-      },
-      {
-        icon: '📖',
-        title: '도서관 가기',
-        description: '조용한 공간에서 공부하기',
-        bgColor: 'rgba(63, 81, 181, 0.1)',
-      },
-      {
-        icon: '🎪',
-        title: '박물관 방문',
-        description: '역사와 문화 탐방',
-        bgColor: 'rgba(255, 87, 34, 0.1)',
-      },
-      {
-        icon: '🎯',
-        title: '실내 스포츠',
-        description: '볼링, 당구 등 실내 활동',
-        bgColor: 'rgba(76, 175, 80, 0.1)',
-      },
-    ];
-  } else {
-    // 맑은 날 추천 (8개 활동)
-    return [
-      {
-        icon: '🏞️',
-        title: '한강 피크닉',
-        description: '맑은 날씨에 야외 피크닉',
-        bgColor: 'rgba(33, 150, 243, 0.1)',
-      },
-      {
-        icon: '🚲',
-        title: '자전거 타기',
-        description: '상쾌한 바람과 함께 라이딩',
-        bgColor: 'rgba(76, 175, 80, 0.1)',
-      },
-      {
-        icon: '📸',
-        title: '사진 촬영',
-        description: '아름다운 풍경 담기',
-        bgColor: 'rgba(156, 39, 176, 0.1)',
-      },
-      {
-        icon: '🥾',
-        title: '등산하기',
-        description: '산에서 자연과 함께',
-        bgColor: 'rgba(139, 195, 74, 0.1)',
-      },
-      {
-        icon: '🏃',
-        title: '조깅하기',
-        description: '공원에서 가벼운 운동',
-        bgColor: 'rgba(255, 152, 0, 0.1)',
-      },
-      {
-        icon: '🌸',
-        title: '공원 산책',
-        description: '여유롭게 자연 감상',
-        bgColor: 'rgba(233, 30, 99, 0.1)',
-      },
-      {
-        icon: '⛵',
-        title: '수상 스포츠',
-        description: '강이나 바다에서 액티비티',
-        bgColor: 'rgba(0, 188, 212, 0.1)',
-      },
-      {
-        icon: '🎪',
-        title: '야외 축제',
-        description: '지역 축제나 이벤트 참여',
-        bgColor: 'rgba(255, 193, 7, 0.1)',
-      },
-    ];
-  }
+  const recommendations = {
+    맑음: [
+      { icon: '🌳', title: '공원 산책', description: '좋은 날씨에 야외 활동을 즐겨보세요', bgColor: 'rgba(76, 175, 80, 0.1)' },
+      { icon: '📸', title: '사진 촬영', description: '맑은 하늘과 함께 인생샷을 남겨보세요', bgColor: 'rgba(33, 150, 243, 0.1)' },
+      { icon: '🚴', title: '자전거 라이딩', description: '시원한 바람과 함께 라이딩을 즐겨보세요', bgColor: 'rgba(255, 152, 0, 0.1)' },
+    ],
+    구름: [
+      { icon: '☕', title: '카페 탐방', description: '분위기 좋은 카페에서 여유를 즐겨보세요', bgColor: 'rgba(121, 85, 72, 0.1)' },
+      { icon: '🛍️', title: '쇼핑', description: '실내에서 편안하게 쇼핑을 즐겨보세요', bgColor: 'rgba(233, 30, 99, 0.1)' },
+      { icon: '🎨', title: '전시 관람', description: '박물관이나 갤러리를 방문해보세요', bgColor: 'rgba(156, 39, 176, 0.1)' },
+    ],
+    흐림: [
+      { icon: '📚', title: '독서', description: '조용한 분위기에서 책을 읽어보세요', bgColor: 'rgba(96, 125, 139, 0.1)' },
+      { icon: '🍲', title: '요리', description: '집에서 새로운 요리에 도전해보세요', bgColor: 'rgba(255, 87, 34, 0.1)' },
+      { icon: '🎬', title: '영화 감상', description: '집에서 편안하게 영화를 즐겨보세요', bgColor: 'rgba(63, 81, 181, 0.1)' },
+    ],
+    비: [
+      { icon: '☕', title: '실내 카페', description: '빗소리와 함께 따뜻한 음료를 즐겨보세요', bgColor: 'rgba(121, 85, 72, 0.1)' },
+      { icon: '📖', title: '실내 독서', description: '비 오는 날엔 책과 함께 시간을 보내보세요', bgColor: 'rgba(96, 125, 139, 0.1)' },
+      { icon: '🛋️', title: '휴식', description: '집에서 편안하게 휴식을 취해보세요', bgColor: 'rgba(158, 158, 158, 0.1)' },
+    ],
+    눈: [
+      { icon: '⛄', title: '눈 구경', description: '아름다운 설경을 감상해보세요', bgColor: 'rgba(0, 188, 212, 0.1)' },
+      { icon: '🏠', title: '실내 활동', description: '따뜻한 실내에서 시간을 보내세요', bgColor: 'rgba(255, 152, 0, 0.1)' },
+      { icon: '🍫', title: '따뜻한 음료', description: '핫초콜릿으로 몸을 따뜻하게 하세요', bgColor: 'rgba(121, 85, 72, 0.1)' },
+    ],
+    안개: [
+      { icon: '🚗', title: '안전 운전', description: '시야가 흐릴 때는 조심히 이동하세요', bgColor: 'rgba(158, 158, 158, 0.1)' },
+      { icon: '🏠', title: '실내 활동', description: '실내에서 안전하게 시간을 보내세요', bgColor: 'rgba(255, 152, 0, 0.1)' },
+      { icon: '📱', title: '온라인 활동', description: '집에서 온라인 콘텐츠를 즐겨보세요', bgColor: 'rgba(33, 150, 243, 0.1)' },
+    ],
+  };
+
+  const weatherRecs = recommendations[weatherStatus as keyof typeof recommendations] || recommendations['맑음'];
+  
+  // 랜덤하게 섞어서 반환
+  return [...weatherRecs].sort(() => Math.random() - 0.5);
 };
 
 export default UserStatusWidget;
