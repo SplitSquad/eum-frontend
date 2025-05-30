@@ -700,12 +700,7 @@ function Header({ isVisible = true, notifications }: HeaderProps) {
                             <MenuNavButton
                               season={season}
                               isactive={isactive(item.path)}
-                              onClick={() =>
-                                trackedNavigate(
-                                  item.path, // ClickPath
-                                  item.name.toLowerCase() // TAG (예: 'home', 'community' 등)
-                                )
-                              }
+                              onClick={() => trackedNavigate('/community', item.name.toLowerCase())}
                             >
                               {item.name}
                             </MenuNavButton>
@@ -732,8 +727,8 @@ function Header({ isVisible = true, notifications }: HeaderProps) {
                                         ? undefined
                                         : () =>
                                             trackedNavigate(
-                                              subItem.path, // ClickPath
-                                              subItem.name.toLowerCase() // TAG (예: 'home', 'community' 등)
+                                              subItem.path,
+                                              subItem.name.toLowerCase()
                                             )
                                     }
                                     style={{
@@ -753,12 +748,7 @@ function Header({ isVisible = true, notifications }: HeaderProps) {
                           <MenuNavButton
                             season={season}
                             isactive={isactive(item.path)}
-                            onClick={() =>
-                              trackedNavigate(
-                                item.path, // ClickPath
-                                item.name.toLowerCase() // TAG (예: 'home', 'community' 등)
-                              )
-                            }
+                            onClick={() => trackedNavigate(item.path, item.name.toLowerCase())}
                           >
                             {item.name}
                           </MenuNavButton>

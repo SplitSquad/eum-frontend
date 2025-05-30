@@ -27,16 +27,16 @@ const Dashboard: React.FC = () => {
     const widgets = [
       { component: CommunityFeedWidget, key: 'community' },
       { component: DebateFeedWidget, key: 'debate' },
-      { component: InfoFeedWidget, key: 'info' }
+      { component: InfoFeedWidget, key: 'info' },
     ];
-    
+
     // 피셔-예이츠 셔플 알고리즘
     const shuffled = [...widgets];
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
-    
+
     return shuffled;
   }, []); // 컴포넌트 마운트 시 한 번만 실행
 
@@ -109,11 +109,11 @@ const Dashboard: React.FC = () => {
               }}
             >
               {thirdRowWidgets.map((widget, index) => (
-                <Box 
-                  key={widget.key} 
-                  sx={{ 
-                    width: { xs: '100%', lg: '33.333%' }, 
-                    height: '100%' 
+                <Box
+                  key={widget.key}
+                  sx={{
+                    width: { xs: '100%', lg: '33.333%' },
+                    height: '100%',
                   }}
                 >
                   <widget.component />
@@ -144,4 +144,4 @@ const Dashboard: React.FC = () => {
   );
 };
 
-export default Dashboard; 
+export default Dashboard;
