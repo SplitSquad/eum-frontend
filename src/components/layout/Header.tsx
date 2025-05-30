@@ -136,9 +136,13 @@ const NavButton = styled(Button, {
         ? seasonalColors[props.season]?.secondary
         : seasonalColors[props.season]?.text
       : undefined};
-  padding: 6px 16px 2px;
+  padding: 8px 16px 8px;
   position: relative;
   transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  height: 48px;
+  line-height: 1.2;
 `;
 
 const LoginNavButton = styled(NavButton)`
@@ -184,10 +188,12 @@ const MenuNavButton = styled(NavButton)`
     min-width: auto !important;
     border-radius: 0 !important;
     box-shadow: none !important;
-    padding: 0 12px 8px !important;
+    padding: 8px 12px 8px !important;
     margin: 0 4px 0 !important;
-    line-height: 1 !important;
-    height: auto !important;
+    line-height: 1.2 !important;
+    height: 48px !important;
+    display: flex !important;
+    align-items: center !important;
     font-weight: 600 !important;
 
     &:after {
@@ -694,12 +700,7 @@ function Header({ isVisible = true, notifications }: HeaderProps) {
                             <MenuNavButton
                               season={season}
                               isactive={isactive(item.path)}
-                              onClick={() =>
-                                trackedNavigate(
-                                  item.path, // ClickPath
-                                  item.name.toLowerCase() // TAG (예: 'home', 'community' 등)
-                                )
-                              }
+                              onClick={() => trackedNavigate('/community', item.name.toLowerCase())}
                             >
                               {item.name}
                             </MenuNavButton>
@@ -726,8 +727,8 @@ function Header({ isVisible = true, notifications }: HeaderProps) {
                                         ? undefined
                                         : () =>
                                             trackedNavigate(
-                                              subItem.path, // ClickPath
-                                              subItem.name.toLowerCase() // TAG (예: 'home', 'community' 등)
+                                              subItem.path,
+                                              subItem.name.toLowerCase()
                                             )
                                     }
                                     style={{
@@ -747,12 +748,7 @@ function Header({ isVisible = true, notifications }: HeaderProps) {
                           <MenuNavButton
                             season={season}
                             isactive={isactive(item.path)}
-                            onClick={() =>
-                              trackedNavigate(
-                                item.path, // ClickPath
-                                item.name.toLowerCase() // TAG (예: 'home', 'community' 등)
-                              )
-                            }
+                            onClick={() => trackedNavigate(item.path, item.name.toLowerCase())}
                           >
                             {item.name}
                           </MenuNavButton>
@@ -798,7 +794,7 @@ function Header({ isVisible = true, notifications }: HeaderProps) {
                               onClick={() => handleMenuItemClick('/adminpage')}
                             >
                               <AccountCircleIcon />
-                              관리자 페이지
+                              {t('header.adminpage')}
                             </ProfileDropdownItem>
                           )}
                           <ProfileDropdownItem
@@ -806,11 +802,11 @@ function Header({ isVisible = true, notifications }: HeaderProps) {
                             onClick={() => handleMenuItemClick('/mypage')}
                           >
                             <AccountCircleIcon />
-                            마이페이지
+                            {t('header.mypage')}
                           </ProfileDropdownItem>
                           <ProfileDropdownItem season={season} onClick={handleLogoutClick}>
                             <LogoutIcon />
-                            로그아웃
+                            {t('header.logout')}
                           </ProfileDropdownItem>
                         </ProfileDropdown>
                       )}

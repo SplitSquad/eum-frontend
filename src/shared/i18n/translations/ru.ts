@@ -1122,13 +1122,13 @@ const ru = {
       },
       info: {
         photographer: 'Автор',
-        poweredBy: 'Предоставлено Unsplash API',
+        poweredBy: 'Предоставлено Pexels API',
       },
       messages: {
         loading: 'Загрузка изображений...',
         error: 'Ошибка загрузки изображений',
         noResults: 'Нет результатов поиска',
-        apiKeyMissing: 'API ключ Unsplash не настроен. Показаны примеры изображений.',
+        apiKeyMissing: 'API ключ Pexels не настроен. Показаны примеры изображений.',
       },
     },
     youtubeGallery: {
@@ -1456,6 +1456,13 @@ const ru = {
     welcome: 'Добро пожаловать',
     termsAgreement:
       'Входя в систему, вы соглашаетесь с Условиями обслуживания и Политикой конфиденциальности.',
+  },
+  header: {
+    study: 'Учеба за границей',
+    country: 'Корея',
+    mypage: 'Моя страница',
+    logout: 'Выйти',
+    adminpage: 'Страница администратора',
   },
 };
 

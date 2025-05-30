@@ -66,7 +66,7 @@ interface PreferenceData {
 
 const UserPreferenceWidget: React.FC = () => {
   const { t } = useTranslation();
-  
+
   // 상태 관리
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

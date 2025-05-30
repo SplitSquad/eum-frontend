@@ -13,6 +13,14 @@ import {
   Backdrop,
   Button,
   Alert,
+  ToggleButton,
+  ToggleButtonGroup,
+  Avatar,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemAvatar,
+  Fade,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import PlaceIcon from '@mui/icons-material/Place';
@@ -32,6 +40,15 @@ import DirectionsWalkIcon from '@mui/icons-material/DirectionsWalk';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import WorkIcon from '@mui/icons-material/Work';
+import HomeIcon from '@mui/icons-material/Home';
+import SchoolIcon from '@mui/icons-material/School';
+import TravelExploreIcon from '@mui/icons-material/TravelExplore';
+import BusinessIcon from '@mui/icons-material/Business';
+import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+import TransportIcon from '@mui/icons-material/DirectionsTransit';
+import HotelIcon from '@mui/icons-material/Hotel';
 import {
   loadKakaoMapScript,
   getAddressFromCoords,
@@ -40,6 +57,7 @@ import {
 } from '../../config/kakaoMap';
 import { env } from '../../config/env';
 import { widgetPaperBase, widgetGradients } from './theme/dashboardWidgetTheme';
+import { useMypageStore } from '../../features/mypage/store/mypageStore';
 
 declare global {
   interface Window {
@@ -60,6 +78,72 @@ interface Place {
   place_url?: string;
 }
 
+// 사용자 목적 타입
+type UserPurpose = 'travel' | 'work' | 'residence' | 'study';
+
+// 목적별 카테고리 정의
+const PURPOSE_CATEGORIES = {
+  travel: [
+    { id: 'tourist', name: '관광명소', icon: <TravelExploreIcon fontSize="small" />, keyword: '관광', color: '#2196F3' },
+    { id: 'restaurant', name: '맛집', icon: <RestaurantIcon fontSize="small" />, keyword: '맛집', color: '#FF5722' },
+    { id: 'cafe', name: '카페', icon: <LocalCafeIcon fontSize="small" />, keyword: '카페', color: '#795548' },
+    { id: 'culture', name: '문화시설', icon: <TheaterComedyIcon fontSize="small" />, keyword: '박물관', color: '#9C27B0' },
+    { id: 'transport', name: '교통', icon: <TransportIcon fontSize="small" />, keyword: '지하철역', color: '#4CAF50' },
+    { id: 'hotel', name: '숙박', icon: <HotelIcon fontSize="small" />, keyword: '호텔', color: '#FF9800' }
+  ],
+  work: [
+    { id: 'business', name: '사무공간', icon: <BusinessIcon fontSize="small" />, keyword: '사무실', color: '#3F51B5' },
+    { id: 'bank', name: '은행', icon: <AccountBalanceIcon fontSize="small" />, keyword: '은행', color: '#607D8B' },
+    { id: 'restaurant', name: '식당', icon: <RestaurantIcon fontSize="small" />, keyword: '식당', color: '#FF5722' },
+    { id: 'cafe', name: '카페', icon: <LocalCafeIcon fontSize="small" />, keyword: '카페', color: '#795548' },
+    { id: 'transport', name: '교통', icon: <TransportIcon fontSize="small" />, keyword: '지하철역', color: '#4CAF50' },
+    { id: 'government', name: '관공서', icon: <AccountBalanceIcon fontSize="small" />, keyword: '구청', color: '#009688' }
+  ],
+  residence: [
+    { id: 'market', name: '마트/시장', icon: <BusinessIcon fontSize="small" />, keyword: '마트', color: '#4CAF50' },
+    { id: 'hospital', name: '병원', icon: <LocalHospitalIcon fontSize="small" />, keyword: '병원', color: '#F44336' },
+    { id: 'bank', name: '은행', icon: <AccountBalanceIcon fontSize="small" />, keyword: '은행', color: '#607D8B' },
+    { id: 'restaurant', name: '식당', icon: <RestaurantIcon fontSize="small" />, keyword: '식당', color: '#FF5722' },
+    { id: 'transport', name: '교통', icon: <TransportIcon fontSize="small" />, keyword: '지하철역', color: '#4CAF50' },
+    { id: 'government', name: '관공서', icon: <AccountBalanceIcon fontSize="small" />, keyword: '주민센터', color: '#009688' }
+  ],
+  study: [
+    { id: 'university', name: '대학교', icon: <SchoolIcon fontSize="small" />, keyword: '대학교', color: '#673AB7' },
+    { id: 'library', name: '도서관', icon: <SchoolIcon fontSize="small" />, keyword: '도서관', color: '#009688' },
+    { id: 'cafe', name: '스터디카페', icon: <LocalCafeIcon fontSize="small" />, keyword: '스터디카페', color: '#795548' },
+    { id: 'restaurant', name: '식당', icon: <RestaurantIcon fontSize="small" />, keyword: '식당', color: '#FF5722' },
+    { id: 'transport', name: '교통', icon: <TransportIcon fontSize="small" />, keyword: '지하철역', color: '#4CAF50' },
+    { id: 'language', name: '학원', icon: <SchoolIcon fontSize="small" />, keyword: '어학원', color: '#FF9800' }
+  ]
+};
+
+const PURPOSE_INFO = {
+  travel: { icon: <TravelExploreIcon />, color: '#2196F3', label: '여행', defaultSearch: '관광' },
+  work: { icon: <WorkIcon />, color: '#FF9800', label: '취업', defaultSearch: '사무실' },
+  residence: { icon: <HomeIcon />, color: '#4CAF50', label: '거주', defaultSearch: '마트' },
+  study: { icon: <SchoolIcon />, color: '#9C27B0', label: '유학', defaultSearch: '대학교' }
+};
+
+// 목적 매핑 함수 추가
+const mapVisitPurposeToUserPurpose = (visitPurpose?: string): UserPurpose => {
+  if (!visitPurpose) return 'travel';
+  
+  const purposeMap: Record<string, UserPurpose> = {
+    'Travel': 'travel',
+    'Study': 'study', 
+    'Work': 'work',
+    'Living': 'residence',
+    'travel': 'travel',
+    'study': 'study',
+    'work': 'work',
+    'living': 'residence',
+    'residence': 'residence',
+    'job': 'work'
+  };
+
+  return purposeMap[visitPurpose] || 'travel';
+};
+
 const KakaoMapWidget: React.FC = () => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const fullMapContainerRef = useRef<HTMLDivElement>(null);
@@ -79,13 +163,37 @@ const KakaoMapWidget: React.FC = () => {
   // 선택된 장소 상태
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
 
-  // 관심 장소 카테고리
-  const categories = [
-    { id: 'cafe', name: '카페', icon: <LocalCafeIcon fontSize="small" /> },
-    { id: 'restaurant', name: '맛집', icon: <RestaurantIcon fontSize="small" /> },
-    { id: 'culture', name: '문화', icon: <TheaterComedyIcon fontSize="small" /> },
-    { id: 'tourist', name: '관광', icon: <AirplanemodeActiveIcon fontSize="small" /> },
-  ];
+  // 주변장소 모달 상태 추가
+  const [isPlacesModalOpen, setIsPlacesModalOpen] = useState<boolean>(false);
+
+  // 현재 검색 카테고리 상태 추가
+  const [currentSearchCategory, setCurrentSearchCategory] = useState<string>('');
+
+  // 마이페이지 스토어에서 프로필 정보 가져오기
+  const { profile, fetchProfile } = useMypageStore();
+  
+  // 사용자 목적 상태 - 마이페이지 프로필에서 가져오기
+  const [userPurpose, setUserPurpose] = useState<UserPurpose | null>(null);
+
+  // 프로필에서 실제 목적 가져오기
+  useEffect(() => {
+    if (profile?.role) {
+      const mappedPurpose = mapVisitPurposeToUserPurpose(profile.role);
+      setUserPurpose(mappedPurpose);
+      console.log('사용자 목적 설정:', profile.role, '->', mappedPurpose);
+    }
+  }, [profile?.role]);
+
+  // 프로필이 없으면 가져오기
+  useEffect(() => {
+    if (!profile) {
+      fetchProfile();
+    }
+  }, [profile, fetchProfile]);
+
+  // 현재 카테고리들 - 사용자 목적이 설정된 경우에만
+  const currentCategories = userPurpose ? PURPOSE_CATEGORIES[userPurpose] : PURPOSE_CATEGORIES.travel;
+  const purposeInfo = userPurpose ? PURPOSE_INFO[userPurpose] : PURPOSE_INFO.travel;
 
   // 지도 초기화 상태 추가
   const [initState, setInitState] = useState<'pending' | 'loading' | 'success' | 'error'>(
@@ -93,6 +201,37 @@ const KakaoMapWidget: React.FC = () => {
   );
   const initAttemptRef = useRef<number>(0); // 초기화 시도 횟수 추적
   const mapInitializedRef = useRef<boolean>(false); // 지도 초기화 완료 여부
+
+  // 사용자 목적이 변경될 때 자동으로 다시 검색
+  useEffect(() => {
+    if (userPurpose && map && userLocation && window.kakao && window.kakao.maps) {
+      console.log('사용자 목적 변경으로 인한 재검색:', userPurpose);
+      setTimeout(() => {
+        // searchNearbyPlaces를 직접 호출하는 대신 필요한 경우에만 호출하도록 수정
+        if (typeof searchNearbyPlaces === 'function') {
+          searchNearbyPlaces(map, window.kakao.maps, userLocation.latitude, userLocation.longitude, '');
+        }
+      }, 500);
+    }
+  }, [userPurpose, map, userLocation]);
+
+  // 사용자 위치가 설정되면 지도 중심 재조정
+  useEffect(() => {
+    if (map && userLocation && window.kakao && window.kakao.maps) {
+      console.log('사용자 위치 변경으로 인한 지도 중심 재조정:', userLocation);
+      const userLatLng = new window.kakao.maps.LatLng(userLocation.latitude, userLocation.longitude);
+      
+      // 지도 중심 이동
+      map.setCenter(userLatLng);
+      map.setLevel(5);
+      
+      // 지연 후 재조정 (지도 렌더링 완료 후)
+      setTimeout(() => {
+        map.setCenter(userLatLng);
+        map.setLevel(5);
+      }, 500);
+    }
+  }, [map, userLocation]);
 
   // 장소 클릭 핸들러 함수 추가
   const handlePlaceClick = useCallback(
@@ -162,9 +301,12 @@ const KakaoMapWidget: React.FC = () => {
       if (mapContainerRef.current.clientWidth === 0 || mapContainerRef.current.clientHeight === 0) {
         console.warn('지도 컨테이너의 크기가 0입니다. 최소 크기 설정.');
         mapContainerRef.current.style.width = '100%';
-        mapContainerRef.current.style.minHeight = '250px';
+        mapContainerRef.current.style.minHeight = '300px'; // 최소 높이를 450px에서 300px로 감소
         // 리플로우 유도
         mapContainerRef.current.getBoundingClientRect();
+        
+        // 크기 설정 후 잠시 대기
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
 
       console.log(
@@ -177,7 +319,7 @@ const KakaoMapWidget: React.FC = () => {
       // createKakaoMap 함수 사용 (kakaoMap.ts에서 개선된 함수)
       const mapInstance = await createKakaoMap(mapContainerRef.current, {
         center: { latitude: 37.5665, longitude: 126.978 },
-        level: 3,
+        level: 5, // 레벨을 4에서 5로 조정하여 더 넓은 영역을 보여줌
       });
 
       console.log('지도 인스턴스 생성 성공');
@@ -187,6 +329,15 @@ const KakaoMapWidget: React.FC = () => {
       // 사용자 위치 요청
       if (window.kakao && window.kakao.maps) {
         getUserLocation(mapInstance, window.kakao.maps);
+        
+        // 지도 타일 로드 완료 후 중심 위치 재조정
+        window.kakao.maps.event.addListener(mapInstance, 'tilesloaded', () => {
+          console.log('지도 타일 로드 완료 - 중심 위치 재조정');
+          if (userLocation) {
+            const userLatLng = new window.kakao.maps.LatLng(userLocation.latitude, userLocation.longitude);
+            mapInstance.setCenter(userLatLng);
+          }
+        });
       } else {
         throw new Error('카카오맵 객체가 초기화되지 않았습니다.');
       }
@@ -441,6 +592,20 @@ const KakaoMapWidget: React.FC = () => {
             const userLatLng = new kakaoMaps.LatLng(latitude, longitude);
             mapInstance.setCenter(userLatLng);
 
+            // 지도 레벨 설정 (더 넓은 시야로 조정)
+            mapInstance.setLevel(5);
+
+            // 약간의 지연 후 중심점 재설정 (확실한 이동)
+            setTimeout(() => {
+              mapInstance.setCenter(userLatLng);
+              mapInstance.setLevel(5);
+              
+              // 지도가 완전히 로드된 후 한 번 더 중심점 보정
+              setTimeout(() => {
+                mapInstance.setCenter(userLatLng);
+              }, 500);
+            }, 300);
+
             // 사용자 위치 마커 생성
             createUserMarker(mapInstance, kakaoMaps, latitude, longitude);
 
@@ -606,6 +771,15 @@ const KakaoMapWidget: React.FC = () => {
     keyword: string = '',
     retryCount: number = 0
   ) => {
+    // 사용자 목적이 아직 설정되지 않은 경우 검색 연기
+    if (!userPurpose && !keyword) {
+      console.log('사용자 목적이 아직 설정되지 않아 검색을 연기합니다.');
+      setTimeout(() => {
+        searchNearbyPlaces(mapInstance, kakaoMaps, lat, lng, keyword, retryCount);
+      }, 1000);
+      return;
+    }
+
     // 이전 검색 취소
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
@@ -716,14 +890,81 @@ const KakaoMapWidget: React.FC = () => {
     // 검색 실행
     if (keyword) {
       // 키워드 검색
+      setCurrentSearchCategory(`"${keyword}" 검색 결과`);
       placesService.keywordSearch(keyword, placesSearchCB, {
         location: new kakaoMaps.LatLng(lat, lng),
         radius: 5000,
         sort: kakaoMaps.services.SortBy.DISTANCE,
       });
     } else {
-      // 카테고리 기반 검색 (주변 맛집)
-      placesService.categorySearch('FD6', placesSearchCB, {
+      // 목적별 기본 카테고리 검색
+      const defaultCategory = currentCategories[0]; // 첫 번째 카테고리를 기본으로 사용
+      console.log('사용자 목적:', userPurpose, '기본 카테고리:', defaultCategory.id, defaultCategory.name);
+      
+      // 현재 검색 카테고리 설정
+      setCurrentSearchCategory(`${purposeInfo.label} > ${defaultCategory.name}`);
+      
+      let categoryCode = '';
+      
+      // 카테고리 ID에 따른 카카오맵 코드 매핑
+      switch (defaultCategory.id) {
+        case 'cafe':
+          categoryCode = 'CE7'; // 카페
+          break;
+        case 'restaurant':
+          categoryCode = 'FD6'; // 음식점
+          break;
+        case 'tourist':
+          // 관광명소는 키워드 검색이 더 정확함
+          placesService.keywordSearch('관광', placesSearchCB, {
+            location: new kakaoMaps.LatLng(lat, lng),
+            radius: 5000,
+            sort: kakaoMaps.services.SortBy.DISTANCE,
+          });
+          return;
+        case 'culture':
+          categoryCode = 'CT1'; // 문화시설
+          break;
+        case 'transport':
+          categoryCode = 'SW8'; // 지하철
+          break;
+        case 'hotel':
+          categoryCode = 'AD5'; // 숙박
+          break;
+        case 'business':
+          // 사무공간은 키워드 검색이 더 정확함
+          placesService.keywordSearch('사무실', placesSearchCB, {
+            location: new kakaoMaps.LatLng(lat, lng),
+            radius: 5000,
+            sort: kakaoMaps.services.SortBy.DISTANCE,
+          });
+          return;
+        case 'bank':
+          categoryCode = 'BK9'; // 은행
+          break;
+        case 'government':
+          categoryCode = 'PO3'; // 공공기관
+          break;
+        case 'university':
+          categoryCode = 'SC4'; // 학교
+          break;
+        case 'hospital':
+          categoryCode = 'HP8'; // 병원
+          break;
+        case 'market':
+          categoryCode = 'MT1'; // 마트
+          break;
+        case 'library':
+          categoryCode = 'CT1'; // 도서관 (문화시설)
+          break;
+        case 'language':
+          categoryCode = 'AC5'; // 학원
+          break;
+        default:
+          categoryCode = 'FD6'; // 기본값은 음식점
+      }
+      
+      placesService.categorySearch(categoryCode, placesSearchCB, {
         location: new kakaoMaps.LatLng(lat, lng),
         radius: 3000,
         sort: kakaoMaps.services.SortBy.DISTANCE,
@@ -850,9 +1091,15 @@ const KakaoMapWidget: React.FC = () => {
 
   // 카테고리 클릭 핸들러
   const handleCategoryClick = (categoryId: string) => {
-    let categoryCode = '';
+    // 현재 목적의 카테고리에서 찾기
+    const category = currentCategories.find(cat => cat.id === categoryId);
+    if (!category) return;
 
-    // 카테고리 코드 변환
+    // 현재 검색 카테고리 설정
+    setCurrentSearchCategory(`${purposeInfo.label} > ${category.name}`);
+
+    // 카테고리별 카카오맵 코드 매핑
+    let categoryCode = '';
     switch (categoryId) {
       case 'cafe':
         categoryCode = 'CE7'; // 카페
@@ -866,8 +1113,39 @@ const KakaoMapWidget: React.FC = () => {
       case 'tourist':
         categoryCode = 'AT4'; // 관광명소
         break;
+      case 'bank':
+        categoryCode = 'BK9'; // 은행
+        break;
+      case 'hospital':
+        categoryCode = 'HP8'; // 병원
+        break;
+      case 'market':
+        categoryCode = 'MT1'; // 마트
+        break;
+      case 'transport':
+        categoryCode = 'SW8'; // 지하철
+        break;
+      case 'hotel':
+        categoryCode = 'AD5'; // 숙박
+        break;
+      case 'government':
+        categoryCode = 'PO3'; // 공공기관
+        break;
+      case 'university':
+        categoryCode = 'SC4'; // 학교
+        break;
+      case 'library':
+        categoryCode = 'CT1'; // 도서관 (문화시설)
+        break;
+      case 'language':
+        categoryCode = 'AC5'; // 학원
+        break;
       default:
-        categoryCode = '';
+        // 키워드 검색으로 대체
+        if (userLocation && map) {
+          searchNearbyPlaces(map, window.kakao.maps, userLocation.latitude, userLocation.longitude, category.keyword);
+        }
+        return;
     }
 
     if (categoryCode) {
@@ -882,7 +1160,13 @@ const KakaoMapWidget: React.FC = () => {
     const kakaoMaps = window.kakao.maps;
     const userLatLng = new kakaoMaps.LatLng(userLocation.latitude, userLocation.longitude);
     map.setCenter(userLatLng);
-    map.setLevel(3);
+    map.setLevel(5);
+    
+    // 약간의 지연 후 중심점 재설정 (확실한 이동)
+    setTimeout(() => {
+      map.setCenter(userLatLng);
+      map.setLevel(5);
+    }, 300);
   };
 
   // 지도 모달 열기
@@ -984,19 +1268,68 @@ const KakaoMapWidget: React.FC = () => {
       }}
     >
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="subtitle1" fontWeight={600}>
-          내 주변 추천 장소
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Avatar 
+            sx={{ 
+              bgcolor: `${purposeInfo.color}20`, 
+              color: purposeInfo.color,
+              width: 28,
+              height: 28,
+              mr: 1
+            }}
+          >
+            {purposeInfo.icon}
+          </Avatar>
+          <Typography variant="subtitle1" fontWeight={600}>
+            {purposeInfo.label} 맞춤 장소
+          </Typography>
+        </Box>
 
-        {userLocation && (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {/* 주변장소 보기 버튼 */}
           <IconButton
             size="small"
-            onClick={handleMoveToMyLocation}
-            sx={{ bgcolor: '#f0f0f0', '&:hover': { bgcolor: '#e0e0e0' } }}
+            onClick={() => setIsPlacesModalOpen(true)}
+            sx={{ 
+              bgcolor: '#f0f0f0', 
+              '&:hover': { bgcolor: '#e0e0e0' },
+              position: 'relative'
+            }}
+            title="주변 장소 보기"
           >
-            <MyLocationIcon fontSize="small" color="primary" />
+            <CategoryIcon fontSize="small" color="primary" />
+            {places.length > 0 && (
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: -2,
+                  right: -2,
+                  bgcolor: 'error.main',
+                  color: 'white',
+                  borderRadius: '50%',
+                  width: 16,
+                  height: 16,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '0.7rem',
+                  fontWeight: 'bold'
+                }}
+              >
+                {places.length}
+              </Box>
+            )}
           </IconButton>
-        )}
+          {userLocation && (
+            <IconButton
+              size="small"
+              onClick={handleMoveToMyLocation}
+              sx={{ bgcolor: '#f0f0f0', '&:hover': { bgcolor: '#e0e0e0' } }}
+            >
+              <MyLocationIcon fontSize="small" color="primary" />
+            </IconButton>
+          )}
+        </Box>
       </Box>
 
       {/* 검색 입력란과 카테고리 필터 */}
@@ -1023,7 +1356,7 @@ const KakaoMapWidget: React.FC = () => {
 
         {/* 카테고리 선택 */}
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-          {categories.map(category => (
+          {currentCategories.map(category => (
             <Chip
               key={category.id}
               icon={category.icon}
@@ -1040,35 +1373,43 @@ const KakaoMapWidget: React.FC = () => {
         </Box>
       </Box>
 
-      {/* 지도와 장소 목록을 나란히 배치하는 컨테이너 */}
+      {/* 지도 영역 - 전체 공간 사용 */}
       <Box
         sx={{
-          display: 'flex',
-          flexDirection: { xs: 'column', sm: 'row' },
-          gap: 2,
           flex: 1,
-          minHeight: 0, // flex 자식 요소가 부모 컨테이너를 넘지 않도록 설정
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: 0,
         }}
       >
-        {/* 지도 영역 - 새로고침 버튼 강화 */}
+        {/* 범례 정보 */}
         <Box
           sx={{
-            flex: { xs: '1 1 auto', sm: '3 1 0' },
-            minHeight: { xs: 250, sm: 'auto' },
             display: 'flex',
-            flexDirection: 'column',
+            alignItems: 'center',
+            mb: 1,
+            gap: 2,
+            justifyContent: 'space-between',
           }}
         >
-          {/* 범례 정보 */}
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              mb: 1,
-              gap: 2,
-              justifyContent: 'flex-end',
-            }}
-          >
+          {/* 현재 검색 카테고리 표시 */}
+          {currentSearchCategory && (
+            <Typography 
+              variant="caption" 
+              color="text.secondary" 
+              sx={{ 
+                bgcolor: 'rgba(25, 118, 210, 0.08)',
+                px: 1,
+                py: 0.5,
+                borderRadius: 1,
+                fontSize: '0.75rem'
+              }}
+            >
+              📍 {currentSearchCategory}
+            </Typography>
+          )}
+          
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <Box
                 sx={{
@@ -1098,227 +1439,101 @@ const KakaoMapWidget: React.FC = () => {
               </Typography>
             </Box>
           </Box>
-
-          {/* 지도 컨테이너 */}
-          <Box
-            ref={mapContainerRef}
-            sx={{
-              flex: 1,
-              width: '100%',
-              bgcolor: '#e9ecef',
-              borderRadius: 1,
-              position: 'relative',
-              overflow: 'hidden',
-              minHeight: 250,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              border: '1px solid',
-              borderColor: 'divider',
-            }}
-          >
-            {loading && (
-              <Box
-                sx={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexDirection: 'column',
-                  bgcolor: 'rgba(255, 255, 255, 0.8)',
-                  zIndex: 10,
-                }}
-              >
-                <CircularProgress size={36} />
-                <Typography variant="body2" sx={{ mt: 1 }}>
-                  {initState === 'pending'
-                    ? '준비 중...'
-                    : initState === 'loading'
-                      ? '지도를 불러오는 중...'
-                      : '지도 로딩 중...'}
-                </Typography>
-              </Box>
-            )}
-
-            {error && (
-              <Box
-                sx={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexDirection: 'column',
-                  bgcolor: 'rgba(255, 255, 255, 0.9)',
-                  zIndex: 10,
-                  p: 2,
-                }}
-              >
-                <Typography color="error" align="center" sx={{ mb: 1 }}>
-                  {error}
-                </Typography>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  onClick={handleRefresh}
-                  startIcon={<RefreshIcon />}
-                  sx={{ mt: 1 }}
-                >
-                  새로고침
-                </Button>
-              </Box>
-            )}
-
-            {/* 확대 아이콘 */}
-            <IconButton
-              sx={{
-                position: 'absolute',
-                right: 8,
-                top: 8,
-                bgcolor: 'rgba(255,255,255,0.8)',
-                zIndex: 5,
-                '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' },
-              }}
-              onClick={openMapModal}
-            >
-              <LaunchIcon fontSize="small" />
-            </IconButton>
-          </Box>
         </Box>
 
-        {/* 추천 장소 목록 - 별도 영역으로 분리 */}
+        {/* 지도 컨테이너 */}
         <Box
+          ref={mapContainerRef}
           sx={{
-            flex: { xs: '1 1 auto', sm: '2 1 0' },
-            minHeight: { xs: 200, sm: 'auto' },
-            maxHeight: { xs: 300, sm: 'none' },
+            flex: 1,
+            width: '100%',
+            bgcolor: '#e9ecef',
+            borderRadius: 1,
+            position: 'relative',
+            overflow: 'hidden',
+            minHeight: { xs: 300, md: 'auto' }, // 모바일에서는 최소 높이 300px, 데스크톱에서는 자동
+            height: '100%',
+            maxHeight: { xs: 400, md: '100%' }, // 모바일에서 최대 높이 제한
             display: 'flex',
-            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
             border: '1px solid',
             borderColor: 'divider',
-            borderRadius: 1,
-            p: 1.5,
-            bgcolor: 'background.paper',
-            overflow: 'hidden',
           }}
         >
-          <Typography
-            variant="body2"
-            fontWeight={500}
-            sx={{ mb: 1, display: 'flex', alignItems: 'center' }}
-          >
-            <CategoryIcon fontSize="small" sx={{ mr: 0.5 }} />
-            {places.length > 0 ? `주변 장소 (${places.length})` : '추천 장소'}
-          </Typography>
-
-          <Divider sx={{ mb: 1.5 }} />
-
-          <Box
-            sx={{
-              flex: 1,
-              overflow: 'auto',
-              pr: 1,
-              // 스크롤바 스타일 개선
-              '&::-webkit-scrollbar': {
-                width: '8px',
-                backgroundColor: '#f5f5f5',
-                borderRadius: '4px',
-              },
-              '&::-webkit-scrollbar-thumb': {
-                backgroundColor: '#bdbdbd',
-                borderRadius: '4px',
-              },
-            }}
-          >
-            {places.length > 0 ? (
-              places.map(place => (
-                <Box
-                  key={place.id}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    p: 1,
-                    mb: 1,
-                    borderRadius: 1,
-                    bgcolor:
-                      selectedPlace?.id === place.id
-                        ? 'rgba(25, 118, 210, 0.08)'
-                        : 'background.paper',
-                    border: '1px solid',
-                    borderColor: selectedPlace?.id === place.id ? 'primary.main' : 'divider',
-                    cursor: 'pointer',
-                    '&:hover': {
-                      bgcolor: 'rgba(0, 0, 0, 0.04)',
-                      boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                    },
-                    transition: 'all 0.2s',
-                  }}
-                  onClick={() => handlePlaceClick(place)}
-                >
-                  <PlaceIcon sx={{ color: getCategoryColor(place.category), mr: 1 }} />
-                  <Box sx={{ flex: 1 }}>
-                    <Typography variant="body2" fontWeight={500}>
-                      {place.name}
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{ display: 'flex', alignItems: 'center' }}
-                    >
-                      <DirectionsIcon sx={{ fontSize: '0.8rem', mr: 0.5 }} />
-                      {place.distance}
-                    </Typography>
-                  </Box>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'flex-end',
-                      gap: 0.5,
-                    }}
-                  >
-                    <Chip
-                      label={getCategoryName(place.category)}
-                      size="small"
-                      sx={{
-                        height: 20,
-                        fontSize: '0.65rem',
-                        bgcolor: getCategoryBgColor(place.category),
-                        color: getCategoryColor(place.category),
-                      }}
-                    />
-                    <IconButton
-                      size="small"
-                      onClick={e => {
-                        e.stopPropagation();
-                        handleDirections(place);
-                      }}
-                      sx={{
-                        p: 0.5,
-                        bgcolor: 'primary.light',
-                        color: 'white',
-                        '&:hover': { bgcolor: 'primary.main' },
-                      }}
-                      title="길찾기"
-                    >
-                      <DirectionsIcon fontSize="small" />
-                    </IconButton>
-                  </Box>
-                </Box>
-              ))
-            ) : (
-              <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 2 }}>
-                {loading ? '장소를 검색중입니다...' : '검색 결과가 없습니다'}
+          {loading && (
+            <Box
+              sx={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexDirection: 'column',
+                bgcolor: 'rgba(255, 255, 255, 0.8)',
+                zIndex: 10,
+              }}
+            >
+              <CircularProgress size={36} />
+              <Typography variant="body2" sx={{ mt: 1 }}>
+                {initState === 'pending'
+                  ? '준비 중...'
+                  : initState === 'loading'
+                    ? '지도를 불러오는 중...'
+                    : '지도 로딩 중...'}
               </Typography>
-            )}
-          </Box>
+            </Box>
+          )}
+
+          {error && (
+            <Box
+              sx={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexDirection: 'column',
+                bgcolor: 'rgba(255, 255, 255, 0.9)',
+                zIndex: 10,
+                p: 2,
+              }}
+            >
+              <Typography color="error" align="center" sx={{ mb: 1 }}>
+                {error}
+              </Typography>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={handleRefresh}
+                startIcon={<RefreshIcon />}
+                sx={{ mt: 1 }}
+              >
+                새로고침
+              </Button>
+            </Box>
+          )}
+
+          {/* 확대 아이콘 */}
+          <IconButton
+            sx={{
+              position: 'absolute',
+              right: 8,
+              top: 8,
+              bgcolor: 'rgba(255,255,255,0.8)',
+              zIndex: 5,
+              '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' },
+            }}
+            onClick={openMapModal}
+          >
+            <LaunchIcon fontSize="small" />
+          </IconButton>
         </Box>
       </Box>
 
@@ -1407,6 +1622,193 @@ const KakaoMapWidget: React.FC = () => {
             }}
           />
         </Box>
+      </Modal>
+
+      {/* 주변장소 모달 */}
+      <Modal
+        open={isPlacesModalOpen}
+        onClose={() => setIsPlacesModalOpen(false)}
+        closeAfterTransition
+        BackdropComponent={Backdrop}
+        BackdropProps={{
+          timeout: 500,
+        }}
+      >
+        <Fade in={isPlacesModalOpen}>
+          <Box
+            sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: { xs: '90%', sm: '600px' },
+              maxHeight: '80%',
+              bgcolor: 'background.paper',
+              borderRadius: 2,
+              boxShadow: 24,
+              p: 3,
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            <Box
+              sx={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center', 
+                mb: 2 
+              }}
+            >
+              <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
+                <CategoryIcon sx={{ mr: 1 }} />
+                {places.length > 0 ? `주변 장소 (${places.length})` : '추천 장소'}
+              </Typography>
+              <IconButton onClick={() => setIsPlacesModalOpen(false)}>
+                <CloseIcon />
+              </IconButton>
+            </Box>
+
+            {/* 현재 검색 카테고리 표시 */}
+            {currentSearchCategory && (
+              <Typography 
+                variant="body2" 
+                color="text.secondary" 
+                sx={{ 
+                  mb: 2, 
+                  display: 'block',
+                  bgcolor: 'rgba(25, 118, 210, 0.08)',
+                  px: 2,
+                  py: 1,
+                  borderRadius: 1,
+                  fontSize: '0.9rem'
+                }}
+              >
+                📍 {currentSearchCategory}
+              </Typography>
+            )}
+
+            <Divider sx={{ mb: 2 }} />
+
+            <Box
+              sx={{
+                flex: 1,
+                overflow: 'auto',
+                pr: 1,
+                // 스크롤바 스타일 개선
+                '&::-webkit-scrollbar': {
+                  width: '8px',
+                  backgroundColor: '#f5f5f5',
+                  borderRadius: '4px',
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  backgroundColor: '#bdbdbd',
+                  borderRadius: '4px',
+                },
+              }}
+            >
+              {places.length > 0 ? (
+                places.map(place => (
+                  <Box
+                    key={place.id}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      p: 2,
+                      mb: 1.5,
+                      borderRadius: 2,
+                      bgcolor: 'background.paper',
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        bgcolor: 'rgba(0, 0, 0, 0.04)',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                      },
+                      transition: 'all 0.2s',
+                    }}
+                    onClick={() => {
+                      handlePlaceClick(place);
+                      setIsPlacesModalOpen(false);
+                    }}
+                  >
+                    <PlaceIcon sx={{ color: getCategoryColor(place.category), mr: 2, fontSize: '2rem' }} />
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="h6" fontWeight={600} sx={{ mb: 0.5 }}>
+                        {place.name}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}
+                      >
+                        <DirectionsIcon sx={{ fontSize: '1rem', mr: 0.5 }} />
+                        {place.distance}
+                      </Typography>
+                      {place.address && (
+                        <Typography variant="caption" color="text.secondary">
+                          {place.address}
+                        </Typography>
+                      )}
+                    </Box>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'flex-end',
+                        gap: 1,
+                      }}
+                    >
+                      <Chip
+                        label={getCategoryName(place.category)}
+                        size="medium"
+                        sx={{
+                          height: 28,
+                          fontSize: '0.8rem',
+                          bgcolor: getCategoryBgColor(place.category),
+                          color: getCategoryColor(place.category),
+                        }}
+                      />
+                      <IconButton
+                        size="medium"
+                        onClick={e => {
+                          e.stopPropagation();
+                          handleDirections(place);
+                        }}
+                        sx={{
+                          bgcolor: 'primary.main',
+                          color: 'white',
+                          '&:hover': { bgcolor: 'primary.dark' },
+                        }}
+                        title="길찾기"
+                      >
+                        <DirectionsIcon />
+                      </IconButton>
+                    </Box>
+                  </Box>
+                ))
+              ) : (
+                <Box 
+                  sx={{ 
+                    display: 'flex', 
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    py: 6,
+                    textAlign: 'center'
+                  }}
+                >
+                  <SearchIcon sx={{ fontSize: '3rem', color: 'text.disabled', mb: 2 }} />
+                  <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
+                    {loading ? '장소를 검색중입니다...' : '검색 결과가 없습니다'}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {loading ? '잠시만 기다려주세요' : '다른 카테고리를 선택해보세요'}
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          </Box>
+        </Fade>
       </Modal>
     </Paper>
   );

@@ -2,6 +2,13 @@ import { tr } from 'date-fns/locale';
 import { t } from 'i18next';
 
 const de = {
+  header: {
+    study: 'Auslandsstudium',
+    country: 'Korea',
+    mypage: 'Meine Seite',
+    logout: 'Abmelden',
+    adminpage: 'Admin-Seite',
+  },
   alarm: {
     loading: 'Lädt...',
     alarm: 'Alarm',
@@ -1130,14 +1137,13 @@ const de = {
       },
       info: {
         photographer: 'Von',
-        poweredBy: 'Bereitgestellt von Unsplash API',
+        poweredBy: 'Bereitgestellt von Pexels API',
       },
       messages: {
         loading: 'Bilder werden geladen...',
         error: 'Fehler beim Laden der Bilder',
         noResults: 'Keine Suchergebnisse',
-        apiKeyMissing:
-          'Unsplash API-Schlüssel nicht konfiguriert. Beispielbilder werden angezeigt.',
+        apiKeyMissing: 'Pexels API-Schlüssel nicht konfiguriert. Beispielbilder werden angezeigt.',
       },
     },
     youtubeGallery: {

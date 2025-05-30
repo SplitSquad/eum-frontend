@@ -1095,13 +1095,13 @@ const zh = {
       },
       info: {
         photographer: '摄影师',
-        poweredBy: '由Unsplash API提供',
+        poweredBy: '由Pexels API提供',
       },
       messages: {
         loading: '图片加载中...',
         error: '图片加载失败',
         noResults: '没有搜索结果',
-        apiKeyMissing: '未配置Unsplash API密钥。显示示例图片。',
+        apiKeyMissing: '未配置Pexels API密钥。显示示例图片。',
       },
     },
     youtubeGallery: {
@@ -1420,6 +1420,13 @@ const zh = {
     cancel: '取消',
     welcome: '欢迎',
     termsAgreement: '登录即表示您同意服务条款和隐私政策。',
+  },
+  header: {
+    study: '留学',
+    country: '韩国',
+    mypage: '我的页面',
+    logout: '退出登录',
+    adminpage: '管理员页面',
   },
 };
 
