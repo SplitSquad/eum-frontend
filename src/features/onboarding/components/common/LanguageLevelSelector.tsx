@@ -22,25 +22,15 @@ interface LanguageLevelSelectorProps {
 }
 
 // 스타일드 컴포넌트
-const LevelCard = styled(Paper)<{ season: string; isSelected: boolean }>`
+const LevelCard = styled(Paper)<{ isSelected: boolean }>`
   padding: 16px;
   border-radius: 8px;
   margin-bottom: 12px;
-  border: 2px solid
-    ${props =>
-      props.isSelected ? (props.season === 'spring' ? '#FFAAA5' : '#8795B5') : 'transparent'};
-
-  background-color: ${props =>
-    props.isSelected
-      ? props.season === 'spring'
-        ? 'rgba(255, 170, 165, 0.05)'
-        : 'rgba(135, 149, 181, 0.05)'
-      : 'white'};
-
+  border: 2px solid ${props => (props.isSelected ? '#636363' : 'transparent')};
+  background-color: ${props => (props.isSelected ? '#fafbfc' : '#fff')};
   transition: all 0.3s ease;
-
   &:hover {
-    border-color: ${props => (props.season === 'spring' ? '#FFAAA5' : '#8795B5')};
+    border-color: #636363;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   }
 `;
@@ -56,19 +46,9 @@ const LanguageLevelSelector: React.FC<LanguageLevelSelectorProps> = ({
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const { season } = useThemeStore();
 
-  // 계절에 따른 색상 가져오기
-  const getColorByTheme = () => {
-    switch (season) {
-      case 'spring':
-        return '#FFAAA5';
-      default:
-        return '#FFAAA5';
-    }
-  };
-
-  const primaryColor = getColorByTheme();
+  // 고정된 그레이 컬러
+  const primaryColor = '#636363';
 
   return (
     <Box sx={{ mb: 4 }}>
@@ -89,7 +69,6 @@ const LanguageLevelSelector: React.FC<LanguageLevelSelectorProps> = ({
           {languageLevels.map(level => (
             <LevelCard
               key={level.id}
-              season={season}
               isSelected={value === level.id}
               elevation={value === level.id ? 2 : 0}
             >
@@ -98,7 +77,7 @@ const LanguageLevelSelector: React.FC<LanguageLevelSelectorProps> = ({
                 control={
                   <Radio
                     sx={{
-                      color: theme.palette.grey[400],
+                      color: '#bdbdbd',
                       '&.Mui-checked': { color: primaryColor },
                     }}
                   />

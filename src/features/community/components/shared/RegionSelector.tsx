@@ -45,9 +45,6 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({ onChange }) => {
 
   return (
     <Box sx={{ mb: 2 }}>
-      <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: '#666' }}>
-        지역 선택
-      </Typography>
       <Box sx={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 2 }}>
         {/* 시/도 선택 */}
         <FormControl size="small" sx={{ minWidth: 120, flex: 1 }}>

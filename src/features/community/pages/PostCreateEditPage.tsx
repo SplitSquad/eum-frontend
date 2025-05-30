@@ -44,7 +44,6 @@ import RegionSelector from '../components/shared/RegionSelector';
 import { useRegionStore } from '../store/regionStore';
 
 // 스프링 배경 컴포넌트 임포트
-import SpringBackground from '../components/shared/SpringBackground';
 
 // Type definitions
 export interface FileInfo {
@@ -83,7 +82,7 @@ const ContentPaper = styled(Paper)(({ theme }) => ({
   zIndex: 1,
   borderRadius: '16px',
   boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
-  border: '1px solid rgba(255, 170, 165, 0.5)',
+  border: '1px solid rgba(185, 185, 185, 0.61)',
   background: 'rgba(255, 255, 255, 0.9)',
   backdropFilter: 'blur(8px)',
 }));
@@ -97,20 +96,20 @@ const FormBox = styled(Box)(({ theme }) => ({
 
 const StyledButton = styled(Button)(({ theme }) => ({
   marginTop: theme.spacing(2),
-  backgroundColor: 'rgba(255, 170, 165, 0.8)',
-  color: '#7b1fa2',
+  backgroundColor: 'rgba(210, 210, 210, 0.8)',
+  color: 'black',
   '&:hover': {
-    backgroundColor: 'rgba(255, 107, 107, 0.7)',
+    backgroundColor: 'rgba(177, 177, 177, 0.7)',
   },
   borderRadius: '8px',
   padding: '10px 20px',
   fontWeight: 'bold',
-  boxShadow: '0 4px 8px rgba(255, 170, 165, 0.3)',
+  boxShadow: '0 4px 8px rgba(185, 185, 185, 0.3)',
   transition: 'all 0.3s ease',
 }));
 
 const PageTitle = styled(Typography)(({ theme }) => ({
-  color: '#7b1fa2',
+  color: 'black',
   fontWeight: 'bold',
   marginBottom: theme.spacing(2),
   position: 'relative',
@@ -121,7 +120,7 @@ const PageTitle = styled(Typography)(({ theme }) => ({
     left: 0,
     width: '100px',
     height: '3px',
-    background: 'linear-gradient(90deg, rgba(255, 170, 165, 0.8), rgba(206, 147, 216, 0.8))',
+    background: 'linear-gradient(90deg, rgba(210, 210, 210, 0.8), rgba(128, 127, 128, 0.8))',
     borderRadius: '10px',
   },
 }));
@@ -132,15 +131,15 @@ const FileUploadBox = styled(Box)(({ theme }) => ({
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
-  border: '2px dashed rgba(255, 170, 165, 0.5)',
+  border: '2px dashed rgba(185, 185, 185, 0.5)',
   borderRadius: '12px',
   padding: theme.spacing(3),
   cursor: 'pointer',
   transition: 'background-color 0.3s, border-color 0.3s',
-  backgroundColor: 'rgba(255, 240, 240, 0.2)',
+  backgroundColor: 'rgba(240, 240, 240, 0.2)',
   '&:hover': {
-    backgroundColor: 'rgba(255, 240, 240, 0.5)',
-    borderColor: 'rgba(255, 107, 107, 0.7)',
+    backgroundColor: 'rgba(240, 240, 240, 0.5)',
+    borderColor: 'rgba(185, 185, 185, 0.7)',
   },
   height: '180px',
 }));
@@ -173,7 +172,7 @@ const MenuProps = {
 const getTagStyles = (tag: string, selectedTags: string[], theme: Theme) => {
   return {
     fontWeight: selectedTags.indexOf(tag) === -1 ? 'normal' : 'bold',
-    backgroundColor: selectedTags.indexOf(tag) === -1 ? 'transparent' : 'rgba(255, 170, 165, 0.1)',
+    backgroundColor: selectedTags.indexOf(tag) === -1 ? 'transparent' : 'rgba(210, 210, 210, 0.1)',
   };
 };
 
@@ -188,7 +187,7 @@ const categoryLabels: Record<string, string> = {
 
 // 게시글 타입 (자유/모임)
 const postTypes = ['자유', '모임'];
-
+//region selector 적용 필요//
 // 지역 목록
 const regions = [
   '서울',
@@ -532,335 +531,329 @@ const PostCreateEditPage: React.FC = () => {
   // 로딩 중일 때 로딩 표시
   if (isLoading) {
     return (
-      <SpringBackground>
-        <Container maxWidth="md" sx={{ py: 4 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-            <CircularProgress sx={{ color: 'rgba(255, 107, 107, 0.7)' }} />
-          </Box>
-        </Container>
-      </SpringBackground>
+      <Container maxWidth="md" sx={{ py: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+          <CircularProgress sx={{ color: 'rgba(177, 177, 177, 0.7)' }} />
+        </Box>
+      </Container>
     );
   }
 
   return (
-    <SpringBackground>
-      <Container maxWidth="md" sx={{ py: 4 }}>
-        {/* 뒤로 가기 버튼 */}
-        <Box sx={{ mb: 2 }}>
-          <Button
-            startIcon={<ArrowBackIcon />}
-            onClick={() => navigate('/community')}
-            sx={{
-              color: '#666',
-              '&:hover': {
-                backgroundColor: 'rgba(255, 240, 240, 0.2)',
-              },
-            }}
-          >
-            목록으로 돌아가기
-          </Button>
-        </Box>
+    <Container maxWidth="md" sx={{ py: 4 }}>
+      {/* 뒤로 가기 버튼 */}
+      <Box sx={{ mb: 2 }}>
+        <Button
+          startIcon={<ArrowBackIcon />}
+          onClick={() => navigate('/community')}
+          sx={{
+            color: '#666',
+            '&:hover': {
+              backgroundColor: 'rgba(255, 240, 240, 0.2)',
+            },
+          }}
+        >
+          목록으로 돌아가기
+        </Button>
+      </Box>
+      <ContentPaper elevation={3}>
+        <PageTitle variant="h5">{isEditMode ? '게시글 수정' : '새 게시글 작성'}</PageTitle>
 
-        <ContentPaper elevation={3}>
-          <PageTitle variant="h5">{isEditMode ? '게시글 수정' : '새 게시글 작성'}</PageTitle>
+        <form onSubmit={handleSubmit}>
+          <FormBox>
+            {/* 제목 입력 필드 */}
+            <TextField
+              label="제목"
+              variant="outlined"
+              fullWidth
+              name="title"
+              value={formData.title}
+              onChange={handleInputChange}
+              error={!!errors.title}
+              helperText={errors.title}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '12px',
+                  '& fieldset': {
+                    borderColor: 'rgba(185, 185, 185, 0.5)',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: 'rgba(177, 177, 177, 0.7)',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: 'rgba(151, 151, 151, 0.7)',
+                  },
+                },
+              }}
+            />
 
-          <form onSubmit={handleSubmit}>
-            <FormBox>
-              {/* 제목 입력 필드 */}
-              <TextField
-                label="제목"
-                variant="outlined"
-                fullWidth
-                name="title"
-                value={formData.title}
-                onChange={handleInputChange}
-                error={!!errors.title}
-                helperText={errors.title}
+            {/* 게시글 타입 선택 (자유/모임) */}
+            <FormControl sx={{ minWidth: 200 }}>
+              <InputLabel id="post-type-label">게시글 타입</InputLabel>
+              <Select
+                labelId="post-type-label"
+                id="post-type"
+                value={formData.postType}
+                onChange={handlePostTypeChange}
+                label="게시글 타입"
                 sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: '12px',
-                    '& fieldset': {
-                      borderColor: 'rgba(255, 170, 165, 0.5)',
-                    },
-                    '&:hover fieldset': {
-                      borderColor: 'rgba(255, 107, 107, 0.7)',
-                    },
-                    '&.Mui-focused fieldset': {
-                      borderColor: 'rgba(255, 107, 107, 0.7)',
-                    },
+                  borderRadius: '12px',
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'rgba(185, 185, 185, 0.5)',
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'rgba(177, 177, 177, 0.7)',
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'rgba(177, 177, 177, 0.7)',
                   },
                 }}
-              />
+              >
+                {postTypes.map(type => (
+                  <MenuItem key={type} value={type}>
+                    {type} 게시글
+                  </MenuItem>
+                ))}
+              </Select>
+              <FormHelperText>자유 게시글 또는 모임 게시글을 선택하세요</FormHelperText>
+            </FormControl>
 
-              {/* 게시글 타입 선택 (자유/모임) */}
-              <FormControl sx={{ minWidth: 200 }}>
-                <InputLabel id="post-type-label">게시글 타입</InputLabel>
-                <Select
-                  labelId="post-type-label"
-                  id="post-type"
-                  value={formData.postType}
-                  onChange={handlePostTypeChange}
-                  label="게시글 타입"
-                  sx={{
-                    borderRadius: '12px',
-                    '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'rgba(255, 170, 165, 0.5)',
-                    },
-                    '&:hover .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'rgba(255, 107, 107, 0.7)',
-                    },
-                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'rgba(255, 107, 107, 0.7)',
-                    },
-                  }}
-                >
-                  {postTypes.map(type => (
-                    <MenuItem key={type} value={type}>
-                      {type} 게시글
-                    </MenuItem>
-                  ))}
-                </Select>
-                <FormHelperText>자유 게시글 또는 모임 게시글을 선택하세요</FormHelperText>
+            {/* 게시글 타입이 '모임'일 때만 지역 선택 표시 */}
+            {formData.postType === '모임' && (
+              <FormControl fullWidth sx={{ mt: 2 }}>
+                <InputLabel>지역</InputLabel>
+                <RegionSelector onChange={handleRegionChange} />
+                <FormHelperText>모임이 진행될 지역을 선택하세요</FormHelperText>
               </FormControl>
+            )}
 
-              {/* 게시글 타입이 '모임'일 때만 지역 선택 표시 */}
-              {formData.postType === '모임' && (
-                <FormControl fullWidth sx={{ mt: 2 }}>
-                  <InputLabel>지역</InputLabel>
-                  <RegionSelector onChange={handleRegionChange} />
-                  <FormHelperText>모임이 진행될 지역을 선택하세요</FormHelperText>
-                </FormControl>
-              )}
+            {/* 카테고리 선택 */}
+            <FormControl fullWidth variant="outlined" margin="normal">
+              <InputLabel id="category-label">카테고리</InputLabel>
+              <Select
+                labelId="category-label"
+                id="category"
+                name="category"
+                value={formData.category || ''}
+                onChange={handleCategoryChange}
+                label="카테고리"
+                required
+                sx={{
+                  bgcolor: 'white',
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'rgba(185, 185, 185, 0.5)',
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'rgba(177, 177, 177, 0.7)',
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'rgba(177, 177, 177, 0.9)',
+                  },
+                }}
+              >
+                {categories.map(category => (
+                  <MenuItem key={category} value={category}>
+                    {categoryLabels[category]}
+                  </MenuItem>
+                ))}
+              </Select>
+              <FormHelperText>게시글의 주제 카테고리를 선택하세요</FormHelperText>
+            </FormControl>
 
-              {/* 카테고리 선택 */}
+            {/* 소분류(태그) 선택 */}
+            {formData.category && (
               <FormControl fullWidth variant="outlined" margin="normal">
-                <InputLabel id="category-label">카테고리</InputLabel>
+                <InputLabel id="subtags-label">세부 태그</InputLabel>
                 <Select
-                  labelId="category-label"
-                  id="category"
-                  name="category"
-                  value={formData.category || ''}
-                  onChange={handleCategoryChange}
-                  label="카테고리"
-                  required
+                  labelId="subtags-label"
+                  id="subtags"
+                  multiple
+                  value={formData.subTags}
+                  onChange={handleSubTagChange}
+                  input={<OutlinedInput id="select-multiple-chip" label="세부 태그" />}
+                  renderValue={selected => (
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                      {(selected as string[]).map(value => (
+                        <Chip
+                          key={value}
+                          label={value}
+                          sx={{
+                            bgcolor: 'rgba(210, 210, 210, 0.2)',
+                            borderColor: 'rgba(177, 177, 177, 0.3)',
+                            border: '1px solid',
+                            color: '#7b1fa2',
+                            fontWeight: 'medium',
+                          }}
+                        />
+                      ))}
+                    </Box>
+                  )}
+                  MenuProps={MenuProps}
                   sx={{
                     bgcolor: 'white',
                     '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'rgba(255, 170, 165, 0.5)',
+                      borderColor: 'rgba(185, 185, 185, 0.5)',
                     },
                     '&:hover .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'rgba(255, 107, 107, 0.7)',
+                      borderColor: 'rgba(177, 177, 177, 0.7)',
                     },
                     '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'rgba(255, 107, 107, 0.9)',
+                      borderColor: 'rgba(145, 145, 145, 0.9)',
                     },
                   }}
                 >
-                  {categories.map(category => (
-                    <MenuItem key={category} value={category}>
-                      {categoryLabels[category]}
-                    </MenuItem>
-                  ))}
+                  {formData.category &&
+                    subTagsByCategory[formData.category]?.map(tag => (
+                      <MenuItem
+                        key={tag}
+                        value={tag}
+                        style={getTagStyles(tag, formData.subTags, theme)}
+                      >
+                        <Checkbox checked={formData.subTags.indexOf(tag) > -1} />
+                        <ListItemText primary={tag} />
+                      </MenuItem>
+                    ))}
                 </Select>
-                <FormHelperText>게시글의 주제 카테고리를 선택하세요</FormHelperText>
+                <FormHelperText>관련된 세부 태그를 선택하세요 (최대 3개)</FormHelperText>
               </FormControl>
+            )}
 
-              {/* 소분류(태그) 선택 */}
-              {formData.category && (
-                <FormControl fullWidth variant="outlined" margin="normal">
-                  <InputLabel id="subtags-label">세부 태그</InputLabel>
-                  <Select
-                    labelId="subtags-label"
-                    id="subtags"
-                    multiple
-                    value={formData.subTags}
-                    onChange={handleSubTagChange}
-                    input={<OutlinedInput id="select-multiple-chip" label="세부 태그" />}
-                    renderValue={selected => (
-                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                        {(selected as string[]).map(value => (
-                          <Chip
-                            key={value}
-                            label={value}
-                            sx={{
-                              bgcolor: 'rgba(255, 170, 165, 0.2)',
-                              borderColor: 'rgba(255, 107, 107, 0.3)',
-                              border: '1px solid',
-                              color: '#7b1fa2',
-                              fontWeight: 'medium',
-                            }}
-                          />
-                        ))}
-                      </Box>
-                    )}
-                    MenuProps={MenuProps}
-                    sx={{
-                      bgcolor: 'white',
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'rgba(255, 170, 165, 0.5)',
-                      },
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'rgba(255, 107, 107, 0.7)',
-                      },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'rgba(255, 107, 107, 0.9)',
-                      },
-                    }}
-                  >
-                    {formData.category &&
-                      subTagsByCategory[formData.category]?.map(tag => (
-                        <MenuItem
-                          key={tag}
-                          value={tag}
-                          style={getTagStyles(tag, formData.subTags, theme)}
-                        >
-                          <Checkbox checked={formData.subTags.indexOf(tag) > -1} />
-                          <ListItemText primary={tag} />
-                        </MenuItem>
-                      ))}
-                  </Select>
-                  <FormHelperText>관련된 세부 태그를 선택하세요 (최대 3개)</FormHelperText>
-                </FormControl>
+            {/* 내용 입력 필드 */}
+            <TextField
+              label="내용"
+              variant="outlined"
+              multiline
+              rows={8}
+              fullWidth
+              name="content"
+              value={formData.content}
+              onChange={handleInputChange}
+              error={!!errors.content}
+              helperText={errors.content}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '12px',
+                  '& fieldset': {
+                    borderColor: 'rgba(185, 185, 185, 0.5)',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: 'rgba(177, 177, 177, 0.7)',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: 'rgba(177, 177, 177, 0.7)',
+                  },
+                },
+              }}
+            />
+
+            {/* 파일 업로드 영역 */}
+            <Box>
+              <Typography variant="subtitle1" gutterBottom>
+                파일 첨부
+              </Typography>
+
+              <FileUploadBox onClick={handleUploadBoxClick}>
+                <CloudUploadIcon sx={{ fontSize: 40, color: 'rgba(177, 177, 177, 0.7)', mb: 1 }} />
+                <Typography variant="body1" gutterBottom>
+                  파일을 여기에 끌어다 놓거나 클릭하여 업로드하세요
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  최대 10MB, 이미지 및 문서 파일 지원
+                </Typography>
+                <VisuallyHiddenInput
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileSelect}
+                  multiple
+                />
+              </FileUploadBox>
+
+              {/* 선택된 파일 목록 */}
+              {selectedFiles.length > 0 && (
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="subtitle2" gutterBottom>
+                    선택된 파일 ({selectedFiles.length})
+                  </Typography>
+                  <List disablePadding>
+                    {selectedFiles.map((file, index) => (
+                      <ListItem
+                        key={index}
+                        secondaryAction={
+                          <IconButton
+                            edge="end"
+                            onClick={() => handleFileRemove(index)}
+                            sx={{ color: 'rgba(177, 177, 177, 0.7)' }}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        }
+                        sx={{
+                          bgcolor: 'rgba(240, 240, 240, 0.5)',
+                          borderRadius: '8px',
+                          mb: 1,
+                        }}
+                      >
+                        <ListItemIcon>
+                          <InsertDriveFileIcon sx={{ color: 'rgba(177, 177, 177, 0.7)' }} />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={file.name}
+                          secondary={`${(file.size / 1024).toFixed(2)} KB`}
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                </Box>
               )}
 
-              {/* 내용 입력 필드 */}
-              <TextField
-                label="내용"
-                variant="outlined"
-                multiline
-                rows={8}
-                fullWidth
-                name="content"
-                value={formData.content}
-                onChange={handleInputChange}
-                error={!!errors.content}
-                helperText={errors.content}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: '12px',
-                    '& fieldset': {
-                      borderColor: 'rgba(255, 170, 165, 0.5)',
-                    },
-                    '&:hover fieldset': {
-                      borderColor: 'rgba(255, 107, 107, 0.7)',
-                    },
-                    '&.Mui-focused fieldset': {
-                      borderColor: 'rgba(255, 107, 107, 0.7)',
-                    },
-                  },
-                }}
-              />
-
-              {/* 파일 업로드 영역 */}
-              <Box>
-                <Typography variant="subtitle1" gutterBottom>
-                  파일 첨부
-                </Typography>
-
-                <FileUploadBox onClick={handleUploadBoxClick}>
-                  <CloudUploadIcon
-                    sx={{ fontSize: 40, color: 'rgba(255, 107, 107, 0.7)', mb: 1 }}
-                  />
-                  <Typography variant="body1" gutterBottom>
-                    파일을 여기에 끌어다 놓거나 클릭하여 업로드하세요
+              {/* 편집 모드에서 기존 파일 표시 */}
+              {isEditMode && postFiles.length > 0 && (
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="subtitle2" gutterBottom>
+                    기존 첨부 파일
                   </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    최대 10MB, 이미지 및 문서 파일 지원
-                  </Typography>
-                  <VisuallyHiddenInput
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileSelect}
-                    multiple
-                  />
-                </FileUploadBox>
-
-                {/* 선택된 파일 목록 */}
-                {selectedFiles.length > 0 && (
-                  <Box sx={{ mt: 2 }}>
-                    <Typography variant="subtitle2" gutterBottom>
-                      선택된 파일 ({selectedFiles.length})
-                    </Typography>
-                    <List disablePadding>
-                      {selectedFiles.map((file, index) => (
-                        <ListItem
-                          key={index}
-                          secondaryAction={
-                            <IconButton
-                              edge="end"
-                              onClick={() => handleFileRemove(index)}
-                              sx={{ color: 'rgba(255, 107, 107, 0.7)' }}
+                  <List disablePadding>
+                    {postFiles.map((file, index) => (
+                      <ListItem
+                        key={index}
+                        secondaryAction={
+                          <IconButton
+                            edge="end"
+                            onClick={() => handleExistingFileRemove(file.id)}
+                            sx={{ color: 'rgba(177, 177, 177, 0.7)' }}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        }
+                        sx={{
+                          bgcolor: 'rgba(240, 240, 240, 0.5)',
+                          borderRadius: '8px',
+                          mb: 1,
+                        }}
+                      >
+                        <ListItemIcon>
+                          <InsertDriveFileIcon sx={{ color: 'rgba(177, 177, 177, 0.7)' }} />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={
+                            <Box
+                              component="a"
+                              href={file.fileUrl}
+                              target="_blank"
+                              sx={{ textDecoration: 'none', color: 'inherit' }}
                             >
-                              <DeleteIcon />
-                            </IconButton>
+                              {file.fileName}
+                            </Box>
                           }
-                          sx={{
-                            bgcolor: 'rgba(255, 240, 240, 0.5)',
-                            borderRadius: '8px',
-                            mb: 1,
-                          }}
-                        >
-                          <ListItemIcon>
-                            <InsertDriveFileIcon sx={{ color: 'rgba(255, 107, 107, 0.7)' }} />
-                          </ListItemIcon>
-                          <ListItemText
-                            primary={file.name}
-                            secondary={`${(file.size / 1024).toFixed(2)} KB`}
-                          />
-                        </ListItem>
-                      ))}
-                    </List>
-                  </Box>
-                )}
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                </Box>
+              )}
+            </Box>
 
-                {/* 편집 모드에서 기존 파일 표시 */}
-                {isEditMode && postFiles.length > 0 && (
-                  <Box sx={{ mt: 2 }}>
-                    <Typography variant="subtitle2" gutterBottom>
-                      기존 첨부 파일
-                    </Typography>
-                    <List disablePadding>
-                      {postFiles.map((file, index) => (
-                        <ListItem
-                          key={index}
-                          secondaryAction={
-                            <IconButton
-                              edge="end"
-                              onClick={() => handleExistingFileRemove(file.id)}
-                              sx={{ color: 'rgba(255, 107, 107, 0.7)' }}
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          }
-                          sx={{
-                            bgcolor: 'rgba(255, 240, 240, 0.5)',
-                            borderRadius: '8px',
-                            mb: 1,
-                          }}
-                        >
-                          <ListItemIcon>
-                            <InsertDriveFileIcon sx={{ color: 'rgba(255, 107, 107, 0.7)' }} />
-                          </ListItemIcon>
-                          <ListItemText
-                            primary={
-                              <Box
-                                component="a"
-                                href={file.fileUrl}
-                                target="_blank"
-                                sx={{ textDecoration: 'none', color: 'inherit' }}
-                              >
-                                {file.fileName}
-                              </Box>
-                            }
-                          />
-                        </ListItem>
-                      ))}
-                    </List>
-                  </Box>
-                )}
-              </Box>
-
-              {/* 익명 체크박스 */}
+            {/* 익명 체크박스 
               <FormControl>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                   <Checkbox
@@ -868,9 +861,9 @@ const PostCreateEditPage: React.FC = () => {
                     onChange={handleAnonymousChange}
                     id="anonymous-checkbox"
                     sx={{
-                      color: 'rgba(255, 170, 165, 0.7)',
+                      color: 'rgba(185, 185, 185, 0.7)',
                       '&.Mui-checked': {
-                        color: 'rgba(255, 107, 107, 0.7)',
+                        color: 'rgba(177, 177, 177, 0.7)',
                       },
                     }}
                   />
@@ -878,41 +871,36 @@ const PostCreateEditPage: React.FC = () => {
                     익명으로 게시하기
                   </Typography>
                 </Box>
-              </FormControl>
+              </FormControl>*/}
 
-              {/* 제출 및 취소 버튼 */}
-              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 2 }}>
-                <Button
-                  variant="outlined"
-                  onClick={handleCancel}
-                  sx={{
-                    borderColor: '#FFAAA5',
-                    color: '#666',
-                    '&:hover': {
-                      borderColor: '#FF9999',
-                      backgroundColor: 'rgba(255, 240, 240, 0.2)',
-                    },
-                    borderRadius: '8px',
-                  }}
-                >
-                  취소
-                </Button>
-                <StyledButton
-                  type="submit"
-                  variant="contained"
-                  disabled={isSaving}
-                  startIcon={
-                    isSaving ? <CircularProgress size={20} sx={{ color: 'white' }} /> : null
-                  }
-                >
-                  {isSaving ? '저장 중...' : isEditMode ? '수정하기' : '작성하기'}
-                </StyledButton>
-              </Box>
-            </FormBox>
-          </form>
-        </ContentPaper>
-      </Container>
-    </SpringBackground>
+            {/* 제출 및 취소 버튼 */}
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 2 }}>
+              <StyledButton
+                type="button"
+                onClick={handleCancel}
+                sx={{
+                  backgroundColor: 'rgba(210, 210, 210, 0.8)',
+                  color: 'black',
+                  '&:hover': {
+                    backgroundColor: 'rgba(177, 177, 177, 0.7)',
+                  },
+                }}
+              >
+                취소
+              </StyledButton>
+              <StyledButton
+                type="submit"
+                variant="contained"
+                disabled={isSaving}
+                startIcon={isSaving ? <CircularProgress size={20} sx={{ color: 'white' }} /> : null}
+              >
+                {isSaving ? '저장 중...' : isEditMode ? '수정하기' : '작성하기'}
+              </StyledButton>
+            </Box>
+          </FormBox>
+        </form>
+      </ContentPaper>
+    </Container>
   );
 };
 

@@ -377,8 +377,8 @@ const DropdownMenu = styled.div<{ season: string }>`
   transform: translateY(-10px);
   transition: all 0.2s ease;
   z-index: 1000;
-  padding: 4px 0;
-  margin-top: 4px;
+  padding: 0;
+  margin-top: 0;
   width: fit-content;
   min-width: 120px;
 `;
@@ -458,14 +458,8 @@ type GoogleLoginCallback = {
 
 const MenuContainer = styled(Box)`
   display: flex;
-  align-items: flex-end;
-  gap: 0;
+  align-items: center;
   height: 100%;
-  padding-bottom: 2px;
-  margin-bottom: -2px;
-  position: relative;
-  top: 50%;
-  transform: translateY(50%);
 `;
 
 const ProfileDropdown = styled(Box)<{ season: string }>`
@@ -527,18 +521,14 @@ function Header({ isVisible = true, notifications }: HeaderProps) {
   console.log('headcheck user:', user);
   // user 정보에서 가져오기 (없으면 기본값)
   const userName = user?.name || 'user';
-  const userCountry = user?.nation || '한국';
-  const userType = user?.visitPurpose || '유학';
+  const userCountry = user?.nation || t('header.country');
+  const userType = user?.visitPurpose || t('header.study');
 
   // 인증 상태가 변경될 때마다 사용자 정보 로드
   useEffect(() => {
-    console.log('isAuthenticated:', isAuthenticated);
-    console.log('user:', user);
-
     // 토큰이 있는지 확인
     console.log('token:', token);
     if (token) {
-      console.log('Header: 사용자 정보 로드 시작');
       loadUser();
     }
   }, [token]);
@@ -658,19 +648,102 @@ function Header({ isVisible = true, notifications }: HeaderProps) {
 
           <Box sx={{ flexGrow: 1 }} />
 
-          {/* Only render other components if isVisible is true */}
-          {isVisible && (
-            <>
-              {/* 데스크톱 메뉴 */}
-              {!isMobile && (
-                <MenuContainer>
-                  {navItems.map(item => (
-                    <React.Fragment key={item.path}>
-                      {item.dropdown ? (
-                        <DropdownContainer
-                          onMouseEnter={() => setIsDropdownOpen(true)}
-                          onMouseLeave={() => setIsDropdownOpen(false)}
-                        >
+          {/* 헤더 우측 영역: 온보딩/일반 분기 */}
+          {location.pathname.startsWith('/onboarding') ? (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, ml: 4, height: 48 }}>
+              {/* 로그인 상태: 로그아웃+지구본 */}
+              {isAuthenticated && (
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  startIcon={<LogoutIcon />}
+                  onClick={handleLogoutClick}
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: '1.1rem',
+                    color: 'white',
+                    backgroundColor: seasonalColors[season]?.primary,
+                    '&:hover': {
+                      backgroundColor: seasonalColors[season]?.secondary,
+                    },
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                    zIndex: 2000,
+                  }}
+                >
+                  {t('common.logout')}
+                </Button>
+              )}
+              {/* 지구본(언어선택)은 항상 */}
+              <IconButton onClick={handleLanguageMenuOpen} sx={{ ml: 0.5, width: 40, height: 40 }}>
+                <LanguageIcon sx={{ fontSize: 28 }} />
+              </IconButton>
+            </Box>
+          ) : (
+            isVisible && (
+              <>
+                {/* 데스크톱 메뉴 */}
+                {!isMobile && (
+                  <MenuContainer>
+                    {navItems.map(item => (
+                      <React.Fragment key={item.path}>
+                        {item.dropdown ? (
+                          <DropdownContainer
+                            onMouseEnter={() => setIsDropdownOpen(true)}
+                            onMouseLeave={() => setIsDropdownOpen(false)}
+                          >
+                            <MenuNavButton
+                              season={season}
+                              isactive={isactive(item.path)}
+                              onClick={() =>
+                                trackedNavigate(
+                                  item.path, // ClickPath
+                                  item.name.toLowerCase() // TAG (예: 'home', 'community' 등)
+                                )
+                              }
+                            >
+                              {item.name}
+                            </MenuNavButton>
+                            <DropdownMenu
+                              season={season}
+                              style={{
+                                opacity: isDropdownOpen ? 1 : 0,
+                                visibility: isDropdownOpen ? 'visible' : 'hidden',
+                                transform: isDropdownOpen ? 'translateY(0)' : 'translateY(-10px)',
+                              }}
+                            >
+                              {item.dropdown.map(subItem => {
+                                const isSubActive =
+                                  (subItem.path === '/community/groups' &&
+                                    (location.pathname === '/community' ||
+                                      location.pathname.startsWith('/community/groups'))) ||
+                                  location.pathname === subItem.path;
+                                return (
+                                  <CommunityDropdownItem
+                                    key={subItem.path}
+                                    season={season}
+                                    onClick={
+                                      isSubActive
+                                        ? undefined
+                                        : () =>
+                                            trackedNavigate(
+                                              subItem.path, // ClickPath
+                                              subItem.name.toLowerCase() // TAG (예: 'home', 'community' 등)
+                                            )
+                                    }
+                                    style={{
+                                      background: undefined,
+                                      color: isSubActive ? 'rgba(89, 89, 89, 0.64)' : undefined,
+                                      pointerEvents: isSubActive ? 'none' : undefined,
+                                      opacity: isSubActive ? 0.7 : 1,
+                                    }}
+                                  >
+                                    {subItem.name}
+                                  </CommunityDropdownItem>
+                                );
+                              })}
+                            </DropdownMenu>
+                          </DropdownContainer>
+                        ) : (
                           <MenuNavButton
                             season={season}
                             isactive={isactive(item.path)}
@@ -683,149 +756,119 @@ function Header({ isVisible = true, notifications }: HeaderProps) {
                           >
                             {item.name}
                           </MenuNavButton>
-                          <DropdownMenu
-                            season={season}
-                            style={{
-                              opacity: isDropdownOpen ? 1 : 0,
-                              visibility: isDropdownOpen ? 'visible' : 'hidden',
-                              transform: isDropdownOpen ? 'translateY(0)' : 'translateY(-10px)',
-                            }}
-                          >
-                            {item.dropdown.map(subItem => {
-                              const isSubActive =
-                                (subItem.path === '/community/groups' &&
-                                  (location.pathname === '/community' ||
-                                    location.pathname.startsWith('/community/groups'))) ||
-                                location.pathname === subItem.path;
-                              return (
-                                <CommunityDropdownItem
-                                  key={subItem.path}
-                                  season={season}
-                                  onClick={
-                                    isSubActive
-                                      ? undefined
-                                      : () =>
-                                          trackedNavigate(
-                                            subItem.path, // ClickPath
-                                            subItem.name.toLowerCase() // TAG (예: 'home', 'community' 등)
-                                          )
-                                  }
-                                  style={{
-                                    background: undefined,
-                                    color: isSubActive ? '#e91e63' : undefined,
-                                    pointerEvents: isSubActive ? 'none' : undefined,
-                                    opacity: isSubActive ? 0.7 : 1,
-                                  }}
-                                >
-                                  {subItem.name}
-                                </CommunityDropdownItem>
-                              );
-                            })}
-                          </DropdownMenu>
-                        </DropdownContainer>
-                      ) : (
-                        <MenuNavButton
-                          season={season}
-                          isactive={isactive(item.path)}
-                          onClick={() =>
-                            trackedNavigate(
-                              item.path, // ClickPath
-                              item.name.toLowerCase() // TAG (예: 'home', 'community' 등)
-                            )
-                          }
-                        >
-                          {item.name}
-                        </MenuNavButton>
-                      )}
-                    </React.Fragment>
-                  ))}
-                </MenuContainer>
-              )}
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </MenuContainer>
+                )}
 
-              {/* 유저 정보 + 알림 */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 4 }}>
-                {/* 프로필 */}
-                {isAuthenticated ? (
-                  <Box sx={{ position: 'relative' }} ref={profileMenuRef}>
-                    <ProfileSection season={season} onClick={handleProfileClick}>
-                      <Avatar
-                        src={user?.profileImagePath || user?.picture}
-                        alt={user?.name || 'User'}
-                        sx={{
-                          width: 40,
-                          height: 40,
-                          border: `2px solid ${seasonalColors[season]?.primary}`,
-                          cursor: 'pointer',
-                        }}
-                      />
-                      <ProfileInfo>
-                        <ProfileRow>
-                          <ProfileName>{userName}</ProfileName>
-                        </ProfileRow>
-                        <DetailRow>
-                          <ProfileDetail>{userType}</ProfileDetail>
-                          <ProfileDetail>{userCountry}</ProfileDetail>
-                        </DetailRow>
-                      </ProfileInfo>
-                    </ProfileSection>
+                {/* 유저 정보 + 알림 */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, ml: 4, height: 48 }}>
+                  {/* 프로필 */}
+                  {isAuthenticated ? (
+                    <Box sx={{ position: 'relative' }} ref={profileMenuRef}>
+                      <ProfileSection season={season} onClick={handleProfileClick}>
+                        <Avatar
+                          src={user?.profileImagePath || user?.picture}
+                          alt={user?.name || 'User'}
+                          sx={{
+                            width: 40,
+                            height: 40,
+                            border: `2px solid ${seasonalColors[season]?.primary}`,
+                            cursor: 'pointer',
+                          }}
+                        />
+                        <ProfileInfo>
+                          <ProfileRow>
+                            <ProfileName>{userName}</ProfileName>
+                          </ProfileRow>
+                          <DetailRow>
+                            <ProfileDetail>{userType}</ProfileDetail>
+                            <ProfileDetail>{userCountry}</ProfileDetail>
+                          </DetailRow>
+                        </ProfileInfo>
+                      </ProfileSection>
 
-                    {isProfileMenuOpen && (
-                      <ProfileDropdown season={season}>
-                        {/* 관리자일 때만 보이는 관리자 페이지 버튼 */}
-                        {user?.role === 'ROLE_ADMIN' && (
+                      {isProfileMenuOpen && (
+                        <ProfileDropdown season={season}>
+                          {/* 관리자일 때만 보이는 관리자 페이지 버튼 */}
+                          {user?.role === 'ROLE_ADMIN' && (
+                            <ProfileDropdownItem
+                              season={season}
+                              onClick={() => handleMenuItemClick('/adminpage')}
+                            >
+                              <AccountCircleIcon />
+                              관리자 페이지
+                            </ProfileDropdownItem>
+                          )}
                           <ProfileDropdownItem
                             season={season}
-                            onClick={() => handleMenuItemClick('/adminpage')}
+                            onClick={() => handleMenuItemClick('/mypage')}
                           >
                             <AccountCircleIcon />
-                            관리자 페이지
+                            마이페이지
                           </ProfileDropdownItem>
-                        )}
-                        <ProfileDropdownItem
-                          season={season}
-                          onClick={() => handleMenuItemClick('/mypage')}
-                        >
-                          <AccountCircleIcon />
-                          마이페이지
-                        </ProfileDropdownItem>
-                        <ProfileDropdownItem season={season} onClick={handleLogoutClick}>
-                          <LogoutIcon />
-                          로그아웃
-                        </ProfileDropdownItem>
-                      </ProfileDropdown>
-                    )}
-                  </Box>
-                ) : (
-                  <LoginNavButton
-                    variant="contained"
-                    onClick={handleGoogleLogin}
-                    startIcon={<LoginIcon />}
-                    season={season}
-                    isactive={false}
+                          <ProfileDropdownItem season={season} onClick={handleLogoutClick}>
+                            <LogoutIcon />
+                            로그아웃
+                          </ProfileDropdownItem>
+                        </ProfileDropdown>
+                      )}
+                    </Box>
+                  ) : (
+                    <LoginNavButton
+                      variant="contained"
+                      onClick={handleGoogleLogin}
+                      startIcon={<LoginIcon />}
+                      season={season}
+                      isactive={false}
+                    >
+                      {t('common.login')}
+                    </LoginNavButton>
+                  )}
+
+                  {/* 알림 */}
+                  <Box
+                    sx={{
+                      ml: 2,
+                      mr: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      height: 48,
+                      width: 40,
+                      justifyContent: 'center',
+                    }}
                   >
-                    {t('common.login')}
-                  </LoginNavButton>
-                )}
+                    <Box
+                      sx={{
+                        width: 40,
+                        height: 40,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <AlarmCenter />
+                    </Box>
+                  </Box>
 
-                {/* 알림 */}
-                <Box sx={{ ml: 2, mr: 1 }}>
-                  <AlarmCenter />
-                </Box>
-                {/*<Notification items={mockNotifications} />*/}
-
-                {/* 언어 선택 */}
-                <IconButton onClick={handleLanguageMenuOpen} sx={{ ml: 0.5 }}>
-                  <LanguageIcon />
-                </IconButton>
-
-                {/* 모바일 메뉴 버튼 */}
-                {isMobile && (
-                  <IconButton onClick={toggleDrawer}>
-                    <MenuIcon />
+                  {/* 언어 선택 */}
+                  <IconButton
+                    onClick={handleLanguageMenuOpen}
+                    sx={{ ml: 0.5, width: 40, height: 40 }}
+                  >
+                    <LanguageIcon sx={{ fontSize: 28 }} />
                   </IconButton>
-                )}
-              </Box>
-            </>
+
+                  {/* 모바일 메뉴 버튼 */}
+                  {isMobile && (
+                    <IconButton onClick={toggleDrawer}>
+                      <MenuIcon />
+                    </IconButton>
+                  )}
+                </Box>
+              </>
+            )
           )}
 
           {/* 언어 선택 메뉴 - Only render if isVisible is true */}
@@ -888,8 +931,8 @@ function Header({ isVisible = true, notifications }: HeaderProps) {
             </Drawer>
           )}
         </Toolbar>
-        {/* When isVisible is false, show logout button at far right if authenticated */}
-        {!isVisible && isAuthenticated && (
+        {/* When isVisible is false, show logout button at far right if authenticated (온보딩 경로는 제외) */}
+        {!isVisible && isAuthenticated && !location.pathname.startsWith('/onboarding') && (
           <Box sx={{ position: 'absolute', right: 24, top: 16 }}>
             <Button
               variant="contained"

@@ -1284,6 +1284,8 @@ const es = {
       noReplies: 'Aún no hay respuestas. ¡Sé el primero en responder!',
       cancel: 'Cancelar',
     },
+    specialIssues: 'Ver todos los temas',
+    noVotesYet: 'Aún no hay votos. ¡Sé el primero en votar!',
   },
   infoPage: {
     title: 'Guía de vida en Corea',

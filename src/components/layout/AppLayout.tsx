@@ -12,6 +12,7 @@ import eum2Image from '@/assets/images/characters/이음이.png';
 import '../../app/App.css';
 import { Container } from '@mui/material';
 import useLayoutVisibility from './useLayoutVisibility';
+import { resetAgenticState } from '@/shared/utils/Agentic_state';
 
 export default function AppLayout() {
   const { isModalOpen, content, position, openModal, closeModal } = useModalStore();
@@ -21,6 +22,10 @@ export default function AppLayout() {
 
   // 기존의 updateVisibility, useEffect 등은 필요에 따라 커스텀 훅으로 분리 가능
   // 여기서는 간단히 유지
+  const handleModalClose = () => {
+    resetAgenticState(); // 상태 초기화
+    closeModal(); // 모달 닫기
+  };
 
   const onButtonClick = () => {
     if (isModalOpen) {
@@ -42,7 +47,7 @@ export default function AppLayout() {
     <div className={`app-container ${isModalOpen ? 'modal-open' : ''}`}>
       {/* 모달 */}
       {isModalVisible && isAuthenticated && (
-        <Modal isOpen={isModalOpen} onClose={closeModal} position={position}>
+        <Modal isOpen={isModalOpen} onClose={handleModalClose} position={position}>
           {content ?? <ModalContent />}
         </Modal>
       )}
@@ -60,6 +65,7 @@ export default function AppLayout() {
                   flexGrow: 1,
                   position: 'relative',
                   zIndex: 5,
+                  padding: 0,
                 }}
               >
                 <Outlet />
@@ -68,7 +74,7 @@ export default function AppLayout() {
           </main>
           {isModalVisible && isAuthenticated && (
             <div
-              className="fixed right-8 bottom-[170px] z-[1001] eumi-fade-in-up eumi-visible"
+              className="fixed right-8 bottom-[30px] z-[1001] eumi-fade-in-up eumi-visible"
               style={{ pointerEvents: 'auto' }}
             >
               <img
@@ -90,6 +96,12 @@ export default function AppLayout() {
           )}
         </SeasonalBackground>
         <Footer />
+        {/* 오버레이 radius 제거용 스타일 */}
+        <style>{`
+          .dimmed {
+            border-radius: 0 !important;
+          }
+        `}</style>
       </div>
       <FloatingNavigator isHeaderVisible={isHeaderVisible} />
     </div>

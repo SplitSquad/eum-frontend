@@ -571,6 +571,8 @@ const ProGroupListPage: React.FC = () => {
     applyFilterWithSearchState(newFilter);
   };
 
+  const isTagActive = selectedCategory !== '전체';
+
   return (
     <div>
       {/* 헤더 */}
@@ -784,7 +786,7 @@ const ProGroupListPage: React.FC = () => {
             {/* 필터 영역 */}
             <Divider sx={{ mb: 2, borderColor: '#e5e7eb' }} />
 
-            {/* 카테고리와 태그 영역(통합) */}
+            {/* 카테고리와 태그 영역(분리) */}
             <Paper
               elevation={0}
               sx={{
@@ -794,89 +796,116 @@ const ProGroupListPage: React.FC = () => {
                 borderRadius: '16px',
               }}
             >
-              {/* 지역 선택  */}
               <Box
                 sx={{
-                  display: isMobile ? 'block' : 'flex',
-                  flexDirection: isMobile ? 'column' : 'row',
-                  alignItems: isMobile ? 'stretch' : 'center',
-                  gap: isMobile ? 2 : 3,
-                  width: '100%',
-                  mb: 2,
+                  display: 'grid',
+                  gridTemplateColumns: { xs: '1fr', sm: '1.2fr 2fr' },
+                  gap: 2,
+                  alignItems: 'start',
+                  width: 'auto',
                 }}
               >
-                <RegionSelector onChange={handleRegionChange} />
-                {/* 카테고리 선택 버튼 */}
-                <ToggleButtonGroup
-                  color="primary"
-                  value={selectedCategory}
-                  exclusive
-                  onChange={(e, newValue) => newValue && handleCategoryChange(newValue)}
-                  size="small"
-                  sx={{
-                    width: isMobile ? '100%' : 'auto',
-                    flexWrap: 'wrap',
-                    mb: 0,
-                    '& .MuiToggleButton-root': {
-                      borderRadius: '8px',
-                      border: '1px solid #e5e7eb',
-                      mb: 1,
-                      '&.Mui-selected': {
-                        bgcolor: '#fafafa',
-                        color: '#222',
-                        fontWeight: 'bold',
+                {/* 지역 선택 (왼쪽) */}
+                <Box>
+                  <Typography
+                    variant="subtitle2"
+                    gutterBottom
+                    sx={{ fontWeight: 600, color: '#222' }}
+                  >
+                    {t('community.filters.region')}
+                  </Typography>
+                  <RegionSelector onChange={handleRegionChange} />
+                </Box>
+                {/* 오른쪽: 카테고리 선택(상단) + 태그 칩(하단) */}
+                <Box sx={{ width: '100%' }}>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ fontWeight: 600, color: '#222', mb: 1, textAlign: 'left' }}
+                  >
+                    {t('community.filters.category')}
+                  </Typography>
+                  <ToggleButtonGroup
+                    color="primary"
+                    value={selectedCategory}
+                    exclusive
+                    onChange={(e, newValue) => newValue && handleCategoryChange(newValue)}
+                    size="small"
+                    sx={{
+                      flexWrap: 'nowrap',
+                      overflowX: 'auto',
+                      mb: 2,
+                      '& .MuiToggleButton-root': {
+                        borderRadius: '8px',
+                        border: '1px solid #e5e7eb',
+                        mb: 0,
+                        minWidth: 80,
+                        whiteSpace: 'nowrap',
+                        '&.Mui-selected': {
+                          bgcolor: '#fafafa',
+                          color: '#222',
+                          fontWeight: 'bold',
+                        },
+                        '&:hover': {
+                          bgcolor: '#fafafa',
+                        },
                       },
-                      '&:hover': {
-                        bgcolor: '#fafafa',
+                      '& .MuiToggleButtonGroup-grouped': {
+                        borderRadius: '8px !important',
+                        mx: 0.5,
                       },
-                    },
-                    '& .MuiToggleButtonGroup-grouped': {
-                      borderRadius: '8px !important',
-                      mx: 0.5,
-                    },
-                  }}
-                >
-                  <ToggleButton value="전체" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
-                    {t('community.categories.all')}
-                  </ToggleButton>
-                  <ToggleButton value="travel" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
-                    {t('community.categories.travel')}
-                  </ToggleButton>
-                  <ToggleButton value="living" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
-                    {t('community.categories.living')}
-                  </ToggleButton>
-                  <ToggleButton value="study" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
-                    {t('community.categories.study')}
-                  </ToggleButton>
-                  <ToggleButton value="job" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
-                    {t('community.categories.job')}
-                  </ToggleButton>
-                </ToggleButtonGroup>
-                {/* 태그 선택 영역: 전체가 아닐 때만 렌더링 */}
-                {selectedCategory !== '전체' && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
-                    {availableTags.map(tag => (
-                      <Chip
-                        key={tag}
-                        label={tag}
-                        onClick={() => handleTagSelect(tag)}
-                        color={selectedTags.includes(tag) ? 'primary' : 'default'}
-                        variant={selectedTags.includes(tag) ? 'filled' : 'outlined'}
+                    }}
+                  >
+                    <ToggleButton value="전체">{t('community.categories.all')}</ToggleButton>
+                    <ToggleButton value="travel">{t('community.categories.travel')}</ToggleButton>
+                    <ToggleButton value="living">{t('community.categories.living')}</ToggleButton>
+                    <ToggleButton value="study">{t('community.categories.study')}</ToggleButton>
+                    <ToggleButton value="job">{t('community.categories.job')}</ToggleButton>
+                  </ToggleButtonGroup>
+                  {selectedCategory !== '전체' && (
+                    <>
+                      <Typography
+                        variant="subtitle2"
+                        sx={{ fontWeight: 600, color: '#222', mt: 1, mb: 0.5, textAlign: 'left' }}
+                      >
+                        {t('community.filters.tags')}
+                      </Typography>
+                      <Box
                         sx={{
-                          borderRadius: '16px',
-                          borderColor: selectedTags.includes(tag) ? '#222' : '#e5e7eb',
-                          backgroundColor: selectedTags.includes(tag) ? '#fafafa' : 'transparent',
-                          color: selectedTags.includes(tag) ? '#222' : '#666',
-                          '&:hover': {
-                            backgroundColor: selectedTags.includes(tag)
-                              ? '#fafafa'
-                              : 'rgba(255, 235, 235, 0.2)',
-                          },
+                          display: 'flex',
+                          flexWrap: 'wrap',
+                          gap: 1,
+                          mt: 0.5,
                         }}
-                      />
-                    ))}
-                  </Box>
-                )}
+                      >
+                        {availableTags.map(tag => (
+                          <Chip
+                            key={tag}
+                            label={tag}
+                            onClick={isTagActive ? () => handleTagSelect(tag) : undefined}
+                            color={selectedTags.includes(tag) ? 'primary' : 'default'}
+                            variant={selectedTags.includes(tag) ? 'filled' : 'outlined'}
+                            disabled={!isTagActive}
+                            sx={{
+                              borderRadius: '16px',
+                              borderColor: selectedTags.includes(tag) ? '#222' : '#e5e7eb',
+                              backgroundColor: selectedTags.includes(tag)
+                                ? '#fafafa'
+                                : 'transparent',
+                              color: selectedTags.includes(tag) ? '#222' : '#666',
+                              opacity: isTagActive ? 1 : 0.5,
+                              cursor: isTagActive ? 'pointer' : 'not-allowed',
+                              '&:hover': {
+                                backgroundColor: selectedTags.includes(tag)
+                                  ? '#fafafa'
+                                  : 'rgba(255, 235, 235, 0.2)',
+                              },
+                            }}
+                          />
+                        ))}
+                      </Box>
+                    </>
+                  )}
+                </Box>
               </Box>
             </Paper>
 
