@@ -1659,6 +1659,9 @@ const ko = {
       noReplies: '답글이 없습니다. 첫 답글을 남겨주세요!',
       cancel: '취소',
     },
+    specialIssue: '특별 이슈',
+    specialIssues: '이슈 모아보기',
+    noVotesYet: '아직 투표가 없습니다. 첫 투표를 해보세요!',
   },
   infoPage: {
     title: '한국생활 가이드',

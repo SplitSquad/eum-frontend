@@ -1250,6 +1250,9 @@ const ja = {
       noReplies: '返信がありません。最初の返信を投稿してください！',
       cancel: 'キャンセル',
     },
+    specialIssue: '特別イシュー',
+    specialIssues: 'イシューまとめて見る',
+    noVotesYet: 'まだ投票がありません。最初の投票者になりましょう！',
   },
   infoPage: {
     title: '韓国生活ガイド',

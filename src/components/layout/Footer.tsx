@@ -17,9 +17,9 @@ function Footer() {
     <footer className="footer" style={{ ['--footer-bg' as any]: bg }}>
       <div className="footer-container">
         <p className="footer-copyright">© EUM</p>
-        <div className="footer-buttons">
+        {/*<div className="footer-buttons">
           <ThemeSwitcher />
-        </div>
+        </div>*/}
       </div>
     </footer>
   );

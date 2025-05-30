@@ -30,6 +30,7 @@ import { formatDate, formatRelativeTime } from '../utils/dateUtils';
 import DebateLayout from '../components/common/DebateLayout';
 import CommentSection from '../components/comment/CommentSection';
 import DebateApi, { getVotesByDebateId } from '../api/debateApi';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 // Import the recharts library for pie charts
 // The recharts package should be installed with: npm install recharts
@@ -122,9 +123,12 @@ const CategoryBadge = styled(Box, {
 
 const VoteButtonGroup = styled(Box)(({ theme }) => ({
   display: 'flex',
+  flexDirection: 'row',
   gap: theme.spacing(2),
-  marginTop: theme.spacing(3),
-  marginBottom: theme.spacing(3),
+  justifyContent: 'space-between',
+  marginBottom: 0,
+  paddingLeft: theme.spacing(2),
+  paddingRight: theme.spacing(2),
 }));
 
 interface VoteButtonProps {
@@ -135,30 +139,61 @@ interface VoteButtonProps {
 const VoteButton = styled(Button, {
   shouldForwardProp: prop => prop !== 'color' && prop !== 'selected',
 })<VoteButtonProps>(({ theme, color, selected }) => ({
-  flex: 1,
   display: 'flex',
-  flexDirection: 'column',
+  flexDirection: 'row',
   alignItems: 'center',
-  padding: theme.spacing(2),
+  justifyContent: 'center',
+  padding: theme.spacing(0.5, 1.5),
+  minHeight: 32,
+  height: 32,
+  minWidth: 0,
+  flex: 1,
+  maxWidth: 160,
   borderRadius: 8,
   backgroundColor: selected ? `${color}22` : 'transparent',
   border: `2px solid ${color}`,
   color: color,
+  boxSizing: 'border-box',
+  overflow: 'hidden',
   '&:hover': {
     backgroundColor: `${color}33`,
   },
   '& .MuiSvgIcon-root': {
-    fontSize: 36,
-    marginBottom: theme.spacing(1),
+    fontSize: 18,
+    margin: 0,
+    marginRight: theme.spacing(0.7),
+    verticalAlign: 'middle',
+  },
+  '& .MuiTypography-root': {
+    fontSize: 15,
+    fontWeight: 600,
+    margin: 0,
+    lineHeight: 1.1,
+    verticalAlign: 'middle',
+    padding: 0,
+  },
+  '& .vote-count': {
+    fontSize: 14,
+    fontWeight: 500,
+    marginLeft: theme.spacing(0.7),
+    color: '#888',
+    minWidth: 18,
+    textAlign: 'right',
+    padding: 0,
   },
 }));
 
 const EmotionButtonGroup = styled(Box)(({ theme }) => ({
   display: 'flex',
-  flexWrap: 'wrap',
-  gap: theme.spacing(1),
-  marginTop: theme.spacing(3),
-  marginBottom: theme.spacing(3),
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: theme.spacing(1.2),
+  position: 'absolute',
+  right: theme.spacing(2),
+  bottom: theme.spacing(2),
+  zIndex: 2,
+  paddingBottom: theme.spacing(0.5),
+  paddingTop: theme.spacing(0.5),
 }));
 
 interface EmotionButtonProps {
@@ -168,19 +203,55 @@ interface EmotionButtonProps {
 const EmotionButton = styled(Button, {
   shouldForwardProp: prop => prop !== 'selected',
 })<EmotionButtonProps>(({ theme, selected }) => ({
-  flex: '1 0 30%',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  padding: theme.spacing(1),
+  minWidth: 40,
+  height: 40,
+  padding: 0,
   borderRadius: 8,
-  backgroundColor: selected ? 'rgba(0, 0, 0, 0.08)' : 'transparent',
-  '&:hover': {
-    backgroundColor: 'rgba(0, 0, 0, 0.12)',
+  backgroundColor: 'transparent !important',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  boxShadow: 'none !important',
+  transition: 'transform 0.15s cubic-bezier(0.4,0,0.2,1)',
+  '&:hover, &:active, &:focus': {
+    backgroundColor: 'transparent !important',
+    boxShadow: 'none !important',
+    transform: 'scale(1.12)',
   },
   '& .MuiSvgIcon-root': {
-    fontSize: 24,
-    marginBottom: theme.spacing(0.5),
+    fontSize: 22,
+    margin: 0,
+  },
+  '& .MuiTypography-root': {
+    display: 'inline-block',
+    fontSize: 13,
+    marginLeft: 4,
+    fontWeight: 500,
+    color: 'inherit',
+    verticalAlign: 'middle',
+  },
+  '&:focus-visible': {
+    outline: '2px solid #bdbdbd',
+  },
+  position: 'relative',
+  '& .custom-tooltip': {
+    display: 'none',
+    position: 'absolute',
+    bottom: '110%',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    background: '#222',
+    color: '#fff',
+    fontSize: 12,
+    borderRadius: 4,
+    padding: '4px 10px',
+    whiteSpace: 'nowrap',
+    zIndex: 10,
+    pointerEvents: 'none',
+    opacity: 0.95,
+  },
+  '&:hover .custom-tooltip': {
+    display: 'block',
   },
 }));
 
@@ -271,7 +342,7 @@ const CommentItem = styled(ListItem)(({ theme }) => ({
 }));
 
 const ChartContainer = styled(Box)(({ theme }) => ({
-  height: 280,
+  height: 160,
   marginTop: theme.spacing(2),
   marginBottom: theme.spacing(2),
 }));
@@ -777,12 +848,12 @@ const DebateDetailPage: React.FC = () => {
 
   // Category colors for styling
   const categoryColors = {
-    '정치/사회': '#1976d2',
-    경제: '#ff9800',
-    '생활/문화': '#4caf50',
-    '과학/기술': '#9c27b0',
-    스포츠: '#f44336',
-    엔터테인먼트: '#2196f3',
+    '정치/사회': '#42a5f5', // 진한 파스텔 블루
+    경제: '#ffb300', // 진한 파스텔 오렌지
+    '생활/문화': '#66bb6a', // 진한 파스텔 그린
+    '과학/기술': '#ab47bc', // 진한 파스텔 퍼플
+    스포츠: '#e57373', // 진한 파스텔 레드
+    엔터테인먼트: '#29b6f6', // 진한 파스텔 하늘색
   };
 
   // Special labels (예시)
@@ -832,17 +903,36 @@ const DebateDetailPage: React.FC = () => {
     기타: t('debate.categories.etc'),
   };
 
+  // Pie chart custom label with color per slice
+  const renderDiagonalLabel = props => {
+    const { cx, cy, midAngle, innerRadius, outerRadius, percent, name, index } = props;
+    const RADIAN = Math.PI / 180;
+    const angle = midAngle;
+    const radius = outerRadius + 18;
+    const x = cx + radius * Math.cos(-angle * RADIAN);
+    const y = cy + radius * Math.sin(-angle * RADIAN);
+    // COLORS: ['#e91e63', '#9c27b0']
+    const fill = COLORS[index % COLORS.length];
+    return (
+      <text
+        x={x}
+        y={y}
+        fill={fill}
+        textAnchor={x > cx ? 'start' : 'end'}
+        dominantBaseline="central"
+        fontSize={13}
+        fontWeight={600}
+        style={{ pointerEvents: 'none', userSelect: 'none' }}
+      >
+        {`${name} ${(percent * 100).toFixed(0)}%`}
+      </text>
+    );
+  };
+
   // Render loading state
   if (loading) {
     return (
-      <DebateLayout
-        headerProps={{
-          title: '토론 상세',
-          showBackButton: true,
-          onBackClick: handleGoBack,
-          showUserIcons: true,
-        }}
-      >
+      <DebateLayout>
         <Box
           sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}
         >
@@ -855,14 +945,7 @@ const DebateDetailPage: React.FC = () => {
   // Render error state
   if (error || !debate) {
     return (
-      <DebateLayout
-        headerProps={{
-          title: '토론 상세',
-          showBackButton: true,
-          onBackClick: handleGoBack,
-          showUserIcons: true,
-        }}
-      >
+      <DebateLayout>
         <Container maxWidth="md" sx={{ py: 4 }}>
           <Box sx={{ textAlign: 'center', py: 4 }}>
             <Typography color="error" variant="h6">
@@ -892,27 +975,333 @@ const DebateDetailPage: React.FC = () => {
       categoryColors[enhancedDebate.category as keyof typeof categoryColors]) ||
     '#757575';
 
+  // 투표 차트 영역 컴포넌트
+  const VoteChartSection: React.FC<{
+    voteRatio: { agree: number; disagree: number };
+    chartData: any[];
+    COLORS: string[];
+    t: any;
+    enhancedDebate: any;
+  }> = ({ voteRatio, chartData, COLORS, t, enhancedDebate }) => {
+    const totalVotes = (enhancedDebate.proCount || 0) + (enhancedDebate.conCount || 0);
+    return (
+      <ProgressSection sx={{ mb: 0 }}>
+        <Typography variant="h6" fontWeight={600} gutterBottom sx={{ color: '#222' }}>
+          {t('debate.voteResults')}
+        </Typography>
+        {totalVotes === 0 ? (
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: 120,
+              py: 2,
+            }}
+          >
+            <Typography
+              variant="subtitle1"
+              sx={{
+                color: '#888',
+                fontWeight: 600,
+                fontSize: 17,
+                letterSpacing: 0.1,
+                textAlign: 'center',
+                border: '1.5px dashed #e0e0e0',
+                borderRadius: 2,
+                px: 2.5,
+                py: 2,
+                background: '#fafbfc',
+                mt: 2,
+              }}
+            >
+              {t('debate.noVotesYet')}
+            </Typography>
+          </Box>
+        ) : (
+          <>
+            <VoteBarContainer>
+              <Typography variant="body2" fontWeight={600} color="#e91e63" width={40}>
+                {voteRatio.agree}%
+              </Typography>
+              <VoteBar>
+                <AgreeBar width={voteRatio.agree}>
+                  {voteRatio.agree > 10 && t('debate.yes')}
+                </AgreeBar>
+                <DisagreeBar width={voteRatio.disagree}>
+                  {voteRatio.disagree > 10 && t('debate.no')}
+                </DisagreeBar>
+              </VoteBar>
+              <Typography variant="body2" fontWeight={600} color="#9c27b0" width={40}>
+                {voteRatio.disagree}%
+              </Typography>
+            </VoteBarContainer>
+            <Typography variant="body2" textAlign="right">
+              {t('debate.totalVotes')}: {totalVotes}
+            </Typography>
+            <ChartContainer>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={chartData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={32}
+                    outerRadius={52}
+                    paddingAngle={5}
+                    dataKey="value"
+                    label={renderDiagonalLabel}
+                  >
+                    {chartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </>
+        )}
+      </ProgressSection>
+    );
+  };
+
+  // 국가별 투표 현황 컴포넌트
+  const CountryStatsSection: React.FC<{
+    enhancedDebate: any;
+    t: any;
+  }> = ({ enhancedDebate, t }) => (
+    <Box>
+      <ProgressSection sx={{ mb: 0 }}>
+        <Typography variant="h6" fontWeight={600} gutterBottom sx={{ color: '#222' }}>
+          {t('debate.countryParticipation')}
+        </Typography>
+        {enhancedDebate.countryStats && enhancedDebate.countryStats.length > 0 ? (
+          enhancedDebate.countryStats.map((stat: any, index: number) => {
+            const countryColors = {
+              KR: '#4caf50',
+              US: '#2196f3',
+              JP: '#f44336',
+              CN: '#ff9800',
+              default: '#9c27b0',
+            };
+            const color =
+              countryColors[stat.countryCode as keyof typeof countryColors] ||
+              countryColors.default;
+            return (
+              <CountryStatItem key={index}>
+                <CountryFlag>
+                  <FlagIcon fontSize="small" />
+                  <Typography variant="body2" fontWeight={500}>
+                    {stat.countryName}
+                  </Typography>
+                </CountryFlag>
+                <Box sx={{ flex: 1, ml: 1, mr: 1 }}>
+                  <Box
+                    sx={{
+                      width: '100%',
+                      height: '24px',
+                      borderRadius: '12px',
+                      overflow: 'hidden',
+                      background: '#f0f0f0',
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: `${stat.percentage}%`,
+                        height: '100%',
+                        backgroundColor: color,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      {stat.percentage > 15 && (
+                        <Typography variant="caption" color="white" fontWeight="bold">
+                          {stat.percentage}%
+                        </Typography>
+                      )}
+                    </Box>
+                  </Box>
+                </Box>
+                <Typography variant="body2" sx={{ minWidth: '60px', textAlign: 'right' }}>
+                  {stat.count}
+                  {t('debate.ppl')} ({stat.percentage}%)
+                </Typography>
+              </CountryStatItem>
+            );
+          })
+        ) : (
+          <Typography variant="body2" align="center" color="text.secondary" sx={{ py: 2 }}>
+            {t('debate.noParticipationData')}
+          </Typography>
+        )}
+      </ProgressSection>
+    </Box>
+  );
+
   return (
     <DebateLayout
-      headerProps={{
-        title: '토론 상세',
-        showBackButton: true,
-        onBackClick: handleGoBack,
-        showUserIcons: true,
-      }}
+      sidebar={
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <VoteButtonGroup>
+            <VoteButton
+              variant="outlined"
+              color="inherit"
+              selected={userVote === 'pro'}
+              onClick={() => handleVote('pro')}
+              sx={{
+                color: '#e91e63',
+                borderColor: '#e91e63',
+                '&:hover': {
+                  backgroundColor: 'rgba(233, 30, 99, 0.1)',
+                },
+              }}
+            >
+              <SentimentSatisfiedAltIcon />
+              <Typography component="span">{t('debate.yes')}</Typography>
+              <span className="vote-count">{enhancedDebate.proCount || 0}</span>
+            </VoteButton>
+            <VoteButton
+              variant="outlined"
+              color="inherit"
+              selected={userVote === 'con'}
+              onClick={() => handleVote('con')}
+              sx={{
+                color: '#9c27b0',
+                borderColor: '#9c27b0',
+                '&:hover': {
+                  backgroundColor: 'rgba(156, 39, 176, 0.1)',
+                },
+              }}
+            >
+              <SentimentVeryDissatisfiedIcon />
+              <Typography component="span">{t('debate.no')}</Typography>
+              <span className="vote-count">{enhancedDebate.conCount || 0}</span>
+            </VoteButton>
+          </VoteButtonGroup>
+          <VoteChartSection
+            voteRatio={voteRatio}
+            chartData={chartData}
+            COLORS={COLORS}
+            t={t}
+            enhancedDebate={enhancedDebate}
+          />
+          <CountryStatsSection enhancedDebate={enhancedDebate} t={t} />
+        </Box>
+      }
     >
-      <Container maxWidth="md" sx={{ py: 4 }}>
-        {/* 개발용 디버그 버튼 */}
-        {import.meta.env.DEV && (
-          <Button variant="outlined" color="info" onClick={handleReloadDebateData} sx={{ mb: 2 }}>
-            데이터 새로고침 (개발용)
-          </Button>
-        )}
-
-        {/* 토론 메인 카드 */}
-        <DebateCard>
+      <Container maxWidth="md" sx={{ py: 2 }}>
+        {/* 토론 메인 카드 + 감정표현 버튼 + 뒤로가기 버튼 */}
+        <DebateCard sx={{ position: 'relative' }}>
           <CategoryIndicator color={categoryColor} />
-          <Box sx={{ p: 3, pl: 4 }}>
+          {/* 상단 바: 뒤로가기 + 이모션 버튼 그룹 */}
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              px: 2,
+              pt: 2,
+              pb: 0,
+            }}
+          >
+            <Button
+              onClick={handleGoBack}
+              sx={{
+                minWidth: 40,
+                height: 40,
+                p: 0,
+                borderRadius: 8,
+                background: 'transparent !important',
+                boxShadow: 'none !important',
+                color: '#555',
+                mr: 1,
+                '&:hover, &:active, &:focus': {
+                  background: 'transparent !important',
+                  boxShadow: 'none !important',
+                },
+                outline: 'none',
+                border: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              disableRipple
+              disableElevation
+            >
+              <ArrowBackIcon fontSize="medium" />
+            </Button>
+            <Box sx={{ flex: 1 }} />
+            <EmotionButtonGroup
+              sx={{ position: 'static', right: 'unset', bottom: 'unset', gap: 1.2 }}
+            >
+              <EmotionButton
+                variant="text"
+                selected={userEmotion === 'like'}
+                onClick={() => handleEmotionSelect('like')}
+                sx={{ color: '#4caf50' }}
+              >
+                <Box display="flex" alignItems="center" position="relative">
+                  <ThumbUpIcon />
+                  <span className="custom-tooltip">{t('debate.like')}</span>
+                  <Typography>{enhancedDebate.reactions.like || 0}</Typography>
+                </Box>
+              </EmotionButton>
+              <EmotionButton
+                variant="text"
+                selected={userEmotion === 'dislike'}
+                onClick={() => handleEmotionSelect('dislike')}
+                sx={{ color: '#f44336' }}
+              >
+                <Box display="flex" alignItems="center" position="relative">
+                  <ThumbUpIcon sx={{ transform: 'rotate(180deg)' }} />
+                  <span className="custom-tooltip">{t('debate.dislike')}</span>
+                  <Typography>{enhancedDebate.reactions.dislike || 0}</Typography>
+                </Box>
+              </EmotionButton>
+              <EmotionButton
+                variant="text"
+                selected={userEmotion === 'sad'}
+                onClick={() => handleEmotionSelect('sad')}
+                sx={{ color: '#2196f3' }}
+              >
+                <Box display="flex" alignItems="center" position="relative">
+                  <SentimentVeryDissatisfiedIcon />
+                  <span className="custom-tooltip">{t('debate.sad')}</span>
+                  <Typography>{enhancedDebate.reactions.sad || 0}</Typography>
+                </Box>
+              </EmotionButton>
+              <EmotionButton
+                variant="text"
+                selected={userEmotion === 'angry'}
+                onClick={() => handleEmotionSelect('angry')}
+                sx={{ color: '#ff9800' }}
+              >
+                <Box display="flex" alignItems="center" position="relative">
+                  <SentimentVeryDissatisfiedIcon />
+                  <span className="custom-tooltip">{t('debate.angry')}</span>
+                  <Typography>{enhancedDebate.reactions.angry || 0}</Typography>
+                </Box>
+              </EmotionButton>
+              <EmotionButton
+                variant="text"
+                selected={userEmotion === 'confused'}
+                onClick={() => handleEmotionSelect('confused')}
+                sx={{ color: '#9c27b0' }}
+              >
+                <Box display="flex" alignItems="center" position="relative">
+                  <SentimentSatisfiedAltIcon />
+                  <span className="custom-tooltip">{t('debate.unsure')}</span>
+                  <Typography>{enhancedDebate.reactions.unsure || 0}</Typography>
+                </Box>
+              </EmotionButton>
+            </EmotionButtonGroup>
+          </Box>
+          <Box sx={{ p: 3, pl: 4, pb: 8 }}>
             <Box
               sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}
             >
@@ -951,343 +1340,9 @@ const DebateDetailPage: React.FC = () => {
             </Typography>
           </Box>
         </DebateCard>
-
-        {/* 투표 섹션 */}
-        <Typography
-          variant="h6"
-          fontWeight={600}
-          gutterBottom
-          sx={{
-            background: 'linear-gradient(45deg, #FF69B4, #E91E63)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-          }}
-        >
-          {t('debate.voteDescription')}
-        </Typography>
-
-        <VoteButtonGroup>
-          <VoteButton
-            variant="outlined"
-            color="inherit"
-            selected={userVote === 'pro'}
-            onClick={() => handleVote('pro')}
-            sx={{
-              color: '#e91e63',
-              borderColor: '#e91e63',
-              '&:hover': {
-                backgroundColor: 'rgba(233, 30, 99, 0.1)',
-              },
-            }}
-          >
-            <SentimentSatisfiedAltIcon />
-            <Typography variant="subtitle1" fontWeight={600}>
-              {t('debate.yes')}
-            </Typography>
-            <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>
-              {enhancedDebate.proCount || 0}
-            </Typography>
-          </VoteButton>
-
-          <VoteButton
-            variant="outlined"
-            color="inherit"
-            selected={userVote === 'con'}
-            onClick={() => handleVote('con')}
-            sx={{
-              color: '#9c27b0',
-              borderColor: '#9c27b0',
-              '&:hover': {
-                backgroundColor: 'rgba(156, 39, 176, 0.1)',
-              },
-            }}
-          >
-            <SentimentVeryDissatisfiedIcon />
-            <Typography variant="subtitle1" fontWeight={600}>
-              {t('debate.no')}
-            </Typography>
-            <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>
-              {enhancedDebate.conCount || 0}
-            </Typography>
-          </VoteButton>
-        </VoteButtonGroup>
-
-        {/* 감정표현 섹션 */}
-        <Typography
-          variant="h6"
-          fontWeight={600}
-          gutterBottom
-          sx={{
-            background: 'linear-gradient(45deg, #FF69B4, #E91E63)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-          }}
-        >
-          {t('debate.emotionDescription')}
-        </Typography>
-
-        <EmotionButtonGroup>
-          <EmotionButton
-            variant="outlined"
-            selected={userEmotion === 'like'}
-            onClick={() => handleEmotionSelect('like')}
-            sx={{
-              color: '#4caf50',
-              borderColor: '#4caf50',
-              backgroundColor: userEmotion === 'like' ? 'rgba(76, 175, 80, 0.08)' : 'transparent',
-              '&:hover': {
-                backgroundColor: 'rgba(76, 175, 80, 0.12)',
-              },
-            }}
-          >
-            <ThumbUpIcon />
-            <Typography variant="body2">{t('debate.like')}</Typography>
-            <Typography variant="caption" sx={{ mt: 0.5, color: 'text.secondary' }}>
-              {enhancedDebate.reactions.like || 0}
-            </Typography>
-          </EmotionButton>
-
-          <EmotionButton
-            variant="outlined"
-            selected={userEmotion === 'dislike'}
-            onClick={() => handleEmotionSelect('dislike')}
-            sx={{
-              color: '#f44336',
-              borderColor: '#f44336',
-              backgroundColor:
-                userEmotion === 'dislike' ? 'rgba(244, 67, 54, 0.08)' : 'transparent',
-              '&:hover': {
-                backgroundColor: 'rgba(244, 67, 54, 0.12)',
-              },
-            }}
-          >
-            <ThumbUpIcon sx={{ transform: 'rotate(180deg)' }} />
-            <Typography variant="body2">{t('debate.dislike')}</Typography>
-            <Typography variant="caption" sx={{ mt: 0.5, color: 'text.secondary' }}>
-              {enhancedDebate.reactions.dislike || 0}
-            </Typography>
-          </EmotionButton>
-
-          <EmotionButton
-            variant="outlined"
-            selected={userEmotion === 'sad'}
-            onClick={() => handleEmotionSelect('sad')}
-            sx={{
-              color: '#2196f3',
-              borderColor: '#2196f3',
-              backgroundColor: userEmotion === 'sad' ? 'rgba(33, 150, 243, 0.08)' : 'transparent',
-              '&:hover': {
-                backgroundColor: 'rgba(33, 150, 243, 0.12)',
-              },
-            }}
-          >
-            <SentimentVeryDissatisfiedIcon />
-            <Typography variant="body2">{t('debate.sad')}</Typography>
-            <Typography variant="caption" sx={{ mt: 0.5, color: 'text.secondary' }}>
-              {enhancedDebate.reactions.sad || 0}
-            </Typography>
-          </EmotionButton>
-
-          <EmotionButton
-            variant="outlined"
-            selected={userEmotion === 'angry'}
-            onClick={() => handleEmotionSelect('angry')}
-            sx={{
-              color: '#ff9800',
-              borderColor: '#ff9800',
-              backgroundColor: userEmotion === 'angry' ? 'rgba(255, 152, 0, 0.08)' : 'transparent',
-              '&:hover': {
-                backgroundColor: 'rgba(255, 152, 0, 0.12)',
-              },
-            }}
-          >
-            <SentimentVeryDissatisfiedIcon />
-            <Typography variant="body2">{t('debate.angry')}</Typography>
-            <Typography variant="caption" sx={{ mt: 0.5, color: 'text.secondary' }}>
-              {enhancedDebate.reactions.angry || 0}
-            </Typography>
-          </EmotionButton>
-
-          <EmotionButton
-            variant="outlined"
-            selected={userEmotion === 'confused'}
-            onClick={() => handleEmotionSelect('confused')}
-            sx={{
-              color: '#9c27b0',
-              borderColor: '#9c27b0',
-              backgroundColor:
-                userEmotion === 'confused' ? 'rgba(156, 39, 176, 0.08)' : 'transparent',
-              '&:hover': {
-                backgroundColor: 'rgba(156, 39, 176, 0.12)',
-              },
-            }}
-          >
-            <SentimentSatisfiedAltIcon />
-            <Typography variant="body2">{t('debate.unsure')}</Typography>
-            <Typography variant="caption" sx={{ mt: 0.5, color: 'text.secondary' }}>
-              {enhancedDebate.reactions.unsure || 0}
-            </Typography>
-          </EmotionButton>
-        </EmotionButtonGroup>
-
-        {/* 투표 결과 */}
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
-          <Box sx={{ flex: 1 }}>
-            <ProgressSection>
-              <Typography
-                variant="h6"
-                fontWeight={600}
-                gutterBottom
-                sx={{
-                  background: 'linear-gradient(45deg, #FF69B4, #E91E63)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                }}
-              >
-                {t('debate.voteResults')}
-              </Typography>
-
-              <VoteBarContainer>
-                <Typography variant="body2" fontWeight={600} color="#e91e63" width={40}>
-                  {voteRatio.agree}%
-                </Typography>
-                <VoteBar>
-                  <AgreeBar width={voteRatio.agree}>
-                    {voteRatio.agree > 10 && t('debate.yes')}
-                  </AgreeBar>
-                  <DisagreeBar width={voteRatio.disagree}>
-                    {voteRatio.disagree > 10 && t('debate.no')}
-                  </DisagreeBar>
-                </VoteBar>
-                <Typography variant="body2" fontWeight={600} color="#9c27b0" width={40}>
-                  {voteRatio.disagree}%
-                </Typography>
-              </VoteBarContainer>
-
-              <Typography variant="body2" textAlign="right">
-                {t('debate.totalVotes')}:{' '}
-                {(enhancedDebate.proCount || 0) + (enhancedDebate.conCount || 0)}
-              </Typography>
-
-              <ChartContainer>
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={chartData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={80}
-                      paddingAngle={5}
-                      dataKey="value"
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    >
-                      {chartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            </ProgressSection>
-          </Box>
-
-          <Box sx={{ flex: 1 }}>
-            <ProgressSection>
-              <Typography
-                variant="h6"
-                fontWeight={600}
-                gutterBottom
-                sx={{
-                  background: 'linear-gradient(45deg, #FF69B4, #E91E63)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                }}
-              >
-                {t('debate.countryParticipation')}
-              </Typography>
-
-              {enhancedDebate.countryStats && enhancedDebate.countryStats.length > 0 ? (
-                enhancedDebate.countryStats.map((stat, index) => {
-                  // 국가별로 다른 색상 사용 (각 국가마다 고유한 색상)
-                  const countryColors = {
-                    KR: '#4caf50', // 한국 - 초록
-                    US: '#2196f3', // 미국 - 파랑
-                    JP: '#f44336', // 일본 - 빨강
-                    CN: '#ff9800', // 중국 - 주황
-                    default: '#9c27b0', // 기타 - 보라
-                  };
-
-                  const color =
-                    countryColors[stat.countryCode as keyof typeof countryColors] ||
-                    countryColors.default;
-
-                  return (
-                    <CountryStatItem key={index}>
-                      <CountryFlag>
-                        <FlagIcon fontSize="small" />
-                        <Typography variant="body2" fontWeight={500}>
-                          {stat.countryName}
-                        </Typography>
-                      </CountryFlag>
-                      <Box sx={{ flex: 1, ml: 1, mr: 1 }}>
-                        <Box
-                          sx={{
-                            width: '100%',
-                            height: '24px',
-                            borderRadius: '12px',
-                            overflow: 'hidden',
-                            background: '#f0f0f0',
-                          }}
-                        >
-                          <Box
-                            sx={{
-                              width: `${stat.percentage}%`,
-                              height: '100%',
-                              backgroundColor: color,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                            }}
-                          >
-                            {stat.percentage > 15 && (
-                              <Typography variant="caption" color="white" fontWeight="bold">
-                                {stat.percentage}%
-                              </Typography>
-                            )}
-                          </Box>
-                        </Box>
-                      </Box>
-                      <Typography variant="body2" sx={{ minWidth: '60px', textAlign: 'right' }}>
-                        {stat.count}
-                        {t('debate.ppl')} ({stat.percentage}%)
-                      </Typography>
-                    </CountryStatItem>
-                  );
-                })
-              ) : (
-                <Typography variant="body2" align="center" color="text.secondary" sx={{ py: 2 }}>
-                  {t('debate.noParticipationData')}
-                </Typography>
-              )}
-            </ProgressSection>
-          </Box>
-        </Box>
-
         {/* 댓글 섹션 */}
         <Box sx={{ mt: 4 }}>
-          <Typography
-            variant="h6"
-            fontWeight={600}
-            gutterBottom
-            sx={{
-              background: 'linear-gradient(45deg, #FF69B4, #E91E63)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}
-          >
+          <Typography variant="h6" fontWeight={600} gutterBottom sx={{ color: '#222' }}>
             {t('debate.commentSection')}
           </Typography>
 

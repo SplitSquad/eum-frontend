@@ -53,13 +53,16 @@ const LanguageSettings: React.FC<LanguageSettingsProps> = ({
   }, [initialValue]);
 
   return (
-    <Paper 
+    <Paper
       elevation={3}
-      sx={{ 
-        padding: 3, 
+      sx={{
+        padding: 3,
         borderRadius: 2,
         maxWidth: 600,
-        margin: '0 auto'
+        margin: '0 auto',
+        background: '#fafbfc',
+        border: '1px solid #e0e0e0',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.05)',
       }}
     >
       {showTitle && (
@@ -84,17 +87,22 @@ const LanguageSettings: React.FC<LanguageSettingsProps> = ({
       {showButtons && (
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
           {onBack && (
-            <Button 
-              variant="outlined" 
+            <Button
+              variant="outlined"
               onClick={onBack}
+              sx={{
+                borderColor: '#636363',
+                color: '#636363',
+                '&:hover': { background: '#ededed', borderColor: '#636363' },
+              }}
             >
               이전
             </Button>
           )}
-          <Button 
-            variant="contained" 
-            color="primary" 
+          <Button
+            variant="contained"
             onClick={handleNext}
+            sx={{ bgcolor: '#636363', color: '#fff', '&:hover': { bgcolor: '#222' } }}
           >
             다음
           </Button>
@@ -104,4 +112,4 @@ const LanguageSettings: React.FC<LanguageSettingsProps> = ({
   );
 };
 
-export default LanguageSettings; 
+export default LanguageSettings;

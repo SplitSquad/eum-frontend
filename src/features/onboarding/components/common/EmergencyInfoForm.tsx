@@ -37,18 +37,8 @@ const EmergencyInfoForm: React.FC<EmergencyInfoFormProps> = ({
   const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const { season } = useThemeStore();
-
-  const getColorByTheme = () => {
-    switch (season) {
-      case 'spring':
-        return '#FFAAA5';
-      default:
-        return '#FFAAA5';
-    }
-  };
-
-  const primaryColor = getColorByTheme();
+  // 고정된 그레이 컬러
+  const primaryColor = '#636363';
 
   return (
     <Box sx={{ mb: 4 }}>

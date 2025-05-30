@@ -39,6 +39,7 @@ body {
   /*margin-bottom: 120px; /* 푸터 높이만큼 여백 추가 */
   z-index: 1;
   background: transparent !important;
+  border-radius: 0 !important;
 }
 
 /* 모바일 최적화 */
@@ -289,4 +290,5 @@ body.theme-professional .MuiButton-contained:hover {
 
 .MuiContainer-root {
   background: transparent !important;
+  border-radius: 0 !important;
 }

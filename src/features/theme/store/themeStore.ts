@@ -24,7 +24,7 @@ export const useThemeStore = create<ThemeState>()(
   persist(
     (set, get) => ({
       // 초기 상태 - 현재 월에 따른 기본 계절
-      season: 'spring' as Season,
+      season: 'professional' as Season,
 
       // 계절 설정 함수
       setSeason: (season: Season) => {

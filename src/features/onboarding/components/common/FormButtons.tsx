@@ -37,19 +37,9 @@ const FormButtons: React.FC<FormButtonsProps> = ({
   const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const { season } = useThemeStore();
 
-  // 계절에 따른 버튼 색상
-  const getPrimaryColor = () => {
-    switch (season) {
-      case 'spring':
-        return '#FFAAA5';
-      default:
-        return '#FFAAA5';
-    }
-  };
-
-  const primaryColor = getPrimaryColor();
+  // 고정된 그레이 컬러
+  const primaryColor = '#636363';
 
   return (
     <Box
@@ -72,7 +62,7 @@ const FormButtons: React.FC<FormButtonsProps> = ({
           color: primaryColor,
           '&:hover': {
             borderColor: primaryColor,
-            backgroundColor: `${primaryColor}10`,
+            backgroundColor: '#ededed',
           },
           visibility: isFirstStep ? 'hidden' : 'visible',
         }}
@@ -88,8 +78,9 @@ const FormButtons: React.FC<FormButtonsProps> = ({
         endIcon={isLastStep ? <CheckIcon /> : <ArrowForwardIcon />}
         sx={{
           bgcolor: primaryColor,
+          color: '#fff',
           '&:hover': {
-            bgcolor: theme.palette.mode === 'light' ? `${primaryColor}dd` : `${primaryColor}bb`,
+            bgcolor: '#222',
           },
           ml: 'auto',
         }}
