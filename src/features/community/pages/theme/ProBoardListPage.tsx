@@ -161,16 +161,10 @@ const ProBoardListPage: React.FC = () => {
       [t('community.tags.partTime')]: '알바/파트타임',
     };
 
-    const result = tagReverseMapping[translatedTag] || translatedTag;
-    
-    console.log('[DEBUG] 태그 변환 매핑:', {
-      입력태그: translatedTag,
-      출력태그: result,
-      매핑존재: !!tagReverseMapping[translatedTag],
-      전체매핑: Object.keys(tagReverseMapping),
-    });
 
-    return result;
+
+    return tagReverseMapping[translatedTag] || translatedTag;
+
   };
 
   // 카테고리별 태그 매핑
@@ -381,13 +375,6 @@ const ProBoardListPage: React.FC = () => {
   const applyFilterWithSearchState = (newFilter: Partial<LocalPostFilter>) => {
     const updatedFilter = { ...filter, ...newFilter };
 
-    console.log('[DEBUG] applyFilterWithSearchState 호출:', {
-      현재필터: filter,
-      새필터: newFilter,
-      병합필터: updatedFilter,
-      검색모드: isSearchMode,
-      검색어: searchTerm,
-    });
 
     if (isSearchMode && searchTerm) {
       // 검색 중이면 필터와 함께 검색 재실행
@@ -402,22 +389,7 @@ const ProBoardListPage: React.FC = () => {
       // UI용 필터 상태 먼저 업데이트 (로딩 상태 표시용)
       setFilter(updatedFilter);
 
-      // 번역된 검색 타입을 한국어로 변환
-      let convertedSearchType = searchType;
-      const searchTypeMapping: Record<string, string> = {
-        // 한국어 (이미 변환된 상태)
-        '제목+내용': '제목_내용',
-        제목: '제목',
-        내용: '내용',
-        작성자: '작성자',
-        // 영어
-        'Title+Content': '제목_내용',
-        Title: '제목',
-        Content: '내용',
-        Author: '작성자',
-      };
 
-      convertedSearchType = searchTypeMapping[searchType] || searchType;
 
       // searchPosts 함수 호출 - 필터 변경 사항 적용하여 재검색
       const searchOptions = {
@@ -430,22 +402,23 @@ const ProBoardListPage: React.FC = () => {
         sort: updatedFilter.sortBy === 'popular' ? 'views,desc' : 'createdAt,desc',
       };
 
-      console.log('[DEBUG] 검색 상태 필터 변경 - API 파라미터:', {
-        keyword: searchTerm,
-        searchType: convertedSearchType,
-        ...searchOptions,
-      });
+
+      console.log('[DEBUG] 검색 API 파라미터:', searchOptions);
+
 
       // 이번에는 서버에 직접 API 요청 (postApi 직접 사용)
       try {
         const postApi = usePostStore.getState();
-        postApi.searchPosts(searchTerm, convertedSearchType, searchOptions);
+
+        postApi.searchPosts(searchTerm, searchType, searchOptions);
+
       } catch (error) {
         console.error('검색 중 오류 발생:', error);
       }
     } else {
       // 검색 중이 아니면 일반 필터 적용
-      console.log('[DEBUG] 일반 상태에서 필터 변경 - API 파라미터:', updatedFilter);
+
+
       setFilter(updatedFilter);
       fetchPosts(updatedFilter);
     }
@@ -484,12 +457,9 @@ const ProBoardListPage: React.FC = () => {
 
   // 태그 선택 핸들러
   const handleTagSelect = (tag: string) => {
-    console.log('[DEBUG] 태그 선택 시작:', {
-      선택된태그: tag,
-      현재선택된태그들: selectedTags,
-      현재필터: filter,
-      검색모드: isSearchMode,
-    });
+
+    console.log('[DEBUG] 태그 선택:', tag);
+
 
     // 이미 선택된 태그면 취소
     if (selectedTags.includes(tag)) {
@@ -501,21 +471,19 @@ const ProBoardListPage: React.FC = () => {
       delete updatedFilter.tag;
       updatedFilter.page = 0;
 
-      console.log('[DEBUG] 태그 제거 후 필터:', updatedFilter);
 
       // 필터 적용 (검색 상태 유지하면서)
       applyFilterWithSearchState(updatedFilter);
     } else {
-      // 새 태그 선택 (단일 선택)
+      // 새 태그 선택
+
       setSelectedTags([tag]);
 
       // 번역된 태그를 한국어 원본 태그로 변환
       const originalTagName = getOriginalTagName(tag);
-      console.log('[DEBUG] 태그 변환 상세:', { 
-        번역태그: tag, 
-        원본태그: originalTagName,
-        변환성공: originalTagName !== tag,
-      });
+
+      console.log('[DEBUG] 태그 변환:', { 번역태그: tag, 원본태그: originalTagName });
+
 
       const updatedFilter = { ...filter };
       // 원본 태그명으로 설정 (백엔드에서 인식할 수 있는 한국어 태그)
@@ -523,7 +491,6 @@ const ProBoardListPage: React.FC = () => {
       // 페이지 초기화
       updatedFilter.page = 0;
 
-      console.log('[DEBUG] 태그 추가 후 필터:', updatedFilter);
 
       // 필터 적용 (검색 상태 유지하면서)
       applyFilterWithSearchState(updatedFilter);
@@ -765,6 +732,7 @@ const ProBoardListPage: React.FC = () => {
           </div>
         </div>
       </div>
+
 
       {/* 메인 레이아웃 (ProInfoList와 동일) */}
       <div

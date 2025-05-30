@@ -39,7 +39,9 @@ import { koreanCities, koreanTouristAttractions } from '../data/koreaData';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '../../auth/store/authStore';
 import { useTranslation } from '@/shared/i18n/';
+
 import CountrySelector from '@/shared/components/CountrySelector';
+
 
 // 아이콘 임포트
 import PersonIcon from '@mui/icons-material/Person';
@@ -507,6 +509,7 @@ const TravelProfile: React.FC = () => {
                 mb: 2,
               }}
             >
+
               <Box>
                 <FormControl component="fieldset" fullWidth>
                   <FormLabel
@@ -575,6 +578,7 @@ const TravelProfile: React.FC = () => {
                 color="primary"
                 type="number"
               />
+
             </Box>
 
             <Box
@@ -614,6 +618,7 @@ const TravelProfile: React.FC = () => {
                   </MenuItem>
                 ))}
               </StyledTextField>
+
             </Box>
           </StyledPaper>
         );
@@ -635,6 +640,7 @@ const TravelProfile: React.FC = () => {
               </Avatar>
               <Typography variant="h5" sx={{ fontWeight: 600, color: 'text.primary' }}>
                 {t('onboarding.travel.scheduleTitle')}
+
               </Typography>
             </Box>
 
@@ -707,7 +713,9 @@ const TravelProfile: React.FC = () => {
               </Box>
             </Box>
 
+
             <Box sx={{ mt: 3 }}>
+
               <StyledTextField
                 select
                 label={t('onboarding.travel.visaTypeLabel')}
@@ -726,10 +734,11 @@ const TravelProfile: React.FC = () => {
               >
                 {visaTypeOptions.map(option => (
                   <MenuItem key={option.code} value={option.code}>
-                    {option.name}
+                    {t(`onboarding.visa.types.${option.code}`)}
                   </MenuItem>
                 ))}
               </StyledTextField>
+
             </Box>
           </StyledPaper>
         );

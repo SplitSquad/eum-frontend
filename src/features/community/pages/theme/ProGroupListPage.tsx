@@ -691,6 +691,7 @@ const ProGroupListPage: React.FC = () => {
         </div>
       </div>
 
+
       {/* 커뮤니티 타입 전환 버튼 - Pro 테마용 */}
       <div style={{ 
         borderBottom: '1.5px solid #e5e7eb',

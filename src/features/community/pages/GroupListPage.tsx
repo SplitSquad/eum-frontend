@@ -157,6 +157,7 @@ const GroupListPage: React.FC = () => {
     postType: (queryParams.get('postType') as PostType) || '모임',
   });
 
+
   // 컴포넌트 마운트 시 게시글 목록 조회
   useEffect(() => {
     console.log('GroupListPage 컴포넌트 마운트, 게시글 목록 조회 시작');
@@ -173,6 +174,21 @@ const GroupListPage: React.FC = () => {
       localStorage.removeItem('newPostType');
     }
 
+
+  // 컴포넌트 마운트 시 게시글 목록 조회를 위한 트래킹
+  const initialDataLoadedRef = useRef(false);
+
+  // 컴포넌트 마운트 시 게시글 목록 조회
+  useEffect(() => {
+    // 이미 데이터를 로드했으면 중복 요청 방지
+    if (initialDataLoadedRef.current) {
+      console.log('PostListPage - 이미 초기 데이터가 로드됨, 중복 요청 방지');
+      return;
+    }
+
+    console.log('PostListPage 컴포넌트 마운트, 게시글 목록 조회 시작');
+
+
     // 현재 카테고리에 맞는 태그 목록 설정
     if (filter.category && filter.category !== '전체') {
       setAvailableTags(
@@ -185,7 +201,11 @@ const GroupListPage: React.FC = () => {
       setSelectedTags(filter.tag.split(','));
     }
 
+
     // 초기 로드 시 명시적으로 기본 필터 설정 (모임 게시글, 전체 지역)
+
+    // 초기 로드 시 명시적으로 기본 필터 설정 (자유 게시글, 자유 지역)
+
     const initialFilter = {
       ...filter,
       postType: '모임' as PostType,
@@ -219,6 +239,16 @@ const GroupListPage: React.FC = () => {
       }
     }
   }, [location.pathname, filter, isSearchMode]);
+
+    // 게시글 목록 조회
+    fetchPosts(initialFilter);
+    // 인기 게시글 로드
+    fetchTopPosts(5);
+
+    // 초기 데이터 로드 완료 플래그 설정
+    initialDataLoadedRef.current = true;
+  }, []);
+
 
   // 검색 상태 표시를 위한 추가 컴포넌트
   const SearchStatusIndicator = () => {
@@ -504,6 +534,7 @@ const GroupListPage: React.FC = () => {
   };
 
   return (
+
     <Container
       maxWidth="lg"
       sx={{
@@ -515,6 +546,9 @@ const GroupListPage: React.FC = () => {
         zIndex: 5,
       }}
     >
+
+    <div>
+
       {/* 페이지 헤더 */}
       <PageHeaderText
         isMobile={isMobile}
@@ -540,6 +574,7 @@ const GroupListPage: React.FC = () => {
       >
         모임 게시판
       </PageHeaderText>
+
 
       {/* 커뮤니티 타입 전환 버튼 - 더 눈에 띄도록 개선 */}
       <Box
@@ -602,9 +637,52 @@ const GroupListPage: React.FC = () => {
                     transform: 'scale(1.02)',
                   },
                 },
+
+      {/* 상단 필터링 및 검색 영역 */}
+      <Paper
+        elevation={0}
+        sx={{
+          mb: 3,
+          p: 2,
+          bgcolor: 'rgba(255, 255, 255, 0.85)',
+          borderRadius: '16px',
+          border: '1px solid rgba(255, 170, 165, 0.3)',
+          boxShadow: '0 8px 20px rgba(255, 170, 165, 0.15)',
+          backdropFilter: 'blur(8px)',
+        }}
+      >
+        {/* 필터 토글 버튼과 정렬 버튼 */}
+        <Box
+          sx={{
+            mb: 2,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 1,
+          }}
+        >
+          {/* 필터 토글 버튼 */}
+          <Button
+            variant="outlined"
+            onClick={toggleFilters}
+            startIcon={showFilters ? <ExpandLessIcon /> : <TuneIcon />}
+            size="small"
+            sx={{
+              textTransform: 'none',
+              borderColor: '#FFD7D7',
+              color: '#666',
+              fontWeight: 500,
+              '&:hover': {
+                borderColor: '#FFAAA5',
+                bgcolor: 'rgba(255, 235, 235, 0.2)',
+
               },
+              borderRadius: '20px',
+              px: 2,
             }}
           >
+
             <ToggleButton value="groups">
               📱 소모임
             </ToggleButton>
@@ -667,6 +745,17 @@ const GroupListPage: React.FC = () => {
             size="small"
             aria-label="게시글 정렬 방식"
             sx={{
+
+            {showFilters ? '필터 접기' : '필터 열기'}
+          </Button>
+
+          {/* 정렬 버튼 */}
+          <ButtonGroup
+            variant="outlined"
+            size="small"
+            aria-label="게시글 정렬 방식"
+            sx={{
+
               '& .MuiButton-outlined': {
                 borderColor: '#FFD7D7',
                 color: '#666',
@@ -686,6 +775,7 @@ const GroupListPage: React.FC = () => {
               sx={{
                 fontWeight: filter.sortBy === 'latest' ? 'bold' : 'normal',
                 bgcolor: filter.sortBy === 'latest' ? 'rgba(255, 235, 235, 0.4)' : 'transparent',
+
               }}
             >
               최신순
@@ -699,6 +789,21 @@ const GroupListPage: React.FC = () => {
             >
               인기순
             </Button>
+
+              }}
+            >
+              최신순
+            </Button>
+            <Button
+              onClick={() => handleSortChange('popular')}
+              sx={{
+                fontWeight: filter.sortBy === 'popular' ? 'bold' : 'normal',
+                bgcolor: filter.sortBy === 'popular' ? 'rgba(255, 235, 235, 0.4)' : 'transparent',
+              }}
+            >
+              인기순
+            </Button>
+
           </ButtonGroup>
         </Box>
 
@@ -1000,7 +1105,11 @@ const GroupListPage: React.FC = () => {
           <PostList />
         </Box>
       )}
+
     </Container>
+
+    </div>
+
   );
 };
 

@@ -77,6 +77,7 @@ const SignUpInputs = ({
   phone,
   setPhone,
   errors = {},
+
   t,
 }: {
   id: string;
@@ -92,6 +93,7 @@ const SignUpInputs = ({
   phone: string;
   setPhone: (v: string) => void;
   errors?: InputErrors;
+
   t: (key: string) => string;
 }) => {
   // 실시간 비밀번호 일치 메시지
@@ -289,9 +291,43 @@ const SignUpPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [inputErrors, setInputErrors] = useState<InputErrors>({});
   const setNewUser = useUserStore(state => state.setNewUser);
+
   const { t } = useTranslation();
   const season = useThemeStore(state => state.season);
   const colors = seasonalColors[season] || seasonalColors.spring;
+
+
+  const handleInputChange = (field: keyof InputErrors, value: string) => {
+    switch (field) {
+      case 'id':
+        setId(value);
+        if (inputErrors.id) setInputErrors(prev => ({ ...prev, id: '' }));
+        break;
+      case 'password':
+        setPassword(value);
+        if (inputErrors.password) setInputErrors(prev => ({ ...prev, password: '' }));
+        break;
+      case 'confirmPassword':
+        setConfirmPassword(value);
+        if (inputErrors.confirmPassword) setInputErrors(prev => ({ ...prev, confirmPassword: '' }));
+        break;
+      case 'name':
+        setName(value);
+        if (inputErrors.name) setInputErrors(prev => ({ ...prev, name: '' }));
+        break;
+      case 'birthday':
+        setBirthday(value);
+        if (inputErrors.birthday) setInputErrors(prev => ({ ...prev, birthday: '' }));
+        break;
+      case 'phone':
+        setPhone(value);
+        if (inputErrors.phone) setInputErrors(prev => ({ ...prev, phone: '' }));
+        break;
+      default:
+        break;
+    }
+  };
+
 
   // 실시간 유효성 검사: 입력값이 변경되면 errors 해당 필드 제거
   const handleInputChange = (field: keyof InputErrors, value: string) => {
@@ -332,7 +368,7 @@ const SignUpPage: React.FC = () => {
     if (!name) errors.name = t('signup.nameRequired');
     if (!birthday) errors.birthday = t('signup.birthdayRequired');
     if (!phone) errors.phone = t('signup.phoneRequired');
-    // 주소는 선택사항으로 변경
+
     setInputErrors(errors);
     if (Object.keys(errors).length > 0) return;
 
@@ -357,6 +393,7 @@ const SignUpPage: React.FC = () => {
 
     setLoading(true);
     setError(null);
+
 
     setNewUser({
       id,
@@ -449,6 +486,7 @@ const SignUpPage: React.FC = () => {
                 phone={phone}
                 setPhone={v => handleInputChange('phone', v)}
                 errors={inputErrors}
+
                 t={t}
               />
               <Box sx={{ display: 'flex', gap: 2, mt: 2, justifyContent: 'flex-end' }}>

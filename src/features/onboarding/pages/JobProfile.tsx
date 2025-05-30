@@ -523,6 +523,25 @@ const JobProfile: React.FC = () => {
                 mb: 2,
               }}
             >
+
+              {/* <StyledTextField
+                label={t('onboarding.worker.form.name')}
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                fullWidth
+                required
+                color="primary"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <PersonIcon sx={{ color: alpha(primaryColor, 0.7) }} />
+                    </InputAdornment>
+                  ),
+                }}
+              /> */}
+
+
               <Box>
                 <FormControl component="fieldset" fullWidth>
                   <FormLabel
@@ -591,6 +610,7 @@ const JobProfile: React.FC = () => {
                 color="primary"
                 type="number"
               />
+
             </Box>
 
             <Box
@@ -600,6 +620,7 @@ const JobProfile: React.FC = () => {
                 gap: 3,
               }}
             >
+
               <StyledTextField
                 label={t('onboarding.worker.form.nationality')}
                 name="nationality"

@@ -488,6 +488,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
         title={
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, alignItems: 'center' }}>
             <Typography variant="subtitle2">{userName || '익명'}</Typography>
+
             
             {/* 국가/국기 표시 */}
             {nation && (
@@ -499,6 +500,8 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
               />
             )}
             
+
+
             {/* 입장 표시 - 댓글 내용에서 추출한 stance 사용 */}
             <StanceChip
               label={extractedStance === 'con' ? '반대' : '찬성'}

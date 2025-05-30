@@ -516,6 +516,7 @@ const StudyProfile: React.FC = () => {
                 mb: 2,
               }}
             >
+
               <Box>
                 <FormControl component="fieldset" fullWidth>
                   <FormLabel
@@ -584,6 +585,7 @@ const StudyProfile: React.FC = () => {
                 color="primary"
                 type="number"
               />
+
             </Box>
 
             <Box
@@ -595,6 +597,7 @@ const StudyProfile: React.FC = () => {
             >
               <StyledTextField
                 select
+
                 label={t('onboarding.study.form.nationality')}
                 name="nationality"
                 value={formData.nationality}
@@ -605,6 +608,7 @@ const StudyProfile: React.FC = () => {
 
               <StyledTextField
                 select
+
                 label={t('onboarding.study.form.uiLanguage')}
                 name="uiLanguage"
                 value={formData.uiLanguage}

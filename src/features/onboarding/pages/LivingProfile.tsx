@@ -544,6 +544,7 @@ const LivingProfile: React.FC = () => {
                 mb: 2,
               }}
             >
+
               <FormControl component="fieldset" fullWidth>
                 <FormLabel
                   id="gender-label"
@@ -580,6 +581,7 @@ const LivingProfile: React.FC = () => {
                 </RadioGroup>
               </FormControl>
 
+
               <StyledTextField
                 label={t('onboarding.living.form.age')}
                 name="age"
@@ -588,6 +590,7 @@ const LivingProfile: React.FC = () => {
                 fullWidth
                 type="number"
               />
+
             </Box>
 
             <Box
@@ -597,6 +600,7 @@ const LivingProfile: React.FC = () => {
                 gap: 3,
               }}
             >
+
               <StyledTextField
                 label={t('onboarding.living.form.nationality')}
                 name="nationality"
@@ -604,6 +608,8 @@ const LivingProfile: React.FC = () => {
                 onChange={handleInputChange}
                 fullWidth
               />
+
+
 
               <StyledTextField
                 select

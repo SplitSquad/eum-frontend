@@ -1,0 +1,78 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+/* 전역 색상 변수 */
+:root {
+  --tt-theme-text: var(--tt-gray-light-900);
+  --tt-bg-color: #ffffff; // 라이트 모드 배경
+  --tt-scrollbar-color: #f8bdbd;
+}
+
+/* 다크 모드 적용 */
+.dark {
+  --tt-theme-text: var(--tt-gray-dark-100);
+  --tt-bg-color: #a29f9f; // 다크 모드 배경
+  --tt-scrollbar-color: #555555;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  color: var(--tt-theme-text);
+  background-color: var(--tt-bg-color);
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+  padding: 0;
+  overflow: hidden;
+}
+
+html,
+body,
+#root,
+#app {
+  height: 100%;
+}
+
+/* 에디터 메인 영역 */
+.content-wrapper {
+  height: calc(100% - var(--tt-toolbar-height));
+  min-height: 300px;
+  overflow-y: auto;
+  background-color: var(--tt-bg-color);
+  padding: 0.5rem; // 여백
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); // 그림자
+
+  &::-webkit-scrollbar {
+    width: 0.5rem;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--tt-scrollbar-color);
+    border-radius: 4px;
+  }
+
+  scrollbar-width: thin;
+  scrollbar-color: var(--tt-scrollbar-color) transparent;
+}
+
+/* 실제 작성 영역 */
+.simple-editor-content {
+  width: 100%;
+  max-width: 100%; // wrapper 가로 100% 채움
+  margin: 0 auto;
+  background-color: transparent;
+}
+
+/* 텍스트 스타일 */
+.tiptap.ProseMirror {
+  font-family: 'DM Sans', sans-serif;
+  padding: 1.25rem 1.25rem; // 내부 패딩 (절반으로 줄임)
+  background: transparent;
+
+  @media screen and (max-width: 480px) {
+    padding: 0.5rem 0.75rem;
+  }
+}

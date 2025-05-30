@@ -347,6 +347,7 @@ const PostListPage: React.FC = () => {
 
     console.log('[DEBUG] 언어 변경 감지됨:', language);
 
+
     // 언어 변경 시 현재 카테고리를 내부값으로 변환하여 정규화
     const currentFilter = { ...filter };
     if (currentFilter.category) {
@@ -358,10 +359,13 @@ const PostListPage: React.FC = () => {
       });
     }
 
+    // 언어 변경 시에는 현재 필터 상태 유지 (번역 정규화 제거)
+
+
     // 검색 상태인 경우 검색 상태를 유지하면서 새로고침
     if (isSearchMode && searchTerm) {
       console.log('[DEBUG] 검색 상태에서 언어 변경 - 검색 상태 유지');
-      
+
       // 약간의 지연 후 검색 재실행 (번역이 완료된 후)
       setTimeout(() => {
         setFilter(currentFilter);
@@ -377,7 +381,7 @@ const PostListPage: React.FC = () => {
         });
       }, 100);
     }
-    
+
     // 언어 변경 시 초기 데이터 로드 플래그 리셋
     hasInitialDataLoaded.current = false;
   }, [language]);
@@ -687,6 +691,7 @@ const PostListPage: React.FC = () => {
     };
     setFilter(searchFilter);
 
+
     // 번역된 검색 타입을 한국어로 변환 (공통 매핑 사용)
     const convertedSearchType = searchTypeMapping[searchType] || searchType;
     
@@ -735,6 +740,60 @@ const PostListPage: React.FC = () => {
     const convertedRegion = regionTranslationMap[selectedRegion] || selectedRegion;
     
     console.log('[DEBUG] 지역 변환:', { 원본: selectedRegion, 변환: convertedRegion });
+
+    // 번역된 검색 타입을 한국어로 변환
+    let convertedSearchType = searchType;
+    const searchTypeMapping: Record<string, string> = {
+      // 한국어 (이미 변환된 상태)
+      '제목+내용': '제목_내용',
+      제목: '제목',
+      내용: '내용',
+      작성자: '작성자',
+      // 영어
+      'Title+Content': '제목_내용',
+      Title: '제목',
+      Content: '내용',
+      Author: '작성자',
+      // 프랑스어
+      'Titre+Contenu': '제목_내용',
+      Titre: '제목',
+      Contenu: '내용',
+      Auteur: '작성자',
+      // 독일어
+      'Titel+Inhalt': '제목_내용',
+      Titel: '제목',
+      Inhalt: '내용',
+      Autor: '작성자',
+      // 스페인어
+      'Título+Contenido': '제목_내용',
+      Título: '제목',
+      Contenido: '내용',
+      Autor_ES: '작성자', // 스페인어 작성자 구분
+      // 러시아어
+      'Заголовок+Содержание': '제목_내용',
+      Заголовок: '제목',
+      Содержание: '내용',
+      Автор: '작성자',
+      // 일본어
+      'タイトル+内용': '제목_내용',
+      タイトル: '제목',
+      内容: '내용',
+      作成者: '작성자',
+      // 중국어 간체
+      '标题+内容': '제목_내용',
+      标题: '제목',
+      内容_CN: '내용', // 중국어 간체 내용 구분
+      作者_CN: '작성자', // 중국어 간체 작성자 구분
+      // 중국어 번체
+      '標題+內容': '제목_내용',
+      標題: '제목',
+      內容_TW: '내용', // 중국어 번체 내용 구분
+      作者_TW: '작성자', // 중국어 번체 작성자 구분
+    };
+
+    convertedSearchType = searchTypeMapping[searchType] || searchType;
+    console.log('[DEBUG] 검색 타입 변환:', { 원본: searchType, 변환: convertedSearchType });
+
 
     const searchOptions = {
       page: 0,
@@ -1042,17 +1101,7 @@ const PostListPage: React.FC = () => {
                   },
                 },
               },
-            }}
-          >
-            <ToggleButton value="groups">
-              📱 소모임
-            </ToggleButton>
-            <ToggleButton value="board">
-              💬 자유게시판
-            </ToggleButton>
-          </ToggleButtonGroup>
-        </Paper>
-      </Box>
+
 
       {/* 상단 필터링 및 검색 영역 */}
       <Paper

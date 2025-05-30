@@ -157,11 +157,7 @@ export const PostApi = {
         console.log('[DEBUG] 태그 필터링 적용:', {
           원본태그: params.tag,
           태그배열: tagsArray,
-          전송형태: {
-            tags: apiParams.tags,
-            tag: apiParams.tag,
-            tagList: apiParams.tagList
-          }
+
         });
       }
 
@@ -669,6 +665,18 @@ export const PostApi = {
       };
     } catch (error) {
       console.error('게시글 상세 조회 실패:', error);
+      throw error;
+    }
+  },
+
+  // 게시글 원문 조회
+  getPostOriginal: async (postId: number): Promise<string> => {
+    try {
+      const response = await apiClient.get<string>(`${BASE_URL}/origin/${postId}`);
+      console.log('[DEBUG] 게시글 원문 조회 응답:', response);
+      return response;
+    } catch (error) {
+      console.error('게시글 원문 조회 실패:', error);
       throw error;
     }
   },
