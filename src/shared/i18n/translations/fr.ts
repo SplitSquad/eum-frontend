@@ -671,13 +671,13 @@ const fr = {
       },
       info: {
         photographer: 'Par',
-        poweredBy: 'Fourni par l\'API Unsplash',
+        poweredBy: 'Fourni par l\'API Pexels',
       },
       messages: {
         loading: 'Chargement des images...',
         error: 'Échec du chargement des images',
         noResults: 'Aucun résultat de recherche',
-        apiKeyMissing: 'Clé API Unsplash non configurée. Images d\'exemple affichées.',
+        apiKeyMissing: 'Clé API Pexels non configurée. Images d\'exemple affichées.',
       },
     },
     youtubeGallery: {

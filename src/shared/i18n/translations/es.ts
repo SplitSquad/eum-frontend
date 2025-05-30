@@ -676,13 +676,13 @@ const es = {
       },
       info: {
         photographer: 'Por',
-        poweredBy: 'Proporcionado por Unsplash API',
+        poweredBy: 'Proporcionado por Pexels API',
       },
       messages: {
         loading: 'Cargando imágenes...',
         error: 'Error al cargar imágenes',
         noResults: 'No hay resultados de búsqueda',
-        apiKeyMissing: 'Clave API de Unsplash no configurada. Se muestran imágenes de ejemplo.',
+        apiKeyMissing: 'Clave API de Pexels no configurada. Se muestran imágenes de ejemplo.',
       },
     },
     youtubeGallery: {

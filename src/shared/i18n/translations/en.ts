@@ -678,13 +678,13 @@ const en = {
       },
       info: {
         photographer: 'By',
-        poweredBy: 'Powered by Unsplash API',
+        poweredBy: 'Powered by Pexels API',
       },
       messages: {
         loading: 'Loading images...',
         error: 'Failed to load images',
         noResults: 'No search results',
-        apiKeyMissing: 'Unsplash API key not configured. Sample images are displayed.',
+        apiKeyMissing: 'Pexels API key not configured. Sample images are displayed.',
       },
     },
     youtubeGallery: {

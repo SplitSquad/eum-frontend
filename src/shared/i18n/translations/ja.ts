@@ -663,13 +663,13 @@ const ja = {
       },
       info: {
         photographer: '撮影者',
-        poweredBy: 'Unsplash APIで提供',
+        poweredBy: 'Pexels APIで提供',
       },
       messages: {
-        loading: '画像を読み込み中...',
+        loading: '画像読み込み中...',
         error: '画像の読み込みに失敗しました',
         noResults: '検索結果がありません',
-        apiKeyMissing: 'Unsplash APIキーが設定されていません。サンプル画像が表示されます。',
+        apiKeyMissing: 'Pexels APIキーが設定されていません。サンプル画像が表示されます。',
       },
     },
     youtubeGallery: {
