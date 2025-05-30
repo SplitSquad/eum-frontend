@@ -2,6 +2,13 @@ import { tr } from 'date-fns/locale';
 import { t } from 'i18next';
 
 const de = {
+  header: {
+    study: 'Auslandsstudium',
+    country: 'Korea',
+    mypage: 'Meine Seite',
+    logout: 'Abmelden',
+    adminpage: 'Admin-Seite',
+  },
   alarm: {
     loading: 'Lädt...',
     alarm: 'Alarm',

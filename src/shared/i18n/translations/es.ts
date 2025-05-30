@@ -1472,6 +1472,13 @@ const es = {
     termsAgreement:
       'Al iniciar sesión, aceptas los Términos de Servicio y la Política de Privacidad.',
   },
+  header: {
+    study: 'Estudiar en el extranjero',
+    country: 'Corea',
+    mypage: 'Mi página',
+    logout: 'Cerrar sesión',
+    adminpage: 'Página de administrador',
+  },
 };
 
 export default es;

@@ -7,7 +7,6 @@ import {
 import { useSseWithPolling } from '@/shared/hooks/UseSse';
 import Bell from '@/components/animations/Bell';
 import { useTranslation } from '@/shared/i18n';
-
 export function getUserId(): number | null {
   try {
     const raw = localStorage.getItem('auth-storage');
@@ -18,16 +17,13 @@ export function getUserId(): number | null {
     return null;
   }
 }
-
-const { t } = useTranslation();
-
 export function AlarmCenter() {
+  const { t } = useTranslation();
   const userId = getUserId();
   const [alarms, setAlarms] = useState<AlarmDetail[]>([]);
   const [loading, setLoading] = useState(true);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isBellPlaying, setIsBellPlaying] = useState(false);
-
   // 초기 로딩
   useEffect(() => {
     if (!userId) {
@@ -43,7 +39,6 @@ export function AlarmCenter() {
       })
       .finally(() => setLoading(false));
   }, [userId]);
-
   // SSE + 폴링 폴백 훅
   useSseWithPolling(
     userId!,
@@ -59,7 +54,6 @@ export function AlarmCenter() {
     },
     2_000 // 2초마다 폴링
   );
-
   // // 개별 읽음 처리
   // const markOneRead = async (alarmDetailId: number) => {
   //   try {
@@ -69,7 +63,6 @@ export function AlarmCenter() {
   //     console.error('개별 읽음 처리 실패', err);
   //   }
   // };
-
   // 모두 읽음 처리
   const markAllRead = async () => {
     if (!userId || alarms.length === 0) return;
@@ -80,7 +73,6 @@ export function AlarmCenter() {
       console.error('읽음 처리 실패', err);
     }
   };
-
   // 드롭다운 외부 클릭 닫기
   const wrapperRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -92,10 +84,8 @@ export function AlarmCenter() {
     document.addEventListener('mousedown', onClick);
     return () => document.removeEventListener('mousedown', onClick);
   }, []);
-
   if (loading) return <p>{t('alarm.loading')}</p>;
   if (!userId) return null;
-
   return (
     <div ref={wrapperRef} style={{ position: 'relative', display: 'inline-block' }}>
       <button
@@ -145,7 +135,6 @@ export function AlarmCenter() {
           </span>
         )}
       </button>
-
       {dropdownOpen && (
         <div
           style={{
@@ -179,7 +168,7 @@ export function AlarmCenter() {
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: '#007bff',
+                  color: '#007BFF',
                   cursor: 'pointer',
                   fontSize: '0.85rem',
                 }}
@@ -188,7 +177,6 @@ export function AlarmCenter() {
               </button>
             )}
           </div>
-
           {alarms.length === 0 ? (
             <div style={{ padding: 12, textAlign: 'center', color: '#666' }}>
               {t('alarm.noAlarms')}
@@ -202,7 +190,7 @@ export function AlarmCenter() {
                     display: 'flex',
                     justifyContent: 'space-between',
                     padding: '8px 12px',
-                    borderBottom: '1px solid #f0f0f0',
+                    borderBottom: '1px solid #F0F0F0',
                   }}
                 >
                   <div>

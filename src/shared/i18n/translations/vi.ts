@@ -18,6 +18,13 @@ const vi = {
   debate: {
     noVotesYet: 'Chưa có phiếu bầu nào. Hãy là người đầu tiên bỏ phiếu!',
   },
+  header: {
+    study: 'Du học',
+    country: 'Hàn Quốc',
+    mypage: 'Trang của tôi',
+    logout: 'Đăng xuất',
+    adminpage: 'Trang quản trị',
+  },
 };
 
 export default vi;

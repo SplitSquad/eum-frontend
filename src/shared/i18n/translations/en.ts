@@ -1,6 +1,13 @@
 import { tr } from 'date-fns/locale';
 
 const en = {
+  header: {
+    study: 'Study Abroad',
+    country: 'Korea',
+    mypage: 'My Page',
+    logout: 'Logout',
+    adminpage: 'Admin Page',
+  },
   alarm: {
     loading: 'Loading alarms...',
     alarm: 'Alarms',
