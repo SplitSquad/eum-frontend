@@ -5,6 +5,13 @@ import { de } from 'date-fns/locale';
 import { title } from 'process';
 
 const ko = {
+  header: {
+    study: '유학',
+    country: '한국',
+    mypage: '마이페이지',
+    logout: '로그아웃',
+    adminpage: '관리자 페이지',
+  },
   alarm: {
     loading: '알람 로딩 중…',
     alarm: '알람',

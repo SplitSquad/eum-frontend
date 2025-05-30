@@ -68,7 +68,7 @@ export default function AppLayout() {
           </main>
           {isModalVisible && isAuthenticated && (
             <div
-              className="fixed right-8 bottom-[170px] z-[1001] eumi-fade-in-up eumi-visible"
+              className="fixed right-8 bottom-[30px] z-[1001] eumi-fade-in-up eumi-visible"
               style={{ pointerEvents: 'auto' }}
             >
               <img

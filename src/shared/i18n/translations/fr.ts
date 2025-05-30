@@ -1465,6 +1465,13 @@ const fr = {
     termsAgreement:
       "En vous connectant, vous acceptez les Conditions d'utilisation et la Politique de confidentialité.",
   },
+  header: {
+    study: 'Études à l\'étranger',
+    country: 'Corée',
+    mypage: 'Ma page',
+    logout: 'Déconnexion',
+    adminpage: 'Page administrateur',
+  },
 };
 
 export default fr;

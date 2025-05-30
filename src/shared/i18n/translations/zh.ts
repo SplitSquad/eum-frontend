@@ -1418,6 +1418,13 @@ const zh = {
     welcome: '欢迎',
     termsAgreement: '登录即表示您同意服务条款和隐私政策。',
   },
+  header: {
+    study: '留学',
+    country: '韩国',
+    mypage: '我的页面',
+    logout: '退出登录',
+    adminpage: '管理员页面',
+  },
 };
 
 export default zh;

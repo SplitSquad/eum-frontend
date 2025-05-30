@@ -60,6 +60,8 @@ interface WebLog {
   content: string;
 }
 
+const { t } = useTranslation();
+
 // BASE URL에 엔드포인트 설정
 const BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -527,8 +529,8 @@ function Header({ isVisible = true, notifications }: HeaderProps) {
   console.log('headcheck user:', user);
   // user 정보에서 가져오기 (없으면 기본값)
   const userName = user?.name || 'user';
-  const userCountry = user?.nation || '한국';
-  const userType = user?.visitPurpose || '유학';
+  const userCountry = user?.nation || t('header.country');
+  const userType = user?.visitPurpose || t('header.study');
 
   // 인증 상태가 변경될 때마다 사용자 정보 로드
   useEffect(() => {
@@ -778,7 +780,7 @@ function Header({ isVisible = true, notifications }: HeaderProps) {
                             onClick={() => handleMenuItemClick('/adminpage')}
                           >
                             <AccountCircleIcon />
-                            관리자 페이지
+                            {t('header.adminpage')}
                           </ProfileDropdownItem>
                         )}
                         <ProfileDropdownItem
@@ -786,11 +788,11 @@ function Header({ isVisible = true, notifications }: HeaderProps) {
                           onClick={() => handleMenuItemClick('/mypage')}
                         >
                           <AccountCircleIcon />
-                          마이페이지
+                          {t('header.mypage')}
                         </ProfileDropdownItem>
                         <ProfileDropdownItem season={season} onClick={handleLogoutClick}>
                           <LogoutIcon />
-                          로그아웃
+                          {t('header.logout')}
                         </ProfileDropdownItem>
                       </ProfileDropdown>
                     )}

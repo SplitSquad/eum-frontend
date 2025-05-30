@@ -15,6 +15,13 @@ const vi = {
       popularPosts: 'Bài viết nổi bật',
     },
   },
+  header: {
+    study: 'Du học',
+    country: 'Hàn Quốc',
+    mypage: 'Trang của tôi',
+    logout: 'Đăng xuất',
+    adminpage: 'Trang quản trị',
+  },
 };
 
 export default vi;

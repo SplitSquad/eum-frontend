@@ -1435,6 +1435,13 @@ const ja = {
     termsAgreement:
       'ログインすることで、利用規約およびプライバシーポリシーに同意したことになります。',
   },
+  header: {
+    study: '留学',
+    country: '韓国',
+    mypage: 'マイページ',
+    logout: 'ログアウト',
+    adminpage: '管理者ページ',
+  },
 };
 
 export default ja;
