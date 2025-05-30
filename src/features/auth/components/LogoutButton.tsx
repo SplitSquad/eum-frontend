@@ -6,11 +6,11 @@ import useAuthStore from '../store/authStore';
 
 // Styled logout button with gradient effect
 const StyledLogoutButton = styled(Button)(({ theme }) => ({
-  background: 'linear-gradient(45deg, #FF69B4, #E91E63)',
+  background: 'linear-gradient(45deg,rgb(200, 200, 200),rgb(126, 126, 126))',
   color: 'white',
   boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
   '&:hover': {
-    background: 'linear-gradient(45deg, #E91E63, #FF69B4)',
+    background: 'linear-gradient(45deg,rgb(200, 200, 200),rgb(126, 126, 126))',
     boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
   },
 }));
@@ -54,7 +54,7 @@ const LogoutButton: React.FC<LogoutButtonProps> = ({ variant = 'icon', size = 'm
             onClick={onLogout}
             size={size}
             disabled={isLoading}
-            sx={{ color: 'rgba(233, 30, 99, 0.7)' }}
+            sx={{ color: 'rgb(126, 126, 126)' }}
           >
             <LogoutIcon />
           </IconButton>

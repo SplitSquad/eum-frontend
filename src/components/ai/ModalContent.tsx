@@ -1,139 +1,130 @@
 'use client';
 import React, { useState, useRef, useEffect } from 'react';
 import { callAgentic } from '@/shared/utils/Agentic';
-import { callJobAgent, processCoverLetterResponse } from '@/shared/utils/JobAgent';
-import { CoverLetterState } from '@/types/CoverLetterTypes';
-type Message = { id: number; sender: 'user' | 'bot'; text: string };
-type AgentType = 'schedule' | 'job';
+// import { callJobAgent, processCoverLetterResponse } from '@/shared/utils/JobAgent';
+// import { CoverLetterState } from '@/types/CoverLetterTypes';
+
+type Message = {
+  id: number;
+  sender: 'user' | 'bot';
+  text?: string;
+  imageUrl?: string;
+  pdfUrl?: string;
+  search?: { title: string; link: string }[];
+  Amenities?: string;
+  location?: {
+    place_name: string;
+    address_name: string;
+    phone: string;
+    distance: string;
+  }[];
+  post?: string;
+};
+
 export default function ModalContent() {
-  const [activeAgent, setActiveAgent] = useState<AgentType>('schedule');
-
-  // 일정 에이전트 상태
-  const [scheduleMessages, setScheduleMessages] = useState<Message[]>([]);
-  const [scheduleLoading, setScheduleLoading] = useState(false);
-
-  // 구직 에이전트 상태
-  const [jobMessages, setJobMessages] = useState<Message[]>([]);
-  const [jobLoading, setJobLoading] = useState(false);
-  const [coverLetterState, setCoverLetterState] = useState<CoverLetterState | null>(null);
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: Date.now(),
+      sender: 'bot',
+      text: '무엇을 도와드릴까요? (예: 일정 작성, 게시글 작성 등)',
+    },
+  ]);
+  const [loading, setLoading] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const [input, setInput] = useState('');
-  // 초기 환영 메시지
-  useEffect(() => {
-    if (activeAgent === 'schedule' && scheduleMessages.length === 0) {
-      setScheduleMessages([
-        {
-          id: Date.now(),
-          sender: 'bot',
-          text: '일정 및 게시글 작성 에이전트입니다. 무엇을 도와드릴까요?',
-        },
-      ]);
-    }
-    if (activeAgent === 'job' && jobMessages.length === 0) {
-      setJobMessages([
-        { id: Date.now(), sender: 'bot', text: '구직 에이전트입니다. 어떤 직무를 찾고 계신가요?' },
-      ]);
-    }
-  }, [activeAgent]);
-  // 자동 스크롤
+  const downloadImage = url => {
+    fetch(url)
+      .then(response => response.blob())
+      .then(blob => {
+        const blobUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = 'downloaded-image.jpg'; // 원하는 파일명으로 설정
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(blobUrl);
+      })
+      .catch(error => {
+        console.error('이미지 다운로드 중 오류 발생:', error);
+      });
+  };
+
   useEffect(() => {
     if (listRef.current) {
       listRef.current.scrollTop = listRef.current.scrollHeight;
     }
-  }, [scheduleMessages, jobMessages, scheduleLoading, jobLoading, activeAgent]);
-  const sendMessage = async () => {
-    const text = input.trim();
+  }, [messages, loading]);
+
+  const sendMessage = async (msgText?: string) => {
+    const text = (msgText ?? input).trim();
     if (!text) return;
     setInput('');
-    if (activeAgent === 'schedule') {
-      // 일정 에이전트 로직
-      const nextId = Date.now();
-      setScheduleMessages(msgs => [...msgs, { id: nextId, sender: 'user', text }]);
-      setScheduleLoading(true);
-      try {
-        const { response } = await callAgentic(text, 'user_id');
-        setScheduleMessages(msgs => [...msgs, { id: nextId + 1, sender: 'bot', text: response }]);
-      } catch {
-        setScheduleMessages(msgs => [
+    const nextId = Date.now();
+    setMessages(msgs => [...msgs, { id: nextId, sender: 'user', text }]);
+    setLoading(true);
+    try {
+      // 👉 API 한 번만 호출
+      const result = await callAgentic(text, 'user_id');
+      console.log('[Agentic 응답 전체]', result);
+
+      const { response, metadata, state, url } = result;
+
+      // 👉 state나 metadata 활용하고 싶으면 여기서 처리
+      console.log('State:', state);
+      console.log('Metadata:', metadata);
+      console.log('url:', url);
+
+      // const targetStates = ['cover_letter_state', 'event_state', 'find_food', 'job_search', 'weather'];
+      if (state == 'cover_letter_state' || state === 'resume_service_state') {
+        setMessages(msgs => [
           ...msgs,
-          { id: nextId + 2, sender: 'bot', text: '응답 중 오류가 발생했습니다.' },
+          { id: nextId + 1, sender: 'bot', text: response },
+          { id: nextId + 2, sender: 'bot', pdfUrl: url },
         ]);
-      } finally {
-        setScheduleLoading(false);
-      }
-    } else {
-      // 구직 에이전트 로직
-      const nextId = Date.now();
-      setJobMessages(msgs => [...msgs, { id: nextId, sender: 'user', text }]);
-      setJobLoading(true);
-      try {
-        if (!coverLetterState) {
-          // 첫 메시지인 경우 자기소개서 시작
-          const response = await callJobAgent(text, 'user_id');
-          setCoverLetterState(response.state);
-          setJobMessages(msgs => [
-            ...msgs,
-            { id: nextId + 1, sender: 'bot', text: response.message },
-          ]);
-        } else {
-          // 이후 메시지는 자기소개서 응답 처리
-          const response = await processCoverLetterResponse(text, coverLetterState);
-          setCoverLetterState(response.state);
-          if (response.cover_letter) {
-            // 자기소개서가 생성된 경우
-            setJobMessages(msgs => [
-              ...msgs,
-              { id: nextId + 1, sender: 'bot', text: '자기소개서가 생성되었습니다!' },
-            ]);
-            // PDF 다운로드 링크 표시
-            if (response.pdf_path) {
-              setJobMessages(msgs => [
-                ...msgs,
-                {
-                  id: nextId + 3,
-                  sender: 'bot',
-                  text: `PDF 다운로드 링크: ${response.pdf_path}`,
-                },
-              ]);
-            }
-          } else {
-            // 다음 질문 표시
-            setJobMessages(msgs => [
-              ...msgs,
-              { id: nextId + 1, sender: 'bot', text: response.message },
-            ]);
-          }
+      } else if (state === 'find_food_state') {
+        let parsedLocation = [];
+        try {
+          parsedLocation = JSON.parse(response.replace(/'/g, '"'));
+        } catch (err) {
+          console.error('위치 결과 파싱 실패:', err);
         }
-      } catch (error) {
-        setJobMessages(msgs => [
+        setMessages(msgs => [...msgs, { id: nextId + 1, sender: 'bot', location: parsedLocation }]);
+      } else if (state == 'post_state') {
+        setMessages(msgs => [...msgs, { id: nextId + 1, sender: 'bot', post: response }]);
+      } else if (state == 'location_category') {
+        setMessages(msgs => [...msgs, { id: nextId + 1, sender: 'bot', Amenities: response }]);
+      } else if (state === 'event_state' || state === 'job_search_state') {
+        let parsedSearch = [];
+        try {
+          parsedSearch = JSON.parse(response.replace(/'/g, '"')); // 작은따옴표 → 큰따옴표
+        } catch (err) {
+          console.error('검색 결과 파싱 실패:', err);
+        }
+        setMessages(msgs => [...msgs, { id: nextId + 1, sender: 'bot', search: parsedSearch }]);
+      } else if (url !== 'None') {
+        // const combinedMessage = `${response}\n👉 관련 링크: ${url}`;
+        setMessages(msgs => [
           ...msgs,
-          { id: nextId + 2, sender: 'bot', text: '구직 에이전트 오류가 발생했습니다.' },
+          { id: nextId + 1, sender: 'bot', text: response },
+          { id: nextId + 2, sender: 'bot', imageUrl: url },
         ]);
-      } finally {
-        setJobLoading(false);
+      } else {
+        // 👉 bot 메시지 추가
+        setMessages(msgs => [...msgs, { id: nextId + 1, sender: 'bot', text: response }]);
       }
+    } catch {
+      setMessages(msgs => [
+        ...msgs,
+        { id: nextId + 2, sender: 'bot', text: '응답 중 오류가 발생했습니다.' },
+      ]);
+    } finally {
+      setLoading(false);
     }
   };
-  // 현재 렌더할 메시지와 로딩 상태 선택
-  const messages = activeAgent === 'schedule' ? scheduleMessages : jobMessages;
-  const loading = activeAgent === 'schedule' ? scheduleLoading : jobLoading;
+
   return (
     <div className="flex flex-col h-[400px] w-[350px] bg-white rounded-lg shadow-lg">
-      {/* 탭 버튼 */}
-      <div className="flex">
-        <button
-          className={`flex-1 py-2 ${activeAgent === 'schedule' ? 'bg-indigo-600 text-white' : 'bg-gray-200'}`}
-          onClick={() => setActiveAgent('schedule')}
-        >
-          일정 에이전트
-        </button>
-        <button
-          className={`flex-1 py-2 ${activeAgent === 'job' ? 'bg-indigo-600 text-white' : 'bg-gray-200'}`}
-          onClick={() => setActiveAgent('job')}
-        >
-          구직 에이전트
-        </button>
-      </div>
       {/* 메시지 리스트 */}
       <div ref={listRef} className="flex-1 overflow-auto p-3 space-y-2 bg-gray-50">
         {messages.map(m => (
@@ -146,7 +137,108 @@ export default function ModalContent() {
                 m.sender === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800'
               }`}
             >
-              {m.text}
+              {m.imageUrl ? (
+                m.imageUrl.includes('amazonaws') ? (
+                  <>
+                    <img src={m.imageUrl} alt="AI 응답 이미지" className="max-w-full rounded-md" />
+                    <a
+                      href={m.imageUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-blue-600 underline"
+                    >
+                      이미지 다운로드
+                    </a>
+                  </>
+                ) : (
+                  <>
+                    <img src={m.imageUrl} alt="AI 응답 이미지" className="max-w-full rounded-md" />
+                    <button
+                      onClick={() => downloadImage(m.imageUrl!)}
+                      className="text-sm text-blue-600 underline"
+                    >
+                      이미지 다운로드
+                    </button>
+                  </>
+                )
+              ) : m.post ? (
+                <div className="space-y-2 text-sm text-gray-800">
+                  {m.post.split('\n').map((line, idx) => {
+                    const match = line.match(/^(제목|카테고리|내용):\s*(.*)/);
+                    if (match) {
+                      const [, label, content] = match;
+                      return (
+                        <div key={idx}>
+                          <strong>{label}:</strong> {content}
+                        </div>
+                      );
+                    } else {
+                      // '글이 작성되었습니다.' 같은 일반 텍스트 출력
+                      return <div key={idx}>{line}</div>;
+                    }
+                  })}
+                </div>
+              ) : m.location ? (
+                <ul className="space-y-2">
+                  {Array.isArray(m.location) &&
+                    m.location.map((item, index) => (
+                      <li key={index} className="text-sm text-gray-800">
+                        <div className="font-semibold text-base">{item.place_name}</div>
+                        <div>📍 주소: {item.address_name}</div>
+                        <div>📞 전화번호: {item.phone ? item.phone : '없음'}</div>
+                        <div>📏 거리: {item.distance}m</div>
+                      </li>
+                    ))}
+                </ul>
+              ) : m.Amenities ? (
+                <ul className="space-y-1">
+                  {(m.Amenities.match(/\d+\.\s*[^0-9]+/g) || []).map((item, index) => {
+                    const [_, num, name] = item.match(/(\d+\.)\s*(.+)/) || [];
+                    return (
+                      <li key={index}>
+                        <span className="font-bold">{num}</span>{' '}
+                        <a
+                          href="#"
+                          className="text-blue-600 underline"
+                          onClick={e => {
+                            e.preventDefault();
+                            sendMessage(name.trim()); // ✅ 이렇게 해야 클릭 시 해당 항목으로 API 재질문 가능
+                          }}
+                        >
+                          &lt;{name.trim()}&gt;
+                        </a>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : m.pdfUrl ? (
+                <a
+                  href={m.pdfUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-indigo-600 underline"
+                >
+                  📄 PDF 파일 열기
+                </a>
+              ) : m.search ? (
+                <ul className="space-y-1">
+                  {Array.isArray(m.search) &&
+                    m.search.map((item: { title: string; link: string }, index: number) => (
+                      <li key={index}>
+                        <a
+                          href={item.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-blue-600 underline"
+                        >
+                          🔗 {item.title}
+                        </a>
+                      </li>
+                    ))}
+                </ul>
+              ) : (
+                m.text
+              )}
             </span>
           </div>
         ))}
@@ -165,14 +257,10 @@ export default function ModalContent() {
           onKeyDown={e => e.key === 'Enter' && !loading && sendMessage()}
           disabled={loading}
           className="flex-1 px-3 py-1 bg-white border rounded-lg focus:outline-none focus:ring disabled:opacity-50"
-          placeholder={
-            activeAgent === 'schedule'
-              ? '일정 및 게시글 작성 요청을 입력하세요...'
-              : '구직 관련 질문을 입력하세요...'
-          }
+          placeholder="질문이나 요청을 입력하세요..."
         />
         <button
-          onClick={sendMessage}
+          onClick={() => sendMessage()}
           disabled={loading}
           className="ml-2 px-4 py-1 bg-indigo-600 text-white rounded-lg disabled:opacity-50"
         >

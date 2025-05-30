@@ -1,4 +1,5 @@
 import React from 'react';
+import FlagDisplay from '../../../../shared/components/FlagDisplay';
 
 interface CountryData {
   countryCode: string;
@@ -49,7 +50,13 @@ const CountryStats: React.FC<CountryStatsProps> = ({
           <div className="space-y-2">
             {countries.map((country, index) => (
               <div key={country.countryCode} className="flex items-center">
-                <span className="w-20 text-sm">{country.countryName}</span>
+                <div className="w-20 flex items-center gap-1 text-sm">
+                  <FlagDisplay 
+                    nation={country.countryCode} 
+                    size="small"
+                    showName={true}
+                  />
+                </div>
                 <div className="flex-1 h-5 bg-gray-100 rounded overflow-hidden">
                   <div
                     className={`h-full ${colors[index % colors.length]}`}

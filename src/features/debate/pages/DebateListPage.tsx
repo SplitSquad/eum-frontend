@@ -24,6 +24,9 @@ import { styled } from '@mui/material/styles';
 import DebateLayout from '../components/common/DebateLayout';
 import { formatDate } from '../utils/dateUtils';
 import { send } from 'process';
+import { useTranslation } from '@/shared/i18n';
+import { set } from 'date-fns';
+import { setupDebateLanguageChangeListener } from '@/features/debate/store/debateStore';
 
 // 스타일 컴포넌트
 const CategoryItem = styled(ListItemButton)(({ theme }) => ({
@@ -55,8 +58,9 @@ const DebateCard = styled(Card)(({ theme }) => ({
   overflow: 'hidden',
   boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
   transition: 'transform 0.2s, box-shadow 0.2s',
-  backgroundColor: 'rgba(255, 255, 255, 0.85)',
-  backdropFilter: 'blur(8px)',
+  backgroundColor: 'rgba(255, 255, 255, 0.5)',
+  backdropFilter: 'blur(4px)',
+  marginBottom: theme.spacing(2),
   '&:hover': {
     transform: 'translateY(-2px)',
     boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
@@ -135,7 +139,7 @@ const AgreeBar = styled(Box, {
 })<BarProps>(({ width }) => ({
   width: `${width}%`,
   height: '100%',
-  backgroundColor: '#4caf50',
+  backgroundColor: '#81C784',
 }));
 
 const DisagreeBar = styled(Box, {
@@ -143,7 +147,7 @@ const DisagreeBar = styled(Box, {
 })<BarProps>(({ width }) => ({
   width: `${width}%`,
   height: '100%',
-  backgroundColor: '#f44336',
+  backgroundColor: '#E57373',
 }));
 
 const FlagWrapper = styled(Box)(({ theme }) => ({
@@ -171,39 +175,136 @@ interface EnhancedDebate extends Debate {
   disagreeCount: number;
 }
 
+// DebateListPage의 사이드바에 SpecialIssue 버튼 그룹 추가 (디자인만, onClick은 빈 함수)
+const SpecialIssueSidebar: React.FC<{ t: any; navigate: any }> = ({ t, navigate }) => (
+  <Box
+    sx={{ p: 2, borderRadius: 2, background: '#fafbfc', boxShadow: '0 1px 4px 0 rgba(0,0,0,0.03)' }}
+  >
+    <Box
+      sx={{
+        borderBottom: '1.5px solid #e5e7eb',
+        display: 'flex',
+        alignItems: 'center',
+        cursor: 'pointer',
+        pb: 1,
+      }}
+    >
+      <Typography
+        variant="subtitle1"
+        fontWeight={700}
+        color={'primary'}
+        onClick={() => navigate('/debate', { state: { specialLabel: 'special' } })}
+        sx={{ userSelect: 'none', cursor: 'pointer' }}
+      >
+        {t('debate.specialIssues')}
+      </Typography>
+    </Box>
+    <Box sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
+      <Button
+        variant="outlined"
+        color="warning"
+        size="small"
+        sx={{ fontWeight: 600, borderRadius: 2, textAlign: 'left' }}
+        onClick={() => navigate('/debate', { state: { specialLabel: 'today' } })}
+        fullWidth
+      >
+        {t('debate.todayIssue')}
+      </Button>
+      <Button
+        variant="outlined"
+        color="error"
+        size="small"
+        sx={{ fontWeight: 600, borderRadius: 2, textAlign: 'left' }}
+        onClick={() => navigate('/debate', { state: { specialLabel: 'hot' } })}
+        fullWidth
+      >
+        {t('debate.mostHotIssue')}
+      </Button>
+      <Button
+        variant="outlined"
+        color="secondary"
+        size="small"
+        sx={{ fontWeight: 600, borderRadius: 2, textAlign: 'left' }}
+        onClick={() => navigate('/debate', { state: { specialLabel: 'balanced' } })}
+        fullWidth
+      >
+        {t('debate.halfAndHalfIssue')}
+      </Button>
+    </Box>
+  </Box>
+);
+
+// 카테고리 뱃지 버튼 스타일
+const CategoryBadgeButton = styled(Button)<{ bgcolor: string; selected: boolean }>(
+  ({ bgcolor, selected, theme }) => ({
+    background: selected ? bgcolor : '#f5f5f5',
+    color: selected ? '#fff' : bgcolor,
+    fontWeight: 600,
+    borderRadius: 20,
+    minWidth: 0,
+    padding: '6px 18px',
+    margin: '0 8px 8px 0',
+    boxShadow: selected ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
+    border: selected ? `2px solid ${bgcolor}` : '2px solid transparent',
+    transition: 'all 0.15s',
+    '&:hover': {
+      background: selected ? bgcolor : '#e0e0e0',
+      color: selected ? '#fff' : bgcolor,
+      border: `2px solid ${bgcolor}`,
+    },
+  })
+);
+
 const DebateListPage: React.FC = () => {
   const navigate = useNavigate();
-  const { debates, isLoading: loading, error, getDebates: fetchDebates } = useDebateStore();
+  const {
+    debates,
+    isLoading: loading,
+    error,
+    getDebates: fetchDebates,
+    setCategory,
+  } = useDebateStore();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const [selectedCategory, setSelectedCategory] = useState('전체');
+  const { t } = useTranslation();
+  const [selectedCategory, setSelectedCategory] = useState<string>(t('debate.categories.all'));
 
   // 카테고리 목록
-  const categories = [
-    { id: 'all', name: '전체' },
-    { id: 'politics', name: '정치/사회' },
-    { id: 'economy', name: '경제' },
-    { id: 'culture', name: '생활/문화' },
-    { id: 'technology', name: '과학/기술' },
-    { id: 'sports', name: '스포츠' },
-    { id: 'entertainment', name: '엔터테인먼트' },
-  ];
-
-  // 카테고리별 색상
+  const categories: Record<string, string> = {
+    [t('debate.categories.all')]: '', // 전체 는 빈 문자열로 보내서 전체 조회
+    [t('debate.categories.politics')]: '정치/사회',
+    [t('debate.categories.economy')]: '경제',
+    [t('debate.categories.culture')]: '생활/문화',
+    [t('debate.categories.technology')]: '과학/기술',
+    [t('debate.categories.sports')]: '스포츠',
+    [t('debate.categories.entertainment')]: '엔터테인먼트',
+  };
+  // 카테고리별 색상 (MainIssuesPage와 동일하게)
   const categoryColors = {
-    '정치/사회': '#1976d2',
-    경제: '#ff9800',
-    '생활/문화': '#4caf50',
-    '과학/기술': '#9c27b0',
-    스포츠: '#f44336',
-    엔터테인먼트: '#2196f3',
+    '정치/사회': '#42a5f5', // 진한 파스텔 블루
+    경제: '#ffb300', // 진한 파스텔 오렌지
+    '생활/문화': '#66bb6a', // 진한 파스텔 그린
+    '과학/기술': '#ab47bc', // 진한 파스텔 퍼플
+    스포츠: '#e57373', // 진한 파스텔 레드
+    엔터테인먼트: '#29b6f6', // 진한 파스텔 하늘색
   };
 
   // 특별 라벨
   const specialLabels = {
-    1: { text: '오늘의 이슈', color: '#ff9800' },
-    2: { text: '모스트 핫 이슈', color: '#f44336' },
-    3: { text: '반반 이슈', color: '#9c27b0' },
+    1: { text: t('debate.todayIssue'), color: '#ff9800' },
+    2: { text: t('debate.mostHotIssue'), color: '#f44336' },
+    3: { text: t('debate.halfAndHalfIssue'), color: '#9c27b0' },
+  };
+
+  // 카테고리 한글명 → 번역 텍스트 매핑
+  const categoryNameMap: Record<string, string> = {
+    '정치/사회': t('debate.categories.politics'),
+    경제: t('debate.categories.economy'),
+    '생활/문화': t('debate.categories.culture'),
+    '과학/기술': t('debate.categories.technology'),
+    스포츠: t('debate.categories.sports'),
+    엔터테인먼트: t('debate.categories.entertainment'),
+    기타: t('debate.categories.etc'),
   };
 
   useEffect(() => {
@@ -214,29 +315,26 @@ const DebateListPage: React.FC = () => {
     navigate(`/debate/${id}`);
   };
 
-  const handleCategoryClick = (category: string) => {
-    setSelectedCategory(category);
-    // 서버에 API 요청을 보내기 전에 로딩 상태 표시
-    fetchDebates(1, 20, category === '전체' ? '' : category);
-
-    console.log('현재 데이터:', debates);
-    console.log('선택된 카테고리:', category);
+  const handleCategoryClick = (label: string) => {
+    setSelectedCategory(label);
+    setCategory(label);
+    // 클릭 즉시 API 호출 시에도 올바른 값을 넘겨줍니다.
+    const apiCategory = categories[label];
+    fetchDebates(1, 20, apiCategory);
   };
 
   // 필터링 로직 단순화
   const filteredDebates = useMemo(() => {
     console.log('필터링 수행:', selectedCategory);
 
-    if (selectedCategory === '전체') {
-      return debates;
-    }
+    const apiCategory = categories[selectedCategory];
+    // '전체'이면 그대로
+    if (!apiCategory) return debates;
 
-    // 카테고리가 정확히 일치하는 토론만 필터링
     return debates.filter((debate: any) => {
-      // 백엔드에서 category 필드를 제공하지 않는 경우 대비
       const debateCategory = debate.category || '';
-      const matched = debateCategory === selectedCategory;
-      console.log(`카테고리 비교: ${debateCategory} vs ${selectedCategory} => ${matched}`);
+      const matched = debateCategory === apiCategory;
+      console.log(`카테고리 비교: ${debateCategory} vs ${apiCategory} => ${matched}`);
       return matched;
     });
   }, [selectedCategory, debates]);
@@ -261,23 +359,39 @@ const DebateListPage: React.FC = () => {
 
   // 사이드바 렌더링
   const renderSidebar = () => (
-    <SidebarContainer>
-      <Box sx={{ p: 2, borderBottom: '1px solid #eee' }}>
-        <Typography variant="subtitle1" fontWeight={600}>
-          카테고리
-        </Typography>
+    <SidebarContainer sx={{ display: 'flex', flexDirection: 'column', gap: 3, p: 0 }}>
+      <SpecialIssueSidebar t={t} navigate={navigate} />
+      <Box sx={{ p: 2, borderRadius: 2, background: '#fff', boxShadow: 'none' }}>
+        <Box sx={{ mb: 1 }}>
+          <Typography variant="subtitle1" fontWeight={600}>
+            {t('debate.categories.title')}
+          </Typography>
+        </Box>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0 }}>
+          {Object.keys(categories).map((label, idx) => {
+            // 카테고리별 색상 매핑
+            const badgeColors: Record<string, string> = {
+              [t('debate.categories.all')]: '#757575',
+              [t('debate.categories.politics')]: '#1976d2',
+              [t('debate.categories.economy')]: '#ff9800',
+              [t('debate.categories.culture')]: '#4caf50',
+              [t('debate.categories.technology')]: '#9c27b0',
+              [t('debate.categories.sports')]: '#f44336',
+              [t('debate.categories.entertainment')]: '#2196f3',
+            };
+            return (
+              <CategoryBadgeButton
+                key={label}
+                bgcolor={badgeColors[label] || '#757575'}
+                selected={selectedCategory === label}
+                onClick={() => handleCategoryClick(label)}
+              >
+                {label}
+              </CategoryBadgeButton>
+            );
+          })}
+        </Box>
       </Box>
-      <List disablePadding>
-        {categories.map(category => (
-          <CategoryItem
-            key={category.id}
-            onClick={() => handleCategoryClick(category.name)}
-            selected={selectedCategory === category.name}
-          >
-            <ListItemText primary={category.name} />
-          </CategoryItem>
-        ))}
-      </List>
     </SidebarContainer>
   );
 
@@ -286,7 +400,7 @@ const DebateListPage: React.FC = () => {
     <DebateListContainer>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
         <Typography variant="h6" fontWeight={600}>
-          {selectedCategory} 토론
+          {selectedCategory} {t('debate.name')}
         </Typography>
       </Box>
 
@@ -301,11 +415,13 @@ const DebateListPage: React.FC = () => {
           sx={{
             p: 3,
             textAlign: 'center',
-            backgroundColor: 'rgba(255, 255, 255, 0.85)',
-            backdropFilter: 'blur(8px)',
+            background: 'rgba(240,240,240,0.7)',
+            backdropFilter: 'blur(4px)',
+            boxShadow: 'none',
+            border: 'none',
           }}
         >
-          <Typography>
+          <Typography sx={{ fontWeight: 'bold', color: '#888' }}>
             {selectedCategory === '전체'
               ? '등록된 토론이 없습니다.'
               : `${selectedCategory} 카테고리에 등록된 토론이 없습니다.`}
@@ -342,13 +458,15 @@ const DebateListPage: React.FC = () => {
                         )}
                         <Typography
                           variant="body2"
-                          color="text.secondary"
+                          color={categoryColors[debate.category] || '#bdbdbd'}
                           sx={{ mb: 0.5, display: 'flex', alignItems: 'center', gap: 0.5 }}
                         >
-                          {debate.category || '기타'}
+                          {categoryNameMap[debate.category] ||
+                            debate.category ||
+                            t('debate.categories.etc')}
                           <FlagWrapper>
                             <FlagIcon fontSize="small" />
-                            한국
+                            {t('debate.korea')}
                           </FlagWrapper>
                         </Typography>
                         <Typography variant="h6" component="div" fontWeight={600} gutterBottom>
@@ -389,13 +507,7 @@ const DebateListPage: React.FC = () => {
   );
 
   return (
-    <DebateLayout
-      sidebar={renderSidebar()}
-      headerProps={{
-        title: '신규 토론',
-        showUserIcons: true,
-      }}
-    >
+    <DebateLayout sidebar={renderSidebar()} specialLabelText={t('debate.oldIssues')}>
       {renderContent()}
     </DebateLayout>
   );

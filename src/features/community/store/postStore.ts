@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { shallow } from 'zustand/shallow';
 import { useLanguageStore } from '../../../features/theme/store/languageStore';
-import * as postApi from '../api/postApi';
+import { PostApi } from '../api/postApi';
 import {
   Post,
   PostFilter,
@@ -355,6 +355,89 @@ export const usePostStore = create<PostState & PostActions>()(
           // 필터 정규화 적용 (백엔드에는 한국어 원본값 전달)
           normalizedFilter = { ...mergedFilter };
 
+          // 카테고리 번역 변환 (번역된 값 → 한국어 원본 값)
+          if (normalizedFilter.category) {
+            const categoryTranslationMap: Record<string, string> = {
+              // 한국어 (원본값은 그대로)
+              '전체': '전체',
+              'travel': 'travel',
+              'living': 'living',
+              'study': 'study',
+              'job': 'job',
+              // 영어
+              'All': '전체',
+              'Travel': 'travel',
+              'Living': 'living',
+              'Study': 'study',
+              'Job': 'job',
+              // 프랑스어
+              'Tout': '전체',
+              'Voyage': 'travel',
+              'Vie': 'living',
+              'Étude': 'study',
+              'Emploi': 'job',
+              // 독일어
+              'Alle': '전체',
+              'Alles': '전체', // 독일어 추가 변형
+              'Reise': 'travel',
+              'Leben': 'living',
+              'Studium': 'study',
+              'Arbeit': 'job',
+              // 스페인어
+              'Todo': '전체',
+              'Todos': '전체', // 스페인어 복수형 추가
+              'Viaje': 'travel',
+              'Vida': 'living',
+              'Estudio': 'study',
+              'Trabajo': 'job',
+              // 러시아어
+              'Всё': '전체',
+              'Все': '전체', // 러시아어 변형 추가
+              'Путешествие': 'travel',
+              'Путешествия': 'travel', // 러시아어 복수형 추가
+              'Проживание': 'living',
+              'Жизнь': 'living', // 러시아어 변형 추가
+              'Учёба': 'study',
+              'Образование': 'study', // 러시아어 변형 추가
+              'Работа': 'job',
+              // 일본어
+              'すべて': '전체',
+              '全て': '전체', // 일본어 전체
+              '旅行_JP': 'travel', // 일본어 여행
+              '生活_JP': 'living', // 일본어 생활
+              '勉強': 'study',
+              '学習': 'study', // 일본어 변형 추가
+              '仕事': 'job',
+              '就職': 'job', // 일본어 변형 추가
+              // 중국어 간체
+              '全部': '전체',
+              '所有': '전체', // 중국어 간체 변형 추가
+              '旅游': 'travel',
+              '旅行_CN': 'travel', // 중국어 간체 여행
+              '生活_CN': 'living', // 중국어 간체 생활
+              '学习': 'study',
+              '學習_CN': 'study', // 중국어 간체 학습
+              '工作_CN': 'job', // 중국어 간체 작업
+              // 중국어 번체
+              '全體': '전체', // 중국어 번체 전체
+              '全体': '전체', // 간체/번체 혼용 지원
+              '旅遊': 'travel',
+              '生活_TW': 'living', // 중국어 번체 생활
+              '學習_TW': 'study', // 중국어 번체 학습
+              '工作_TW': 'job', // 중국어 번체 작업
+            };
+
+            const originalCategory = categoryTranslationMap[normalizedFilter.category] || normalizedFilter.category;
+            
+            if (originalCategory !== normalizedFilter.category) {
+              console.log('[DEBUG] 카테고리 번역 변환:', {
+                번역된값: normalizedFilter.category,
+                원본값: originalCategory
+              });
+              normalizedFilter.category = originalCategory;
+            }
+          }
+
           // 캐시 키 생성 - 정규화된 필터 사용
           const postTypeForCache =
             !normalizedFilter.postType || normalizedFilter.postType === ('ALL' as any)
@@ -495,14 +578,44 @@ export const usePostStore = create<PostState & PostActions>()(
               let response;
 
               try {
-                // undefined나 빈 값들을 API에서 제외
-                if (apiParams.postType === '전체') apiParams.postType = undefined as any;
-                if (!apiParams.tag || apiParams.tag === '') {
-                  delete (apiParams as any).tag;
+                // API 파라미터 변환 (백엔드 파라미터명에 맞게 변환) - 번역 없이 그대로 전달
+                const finalApiParams: Record<string, any> = {
+                  page: apiParams.page !== undefined ? apiParams.page : 0,
+                  size: apiParams.size || 6,
+                  category: apiParams.category || '전체',
+                  sort: apiParams.sortBy === 'popular' ? 'views' : apiParams.sortBy === 'oldest' ? 'oldest' : 'latest',
+                };
+
+                // postType 처리 - 백엔드는 빈 문자열을 허용하지 않음, 항상 값이 있어야 함
+                const postType = apiParams.postType || '자유';
+                finalApiParams.postType = postType;
+
+                // region(지역) 처리 - 자유 게시글이면 무조건 '자유'로, 그렇지 않으면 location 값 사용
+                if (finalApiParams.postType === '자유') {
+                  finalApiParams.region = '자유';
+                } else {
+                  const location = apiParams.location || '전체';
+                  finalApiParams.region = location === '전체' ? '전체' : location;
                 }
+
+                // 태그 처리 - 번역 없이 그대로 전달
+                if (apiParams.tag && apiParams.tag !== '전체') {
+                  // 콤마로 분리된 태그 문자열을 배열로 변환
+                  const tagsArray = apiParams.tag.split(',').map(tag => tag.trim());
+                  // 태그 배열을 직접 할당
+                  finalApiParams.tags = tagsArray;
+
+                  // 로그에 태그 정보 명확하게 표시
+                  console.log('[DEBUG] 태그 필터링 적용:', { 
+                    원본태그: apiParams.tag, 
+                    태그배열: tagsArray 
+                  });
+                }
+
+                // 디버그 로그 - 실제 전송되는 파라미터
+                console.log('[DEBUG] 서버로 전송되는 최종 파라미터:', finalApiParams);
                 
-                console.log('[DEBUG] API 요청 파라미터 (최종):', apiParams);
-                response = await postApi.PostApi.getPosts(apiParams as any);
+                response = await PostApi.getPosts(finalApiParams as any);
                 console.log('[DEBUG] API 응답 받음:', response);
               } catch (apiError) {
                 console.error('[ERROR] API 호출 실패:', apiError);
@@ -695,7 +808,7 @@ export const usePostStore = create<PostState & PostActions>()(
 
       fetchTopPosts: async (count = 5) => {
         try {
-          const posts = await postApi.PostApi.getTopPosts(count);
+          const posts = await PostApi.getTopPosts(count);
           set({ topPosts: posts });
         } catch (error) {
           console.error('인기 게시글 조회 실패:', error);
@@ -704,7 +817,7 @@ export const usePostStore = create<PostState & PostActions>()(
 
       fetchRecentPosts: async (count = 5) => {
         try {
-          const posts = await postApi.PostApi.getRecentPosts(count);
+          const posts = await PostApi.getRecentPosts(count);
           set({ recentPosts: posts });
         } catch (error) {
           console.error('최신 게시글 조회 실패:', error);
@@ -737,7 +850,7 @@ export const usePostStore = create<PostState & PostActions>()(
             set({ currentPost: null });
           }
 
-          const post = await postApi.PostApi.getPostById(postId);
+          const post = await PostApi.getPostById(postId);
           console.log('API 응답 받음:', post);
 
           if (!post || typeof post !== 'object') {
@@ -762,7 +875,7 @@ export const usePostStore = create<PostState & PostActions>()(
         set({ isLoading: true, error: null });
         try {
           if (postDto.postType === '전체') postDto.postType = undefined as any;
-          const createdPost = await postApi.PostApi.createPost(postDto as any, files);
+          const createdPost = await PostApi.createPost(postDto as any, files);
           set(state => ({
             posts: [createdPost, ...state.posts],
             isLoading: false,
@@ -787,7 +900,7 @@ export const usePostStore = create<PostState & PostActions>()(
           });
 
           if (postDto.postType === '전체') postDto.postType = undefined as any;
-          const updatedPost = await postApi.PostApi.updatePost(postId, postDto as any, files, removeFileIds);
+          const updatedPost = await PostApi.updatePost(postId, postDto as any, files, removeFileIds);
 
           console.log('[DEBUG] 게시글 수정 성공:', {
             updatedPost: {
@@ -855,7 +968,7 @@ export const usePostStore = create<PostState & PostActions>()(
           const prevState = get();
 
           // API 호출
-          await postApi.PostApi.deletePost(postId);
+          await PostApi.deletePost(postId);
 
           // 해당 게시글을 posts 배열에서 제거하고 currentPost도 업데이트
           set(state => {
@@ -891,7 +1004,7 @@ export const usePostStore = create<PostState & PostActions>()(
         try {
           const currentPost = get().currentPost;
           if (currentPost && currentPost.postId === postId) {
-            const response = await postApi.PostApi.reactToPost(
+            const response = await PostApi.reactToPost(
               postId,
               option as 'LIKE' | 'DISLIKE'
             );
@@ -1145,12 +1258,134 @@ export const usePostStore = create<PostState & PostActions>()(
             sort: searchOptions.sort || 'createdAt,desc',
           };
 
-          // 필터 조건 추가
+          // 필터 조건 추가 (번역 변환 포함)
           if (searchOptions.category) {
-            apiParams.category = searchOptions.category;
+            // 카테고리 번역 변환 (번역된 값 → 한국어 원본 값)
+            const categoryTranslationMap: Record<string, string> = {
+              // 한국어 (원본값은 그대로)
+              '전체': '전체',
+              'travel': 'travel',
+              'living': 'living',
+              'study': 'study',
+              'job': 'job',
+              // 영어
+              'All': '전체',
+              'Travel': 'travel',
+              'Living': 'living',
+              'Study': 'study',
+              'Job': 'job',
+              // 프랑스어
+              'Tout': '전체',
+              'Voyage': 'travel',
+              'Vie': 'living',
+              'Étude': 'study',
+              'Emploi': 'job',
+              // 독일어
+              'Alle': '전체',
+              'Alles': '전체', // 독일어 추가 변형
+              'Reise': 'travel',
+              'Leben': 'living',
+              'Studium': 'study',
+              'Arbeit': 'job',
+              // 스페인어
+              'Todo': '전체',
+              'Todos': '전체', // 스페인어 복수형 추가
+              'Viaje': 'travel',
+              'Vida': 'living',
+              'Estudio': 'study',
+              'Trabajo': 'job',
+              // 러시아어
+              'Всё': '전체',
+              'Все': '전체', // 러시아어 변형 추가
+              'Путешествие': 'travel',
+              'Путешествия': 'travel', // 러시아어 복수형 추가
+              'Проживание': 'living',
+              'Жизнь': 'living', // 러시아어 변형 추가
+              'Учёба': 'study',
+              'Образование': 'study', // 러시아어 변형 추가
+              'Работа': 'job',
+              // 일본어
+              'すべて': '전체',
+              '全て': '전체', // 일본어 전체
+              '旅行_JP': 'travel', // 일본어 여행
+              '生活_JP': 'living', // 일본어 생활
+              '勉強': 'study',
+              '学習': 'study', // 일본어 변형 추가
+              '仕事': 'job',
+              '就職': 'job', // 일본어 변형 추가
+              // 중국어 간체
+              '全部': '전체',
+              '所有': '전체', // 중국어 간체 변형 추가
+              '旅游': 'travel',
+              '旅行_CN': 'travel', // 중국어 간체 여행
+              '生活_CN': 'living', // 중국어 간체 생활
+              '学习': 'study',
+              '學習_CN': 'study', // 중국어 간체 학습
+              '工作_CN': 'job', // 중국어 간체 작업
+              // 중국어 번체
+              '全體': '전체', // 중국어 번체 전체
+              '全体': '전체', // 간체/번체 혼용 지원
+              '旅遊': 'travel',
+              '生活_TW': 'living', // 중국어 번체 생활
+              '學習_TW': 'study', // 중국어 번체 학습
+              '工作_TW': 'job', // 중국어 번체 작업
+            };
+            
+            apiParams.category = categoryTranslationMap[searchOptions.category] || searchOptions.category;
+            
+            if (apiParams.category !== searchOptions.category) {
+              console.log('[DEBUG] 검색 시 카테고리 번역 변환:', {
+                번역된값: searchOptions.category,
+                원본값: apiParams.category
+              });
+            }
           }
           if (searchOptions.region) {
-            apiParams.region = searchOptions.region;
+            // 지역 번역 변환 (번역된 값 → 한국어 원본 값)
+            const regionTranslationMap: Record<string, string> = {
+              // 한국어 (원본값은 그대로)
+              '전체': '전체',
+              '자유': '자유',
+              // 영어
+              'All': '전체',
+              'Free': '자유',
+              // 프랑스어
+              'Tout': '전체',
+              'Libre_FR': '자유', // 프랑스어 자유
+              // 독일어
+              'Alle': '전체',
+              'Alles': '전체',
+              'Frei': '자유',
+              // 스페인어
+              'Todo': '전체',
+              'Todos': '전체',
+              'Libre_ES': '자유', // 스페인어 자유
+              // 러시아어
+              'Всё': '전체',
+              'Все': '전체',
+              'Свободный': '자유',
+              // 일본어
+              'すべて': '전체',
+              '全て': '전체',
+              '全体': '전체', // 일본어/중국어 공통
+              '自由': '자유',
+              // 중국어 간체
+              '全部': '전체',
+              '所有': '전체',
+              '自由_CN': '자유',
+              // 중국어 번체
+              '全體': '전체',
+              '自由_TW': '자유',
+            };
+            
+            apiParams.region = regionTranslationMap[searchOptions.region] || searchOptions.region;
+            
+            if (apiParams.region !== searchOptions.region) {
+              console.log('[DEBUG] 검색 시 지역 번역 변환:', {
+                번역된값: searchOptions.region,
+                원본값: apiParams.region
+              });
+            }
           }
           if (searchOptions.postType) {
             apiParams.postType = searchOptions.postType;
@@ -1174,9 +1409,9 @@ export const usePostStore = create<PostState & PostActions>()(
           });
 
           try {
-            // API 호출과 타임아웃 중 먼저 완료되는 것 처리 - 올바른 경로로 수정
+            // API 호출과 타임아웃 중 먼저 완료되는 것 처리 - 번역된 파라미터 사용
             const response = (await Promise.race([
-              postApi.PostApi.searchPosts(keyword, convertedSearchType, searchOptions),
+              PostApi.searchPosts(keyword, convertedSearchType, apiParams),
               timeoutPromise,
             ])) as any;
 

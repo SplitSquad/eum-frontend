@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -24,10 +24,12 @@ import WorkIcon from '@mui/icons-material/Work';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { mainCategories } from '../components/common/CommonTags';
 import { motion } from 'framer-motion';
+import { useSnackbar } from 'notistack';
+import { useTranslation } from '@/shared/i18n';
 
 // Material UI의 Grid를 스타일링된 버전으로 재정의
 //const Grid = styled(Box)(({ theme }) => ({}));
-
+const { t } = useTranslation();
 const MotionCard = styled(motion.div)(({ theme }) => ({
   height: '100%',
   width: '100%',
@@ -206,7 +208,7 @@ const PurposeCard: React.FC<{
                   textTransform: 'none',
                 }}
               >
-                선택하기
+                {t('onboarding.purpose.select')}
               </Button>
             )}
           </CardContent>
@@ -250,6 +252,8 @@ const PurposeSelection: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { season } = useThemeStore();
+  const { enqueueSnackbar } = useSnackbar();
+  const location = useLocation();
 
   const [selectedPurpose, setSelectedPurpose] = useState<string | null>(null);
 
@@ -258,12 +262,7 @@ const PurposeSelection: React.FC = () => {
     switch (season) {
       case 'spring':
         return '#FFAAA5';
-      case 'summer':
-        return '#77AADD';
-      case 'autumn':
-        return '#E8846B';
-      case 'winter':
-        return '#8795B5';
+
       default:
         return '#FFAAA5';
     }
@@ -281,14 +280,15 @@ const PurposeSelection: React.FC = () => {
 
   // 목적 설명 매핑
   const purposeDescriptionMap: Record<string, string> = {
-    study: '한국에서 학업을 계획하고 있어요. 유학, 어학연수 등을 위한 정보를 제공합니다.',
-    travel: '한국 여행을 계획하고 있어요. 관광, 맛집, 교통 등 여행에 필요한 정보를 제공합니다.',
-    living: '한국에서 거주할 예정이에요. 주거, 생활, 정착에 관한 정보를 제공합니다.',
-    job: '한국에서 취업 또는 일할 계획이에요. 취업 정보와 비자, 커리어 관련 정보를 제공합니다.',
+    study: t('onboarding.purpose.study'),
+    travel: t('onboarding.purpose.travel'),
+    living: t('onboarding.purpose.living'),
+    job: t('onboarding.purpose.job'),
   };
 
   // 다음 단계로 이동
   const handleNext = () => {
+    setSelectedPurpose(null);
     if (selectedPurpose) {
       navigate(`/onboarding/${selectedPurpose}`);
     }
@@ -306,6 +306,14 @@ const PurposeSelection: React.FC = () => {
       },
     }),
   };
+
+  // onboarding 리다이렉트 시 스낵바 알림
+  React.useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.has('from')) {
+      enqueueSnackbar('상세 정보 입력을 완료해주세요', { variant: 'info', autoHideDuration: 1500 });
+    }
+  }, [location.search, enqueueSnackbar]);
 
   return (
     <Box
@@ -353,7 +361,7 @@ const PurposeSelection: React.FC = () => {
               letterSpacing: '-0.02em',
             }}
           >
-            어떤 목적으로 한국에 방문하시나요?
+            {t('onboarding.purpose.welcome')}
           </Typography>
           <Typography
             variant="subtitle1"
@@ -368,7 +376,7 @@ const PurposeSelection: React.FC = () => {
               opacity: 0.85,
             }}
           >
-            가장 적합한 옵션을 선택하면 맞춤형 정보를 제공해드립니다
+            {t('onboarding.purpose.description')}
           </Typography>
         </Box>
 
@@ -394,7 +402,10 @@ const PurposeSelection: React.FC = () => {
                 id={category.id}
                 name={category.name}
                 selected={selectedPurpose === category.id}
-                onClick={() => setSelectedPurpose(category.id)}
+                onClick={() => {
+                  setSelectedPurpose(category.id);
+                  navigate(`/onboarding/${category.id}`);
+                }}
                 icon={purposeIconMap[category.id]}
                 description={purposeDescriptionMap[category.id]}
                 themeColor={themeColor}
@@ -402,38 +413,6 @@ const PurposeSelection: React.FC = () => {
               />
             </Box>
           ))}
-        </Box>
-
-        <Box sx={{ mt: 6, textAlign: 'center' }}>
-          <Button
-            variant="contained"
-            size="large"
-            disabled={!selectedPurpose}
-            onClick={handleNext}
-            sx={{
-              bgcolor: themeColor,
-              color: 'white',
-              px: { xs: 4, md: 5 },
-              py: { xs: 1.3, md: 1.5 },
-              borderRadius: '50px',
-              fontWeight: 600,
-              fontSize: { xs: '1rem', md: '1.1rem' },
-              boxShadow: `0 6px 16px ${alpha(themeColor, 0.25)}`,
-              textTransform: 'none',
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                bgcolor: alpha(themeColor, 0.9),
-                boxShadow: `0 8px 20px ${alpha(themeColor, 0.35)}`,
-                transform: 'translateY(-2px)',
-              },
-              '&.Mui-disabled': {
-                bgcolor: alpha(theme.palette.grey[300], 0.7),
-                color: theme.palette.grey[500],
-              },
-            }}
-          >
-            {selectedPurpose ? '계속하기' : '목적을 선택해주세요'}
-          </Button>
         </Box>
       </Container>
     </Box>

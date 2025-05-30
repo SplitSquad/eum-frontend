@@ -23,15 +23,15 @@ interface MainContentLayoutProps {
  * 메인 콘텐츠 영역을 위한 공통 레이아웃 컴포넌트
  * Container 기반 또는 전체 너비 레이아웃을 지원합니다.
  */
-const MainContentLayout: React.FC<MainContentLayoutProps> = ({ 
-  children, 
+const MainContentLayout: React.FC<MainContentLayoutProps> = ({
+  children,
   maxWidth = 'md',
-  fullWidth = false 
+  fullWidth = false,
 }) => {
   if (fullWidth) {
     return <MainContentArea>{children}</MainContentArea>;
   }
-  
+
   return (
     <Container maxWidth={maxWidth} sx={{ py: 4 }}>
       {children}
@@ -39,4 +39,5 @@ const MainContentLayout: React.FC<MainContentLayoutProps> = ({
   );
 };
 
-export default MainContentLayout; 
+export default MainContentLayout;
+//#TODO 정리//

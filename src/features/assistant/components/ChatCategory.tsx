@@ -24,11 +24,11 @@ interface CategorySidebarProps {
  */
 export default function CategorySidebar({ categories, selectedKey }: CategorySidebarProps) {
   const { t } = useTranslation();
-  
+
   return (
     <div className="relative">
       {/* 메인 카테고리 패널 */}
-      <div 
+      <div
         className="relative overflow-hidden"
         style={{
           background: `
@@ -41,32 +41,33 @@ export default function CategorySidebar({ categories, selectedKey }: CategorySid
             inset 0 1px 0 rgba(255, 255, 255, 0.8),
             inset 0 -1px 0 rgba(139, 69, 19, 0.1)
           `,
-          backdropFilter: 'blur(10px)'
+          backdropFilter: 'blur(10px)',
         }}
       >
         {/* 상단 헤더 */}
-        <div 
+        <div
           className="px-6 py-4 border-b"
           style={{
             borderColor: 'rgba(139, 69, 19, 0.15)',
-            background: 'linear-gradient(90deg, rgba(212, 175, 55, 0.1) 0%, rgba(139, 69, 19, 0.05) 100%)'
+            background:
+              'linear-gradient(90deg, rgba(212, 175, 55, 0.1) 0%, rgba(139, 69, 19, 0.05) 100%)',
           }}
         >
-          <h3 
+          <h3
             className="text-lg font-bold text-center"
             style={{
               color: '#8B4513',
               fontFamily: '"Noto Serif KR", serif',
               letterSpacing: '0.05em',
-              textShadow: '0 1px 2px rgba(139, 69, 19, 0.1)'
+              textShadow: '0 1px 2px rgba(139, 69, 19, 0.1)',
             }}
           >
             {t('aiAssistant.sidebar.title')}
           </h3>
-          <div 
+          <div
             className="mt-2 h-0.5 mx-auto w-16"
             style={{
-              background: 'linear-gradient(90deg, transparent 0%, #D4AF37 50%, transparent 100%)'
+              background: 'linear-gradient(90deg, transparent 0%, #D4AF37 50%, transparent 100%)',
             }}
           />
         </div>
@@ -79,62 +80,65 @@ export default function CategorySidebar({ categories, selectedKey }: CategorySid
               <div
                 key={cat.key}
                 className={`
-                  relative group transition-all duration-300 cursor-pointer
+                  relative group transition-all duration-300
                   ${isSelected ? 'transform scale-105' : 'hover:scale-102'}
                 `}
+                style={{
+                  cursor: 'default',
+                }}
               >
                 {/* 선택된 항목 배경 */}
                 {isSelected && (
-                  <div 
+                  <div
                     className="absolute inset-0 rounded-lg"
                     style={{
-                      background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.2) 0%, rgba(139, 69, 19, 0.1) 100%)',
-                      boxShadow: 'inset 0 1px 3px rgba(212, 175, 55, 0.3)'
+                      background:
+                        'linear-gradient(135deg, rgba(212, 175, 55, 0.2) 0%, rgba(139, 69, 19, 0.1) 100%)',
+                      boxShadow: 'inset 0 1px 3px rgba(212, 175, 55, 0.3)',
                     }}
                   />
                 )}
-                
-                {/* 호버 효과 */}
-                <div 
+
+                {/* 호버 효과
+                <div
                   className={`
                     absolute inset-0 rounded-lg opacity-0 transition-opacity duration-300
                     ${!isSelected ? 'group-hover:opacity-100' : ''}
                   `}
                   style={{
-                    background: 'linear-gradient(135deg, rgba(139, 69, 19, 0.05) 0%, rgba(160, 82, 45, 0.05) 100%)'
+                    background:
+                      'linear-gradient(135deg, rgba(139, 69, 19, 0.05) 0%, rgba(160, 82, 45, 0.05) 100%)',
                   }}
-                />
+                /> */}
 
                 {/* 카테고리 내용 */}
-                <div 
+                <div
                   className={`
                     relative flex items-center px-4 py-3 rounded-lg transition-all duration-300
                     ${isSelected ? 'text-amber-800 font-semibold' : 'text-gray-700 font-medium'}
                   `}
                   style={{
                     fontFamily: '"Noto Sans KR", sans-serif',
-                    letterSpacing: '0.02em'
+                    letterSpacing: '0.02em',
                   }}
                 >
                   {/* 선택 표시 점 */}
-                  <div 
+                  <div
                     className={`
                       w-2 h-2 rounded-full mr-3 transition-all duration-300
                       ${isSelected ? 'bg-amber-600 shadow-lg' : 'bg-gray-300'}
                     `}
                     style={{
-                      boxShadow: isSelected ? '0 0 8px rgba(212, 175, 55, 0.6)' : 'none'
+                      boxShadow: isSelected ? '0 0 8px rgba(212, 175, 55, 0.6)' : 'none',
                     }}
                   />
-                  
+
                   {/* 카테고리 라벨 */}
-                  <span className="flex-1 select-none">
-                    {cat.label}
-                  </span>
+                  <span className="flex-1 select-none">{cat.label}</span>
 
                   {/* 선택된 항목 화살표 */}
                   {isSelected && (
-                    <div 
+                    <div
                       className="ml-2 text-amber-600 transition-transform duration-300"
                       style={{ fontSize: '12px' }}
                     >
@@ -145,10 +149,11 @@ export default function CategorySidebar({ categories, selectedKey }: CategorySid
 
                 {/* 하단 구분선 (마지막 항목 제외) */}
                 {index < categories.length - 1 && (
-                  <div 
+                  <div
                     className="absolute bottom-0 left-4 right-4 h-px"
                     style={{
-                      background: 'linear-gradient(90deg, transparent 0%, rgba(139, 69, 19, 0.1) 50%, transparent 100%)'
+                      background:
+                        'linear-gradient(90deg, transparent 0%, rgba(139, 69, 19, 0.1) 50%, transparent 100%)',
                     }}
                   />
                 )}
@@ -158,21 +163,22 @@ export default function CategorySidebar({ categories, selectedKey }: CategorySid
         </div>
 
         {/* 하단 장식 */}
-        <div 
+        <div
           className="px-6 py-3 border-t"
           style={{
             borderColor: 'rgba(139, 69, 19, 0.15)',
-            background: 'linear-gradient(90deg, rgba(139, 69, 19, 0.02) 0%, rgba(212, 175, 55, 0.05) 50%, rgba(139, 69, 19, 0.02) 100%)'
+            background:
+              'linear-gradient(90deg, rgba(139, 69, 19, 0.02) 0%, rgba(212, 175, 55, 0.05) 50%, rgba(139, 69, 19, 0.02) 100%)',
           }}
         >
           <div className="text-center">
-            <div 
+            <div
               className="inline-block px-3 py-1 rounded-full text-xs"
               style={{
                 background: 'rgba(139, 69, 19, 0.1)',
                 color: '#8B4513',
                 fontFamily: '"Noto Sans KR", sans-serif',
-                fontWeight: '500'
+                fontWeight: '500',
               }}
             >
               {t('aiAssistant.sidebar.autoSelectInfo')}
@@ -182,18 +188,18 @@ export default function CategorySidebar({ categories, selectedKey }: CategorySid
       </div>
 
       {/* 사이드 장식 요소들 */}
-      <div 
+      <div
         className="absolute -top-2 -right-2 w-6 h-6 rounded-full opacity-60 pointer-events-none"
         style={{
           background: 'radial-gradient(circle, rgba(212, 175, 55, 0.4) 0%, transparent 70%)',
-          filter: 'blur(4px)'
+          filter: 'blur(4px)',
         }}
       />
-      <div 
+      <div
         className="absolute -bottom-2 -left-2 w-4 h-4 rounded-full opacity-40 pointer-events-none"
         style={{
           background: 'radial-gradient(circle, rgba(139, 69, 19, 0.3) 0%, transparent 70%)',
-          filter: 'blur(3px)'
+          filter: 'blur(3px)',
         }}
       />
     </div>

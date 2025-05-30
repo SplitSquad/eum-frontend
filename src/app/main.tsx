@@ -3,7 +3,7 @@ import '../index.css';
 import Routes from '../routes/routes';
 
 createRoot(document.getElementById('root')!).render(
-  //<StrictMode>
+  // <StrictMode>
   <Routes />
-  //</StrictMode>,
+  // </StrictMode>
 );

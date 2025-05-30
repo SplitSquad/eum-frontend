@@ -123,9 +123,7 @@ export const loginUser = async (loginUser: CommonUserLoginRequest) => {
       email: loginUser.email,
       password: loginUser.password,
     };
-    console.log('로그인 요청 데이터:', payload);
     const response = await apiClient.post<CommonUserLoginResponse>('/auth/common/login', payload);
-    console.log('로그인 응답 데이터:', response);
     // 토큰 저장
     setToken(response.token);
 
@@ -274,6 +272,10 @@ export const checkAuthStatus = async (): Promise<User> => {
         role: profileResponse.role,
         name: profileResponse.name,
         isOnBoardDone: preferenceResponse.isOnBoardDone || false,
+        nation: preferenceResponse.nation,
+        language: preferenceResponse.language,
+        gender: preferenceResponse.gender,
+        visitPurpose: preferenceResponse.visitPurpose,
       };
     } catch (apiError) {
       console.warn('API에서 사용자 정보 가져오기 실패, 토큰에서 정보 추출 시도:', apiError);

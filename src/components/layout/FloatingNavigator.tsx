@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import styled from '@emotion/styled';
-import HomeIcon from '@mui/icons-material/Home';
-import ForumIcon from '@mui/icons-material/Forum';
-import ChatIcon from '@mui/icons-material/Chat';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import Tooltip from '@mui/material/Tooltip';
 import { keyframes } from '@emotion/react';
 import { useTranslation } from '@/shared/i18n';
-import { useMediaQuery, useTheme } from '@mui/material';
+import homeIcon from '@/assets/icons/navigation/home.svg';
+import forumIcon from '@/assets/icons/navigation/forum.svg';
+import debateIcon from '@/assets/icons/navigation/debate.svg';
+import chatIcon from '@/assets/icons/navigation/chat.svg';
+import infoIcon from '@/assets/icons/navigation/info.svg';
+import accountIcon from '@/assets/icons/navigation/account.svg';
 
 const FireIcon = styled('span')({
   fontSize: 28,
@@ -30,83 +32,44 @@ const fadeOut = keyframes`
   to { opacity: 0; transform: translateY(10px); }
 `;
 
-const FloatingNav = styled('nav')<{ visible: boolean; isMobile: boolean }>`
+const FloatingNav = styled('nav')<{ visible: boolean }>`
   position: fixed;
-  top: ${props => props.isMobile ? '50vh' : '30vh'};
-  left: ${props => props.isMobile ? '16px' : '24px'};
+  top: 30vh;
+  left: 24px;
   transform: translateY(-50%);
   z-index: 2000;
   display: flex;
   flex-direction: column;
-  gap: ${props => props.isMobile ? '12px' : '20px'};
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: ${props => props.isMobile ? '20px' : '16px'};
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-  padding: ${props => props.isMobile ? '16px 8px' : '32px 12px'};
+  gap: 20px;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  padding: 32px 12px;
   align-items: center;
-  min-height: ${props => props.isMobile ? '240px' : '300px'};
-  transition: all 0.3s ease;
+  min-height: 300px;
+  transition: opacity 0.3s;
   animation: ${props => (props.visible ? fadeIn : fadeOut)} 0.4s both;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-
-  @media (max-width: 480px) {
-    left: 12px;
-    padding: 12px 6px;
-    gap: 10px;
-    min-height: 200px;
-    border-radius: 16px;
-  }
 `;
 
-const NavButton = styled('button')<{ active?: boolean; isMobile: boolean }>`
+const NavButton = styled('button')<{ isactive?: boolean }>`
   background: none;
   border: none;
   outline: none;
   cursor: pointer;
-  padding: ${props => props.isMobile ? '10px' : '12px'};
+  padding: 8px;
   border-radius: 50%;
-  color: ${({ active }) => (active ? '#1976d2' : '#666')};
-  background: ${({ active }) => (active ? 'rgba(25, 118, 210, 0.12)' : 'none')};
-  transition: all 0.2s ease;
+  color: ${({ isactive }) => (isactive ? '#1976d2' : '#666')};
+  background: ${({ isactive }) => (isactive ? 'rgba(25, 118, 210, 0.08)' : 'none')};
+  transition:
+    background 0.2s,
+    color 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: ${props => props.isMobile ? '20px' : '24px'};
-  min-width: ${props => props.isMobile ? '40px' : '48px'};
-  min-height: ${props => props.isMobile ? '40px' : '48px'};
-  position: relative;
-
+  font-size: 28px;
   &:hover {
-    background: rgba(25, 118, 210, 0.16);
+    background: rgba(25, 118, 210, 0.12);
     color: #1976d2;
-    transform: scale(1.1);
-  }
-
-  &:active {
-    transform: scale(0.95);
-  }
-
-  // 활성 상태 표시점
-  &::after {
-    content: '';
-    position: absolute;
-    right: -2px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 4px;
-    height: ${props => props.active ? '20px' : '0'};
-    background: linear-gradient(135deg, #1976d2, #42a5f5);
-    border-radius: 2px;
-    transition: all 0.3s ease;
-    opacity: ${props => props.active ? 1 : 0};
-  }
-
-  @media (max-width: 480px) {
-    padding: 8px;
-    min-width: 36px;
-    min-height: 36px;
-    font-size: 18px;
   }
 `;
 
@@ -120,13 +83,10 @@ const FloatingNavigator = ({ isHeaderVisible }: FloatingNavigatorProps) => {
   const [show, setShow] = useState(false);
   const [shouldRender, setShouldRender] = React.useState(show);
   const { t } = useTranslation();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const isSmallMobile = useMediaQuery('(max-width: 480px)');
 
   useEffect(() => {
     const handleScroll = () => {
-      const threshold = isMobile ? 40 : 60;
+      const threshold = 60;
       const scrollY = Math.max(
         window.scrollY,
         document.documentElement.scrollTop,
@@ -135,66 +95,77 @@ const FloatingNavigator = ({ isHeaderVisible }: FloatingNavigatorProps) => {
       setShow(scrollY > threshold);
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    //window.addEventListener('scroll', handleScroll, { passive: true });
     document.body.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll();
-    
     return () => {
       window.removeEventListener('scroll', handleScroll);
       document.body.removeEventListener('scroll', handleScroll);
       document.documentElement.removeEventListener('scroll', handleScroll);
     };
-  }, [isMobile]);
+  }, []);
 
   React.useEffect(() => {
     if (show) {
       setShouldRender(true);
     } else {
-      const timeout = setTimeout(() => setShouldRender(false), 400);
+      const timeout = setTimeout(() => setShouldRender(false), 400); // fade duration
       return () => clearTimeout(timeout);
     }
   }, [show]);
 
-  // 모바일에서 헤더가 보이지 않을 때만 표시
-  if (!shouldRender || (isMobile && isHeaderVisible !== false)) {
+  if (!shouldRender || isHeaderVisible === false) {
     return null;
   }
 
+  // navItems 배열
   const navItems = [
-    { label: t('common.home'), icon: <HomeIcon />, path: '/home' },
-    { label: t('common.community'), icon: <ForumIcon />, path: '/community' },
-    { label: t('common.info'), icon: <ForumIcon />, path: '/info' },
-    { label: t('common.debate'), icon: <FireIcon>🔥</FireIcon>, path: '/debate' },
-    { label: t('common.aiassistant'), icon: <ChatIcon />, path: '/assistant' },
-    { label: t('common.mypage'), icon: <AccountCircleIcon />, path: '/mypage' },
+    {
+      label: t('common.home'),
+      icon: <img src={homeIcon} alt="Home" style={{ width: 28, height: 28 }} />,
+      path: '/dashboard',
+    },
+    {
+      label: t('common.info'),
+      icon: <img src={infoIcon} alt="Info" style={{ width: 28, height: 28 }} />,
+      path: '/info',
+    },
+    {
+      label: t('common.community'),
+      icon: <img src={forumIcon} alt="Community" style={{ width: 28, height: 28 }} />,
+      path: '/community',
+    },
+
+    {
+      label: t('common.debate'),
+      icon: <img src={debateIcon} alt="Debate" style={{ width: 28, height: 28 }} />,
+      path: '/debate',
+    },
+    {
+      label: t('common.aiassistant'),
+      icon: <img src={chatIcon} alt="AI Assistant" style={{ width: 28, height: 28 }} />,
+      path: '/assistant',
+    },
+    {
+      label: t('common.mypage'),
+      icon: <img src={accountIcon} alt="My Page" style={{ width: 28, height: 28 }} />,
+      path: '/mypage',
+    },
   ];
 
   return (
-    <FloatingNav visible={show} isMobile={isMobile}>
-      {navItems.map(item => {
-        const isActive = location.pathname.startsWith(item.path);
-        return (
-          <Tooltip 
-            key={item.path} 
-            title={item.label} 
-            placement="right" 
-            arrow
-                         // 모바일에서는 툴팁 비활성화
-            disableHoverListener={isMobile}
-            disableFocusListener={isMobile}
-            disableTouchListener={isMobile}
+    <FloatingNav visible={show}>
+      {navItems.map(item => (
+        <Tooltip key={item.path} title={item.label} placement="right" arrow>
+          <NavButton
+            isactive={location.pathname.startsWith(item.path)}
+            onClick={() => navigate(item.path)}
+            aria-label={item.label}
           >
-            <NavButton
-              active={isActive}
-              isMobile={isMobile}
-              onClick={() => navigate(item.path)}
-              aria-label={item.label}
-            >
-              {item.icon}
-            </NavButton>
-          </Tooltip>
-        );
-      })}
+            {item.icon}
+          </NavButton>
+        </Tooltip>
+      ))}
     </FloatingNav>
   );
 };

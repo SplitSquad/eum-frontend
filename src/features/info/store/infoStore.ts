@@ -13,6 +13,7 @@ interface InfoPost {
   createdAt: string;
   views: number;
   category: string;
+  isState?: number;
 }
 
 // 정보 필터 타입 정의
@@ -68,15 +69,15 @@ const initialState: InfoState = {
 // 카테고리 매핑 함수들
 const getCategoryKoreanName = (categoryKey: string) => {
   const koreanMap: { [key: string]: string } = {
-    'all': '전체',
-    'visa': '비자/법률',
-    'employment': '취업/직장',
-    'housing': '주거/부동산',
-    'education': '교육',
-    'healthcare': '의료/건강',
-    'finance': '금융/세금',
-    'transportation': '교통',
-    'shopping': '쇼핑',
+    all: '전체',
+    visa: '비자/법률',
+    employment: '취업/직장',
+    housing: '주거/부동산',
+    education: '교육',
+    healthcare: '의료/건강',
+    finance: '금융/세금',
+    transportation: '교통',
+    shopping: '쇼핑',
   };
   return koreanMap[categoryKey] || '전체';
 };
@@ -91,18 +92,18 @@ export const useInfoStore = create<InfoState & InfoActions>()(
       fetchPosts: async (filterUpdate = {}) => {
         const currentState = get();
         const mergedFilter = { ...currentState.filter, ...filterUpdate };
-        
+
         console.log('[INFO Store] 게시글 조회 시작:', mergedFilter);
-        
+
         set({ loading: true, error: null, filter: mergedFilter });
 
         try {
           const token = localStorage.getItem('auth_token') || '';
-          
+
           // 정렬 방식 매핑
           const sortMapping = {
-            'latest': 'latest',
-            'popular': 'views'
+            latest: 'latest',
+            popular: 'views',
           };
 
           const params = new URLSearchParams({
@@ -110,9 +111,10 @@ export const useInfoStore = create<InfoState & InfoActions>()(
             size: String(mergedFilter.size),
             sort: sortMapping[mergedFilter.sortBy],
             keyword: mergedFilter.keyword || '',
-            category: mergedFilter.category !== 'all' 
-              ? getCategoryKoreanName(mergedFilter.category) 
-              : getCategoryKoreanName('all'),
+            category:
+              mergedFilter.category !== 'all'
+                ? getCategoryKoreanName(mergedFilter.category)
+                : getCategoryKoreanName('all'),
           });
 
           const url = mergedFilter.keyword
@@ -122,7 +124,7 @@ export const useInfoStore = create<InfoState & InfoActions>()(
           console.log('[INFO Store] API 호출:', url);
 
           const response = await fetch(url, {
-            headers: { Authorization: token }
+            headers: { Authorization: token },
           });
 
           if (!response.ok) {
@@ -130,11 +132,11 @@ export const useInfoStore = create<InfoState & InfoActions>()(
           }
 
           const data = await response.json();
-          
+
           console.log('[INFO Store] API 응답:', data);
 
           let processedPosts = data.informationList || [];
-          
+
           // 클라이언트 사이드 정렬 (필요한 경우)
           if (mergedFilter.sortBy === 'popular' && processedPosts.length > 0) {
             processedPosts = [...processedPosts].sort((a, b) => (b.views || 0) - (a.views || 0));
@@ -146,7 +148,6 @@ export const useInfoStore = create<InfoState & InfoActions>()(
             loading: false,
             error: null,
           });
-
         } catch (error) {
           console.error('[INFO Store] 게시글 조회 실패:', error);
           set({
@@ -164,12 +165,12 @@ export const useInfoStore = create<InfoState & InfoActions>()(
             page: '0',
             size: '4',
             sort: 'views',
-            category: getCategoryKoreanName('all')
+            category: getCategoryKoreanName('all'),
           });
-          
+
           const url = `${API_BASE}/information?${params}`;
           const response = await fetch(url, { headers: { Authorization: token } });
-          
+
           if (response.ok) {
             const data = await response.json();
             set({ popularPosts: data.informationList || [] });
@@ -185,36 +186,48 @@ export const useInfoStore = create<InfoState & InfoActions>()(
         try {
           const token = localStorage.getItem('auth_token') || '';
           const counts: { [key: string]: number } = {};
-          
+
           console.log('[INFO Store] 카테고리 카운트 조회 시작');
-          
+
           // 전체 데이터를 한 번에 조회해서 카테고리별로 카운트
           const allParams = new URLSearchParams({
             page: '0',
             size: '10000',
             category: getCategoryKoreanName('all'),
-            sort: 'latest'
+            sort: 'latest',
           });
-          
+
           const url = `${API_BASE}/information?${allParams}`;
           const response = await fetch(url, { headers: { Authorization: token } });
-          
+
           if (response.ok) {
             const data = await response.json();
             const allPosts = data.informationList || [];
-            
+
             // 카테고리별로 카운트
-            const categoryKeys = ['all', 'visa', 'employment', 'housing', 'education', 'healthcare', 'finance', 'transportation', 'shopping'];
-            
+            const categoryKeys = [
+              'all',
+              'visa',
+              'employment',
+              'housing',
+              'education',
+              'healthcare',
+              'finance',
+              'transportation',
+              'shopping',
+            ];
+
             categoryKeys.forEach(categoryKey => {
               if (categoryKey === 'all') {
                 counts[categoryKey] = allPosts.length;
               } else {
                 const koreanName = getCategoryKoreanName(categoryKey);
-                counts[categoryKey] = allPosts.filter((post: any) => post.category === koreanName).length;
+                counts[categoryKey] = allPosts.filter(
+                  (post: any) => post.category === koreanName
+                ).length;
               }
             });
-            
+
             console.log('[INFO Store] 카테고리 카운트 완료:', counts);
             set({ categoryCounts: counts });
           }
@@ -224,7 +237,7 @@ export const useInfoStore = create<InfoState & InfoActions>()(
       },
 
       // 필터 설정
-      setFilter: (filterUpdate) => {
+      setFilter: filterUpdate => {
         const currentState = get();
         const newFilter = { ...currentState.filter, ...filterUpdate };
         set({ filter: newFilter });
@@ -237,17 +250,17 @@ export const useInfoStore = create<InfoState & InfoActions>()(
           const response = await fetch(`${API_BASE}/information/${id}`, {
             headers: { Authorization: token },
           });
-          
+
           if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
           }
-          
+
           const data: InfoPost = await response.json();
           console.log('[INFO Store] 게시글 상세 조회 완료:', data);
-          
+
           // 현재 게시글로 설정
           set({ currentPost: data });
-          
+
           return data;
         } catch (error) {
           console.error('[INFO Store] 게시글 상세 조회 실패:', error);
@@ -275,7 +288,9 @@ const setupLanguageChangeListener = () => {
 
     // 언어가 변경되었을 때만 실행
     if (currentLanguage !== previousLanguage) {
-      console.log(`[INFO Store] 언어가 변경됨: ${previousLanguage} → ${currentLanguage}, 정보 데이터 새로고침`);
+      console.log(
+        `[INFO Store] 언어가 변경됨: ${previousLanguage} → ${currentLanguage}, 정보 데이터 새로고침`
+      );
       previousLanguage = currentLanguage;
 
       const infoState = useInfoStore.getState();
@@ -291,38 +306,38 @@ const setupLanguageChangeListener = () => {
       setTimeout(async () => {
         try {
           console.log('[INFO Store] 언어 변경으로 백엔드 동기화 시작');
-          
+
           // 언어 스토어에서 백엔드 동기화 실행
           const { syncWithBackend } = useLanguageStore.getState();
           await syncWithBackend(currentLanguage);
-          
+
           console.log('[INFO Store] 백엔드 동기화 완료, 정보 데이터 새로고침 시작');
-          
+
           // 동기화 완료 후 데이터 새로고침
           const infoStore = useInfoStore.getState();
           await Promise.all([
             infoStore.fetchCategoryCounts(),
             infoStore.fetchPopularPosts(),
-            infoStore.fetchPosts(refreshFilter)
+            infoStore.fetchPosts(refreshFilter),
           ]);
-          
+
           // 현재 상세 페이지를 보고 있다면 상세 데이터도 새로고침
           if (infoStore.currentPost) {
             const currentId = infoStore.currentPost.informationId.toString();
             console.log('[INFO Store] 상세 페이지 데이터 새로고침:', currentId);
             await infoStore.fetchPostDetail(currentId);
           }
-          
+
           console.log('[INFO Store] 언어 변경 데이터 새로고침 완료');
         } catch (error) {
           console.error('[INFO Store] 언어 변경 시 데이터 새로고침 실패:', error);
-          
+
           // 동기화 실패 시에도 UI 새로고침은 시도
           const infoStore = useInfoStore.getState();
           infoStore.fetchCategoryCounts();
           infoStore.fetchPopularPosts();
           infoStore.fetchPosts(refreshFilter);
-          
+
           // 상세 페이지도 새로고침 시도
           if (infoStore.currentPost) {
             const currentId = infoStore.currentPost.informationId.toString();
@@ -337,4 +352,4 @@ const setupLanguageChangeListener = () => {
 // 스토어 생성 후 언어 변경 감시 시작
 setupLanguageChangeListener();
 
-export default useInfoStore; 
+export default useInfoStore;

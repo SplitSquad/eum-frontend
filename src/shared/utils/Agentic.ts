@@ -1,3 +1,5 @@
+import { getAgenticState, setAgenticState, resetAgenticState } from './Agentic_state';
+
 /**
  * callAgentic
  * - Agentic 백엔드 서비스에 POST 요청을 보내 사용자 입력(query)과
@@ -15,6 +17,8 @@ export async function callAgentic(
 ): Promise<{
   response: string;
   metadata: { query: string; state: string; uid: string; error: string };
+  state: string;
+  url: string;
 }> {
   // localStorage에서 토큰 읽기
   const token = localStorage.getItem('auth_token');
@@ -22,21 +26,29 @@ export async function callAgentic(
     throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
   }
 
-  const res = await fetch(
-    'http://af9c53d0f69ea45c793da25cdc041496-1311657830.ap-northeast-2.elb.amazonaws.com:80/api/v1/agentic',
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: token,
-      },
-      body: JSON.stringify({ query, uid, state: 'first' }),
-    }
-  );
+  const state = getAgenticState(); // 현재 상태 가져오기
+
+  const res = await fetch('https://api.eum-friends.com/api/v1/agentic', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: token,
+    },
+    body: JSON.stringify({ query, uid, state }),
+  });
 
   if (!res.ok) {
     throw new Error(`Agentic API error ${res.status}`);
   }
 
-  return res.json();
+  const result = await res.json();
+
+  // ✅ 응답 로그 확인
+  console.log('[Agentic] 백엔드 응답:', result);
+
+  if (result?.state) {
+    setAgenticState(result.state); // ✅ 응답 기반으로 상태 업데이트
+  }
+
+  return result;
 }

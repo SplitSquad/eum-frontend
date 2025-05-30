@@ -1116,8 +1116,11 @@ const CommentSection: React.FC<CommentSectionProps> = ({
             <Typography variant="subtitle2">{comment.writer?.nickname}</Typography>
             {/* 국가 정보 표시 */}
             {comment.writer?.nation && (
-              <Typography variant="caption" sx={{ fontSize: '0.7rem', color: '#999', mt: 0.2, display: 'block' }}>
-                <FlagDisplay nation={comment.writer.nation} size="small" />
+              <Typography
+                variant="caption"
+                sx={{ fontSize: '0.7rem', color: '#999', mt: 0.2, display: 'block' }}
+              >
+                <FlagDisplay nation={comment.writer.nation} size="small" showName={false} />
               </Typography>
             )}
             <Typography variant="caption" color="text.secondary">
@@ -1180,16 +1183,16 @@ const CommentSection: React.FC<CommentSectionProps> = ({
           buttonText={t('community.comments.editComment')}
         />
       ) : (
-      <Typography
-        variant="body1"
-        sx={{
-          mb: 2,
-          whiteSpace: 'pre-wrap',
-          wordBreak: 'break-word',
-        }}
-      >
-        {comment.content}
-      </Typography>
+        <Typography
+          variant="body1"
+          sx={{
+            mb: 2,
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word',
+          }}
+        >
+          {comment.content}
+        </Typography>
       )}
 
       <CommentFooter>
@@ -1298,12 +1301,22 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                                 </Typography>
                                 {/* 국가 정보 표시 */}
                                 {reply.writer?.nation && (
-                                  <Typography variant="caption" sx={{ fontSize: '0.7rem', color: '#999', mt: 0.2, display: 'block' }}>
-                                    <FlagDisplay nation={reply.writer.nation} size="small" />
+                                  <Typography
+                                    variant="caption"
+                                    sx={{
+                                      fontSize: '0.7rem',
+                                      color: '#999',
+                                      mt: 0.2,
+                                      display: 'block',
+                                    }}
+                                  >
+                                    <FlagDisplay nation={reply.writer.nation} size="small" showName={false} />
                                   </Typography>
                                 )}
                                 <Typography variant="caption" color="text.secondary">
-                                  {format(new Date(reply.createdAt), 'yyyy년 MM월 dd일 HH:mm', { locale: ko })}
+                                  {format(new Date(reply.createdAt), 'yyyy년 MM월 dd일 HH:mm', {
+                                    locale: ko,
+                                  })}
                                 </Typography>
                               </Box>
 

@@ -143,17 +143,25 @@ export const PostApi = {
         apiParams.region = location === '전체' ? '전체' : location;
       }
 
-      // 태그 처리 - 번역 없이 그대로 전달
+      // 태그 처리 (단일 선택만 지원)
       if (params.tag && params.tag !== '전체') {
-        // 콤마로 분리된 태그 문자열을 배열로 변환
+        // 단일 태그이므로 배열 대신 문자열로 전송
         const tagsArray = params.tag.split(',').map(tag => tag.trim());
-        // 태그 배열을 직접 할당
-        apiParams.tags = tagsArray;
+        
+        // 다양한 백엔드 파라미터 형식 시도
+        apiParams.tags = tagsArray; // 배열 형태
+        apiParams.tag = params.tag; // 단일 문자열 형태
+        apiParams.tagList = tagsArray; // 대안 배열 형태
 
         // 로그에 태그 정보 명확하게 표시
-        console.log('[DEBUG] 태그 필터링 적용:', { 
-          원본태그: params.tag, 
-          태그배열: tagsArray 
+        console.log('[DEBUG] 태그 필터링 적용:', {
+          원본태그: params.tag,
+          태그배열: tagsArray,
+          전송형태: {
+            tags: apiParams.tags,
+            tag: apiParams.tag,
+            tagList: apiParams.tagList
+          }
         });
       }
 
@@ -379,6 +387,21 @@ export const PostApi = {
           break;
         case 'title_content':
           searchByValue = '제목_내용';
+          break;
+        case '作成者': // 일본어 작성자
+          searchByValue = '작성자';
+          break;
+        case '作者': // 중국어 작성자 (간체/번체 공통)
+          searchByValue = '작성자';
+          break;
+        case 'Autor': // 독일어 & 스페인어 작성자
+          searchByValue = '작성자';
+          break;
+        case 'Auteur': // 프랑스어 작성자
+          searchByValue = '작성자';
+          break;
+        case 'Автор': // 러시아어 작성자
+          searchByValue = '작성자';
           break;
         default:
           // 이미 한글로 전달된 경우를 처리
@@ -610,13 +633,15 @@ export const PostApi = {
   /**
    * 게시글 상세 조회
    */
-  getPostById: async (postId: number, signal?: AbortSignal, noViewCount: boolean = false): Promise<Post> => {
+  getPostById: async (
+    postId: number,
+    signal?: AbortSignal,
+    noViewCount: boolean = false
+  ): Promise<Post> => {
     try {
       // 조회수를 증가시키지 않는 옵션 추가 (언어 변경 시 사용)
-      const url = noViewCount 
-        ? `${BASE_URL}/${postId}?noViewCount=true` 
-        : `${BASE_URL}/${postId}`;
-        
+      const url = noViewCount ? `${BASE_URL}/${postId}?noViewCount=true` : `${BASE_URL}/${postId}`;
+
       const response = await apiClient.get<any>(url, { signal });
 
       // 백엔드 응답 구조와 일치하도록 데이터 변환
@@ -650,7 +675,7 @@ export const PostApi = {
 
   /**
    * 게시글 조회수 증가
-   * 참고: 현재 getPostById API 호출 시 백엔드에서 자동으로 조회수가 증가하므로 
+   * 참고: 현재 getPostById API 호출 시 백엔드에서 자동으로 조회수가 증가하므로
    * 이 메서드는 실제로 호출하지 않아야 합니다. noViewCount=true 파라미터를 사용하여
    * 필요한 경우 조회수 증가를 방지할 수 있습니다.
    */

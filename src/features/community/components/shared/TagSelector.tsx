@@ -11,6 +11,9 @@ import {
 } from '@mui/material';
 import styled from '@emotion/styled';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { useTranslation } from '@/shared/i18n';
+
+const { t } = useTranslation();
 
 // 봄 테마 스타일
 const SpringThemedAccordion = styled(Accordion)`
@@ -118,7 +121,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
             textAlign: 'right',
           }}
         >
-          태그는 최대 {maxSelection}개까지 선택 가능합니다 ({selectedTags.length}/{maxSelection})
+          {t('tagDes.0')} {maxSelection} {t('tagDes.1')} ({selectedTags.length}/{maxSelection})
         </Typography>
       )}
 

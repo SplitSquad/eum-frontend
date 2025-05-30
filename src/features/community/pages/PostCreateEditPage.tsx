@@ -45,9 +45,10 @@ import { useRegionStore } from '../store/regionStore';
 import { debugLog } from '../../../shared/utils/debug';
 import { detectLanguage } from '../utils/languageUtils';
 import { useTranslation } from '../../../shared/i18n';
+import { useLanguageContext } from '../../../features/theme/components/LanguageProvider';
+import { usePostStore } from '../store/postStore';
 
 // 스프링 배경 컴포넌트 임포트
-import SpringBackground from '../components/shared/SpringBackground';
 
 // Type definitions
 export interface FileInfo {
@@ -218,34 +219,74 @@ const regions = [
   '해외/기타',
 ];
 
-// 태그 소분류 - 번역 키를 사용하는 함수로 변경
-const getSubTagsByCategory = (t: any): { [key: string]: string[] } => ({
+// 태그 소분류 - 원본 한국어 태그 (API 전달용)
+const getOriginalSubTagsByCategory = (): { [key: string]: string[] } => ({
   travel: [
-    t('community.tags.travel.tourism'),
-    t('community.tags.travel.food'),
-    t('community.tags.travel.transport'),
-    t('community.tags.travel.accommodation'),
-    t('community.tags.travel.embassy'),
+    '관광/체험',
+    '식도락/맛집',
+    '교통/이동',
+    '숙소/지역정보',
+    '대사관/응급',
   ],
   living: [
-    t('community.tags.living.realEstate'),
-    t('community.tags.living.livingEnvironment'),
-    t('community.tags.living.culture'),
-    t('community.tags.living.housing'),
+    '부동산/계약',
+    '생활환경/편의',
+    '문화/생활',
+    '주거지 관리/유지',
   ],
   study: [
-    t('community.tags.study.academic'),
-    t('community.tags.study.studySupport'),
-    t('community.tags.study.visa'),
-    t('community.tags.study.dormitory'),
+    '학사/캠퍼스',
+    '학업지원/시설',
+    '행정/비자/서류',
+    '기숙사/주거',
   ],
   job: [
-    t('community.tags.job.career'),
-    t('community.tags.job.labor'),
-    t('community.tags.job.jobFair'),
-    t('community.tags.job.partTime'),
+    '이력/채용준비',
+    '비자/법률/노동',
+    '잡페어/네트워킹',
+    '알바/파트타임',
   ],
 });
+
+// 태그 소분류 - 번역된 텍스트 (UI 표시용)
+const getSubTagsByCategory = (t: any): { [key: string]: string[] } => ({
+  travel: [
+    t('communityTags.travel.0') || '관광/체험',
+    t('communityTags.travel.1') || '식도락/맛집',
+    t('communityTags.travel.2') || '교통/이동',
+    t('communityTags.travel.3') || '숙소/지역정보',
+    t('communityTags.travel.4') || '대사관/응급',
+  ],
+  living: [
+    t('communityTags.living.0') || '부동산/계약',
+    t('communityTags.living.1') || '생활환경/편의',
+    t('communityTags.living.2') || '문화/생활',
+    t('communityTags.living.3') || '주거지 관리/유지',
+  ],
+  study: [
+    t('communityTags.study.0') || '학사/캠퍼스',
+    t('communityTags.study.1') || '학업지원/시설',
+    t('communityTags.study.2') || '행정/비자/서류',
+    t('communityTags.study.3') || '기숙사/주거',
+  ],
+  job: [
+    t('communityTags.job.0') || '이력/채용준비',
+    t('communityTags.job.1') || '비자/법률/노동',
+    t('communityTags.job.2') || '잡페어/네트워킹',
+    t('communityTags.job.3') || '알바/파트타임',
+  ],
+});
+
+// 번역된 태그를 원본 한국어 태그로 변환하는 함수
+const convertTranslatedTagsToOriginal = (translatedTags: string[], category: string, t: any): string[] => {
+  const originalTags = getOriginalSubTagsByCategory()[category] || [];
+  const translatedTagsMap = getSubTagsByCategory(t)[category] || [];
+  
+  return translatedTags.map(translatedTag => {
+    const index = translatedTagsMap.indexOf(translatedTag);
+    return index !== -1 ? originalTags[index] : translatedTag;
+  });
+};
 
 // Define a FileWithMetadata interface for file objects with metadata
 interface FileWithMetadata {
@@ -271,6 +312,7 @@ const PostCreateEditPage: React.FC = () => {
   const isEditMode = !!postId;
   const { enqueueSnackbar } = useSnackbar();
   const { t } = useTranslation();
+  const { currentLanguage } = useLanguageContext();
 
   // 커뮤니티 스토어에서 필요한 상태와 액션 가져오기
   const communityStore = useCommunityStore();
@@ -500,13 +542,17 @@ const PostCreateEditPage: React.FC = () => {
 
       // 언어 감지 - 제목과 내용을 결합하여 감지
       const combinedText = formData.title + ' ' + formData.content;
-      const detectedLanguage = detectLanguage(combinedText);
+      const detectedLanguage = await detectLanguage(combinedText);
       
-      debugLog('언어 감지 결과:', {
+      console.log('언어 감지 상세 결과:', {
+        currentUILanguage: currentLanguage,
         title: formData.title.substring(0, 50) + '...',
         content: formData.content.substring(0, 50) + '...',
+        combinedText: combinedText.substring(0, 100) + '...',
         detectedLanguage,
-        combinedTextLength: combinedText.length
+        detectedLanguageUpperCase: detectedLanguage.toUpperCase(),
+        combinedTextLength: combinedText.length,
+        isUILanguageSameAsDetected: currentLanguage === detectedLanguage
       });
 
       // 폼 데이터 준비 - API 형식에 맞게 변환
@@ -521,12 +567,25 @@ const PostCreateEditPage: React.FC = () => {
         emotion: 'NONE', // 기본값
       };
 
-      // 수정 모드가 아닐 때만 태그 정보 추가
+      // 수정 모드가 아닐 때만 태그 정보 추가 (원본 한국어 태그로 변환)
       const postData = isEditMode 
         ? basePostData 
-        : { ...basePostData, tags: formData.subTags };
+        : { 
+            ...basePostData, 
+            tags: convertTranslatedTagsToOriginal(formData.subTags, formData.category || '', t)
+          };
 
-      debugLog('서버로 전송할 데이터:', postData);
+      console.log('태그 변환 결과:', {
+        원본번역된태그: formData.subTags,
+        변환된한국어태그: isEditMode ? '수정모드-태그변환안함' : convertTranslatedTagsToOriginal(formData.subTags, formData.category || '', t),
+        카테고리: formData.category
+      });
+
+      console.log('서버로 전송할 최종 데이터:', {
+        ...postData,
+        content: postData.content.substring(0, 100) + '...',
+        tagsCount: ('tags' in postData && postData.tags) ? postData.tags.length : 0
+      });
 
       // 게시글 생성 또는 수정
       if (isEditMode && postId) {
@@ -546,34 +605,45 @@ const PostCreateEditPage: React.FC = () => {
           selectedFiles,
           removedFileIds
         );
-        enqueueSnackbar(t('community.posts.form.messages.saveSuccess'), { variant: 'success' });
-        
+        enqueueSnackbar(t('community.posts.saveSuccess'), { variant: 'success' });
+
         // 수정된 게시글로 바로 이동
         navigate(`/community/${postId}`);
       } else {
         try {
           // 게시글 생성 시도
           const result = await createPost(postData, selectedFiles);
-          enqueueSnackbar(t('community.posts.form.messages.publishSuccess'), { variant: 'success' });
-          
+          enqueueSnackbar(t('community.posts.saveSuccess'), { variant: 'success' });
+
           // 생성 결과 확인
           console.log('게시글 생성 결과:', result);
-          
-          // 약간의 지연 후 목록 페이지로 이동
-          // 이렇게 하면 서버에서 데이터가 완전히 처리될 시간을 확보함
+
+          // eum-frontend와 동일한 방식: 약간의 지연 후 전체 페이지 새로고침
+          // 이렇게 하면 서버에서 데이터가 완전히 처리될 시간을 확보하고 최신 게시글이 바로 표시됨
           setTimeout(() => {
-            // 강제로 게시판 목록 페이지를 새로고침하여 최신 게시글이 표시되도록 함
-            window.location.href = '/community';
-          }, 500);
+            // 새 게시글 생성됨을 localStorage에 기록 (목록 페이지에서 강제 새로고침용)
+            localStorage.setItem('newPostCreated', Date.now().toString());
+            localStorage.setItem('newPostType', postData.postType);
+            
+            // eum-frontend와 완전히 동일: window.location.href 사용
+            if (postData.postType === '모임') {
+              window.location.href = '/community/groups';
+            } else {
+              window.location.href = '/community/board';
+            }
+          }, 500); // eum-frontend와 동일한 500ms
         } catch (error) {
           console.error('게시글 생성 오류:', error);
-          enqueueSnackbar(t('community.posts.form.messages.publishError'), { variant: 'error' });
-      navigate('/community');
+          enqueueSnackbar(t('community.posts.saveFailed'), { variant: 'error' });
+          // 에러 발생 시에도 목록 페이지로 이동
+          setTimeout(() => {
+            window.location.href = '/community';
+          }, 1000);
         }
       }
     } catch (error) {
       console.error('게시글 저장 오류:', error);
-      enqueueSnackbar(t('community.posts.form.messages.saveError'), { variant: 'error' });
+      enqueueSnackbar(t('community.posts.saveFailed'), { variant: 'error' });
     } finally {
       setIsSaving(false);
     }
@@ -581,7 +651,7 @@ const PostCreateEditPage: React.FC = () => {
 
   // 취소 버튼 핸들러
   const handleCancel = () => {
-    if (window.confirm(t('community.posts.form.messages.unsavedChanges'))) {
+    if (window.confirm(t('community.posts.cancelPost'))) {
       resetRegion();
       navigate('/community');
     }
@@ -590,204 +660,201 @@ const PostCreateEditPage: React.FC = () => {
   // 로딩 중일 때 로딩 표시
   if (isLoading) {
     return (
-      <SpringBackground>
-        <Container maxWidth="md" sx={{ py: 4 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+
+      <Container maxWidth="md" sx={{ py: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
             <CircularProgress sx={{ color: 'rgba(255, 107, 107, 0.7)' }} />
-          </Box>
-        </Container>
-      </SpringBackground>
+        </Box>
+      </Container>
     );
   }
 
   return (
-    <SpringBackground>
-      <Container maxWidth="md" sx={{ py: 4 }}>
-        {/* 뒤로 가기 버튼 */}
-        <Box sx={{ mb: 2 }}>
-          <Button
-            startIcon={<ArrowBackIcon />}
-            onClick={() => navigate('/community')}
-            sx={{
-              color: '#666',
-              '&:hover': {
-                backgroundColor: 'rgba(255, 240, 240, 0.2)',
-              },
-            }}
-          >
+    <Container maxWidth="md" sx={{ py: 4 }}>
+      {/* 뒤로 가기 버튼 */}
+      <Box sx={{ mb: 2 }}>
+        <Button
+          startIcon={<ArrowBackIcon />}
+          onClick={() => navigate('/community')}
+          sx={{
+            color: '#666',
+            '&:hover': {
+              backgroundColor: 'rgba(255, 240, 240, 0.2)',
+            },
+          }}
+        >
             {t('common.backToList')}
-          </Button>
-        </Box>
+        </Button>
+      </Box>
 
-        <ContentPaper elevation={3}>
+      <ContentPaper elevation={3}>
           <PageTitle variant="h5">{isEditMode ? t('community.editPost') : t('community.createPost')}</PageTitle>
 
-          <form onSubmit={handleSubmit}>
-            <FormBox>
-              {/* 제목 입력 필드 */}
-              <TextField
+        <form onSubmit={handleSubmit}>
+          <FormBox>
+            {/* 제목 입력 필드 */}
+            <TextField
                 label={t('community.posts.form.title')}
                 placeholder={t('community.posts.form.titlePlaceholder')}
-                variant="outlined"
-                fullWidth
-                name="title"
-                value={formData.title}
-                onChange={handleInputChange}
-                error={!!errors.title}
-                helperText={errors.title}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: '12px',
-                    '& fieldset': {
+              variant="outlined"
+              fullWidth
+              name="title"
+              value={formData.title}
+              onChange={handleInputChange}
+              error={!!errors.title}
+              helperText={errors.title}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '12px',
+                  '& fieldset': {
                       borderColor: 'rgba(255, 170, 165, 0.5)',
-                    },
-                    '&:hover fieldset': {
-                      borderColor: 'rgba(255, 107, 107, 0.7)',
-                    },
-                    '&.Mui-focused fieldset': {
-                      borderColor: 'rgba(255, 107, 107, 0.7)',
-                    },
                   },
-                }}
-              />
+                  '&:hover fieldset': {
+                      borderColor: 'rgba(255, 107, 107, 0.7)',
+                  },
+                  '&.Mui-focused fieldset': {
+                      borderColor: 'rgba(255, 107, 107, 0.7)',
+                  },
+                },
+              }}
+            />
 
               {/* 게시글 타입 선택 (자유/모임) - 수정 모드에서는 비활성화 */}
-              <FormControl sx={{ minWidth: 200 }}>
+            <FormControl sx={{ minWidth: 200 }}>
                 <InputLabel id="post-type-label">{t('community.posts.form.postType')}</InputLabel>
-                <Select
-                  labelId="post-type-label"
-                  id="post-type"
-                  value={formData.postType}
-                  onChange={handlePostTypeChange}
+              <Select
+                labelId="post-type-label"
+                id="post-type"
+                value={formData.postType}
+                onChange={handlePostTypeChange}
                   label={t('community.posts.form.postType')}
                   disabled={isEditMode}
-                  sx={{
-                    borderRadius: '12px',
-                    '& .MuiOutlinedInput-notchedOutline': {
+                sx={{
+                  borderRadius: '12px',
+                  '& .MuiOutlinedInput-notchedOutline': {
                       borderColor: 'rgba(255, 170, 165, 0.5)',
-                    },
-                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
                       borderColor: 'rgba(255, 107, 107, 0.7)',
-                    },
-                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
                       borderColor: 'rgba(255, 107, 107, 0.7)',
-                    },
-                  }}
-                >
+                  },
+                }}
+              >
                   {getPostTypes(t).map((type) => (
                     <MenuItem key={type.key} value={type.key}>
                       {type.label}
-                    </MenuItem>
-                  ))}
-                </Select>
+                  </MenuItem>
+                ))}
+              </Select>
                 <FormHelperText>
                   {isEditMode ? t('community.postTypeCannotModify') : t('community.chooseFreeOrGroupPost')}
                 </FormHelperText>
-              </FormControl>
+            </FormControl>
 
-              {/* 게시글 타입이 '모임'일 때만 지역 선택 표시 - 수정 모드에서는 비활성화 */}
-              {formData.postType === '모임' && (
-                <Box sx={{ mt: 2 }}>
-                  <RegionSelector onChange={handleRegionChange} disabled={isEditMode} />
-                  <FormHelperText sx={{ ml: 1 }}>
-                    {isEditMode ? t('community.regionCannotModify') : t('community.chooseGroupLocation')}
-                  </FormHelperText>
-                </Box>
-              )}
+            {/* 게시글 타입이 '모임'일 때만 지역 선택 표시 */}
+            {formData.postType === '모임' && (
+              <FormControl fullWidth sx={{ mt: 2 }}>
+                <InputLabel>지역</InputLabel>
+                <RegionSelector onChange={handleRegionChange} />
+                <FormHelperText>모임이 진행될 지역을 선택하세요</FormHelperText>
+              </FormControl>
+            )}
 
               {/* 카테고리 선택 - 수정 모드에서는 비활성화 */}
-              <FormControl fullWidth variant="outlined" margin="normal">
+            <FormControl fullWidth variant="outlined" margin="normal">
                 <InputLabel id="category-label">{t('community.posts.form.category')}</InputLabel>
-                <Select
-                  labelId="category-label"
-                  id="category"
-                  name="category"
-                  value={formData.category || ''}
-                  onChange={handleCategoryChange}
+              <Select
+                labelId="category-label"
+                id="category"
+                name="category"
+                value={formData.category || ''}
+                onChange={handleCategoryChange}
                   label={t('community.posts.form.category')}
-                  required
+                required
                   disabled={isEditMode}
-                  sx={{
-                    bgcolor: 'white',
-                    '& .MuiOutlinedInput-notchedOutline': {
+                sx={{
+                  bgcolor: 'white',
+                  '& .MuiOutlinedInput-notchedOutline': {
                       borderColor: 'rgba(255, 170, 165, 0.5)',
-                    },
-                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
                       borderColor: 'rgba(255, 107, 107, 0.7)',
-                    },
-                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
                       borderColor: 'rgba(255, 107, 107, 0.9)',
-                    },
-                  }}
-                >
-                  {categories.map(category => (
-                    <MenuItem key={category} value={category}>
+                  },
+                }}
+              >
+                {categories.map(category => (
+                  <MenuItem key={category} value={category}>
                       {getCategoryLabels(t)[category]}
-                    </MenuItem>
-                  ))}
-                </Select>
+                  </MenuItem>
+                ))}
+              </Select>
                 <FormHelperText>
                   {isEditMode ? t('community.categoryCannotModify') : t('community.choosePostSubjectCategory')}
                 </FormHelperText>
-              </FormControl>
+            </FormControl>
 
               {/* 소분류(태그) 선택 - 수정 모드에서는 비활성화 */}
               {formData.category && !isEditMode && (
-                <FormControl fullWidth variant="outlined" margin="normal">
+              <FormControl fullWidth variant="outlined" margin="normal">
                   <InputLabel id="subtags-label">{t('community.posts.form.tags')}</InputLabel>
-                  <Select
-                    labelId="subtags-label"
-                    id="subtags"
-                    multiple
-                    value={formData.subTags}
-                    onChange={handleSubTagChange}
+                <Select
+                  labelId="subtags-label"
+                  id="subtags"
+                  multiple
+                  value={formData.subTags}
+                  onChange={handleSubTagChange}
                     input={<OutlinedInput id="select-multiple-chip" label={t('community.posts.form.tags')} />}
-                    renderValue={selected => (
-                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                        {(selected as string[]).map(value => (
-                          <Chip
-                            key={value}
-                            label={value}
-                            sx={{
+                  renderValue={selected => (
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                      {(selected as string[]).map(value => (
+                        <Chip
+                          key={value}
+                          label={value}
+                          sx={{
                               bgcolor: 'rgba(255, 170, 165, 0.2)',
                               borderColor: 'rgba(255, 107, 107, 0.3)',
-                              border: '1px solid',
-                              color: '#7b1fa2',
-                              fontWeight: 'medium',
-                            }}
-                          />
-                        ))}
-                      </Box>
-                    )}
-                    MenuProps={MenuProps}
-                    sx={{
-                      bgcolor: 'white',
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'rgba(255, 170, 165, 0.5)',
-                      },
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'rgba(255, 107, 107, 0.7)',
-                      },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'rgba(255, 107, 107, 0.9)',
-                      },
-                    }}
-                  >
-                    {formData.category &&
-                      getSubTagsByCategory(t)[formData.category]?.map(tag => (
-                        <MenuItem
-                          key={tag}
-                          value={tag}
-                          style={getTagStyles(tag, formData.subTags, theme)}
-                        >
-                          <Checkbox checked={formData.subTags.indexOf(tag) > -1} />
-                          <ListItemText primary={tag} />
-                        </MenuItem>
+                            border: '1px solid',
+                            color: '#7b1fa2',
+                            fontWeight: 'medium',
+                          }}
+                        />
                       ))}
-                  </Select>
+                    </Box>
+                  )}
+                  MenuProps={MenuProps}
+                  sx={{
+                    bgcolor: 'white',
+                    '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgba(255, 170, 165, 0.5)',
+                    },
+                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgba(255, 107, 107, 0.7)',
+                    },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgba(255, 107, 107, 0.9)',
+                    },
+                  }}
+                >
+                  {formData.category &&
+                      getSubTagsByCategory(t)[formData.category]?.map(tag => (
+                      <MenuItem
+                        key={tag}
+                        value={tag}
+                        style={getTagStyles(tag, formData.subTags, theme)}
+                      >
+                        <Checkbox checked={formData.subTags.indexOf(tag) > -1} />
+                        <ListItemText primary={tag} />
+                      </MenuItem>
+                    ))}
+                </Select>
                   <FormHelperText>{t('community.chooseRelatedSubTags')} (최대 3개)</FormHelperText>
-                </FormControl>
-              )}
+              </FormControl>
+            )}
 
               {/* 수정 모드에서 태그 안내 메시지 */}
               {isEditMode && (
@@ -813,52 +880,44 @@ const PostCreateEditPage: React.FC = () => {
                   border: '1px solid rgba(244, 67, 54, 0.3)',
                   mb: 2
                 }}>
-                  <Typography variant="body2" color="error" sx={{ fontWeight: 500, mb: 1 }}>
-                    ⚠️ 파일 수정 시 주의사항
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    • 새로운 파일을 추가하면 <strong>기존 파일이 모두 삭제</strong>됩니다<br />
-                    • 기존 파일을 유지하려면 새 파일을 추가하지 마세요<br />
-                    • 파일 변경이 필요하면 기존 파일을 먼저 다운로드해 두세요
-                  </Typography>
                 </Box>
-              )}
+            )}
 
-              {/* 내용 입력 필드 */}
-              <TextField
+            {/* 내용 입력 필드 */}
+            <TextField
                 label={t('community.posts.form.content')}
                 placeholder={t('community.posts.form.contentPlaceholder')}
-                variant="outlined"
-                multiline
-                rows={8}
-                fullWidth
-                name="content"
-                value={formData.content}
-                onChange={handleInputChange}
-                error={!!errors.content}
-                helperText={errors.content}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: '12px',
-                    '& fieldset': {
+              variant="outlined"
+              multiline
+              rows={8}
+              fullWidth
+              name="content"
+              value={formData.content}
+              onChange={handleInputChange}
+              error={!!errors.content}
+              helperText={errors.content}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '12px',
+                  '& fieldset': {
                       borderColor: 'rgba(255, 170, 165, 0.5)',
-                    },
-                    '&:hover fieldset': {
-                      borderColor: 'rgba(255, 107, 107, 0.7)',
-                    },
-                    '&.Mui-focused fieldset': {
-                      borderColor: 'rgba(255, 107, 107, 0.7)',
-                    },
                   },
-                }}
-              />
+                  '&:hover fieldset': {
+                      borderColor: 'rgba(255, 107, 107, 0.7)',
+                  },
+                  '&.Mui-focused fieldset': {
+                      borderColor: 'rgba(255, 107, 107, 0.7)',
+                  },
+                },
+              }}
+            />
 
-              {/* 파일 업로드 영역 */}
-              <Box>
+            {/* 파일 업로드 영역 */}
+            <Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                   <Typography variant="subtitle1">
                     {t('community.fileUpload')}
-                </Typography>
+              </Typography>
                   {!isEditMode && (
                     <Typography variant="caption" color="text.secondary" sx={{ 
                       bgcolor: 'rgba(33, 150, 243, 0.1)', 
@@ -884,33 +943,33 @@ const PostCreateEditPage: React.FC = () => {
                   )}
                 </Box>
 
-                <FileUploadBox onClick={handleUploadBoxClick}>
+              <FileUploadBox onClick={handleUploadBoxClick}>
                   <CloudUploadIcon
                     sx={{ fontSize: 40, color: 'rgba(255, 107, 107, 0.7)', mb: 1 }}
                   />
                   <Typography variant="body1" gutterBottom sx={{ fontWeight: 500 }}>
                     {isEditMode ? '⚠️ 새 파일 추가 (기존 파일 모두 삭제됨)' : '📁 파일을 드래그하거나 클릭하여 업로드'}
-                  </Typography>
+                </Typography>
                   <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
                     {isEditMode ? 
                       '새 파일을 선택하면 기존 첨부파일이 모두 삭제됩니다\n신중하게 선택해주세요' :
                       '이미지는 미리보기로 표시됩니다 ✨\n최대 10MB, 모든 파일 형식 지원'
                     }
-                  </Typography>
-                  <VisuallyHiddenInput
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileSelect}
-                    multiple
-                  />
-                </FileUploadBox>
+                </Typography>
+                <VisuallyHiddenInput
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileSelect}
+                  multiple
+                />
+              </FileUploadBox>
 
-                {/* 선택된 파일 목록 */}
-                {selectedFiles.length > 0 && (
-                  <Box sx={{ mt: 2 }}>
+              {/* 선택된 파일 목록 */}
+              {selectedFiles.length > 0 && (
+                <Box sx={{ mt: 2 }}>
                     <Typography variant="subtitle2" gutterBottom sx={{ mb: 2 }}>
                       {t('community.selectedFiles')} ({selectedFiles.length})
-                    </Typography>
+                  </Typography>
                     
                     {/* 선택된 파일을 이미지와 일반 파일로 분리 */}
                     {(() => {
@@ -1057,11 +1116,11 @@ const PostCreateEditPage: React.FC = () => {
                                   const originalIndex = selectedFiles.indexOf(file);
                                   
                                   return (
-                        <ListItem
-                          key={index}
-                          secondaryAction={
-                            <IconButton
-                              edge="end"
+                      <ListItem
+                        key={index}
+                        secondaryAction={
+                          <IconButton
+                            edge="end"
                                           onClick={() => handleFileRemove(originalIndex)}
                                           sx={{ 
                                             color: 'rgba(244, 67, 54, 0.7)',
@@ -1070,14 +1129,14 @@ const PostCreateEditPage: React.FC = () => {
                                               backgroundColor: 'rgba(244, 67, 54, 0.1)',
                                             }
                                           }}
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          }
-                          sx={{
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        }
+                        sx={{
                                         bgcolor: 'white',
-                            borderRadius: '8px',
-                            mb: 1,
+                          borderRadius: '8px',
+                          mb: 1,
                                         '&:last-child': { mb: 0 },
                                         border: '1px solid #c8e6c9',
                                         '&:hover': {
@@ -1085,12 +1144,12 @@ const PostCreateEditPage: React.FC = () => {
                                           backgroundColor: '#f9f9f9',
                                         },
                                         transition: 'all 0.2s ease',
-                          }}
-                        >
-                          <ListItemIcon>
+                        }}
+                      >
+                        <ListItemIcon>
                                         <InsertDriveFileIcon sx={{ color: 'rgba(76, 175, 80, 0.8)' }} />
-                          </ListItemIcon>
-                          <ListItemText
+                        </ListItemIcon>
+                        <ListItemText
                                         primary={
                                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                             <span style={{ fontWeight: 500 }}>{file.name}</span>
@@ -1110,26 +1169,26 @@ const PostCreateEditPage: React.FC = () => {
                                             </Box>
                                           </Box>
                                         }
-                            secondary={`${(file.size / 1024).toFixed(2)} KB`}
-                          />
-                        </ListItem>
+                          secondary={`${(file.size / 1024).toFixed(2)} KB`}
+                        />
+                      </ListItem>
                                   );
                                 })}
-                    </List>
+                  </List>
                             </Box>
                           )}
                         </>
                       );
                     })()}
-                  </Box>
-                )}
+                </Box>
+              )}
 
-                {/* 편집 모드에서 기존 파일 표시 */}
-                {isEditMode && postFiles.length > 0 && (
-                  <Box sx={{ mt: 2 }}>
+              {/* 편집 모드에서 기존 파일 표시 */}
+              {isEditMode && postFiles.length > 0 && (
+                <Box sx={{ mt: 2 }}>
                     <Typography variant="subtitle2" gutterBottom sx={{ mb: 2 }}>
                       {t('community.existingAttachedFiles')}
-                    </Typography>
+                  </Typography>
                     
                     {/* 이미지 파일과 일반 파일 분리 */}
                     {(() => {
@@ -1296,12 +1355,12 @@ const PostCreateEditPage: React.FC = () => {
                               </Typography>
                               <List disablePadding sx={{ bgcolor: '#f9f9f9', borderRadius: 2, p: 1 }}>
                                 {nonImageFiles.map((file, index) => (
-                        <ListItem
-                          key={index}
-                          secondaryAction={
-                            <IconButton
-                              edge="end"
-                              onClick={() => handleExistingFileRemove(file.id)}
+                      <ListItem
+                        key={index}
+                        secondaryAction={
+                          <IconButton
+                            edge="end"
+                            onClick={() => handleExistingFileRemove(file.id)}
                                         sx={{ 
                                           color: 'rgba(244, 67, 54, 0.7)',
                                           '&:hover': {
@@ -1309,14 +1368,14 @@ const PostCreateEditPage: React.FC = () => {
                                             backgroundColor: 'rgba(244, 67, 54, 0.1)',
                                           }
                                         }}
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          }
-                          sx={{
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        }
+                        sx={{
                                       bgcolor: 'white',
-                            borderRadius: '8px',
-                            mb: 1,
+                          borderRadius: '8px',
+                          mb: 1,
                                       '&:last-child': { mb: 0 },
                                       border: '1px solid #e0e0e0',
                                       '&:hover': {
@@ -1324,17 +1383,17 @@ const PostCreateEditPage: React.FC = () => {
                                         backgroundColor: '#fafafa',
                                       },
                                       transition: 'all 0.2s ease',
-                          }}
-                        >
-                          <ListItemIcon>
+                        }}
+                      >
+                        <ListItemIcon>
                             <InsertDriveFileIcon sx={{ color: 'rgba(255, 107, 107, 0.7)' }} />
-                          </ListItemIcon>
-                          <ListItemText
-                            primary={
-                              <Box
-                                component="a"
-                                href={file.fileUrl}
-                                target="_blank"
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={
+                            <Box
+                              component="a"
+                              href={file.fileUrl}
+                              target="_blank"
                                           sx={{ 
                                             textDecoration: 'none', 
                                             color: 'rgba(255, 107, 107, 0.8)',
@@ -1344,56 +1403,55 @@ const PostCreateEditPage: React.FC = () => {
                                               textDecoration: 'underline',
                                             }
                                           }}
-                              >
-                                {file.fileName}
-                              </Box>
-                            }
-                          />
-                        </ListItem>
-                      ))}
-                    </List>
-                  </Box>
-                )}
+                            >
+                              {file.fileName}
+                            </Box>
+                          }
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                </Box>
+              )}
                         </>
                       );
                     })()}
-              </Box>
+            </Box>
                 )}
                 </Box>
 
-              {/* 제출 및 취소 버튼 */}
-              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 2 }}>
+            {/* 제출 및 취소 버튼 */}
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 2 }}>
                 <Button
                   variant="outlined"
-                  onClick={handleCancel}
-                  sx={{
+                onClick={handleCancel}
+                sx={{
                     borderColor: '#FFAAA5',
                     color: '#666',
-                    '&:hover': {
+                  '&:hover': {
                       borderColor: '#FF9999',
                       backgroundColor: 'rgba(255, 240, 240, 0.2)',
-                    },
+                  },
                     borderRadius: '8px',
-                  }}
-                >
+                }}
+              >
                   {t('common.cancel')}
                 </Button>
-                <StyledButton
-                  type="submit"
-                  variant="contained"
-                  disabled={isSaving}
+              <StyledButton
+                type="submit"
+                variant="contained"
+                disabled={isSaving}
                   startIcon={
                     isSaving ? <CircularProgress size={20} sx={{ color: 'white' }} /> : null
                   }
-                >
+              >
                   {isSaving ? t('common.saving') : isEditMode ? t('community.edit') : t('community.create')}
-                </StyledButton>
-              </Box>
-            </FormBox>
-          </form>
-        </ContentPaper>
-      </Container>
-    </SpringBackground>
+              </StyledButton>
+            </Box>
+          </FormBox>
+        </form>
+      </ContentPaper>
+    </Container>
   );
 };
 

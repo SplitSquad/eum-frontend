@@ -3,24 +3,25 @@ import { useDebateStore } from '../../store';
 import CommentItem from './CommentItem';
 import CommentForm from './CommentForm';
 import Pagination from '../shared/Pagination';
-import { 
-  Box, 
-  Typography, 
-  Button, 
-  CircularProgress, 
-  Select, 
-  MenuItem, 
+import {
+  Box,
+  Typography,
+  Button,
+  CircularProgress,
+  Select,
+  MenuItem,
   FormControl,
   InputLabel,
   Divider,
   Paper,
   Stack,
-  SelectChangeEvent
+  SelectChangeEvent,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import AddCommentIcon from '@mui/icons-material/AddComment';
 import SortIcon from '@mui/icons-material/Sort';
 import { DebateComment } from '../../types';
+import { useTranslation } from '@/shared/i18n';
 
 interface CommentSectionProps {
   debateId: number;
@@ -67,35 +68,29 @@ const CommentListContainer = styled(Stack)(({ theme }) => ({
   marginTop: theme.spacing(4),
   '& > div + div': {
     marginTop: theme.spacing(2),
-  }
+  },
 }));
 
 const CommentSection: React.FC<CommentSectionProps> = ({ debateId }) => {
-  const {
-    comments,
-    totalComments,
-    commentPages,
-    currentCommentPage,
-    isLoading,
-    getComments
-  } = useDebateStore();
-
+  const { comments, totalComments, commentPages, currentCommentPage, isLoading, getComments } =
+    useDebateStore();
+  const { t } = useTranslation();
   const [showCommentForm, setShowCommentForm] = useState(false);
   const [sortBy, setSortBy] = useState('latest');
   const [localComments, setLocalComments] = useState<DebateComment[]>([]);
-  
+
   // 새 댓글 추가 성공 핸들러
   const handleCommentSuccess = (newComment: any) => {
     // 임시 ID인 경우 (음수) - 낙관적 UI 업데이트를 위한 로컬 댓글
     if (newComment && newComment.id < 0) {
       setLocalComments(prev => [newComment, ...prev]);
       setShowCommentForm(false);
-    } 
+    }
     // 서버에서 실제 데이터를 받은 경우 - API 호출 완료
     else {
       // 댓글 작성 폼 닫기
       setShowCommentForm(false);
-      
+
       // 서버 데이터 다시 가져오기
       getComments(debateId, currentCommentPage || 1);
     }
@@ -112,10 +107,10 @@ const CommentSection: React.FC<CommentSectionProps> = ({ debateId }) => {
   const handleSortChange = (event: SelectChangeEvent) => {
     const value = event.target.value;
     setSortBy(value);
-    
+
     // 정렬 변경 시 로컬 댓글 초기화
     setLocalComments([]);
-    
+
     // 서버에서 새로 데이터 가져오기 (정렬 옵션은 백엔드에서 처리)
     getComments(debateId, 1);
   };
@@ -124,7 +119,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ debateId }) => {
   const renderEmptyComments = () => (
     <EmptyCommentsBox>
       <Typography variant="body1" color="text.secondary" gutterBottom>
-        아직 댓글이 없습니다.
+        {t('debate.comment.empty')}
       </Typography>
       <ActionButton
         onClick={() => setShowCommentForm(true)}
@@ -133,7 +128,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ debateId }) => {
         startIcon={<AddCommentIcon />}
         sx={{ mt: 2 }}
       >
-        첫 댓글 작성하기
+        {t('debate.comment.add')}
       </ActionButton>
     </EmptyCommentsBox>
   );
@@ -145,13 +140,13 @@ const CommentSection: React.FC<CommentSectionProps> = ({ debateId }) => {
     <CommentContainer elevation={0}>
       <HeaderBox>
         <Typography variant="h6" fontWeight="bold" color="text.primary">
-          댓글 {totalComments + localComments.length}개
+          {totalComments + localComments.length} {t('debate.comment.reply')}
         </Typography>
-        
+
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
           {/* 정렬 옵션 선택 */}
           <FormControl variant="outlined" size="small" sx={{ minWidth: 120 }}>
-            <InputLabel id="comment-sort-label">정렬</InputLabel>
+            <InputLabel id="comment-sort-label">{t('debate.comment.order')}</InputLabel>
             <Select
               labelId="comment-sort-label"
               value={sortBy}
@@ -159,27 +154,27 @@ const CommentSection: React.FC<CommentSectionProps> = ({ debateId }) => {
               label="정렬"
               startAdornment={<SortIcon fontSize="small" sx={{ color: 'action.active', mr: 1 }} />}
             >
-              <MenuItem value="latest">최신순</MenuItem>
-              <MenuItem value="oldest">오래된순</MenuItem>
-              <MenuItem value="popular">인기순</MenuItem>
+              <MenuItem value="latest">{t('debate.comment.newest')}</MenuItem>
+              <MenuItem value="oldest">{t('debate.comment.oldest')}</MenuItem>
+              <MenuItem value="popular">{t('debate.comment.mostLiked')}</MenuItem>
             </Select>
           </FormControl>
-          
+
           {/* 댓글 작성 버튼 */}
           <ActionButton
             onClick={() => setShowCommentForm(!showCommentForm)}
             variant="contained"
-            color={showCommentForm ? "inherit" : "primary"}
+            color={showCommentForm ? 'inherit' : 'primary'}
             startIcon={<AddCommentIcon />}
-            sx={{ 
+            sx={{
               fontWeight: 'medium',
               boxShadow: showCommentForm ? 'none' : 2,
               '&:hover': {
-                boxShadow: showCommentForm ? 'none' : 3
-              }
+                boxShadow: showCommentForm ? 'none' : 3,
+              },
             }}
           >
-            {showCommentForm ? '취소' : '댓글 작성'}
+            {showCommentForm ? t('debate.comment.cancel') : t('debate.comment.add')}
           </ActionButton>
         </Box>
       </HeaderBox>
@@ -190,10 +185,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ debateId }) => {
       {/* 댓글 작성 폼 */}
       {showCommentForm && (
         <Box sx={{ mb: 4 }}>
-          <CommentForm
-            debateId={debateId}
-            onSuccess={handleCommentSuccess}
-          />
+          <CommentForm debateId={debateId} onSuccess={handleCommentSuccess} />
         </Box>
       )}
 
@@ -216,8 +208,10 @@ const CommentSection: React.FC<CommentSectionProps> = ({ debateId }) => {
                   // 댓글 목록 업데이트가 필요한 경우만 서버 API 호출 (댓글 삭제, 수정 등)
                   // 대댓글만 업데이트 되었을 때는 불필요한 댓글 목록 다시 로드 방지
                   // 제발 이거로 되어야만 한다....
-                  console.log('댓글 업데이트 이벤트 발생 - 리다이렉션 방지를 위해 자동 새로고침 비활성화됨');
-                  
+                  console.log(
+                    '댓글 업데이트 이벤트 발생 - 리다이렉션 방지를 위해 자동 새로고침 비활성화됨'
+                  );
+
                   // 기존 코드를 주석 처리하여 불필요한 API 호출 방지
                   /*
                   console.log('댓글 업데이트 필요 - 목록 다시 불러오기');
@@ -243,18 +237,19 @@ const CommentSection: React.FC<CommentSectionProps> = ({ debateId }) => {
           />
         </Box>
       )}
-      
+
       {/* 페이지 정보 표시 */}
-      {totalComments > 0 && (
+      {/* {totalComments > 0 && (
         <Box sx={{ mt: 2, textAlign: 'center' }}>
           <Typography variant="body2" color="text.secondary">
-            총 {totalComments}개 댓글 중 {currentCommentPage === 1 ? 1 : (currentCommentPage - 1) * 10 + 1}-
-            {Math.min(currentCommentPage * 10, totalComments)}개 표시
+            {t('debate.comment.total')} {totalComments}{' '}
+            {currentCommentPage === 1 ? 1 : (currentCommentPage - 1) * 10 + 1}-
+            {Math.min(currentCommentPage * 10, totalComments)} {t('debate.comment.of')}{' '}
           </Typography>
         </Box>
-      )}
+      )} */}
     </CommentContainer>
   );
 };
 
-export default CommentSection; 
+export default CommentSection;

@@ -94,7 +94,7 @@ const Spinner = styled.div`
   height: 40px;
   border: 3px solid rgba(0, 0, 0, 0.1);
   border-radius: 50%;
-  border-top-color: #ff9999;
+  border-top-color: #888;
   animation: spin 1s linear infinite;
 
   @keyframes spin {
@@ -107,7 +107,7 @@ const Spinner = styled.div`
 const ErrorMessage = styled.div`
   text-align: center;
   padding: 20px;
-  color: #e53e3e;
+  color: #888;
   margin: 20px 0;
 `;
 
@@ -147,12 +147,12 @@ const StatIcon = styled.div`
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #ffd1d1 0%, #ff9999 100%);
+  background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 8px;
-  color: white;
+  color: #555;
 `;
 
 const StatValue = styled.div`
@@ -252,7 +252,7 @@ const BadgeIcon = styled.div`
   align-items: center;
   justify-content: center;
   margin-bottom: 8px;
-  color: #ff9999;
+  color: #888;
   font-size: 32px;
 `;
 
@@ -274,6 +274,10 @@ const IconWithText = styled.div`
   align-items: center;
   gap: 8px;
   margin-bottom: 8px;
+
+  svg {
+    color: #888 !important;
+  }
 `;
 
 // 새로운 토스트 알림 스타일
@@ -281,17 +285,18 @@ const ToastNotification = styled.div<{ show: boolean; type: 'success' | 'error' 
   position: fixed;
   top: 20px;
   right: 20px;
-  background: ${props => props.type === 'success' 
-    ? 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)' 
-    : 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)'};
+  background: ${props =>
+    props.type === 'success'
+      ? 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)'
+      : 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)'};
   color: white;
   padding: 16px 24px;
   border-radius: 12px;
   font-size: 0.9rem;
   font-weight: 500;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-  opacity: ${props => props.show ? 1 : 0};
-  transform: ${props => props.show ? 'translateX(0) scale(1)' : 'translateX(100px) scale(0.95)'};
+  opacity: ${props => (props.show ? 1 : 0)};
+  transform: ${props => (props.show ? 'translateX(0) scale(1)' : 'translateX(100px) scale(0.95)')};
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1000;
   display: flex;
@@ -371,7 +376,7 @@ const ProfilePage: React.FC = () => {
   }>({
     show: false,
     message: '',
-    type: 'success'
+    type: 'success',
   });
 
   // 통합 알림 함수
@@ -403,13 +408,12 @@ const ProfilePage: React.FC = () => {
 
         // 모든 데이터 로딩 완료까지 대기
         await Promise.allSettled(dataPromises);
-        
+
         // 약간의 지연 후 부드럽게 표시
         setTimeout(() => {
           setContentReady(true);
           setIsInitialLoading(false);
         }, 100);
-        
       } catch (error) {
         console.error('데이터 로딩 실패:', error);
         setIsInitialLoading(false);
@@ -430,7 +434,7 @@ const ProfilePage: React.FC = () => {
         country: profile.country || '',
         language: profile.language || '',
       });
-      
+
       // auth store의 사용자 정보도 업데이트 (헤더 프로필 이미지 반영용)
       const { setUser, user } = useAuthStore.getState();
       if (user) {
@@ -501,14 +505,14 @@ const ProfilePage: React.FC = () => {
       }
 
       const imageUrl = await uploadProfileImage(file);
-      
+
       // 프로필 정보 다시 불러오기
       await fetchProfile();
-      
+
       // auth store의 프로필 이미지도 업데이트 (헤더 반영용)
       const { updateProfileImage } = useAuthStore.getState();
       updateProfileImage(imageUrl);
-      
+
       showNotification('프로필 이미지가 성공적으로 업데이트되었습니다! 🎉', 'success');
       console.log('프로필 이미지 업로드 성공:', imageUrl);
     } catch (error) {
@@ -524,14 +528,14 @@ const ProfilePage: React.FC = () => {
     setIsImageLoading(true);
     try {
       await deleteProfileImage();
-      
+
       // 프로필 정보 다시 불러오기
       await fetchProfile();
-      
+
       // auth store의 프로필 이미지도 업데이트 (헤더 반영용) - 빈 문자열로 설정
       const { updateProfileImage } = useAuthStore.getState();
       updateProfileImage('');
-      
+
       showNotification('프로필 이미지가 성공적으로 삭제되었습니다! ✨', 'success');
       console.log('프로필 이미지 삭제 성공');
     } catch (error) {
@@ -559,11 +563,15 @@ const ProfilePage: React.FC = () => {
       <PageLayout title="내 프로필">
         <ErrorMessage>
           <p>{profileError}</p>
-          <Button onClick={() => {
-            setIsInitialLoading(true);
-            setContentReady(false);
-            fetchProfile();
-          }} variant="primary" className="mt-4">
+          <Button
+            onClick={() => {
+              setIsInitialLoading(true);
+              setContentReady(false);
+              fetchProfile();
+            }}
+            variant="primary"
+            className="mt-4"
+          >
             다시 시도
           </Button>
         </ErrorMessage>
@@ -583,41 +591,61 @@ const ProfilePage: React.FC = () => {
 
   // 배지 정보 - 실제 활동 기반으로 동적 생성
   const badges = [
-    ...(postsCount > 0 ? [{
-      id: 1,
-      name: '첫 게시글',
-      icon: '📝',
-      description: '첫 번째 게시글을 작성했습니다!',
-      unlocked: true,
-    }] : []),
-    ...(commentsCount >= 10 ? [{
-      id: 2,
-      name: '소통왕',
-      icon: '💬',
-      description: '10개 이상의 댓글을 작성했습니다!',
-      unlocked: true,
-    }] : []),
-    ...(debatesCount > 0 ? [{
-      id: 3,
-      name: '토론 참여자',
-      icon: '🗳️',
-      description: '토론에 참여하여 의견을 표현했습니다!',
-      unlocked: true,
-    }] : []),
-    ...(bookmarksCount > 0 ? [{
-      id: 4,
-      name: '지식 수집가',
-      icon: '📚',
-      description: '첫 번째 북마크를 추가했습니다!',
-      unlocked: true,
-    }] : []),
-    ...(totalActivities >= 10 ? [{
-      id: 5,
-      name: '활발한 활동가',
-      icon: '🌟',
-      description: '10개 이상의 활동을 완료했습니다!',
-      unlocked: true,
-    }] : []),
+    ...(postsCount > 0
+      ? [
+          {
+            id: 1,
+            name: '첫 게시글',
+            icon: '📝',
+            description: '첫 번째 게시글을 작성했습니다!',
+            unlocked: true,
+          },
+        ]
+      : []),
+    ...(commentsCount >= 10
+      ? [
+          {
+            id: 2,
+            name: '소통왕',
+            icon: '💬',
+            description: '10개 이상의 댓글을 작성했습니다!',
+            unlocked: true,
+          },
+        ]
+      : []),
+    ...(debatesCount > 0
+      ? [
+          {
+            id: 3,
+            name: '토론 참여자',
+            icon: '🗳️',
+            description: '토론에 참여하여 의견을 표현했습니다!',
+            unlocked: true,
+          },
+        ]
+      : []),
+    ...(bookmarksCount > 0
+      ? [
+          {
+            id: 4,
+            name: '지식 수집가',
+            icon: '📚',
+            description: '첫 번째 북마크를 추가했습니다!',
+            unlocked: true,
+          },
+        ]
+      : []),
+    ...(totalActivities >= 10
+      ? [
+          {
+            id: 5,
+            name: '활발한 활동가',
+            icon: '🌟',
+            description: '10개 이상의 활동을 완료했습니다!',
+            unlocked: true,
+          },
+        ]
+      : []),
   ];
 
   // 사용자 레벨 계산 (임시 로직)
@@ -628,7 +656,7 @@ const ProfilePage: React.FC = () => {
   return (
     <PageLayout title="내 프로필">
       {/* 부드러운 등장 효과를 위한 컨테이너 */}
-      <PageContainer 
+      <PageContainer
         style={{
           opacity: contentReady ? 1 : 0,
           transform: contentReady ? 'translateY(0)' : 'translateY(20px)',
@@ -693,7 +721,12 @@ const ProfilePage: React.FC = () => {
                   overflow="hidden"
                   position="relative"
                 >
-                  <Box width={`${levelProgress}%`} height="100%" bgcolor="#FF9999" borderRadius={4} />
+                  <Box
+                    width={`${levelProgress}%`}
+                    height="100%"
+                    bgcolor="#FF9999"
+                    borderRadius={4}
+                  />
                 </Box>
               </Box>
             </ProfileCard>

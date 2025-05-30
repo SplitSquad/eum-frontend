@@ -1,5 +1,4 @@
 import apiClient from './apiClient';
-import { AxiosError } from 'axios';
 import axios from 'axios';
 import {
   Debate,

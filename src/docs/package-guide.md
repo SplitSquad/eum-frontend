@@ -91,3 +91,9 @@
   - npm install event-source-polyfill
 
   알림 관련하여 SSE 라이브러리 설치
+
+  설치 라이브러리
+
+  - npm install flag-icons
+
+  국기 이미지 가져오기 위한 라이브러리 설치

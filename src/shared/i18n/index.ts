@@ -15,6 +15,7 @@ const translations: Record<string, any> = {
   en,
   ja,
   zh,
+  // 다른 언어가 추가될 경우 여기에 추가
   de,
   fr,
   es,
@@ -43,20 +44,20 @@ export const useTranslation = () => {
    * @param params 치환할 변수 객체
    * @returns 번역된 문자열
    */
-  const t = (key: string, params?: Record<string, string | number>) => {
+  const t = (key: string, params?: Record<string, string>) => {
     // 현재 언어에 해당하는 번역 맵 가져오기
     const languageMap = translations[language] || translations.en;
-    
+
     // 키 경로를 따라 번역 텍스트 찾기
     const keys = key.split('.');
     let translation: any = languageMap;
-    
+
     // 번역 키를 따라 객체 탐색
     for (const k of keys) {
       translation = translation?.[k];
       if (!translation) break;
     }
-    
+
     // 번역을 찾지 못한 경우
     if (!translation) {
       // 영어 번역 시도
@@ -67,24 +68,24 @@ export const useTranslation = () => {
           if (!translation) break;
         }
       }
-      
+
       // 그래도 못 찾으면 키 그대로 반환
       if (!translation) {
         return key;
       }
     }
-    
+
     // 파라미터 치환
     if (params && typeof translation === 'string') {
       return Object.entries(params).reduce(
-        (acc, [paramKey, paramValue]) => 
-          acc.replace(new RegExp(`{{${paramKey}}}`, 'g'), String(paramValue)),
+        (acc, [paramKey, paramValue]) =>
+          acc.replace(new RegExp(`{{${paramKey}}}`, 'g'), paramValue),
         translation
       );
     }
-    
+
     return translation;
   };
-  
+
   return { t, language };
-}; 
+};

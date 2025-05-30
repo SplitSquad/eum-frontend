@@ -47,6 +47,8 @@ import ReportDialog, {
   ServiceType,
 } from '../../../common/components/ReportDialog';
 import FlagDisplay from '../../../../shared/components/FlagDisplay';
+import FlagIconSvg from '@/shared/components/FlagIconSvg';
+//import 'flag-icons/css/flag-icons.min.css';
 
 interface CommentItemProps {
   comment: DebateComment;
@@ -155,6 +157,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
   // Safely destructure with defaults
   const {
     id,
+    nation,
     userId,
     userName = '',
     userProfileImage,
@@ -186,7 +189,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
 
   // 추가 디버그 로그
   console.log(
-    `[DEBUG] 토론 댓글 ID: ${id}, 작성자 ID: ${userId}, 작성자 이름: ${userName}, 찬반 입장: ${extractedStance}, 원본: ${content}, 표시: ${displayContent}`
+    `[DEBUG] 토론 댓글 ID: ${id}, 작성자 ID: ${userId}, 작성자 이름: ${userName}, 찬반 입장: ${extractedStance}, 원본: ${content}, 표시: ${displayContent}, 국가 코드: ${nation}, `
   );
 
   // Store access
@@ -485,9 +488,17 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
         title={
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, alignItems: 'center' }}>
             <Typography variant="subtitle2">{userName || '익명'}</Typography>
-            {countryName && (
-              <FlagDisplay nation={countryName} size="small" inline={true} />
+            
+            {/* 국가/국기 표시 */}
+            {nation && (
+              <FlagDisplay 
+                nation={nation} 
+                size="small"
+                showName={false}
+                sx={{ mr: 0.5 }}
+              />
             )}
+            
             {/* 입장 표시 - 댓글 내용에서 추출한 stance 사용 */}
             <StanceChip
               label={extractedStance === 'con' ? '반대' : '찬성'}
@@ -631,6 +642,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
             startIcon={<ReplyIcon />}
             onClick={handleReplyClick}
             color={showReplyForm ? 'secondary' : 'primary'}
+            type="button"
           >
             {showReplyForm ? '취소' : '답글 작성'}
           </ActionButton>
@@ -642,6 +654,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
               onClick={handleToggleReplies}
               color="inherit"
               sx={{ pointerEvents: 'auto' }}
+              type="button"
             >
               {showReplies ? '답글 숨기기' : `답글 ${replyCount}개`}
             </ActionButton>

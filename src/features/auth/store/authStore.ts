@@ -16,6 +16,10 @@ export interface User {
   picture?: string;
   profileImagePath?: string; // 프로필 이미지 경로 추가
   googleId?: string;
+  nation?: string;
+  language?: string;
+  gender?: string;
+  visitPurpose?: string;
 }
 
 /**
@@ -27,14 +31,14 @@ export interface User {
  * TODO: 상훈님이랑 협의하여 전역 상태 관리 방식으로 리팩토링 필요
  */
 interface AuthState {
-  isAuthenticated: boolean;
-  user: User | null;
+  isAuthenticated: boolean | undefined;
+  user: User | undefined;
   token: string | null;
   isLoading: boolean;
   error: string | null;
 
   // 액션
-  setUser: (user: User | null) => void;
+  setUser: (user: User | undefined) => void;
   setToken: (token: string | null) => void;
   setAuthenticated: (isAuthenticated: boolean) => void;
   setLoading: (isLoading: boolean) => void;
@@ -87,8 +91,8 @@ const getUserIdFromToken = (token: string): number => {
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
-      isAuthenticated: false,
-      user: null,
+      isAuthenticated: undefined,
+      user: undefined,
       token: null,
       isLoading: false,
       error: null,
@@ -285,8 +289,8 @@ export const useAuthStore = create<AuthState>()(
 
             // API 호출 실패 시 토큰에서 직접 정보 추출
             try {
-                          // JWT 토큰 디코딩
-            const payload = JSON.parse(atob(validToken.split('.')[1]));
+              // JWT 토큰 디코딩
+              const payload = JSON.parse(atob(validToken.split('.')[1]));
               const userId = payload.userId || 0;
               const role = payload.role || 'ROLE_USER';
               const name = payload.name || ''; // 이름 정보도 추출
@@ -338,7 +342,7 @@ export const useAuthStore = create<AuthState>()(
         // 상태 초기화
         set({
           isAuthenticated: false,
-          user: null,
+          user: undefined,
           token: null,
           error: null,
         });
@@ -362,6 +366,13 @@ export const useAuthStore = create<AuthState>()(
         user: state.user,
         token: state.token,
       }),
+      // hydration 후 토큰 없으면 인증 해제
+      onRehydrateStorage: () => state => {
+        const storedToken = getToken() || localStorage.getItem('auth_token');
+        if (!storedToken) {
+          state?.clearAuthState();
+        }
+      },
     }
   )
 );

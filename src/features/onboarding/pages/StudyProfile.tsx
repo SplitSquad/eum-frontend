@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -24,11 +24,6 @@ import {
   Button,
   IconButton,
   Theme,
-  Stepper,
-  Step,
-  StepLabel,
-  FormGroup,
-  Checkbox,
 } from '@mui/material';
 import OnboardingLayout from '../components/common/OnboardingLayout';
 import FormButtons from '../components/common/FormButtons';
@@ -50,7 +45,8 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import VisaIcon from '@mui/icons-material/DocumentScanner';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
-import CountrySelector from '../../../shared/components/CountrySelector';
+import { useAuthStore } from '@/features/auth/store/authStore';
+import { useTranslation } from '@/shared/i18n';
 
 // 스타일링된 컴포넌트
 const StyledPaper = styled(Paper)(({ theme }) => ({
@@ -137,10 +133,9 @@ const AnimatedCircle = styled(motion.div)(({ theme }) => ({
 }));
 
 /**
- * 유학 온보딩 정보 데이터
+ * 유학생 온보딩 정보 데이터
  */
 interface StudyProfileData {
-  name: string;
   gender: string;
   age: string;
   nationality: string;
@@ -184,37 +179,37 @@ const uiLanguageOptions = [
 ];
 
 // 학업 유형 옵션
-const studyTypeOptions = [
-  { value: 'degree', label: '학위 과정' },
-  { value: 'exchange', label: '교환 학생' },
-  { value: 'language', label: '어학 연수' },
-  { value: 'research', label: '연구 과정' },
-  { value: 'shortTerm', label: '단기 연수' },
-  { value: 'other', label: '기타' },
+const getStudyTypeOptions = (t: any) => [
+  { value: 'degree', label: t('onboarding.study.studyType.degree') },
+  { value: 'exchange', label: t('onboarding.study.studyType.exchange') },
+  { value: 'language', label: t('onboarding.study.studyType.language') },
+  { value: 'research', label: t('onboarding.study.studyType.research') },
+  { value: 'shortTerm', label: t('onboarding.study.studyType.shortTerm') },
+  { value: 'other', label: t('onboarding.study.studyType.other') },
 ];
 
 // 전공 분야 옵션
-const majorFieldOptions = [
-  { value: 'arts', label: '예술' },
-  { value: 'business', label: '경영학' },
-  { value: 'engineering', label: '공학' },
-  { value: 'humanities', label: '인문학' },
-  { value: 'language', label: '언어학' },
-  { value: 'law', label: '법학' },
-  { value: 'medicine', label: '의학' },
-  { value: 'naturalScience', label: '자연과학' },
-  { value: 'socialScience', label: '사회과학' },
-  { value: 'other', label: '기타' },
+const getMajorFieldOptions = (t: any) => [
+  { value: 'arts', label: t('onboarding.study.majorField.arts') },
+  { value: 'business', label: t('onboarding.study.majorField.business') },
+  { value: 'engineering', label: t('onboarding.study.majorField.engineering') },
+  { value: 'humanities', label: t('onboarding.study.majorField.humanities') },
+  { value: 'language', label: t('onboarding.study.majorField.language') },
+  { value: 'law', label: t('onboarding.study.majorField.law') },
+  { value: 'medicine', label: t('onboarding.study.majorField.medicine') },
+  { value: 'naturalScience', label: t('onboarding.study.majorField.naturalScience') },
+  { value: 'socialScience', label: t('onboarding.study.majorField.socialScience') },
+  { value: 'other', label: t('onboarding.study.majorField.other') },
 ];
 
 // 학위 과정 옵션
-const academicLevelOptions = [
-  { value: 'language', label: '어학 과정' },
-  { value: 'bachelor', label: '학사 과정' },
-  { value: 'master', label: '석사 과정' },
-  { value: 'phd', label: '박사 과정' },
-  { value: 'postdoc', label: '박사 후 과정' },
-  { value: 'other', label: '기타' },
+const getAcademicLevelOptions = (t: any) => [
+  { value: 'language', label: t('onboarding.study.academicLevel.language') },
+  { value: 'bachelor', label: t('onboarding.study.academicLevel.bachelor') },
+  { value: 'master', label: t('onboarding.study.academicLevel.master') },
+  { value: 'phd', label: t('onboarding.study.academicLevel.phd') },
+  { value: 'postdoc', label: t('onboarding.study.academicLevel.postdoc') },
+  { value: 'other', label: t('onboarding.study.academicLevel.other') },
 ];
 
 // 비자 종류 옵션
@@ -231,8 +226,8 @@ const visaTypeOptions = [
   { code: 'd4_5', name: 'D-4-5 (한식조리연수)' },
   { code: 'd4_6', name: 'D-4-6 (사설기관연수)' },
   { code: 'd4_7', name: 'D-4-7 (외국어연수)' },
-  { code: 'c3_1', name: 'C-3-1 (단기일반)' }, // 단기 어학연수 등
-  { code: 'c3_4', name: 'C-3-4 (일반상용)' }, // 단기 비즈니스 연수
+  { code: 'c3_1', name: 'C-3-1 (단기일반)' },
+  { code: 'c3_4', name: 'C-3-4 (일반상용)' },
   { code: 'd1', name: 'D-1 (문화예술연수)' },
   { code: 'f1_13', name: 'F-1-13 (유학생부모)' },
   { code: 'unknown', name: '미정/모름' },
@@ -243,6 +238,7 @@ const visaTypeOptions = [
  * 유학생 프로필 페이지
  */
 const StudyProfile: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -254,7 +250,6 @@ const StudyProfile: React.FC = () => {
 
   // 데이터 스테이트
   const [formData, setFormData] = useState<StudyProfileData>({
-    name: '',
     gender: '',
     age: '',
     nationality: '',
@@ -298,12 +293,7 @@ const StudyProfile: React.FC = () => {
     switch (season) {
       case 'spring':
         return '#FFAAA5';
-      case 'summer':
-        return '#77AADD';
-      case 'autumn':
-        return '#E8846B';
-      case 'winter':
-        return '#8795B5';
+
       default:
         return '#FFAAA5';
     }
@@ -313,13 +303,13 @@ const StudyProfile: React.FC = () => {
 
   // 스텝 라벨 정의
   const stepLabels = [
-    '유학생 세부 프로필',
-    '학업 정보',
-    '유학 일정',
-    '학교/지역 선택',
-    '언어 능력',
-    '관심사 선택',
-    '응급 상황 설정',
+    t('onboarding.study.steps.profile'),
+    t('onboarding.study.steps.academic'),
+    t('onboarding.study.steps.schedule'),
+    t('onboarding.study.steps.location'),
+    t('onboarding.study.steps.language'),
+    t('onboarding.study.steps.interests'),
+    t('onboarding.study.steps.emergency'),
   ];
 
   // 스텝 아이콘 정의
@@ -431,7 +421,6 @@ const StudyProfile: React.FC = () => {
         uiLanguage: formData.uiLanguage || 'ko', // language 필드로 매핑
 
         // 상세 정보 (onBoardingPreference JSON으로 저장됨)
-        name: formData.name,
         age: formData.age,
         educationLevel: formData.educationLevel,
         fieldOfStudy: formData.fieldOfStudy,
@@ -455,8 +444,11 @@ const StudyProfile: React.FC = () => {
         // 에러를 throw하지 않고 계속 진행
       }
 
+      // store의 사용자 정보 최신화
+      await useAuthStore.getState().loadUser();
+
       // 메인 페이지로 이동
-      navigate('/home');
+      navigate('/dashboard');
     } catch (error) {
       console.error('온보딩 데이터 저장 실패:', error);
     } finally {
@@ -512,7 +504,7 @@ const StudyProfile: React.FC = () => {
                 <PersonIcon />
               </Avatar>
               <Typography variant="h5" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                유학생 세부 프로필
+                {t('onboarding.study.profileTitle')}
               </Typography>
             </Box>
 
@@ -524,23 +516,6 @@ const StudyProfile: React.FC = () => {
                 mb: 2,
               }}
             >
-              <StyledTextField
-                label="이름"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                fullWidth
-                required
-                color="primary"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <PersonIcon sx={{ color: alpha(primaryColor, 0.7) }} />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-
               <Box>
                 <FormControl component="fieldset" fullWidth>
                   <FormLabel
@@ -551,7 +526,7 @@ const StudyProfile: React.FC = () => {
                       mb: 1,
                     }}
                   >
-                    성별
+                    {t('onboarding.study.form.gender')}
                   </FormLabel>
                   <RadioGroup
                     row
@@ -570,7 +545,7 @@ const StudyProfile: React.FC = () => {
                           }}
                         />
                       }
-                      label="남성"
+                      label={t('onboarding.study.form.male')}
                     />
                     <FormControlLabel
                       value="female"
@@ -582,7 +557,7 @@ const StudyProfile: React.FC = () => {
                           }}
                         />
                       }
-                      label="여성"
+                      label={t('onboarding.study.form.female')}
                     />
                     <FormControlLabel
                       value="other"
@@ -594,40 +569,20 @@ const StudyProfile: React.FC = () => {
                           }}
                         />
                       }
-                      label="기타"
+                      label={t('onboarding.study.form.other')}
                     />
                   </RadioGroup>
                 </FormControl>
               </Box>
-            </Box>
 
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-                gap: 3,
-                mb: 2,
-              }}
-            >
               <StyledTextField
-                label="나이"
+                label={t('onboarding.study.form.age')}
                 name="age"
                 value={formData.age}
                 onChange={handleInputChange}
                 fullWidth
                 color="primary"
                 type="number"
-              />
-
-              <CountrySelector
-                label="국적"
-                value={formData.nationality}
-                onChange={(value) => {
-                  setFormData(prev => ({
-                    ...prev,
-                    nationality: value,
-                  }));
-                }}
               />
             </Box>
 
@@ -640,12 +595,22 @@ const StudyProfile: React.FC = () => {
             >
               <StyledTextField
                 select
-                label="UI 언어 선택"
+                label={t('onboarding.study.form.nationality')}
+                name="nationality"
+                value={formData.nationality}
+                onChange={handleInputChange}
+                fullWidth
+                color="primary"
+              />
+
+              <StyledTextField
+                select
+                label={t('onboarding.study.form.uiLanguage')}
                 name="uiLanguage"
                 value={formData.uiLanguage}
                 onChange={handleInputChange}
                 fullWidth
-                helperText="앱에서 사용할 언어를 선택해주세요"
+                helperText={t('onboarding.study.form.uiLanguageHelper')}
                 color="primary"
                 InputProps={{
                   startAdornment: (
@@ -681,14 +646,14 @@ const StudyProfile: React.FC = () => {
                 <SchoolIcon />
               </Avatar>
               <Typography variant="h5" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                학업 정보
+                {t('onboarding.study.academicTitle')}
               </Typography>
             </Box>
 
             <Box sx={{ mb: 3 }}>
               <StyledTextField
                 select
-                label="유학 유형"
+                label={t('onboarding.study.form.studyType')}
                 name="studyType"
                 value={formData.studyType}
                 onChange={handleInputChange}
@@ -704,7 +669,7 @@ const StudyProfile: React.FC = () => {
                   ),
                 }}
               >
-                {studyTypeOptions.map(option => (
+                {getStudyTypeOptions(t).map(option => (
                   <MenuItem key={option.value} value={option.value}>
                     {option.label}
                   </MenuItem>
@@ -722,7 +687,7 @@ const StudyProfile: React.FC = () => {
             >
               <StyledTextField
                 select
-                label="전공 분야"
+                label={t('onboarding.study.form.majorField')}
                 name="majorField"
                 value={formData.majorField}
                 onChange={handleInputChange}
@@ -736,7 +701,7 @@ const StudyProfile: React.FC = () => {
                   ),
                 }}
               >
-                {majorFieldOptions.map(option => (
+                {getMajorFieldOptions(t).map(option => (
                   <MenuItem key={option.value} value={option.value}>
                     {option.label}
                   </MenuItem>
@@ -745,7 +710,7 @@ const StudyProfile: React.FC = () => {
 
               <StyledTextField
                 select
-                label="학위 과정"
+                label={t('onboarding.study.form.academicLevel')}
                 name="academicLevel"
                 value={formData.academicLevel}
                 onChange={handleInputChange}
@@ -759,7 +724,7 @@ const StudyProfile: React.FC = () => {
                   ),
                 }}
               >
-                {academicLevelOptions.map(option => (
+                {getAcademicLevelOptions(t).map(option => (
                   <MenuItem key={option.value} value={option.value}>
                     {option.label}
                   </MenuItem>
@@ -770,7 +735,7 @@ const StudyProfile: React.FC = () => {
             <Box sx={{ mt: 3 }}>
               <StyledTextField
                 select
-                label="비자 종류"
+                label={t('onboarding.living.form.visaType')}
                 name="visaType"
                 value={formData.visaType}
                 onChange={handleInputChange}
@@ -786,7 +751,7 @@ const StudyProfile: React.FC = () => {
               >
                 {visaTypeOptions.map(option => (
                   <MenuItem key={option.code} value={option.code}>
-                    {option.name}
+                    {t(`onboarding.living.visaTypeOptions.${option.code}`)}
                   </MenuItem>
                 ))}
               </StyledTextField>
@@ -810,7 +775,7 @@ const StudyProfile: React.FC = () => {
                 <CalendarTodayIcon />
               </Avatar>
               <Typography variant="h5" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                유학 일정
+                {t('onboarding.studySchedule.title')}
               </Typography>
             </Box>
 
@@ -823,11 +788,11 @@ const StudyProfile: React.FC = () => {
                   fontWeight: 500,
                 }}
               >
-                예상 유학 기간을 선택해주세요
+                {t('onboarding.studySchedule.selectDuration')}
               </Typography>
               <StyledTextField
                 select
-                label="예상 유학 기간"
+                label={t('onboarding.studySchedule.durationLabel')}
                 name="studyDuration"
                 value={formData.studyDuration}
                 onChange={handleInputChange}
@@ -843,11 +808,21 @@ const StudyProfile: React.FC = () => {
                   ),
                 }}
               >
-                <MenuItem value="under_6months">6개월 미만</MenuItem>
-                <MenuItem value="6months_1year">6개월~1년</MenuItem>
-                <MenuItem value="1year_2years">1~2년</MenuItem>
-                <MenuItem value="2years_4years">2~4년</MenuItem>
-                <MenuItem value="over_4years">4년 이상</MenuItem>
+                <MenuItem value="underSixMonths">
+                  {t('onboarding.studySchedule.underSixMonths')}
+                </MenuItem>
+                <MenuItem value="sixMonthsToOneYear">
+                  {t('onboarding.studySchedule.sixMonthsToOneYear')}
+                </MenuItem>
+                <MenuItem value="oneYearToTwoYears">
+                  {t('onboarding.studySchedule.oneYearToTwoYears')}
+                </MenuItem>
+                <MenuItem value="twoYearsToFourYears">
+                  {t('onboarding.studySchedule.twoYearsToFourYears')}
+                </MenuItem>
+                <MenuItem value="overFourYears">
+                  {t('onboarding.studySchedule.overFourYears')}
+                </MenuItem>
               </StyledTextField>
             </Box>
 
@@ -868,10 +843,10 @@ const StudyProfile: React.FC = () => {
                     fontWeight: 500,
                   }}
                 >
-                  시작 예정일
+                  {t('onboarding.studySchedule.startDateLabel')}
                 </Typography>
                 <StyledTextField
-                  label="시작 날짜"
+                  label={t('onboarding.studySchedule.startDate')}
                   name="startDate"
                   type="date"
                   value={formData.startDate}
@@ -898,10 +873,10 @@ const StudyProfile: React.FC = () => {
                     fontWeight: 500,
                   }}
                 >
-                  종료 예정일
+                  {t('onboarding.studySchedule.endDateLabel')}
                 </Typography>
                 <StyledTextField
-                  label="종료 날짜"
+                  label={t('onboarding.studySchedule.endDate')}
                   name="endDate"
                   type="date"
                   value={formData.endDate}
@@ -938,7 +913,7 @@ const StudyProfile: React.FC = () => {
                 <LocationOnIcon />
               </Avatar>
               <Typography variant="h5" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                학교/지역 선택
+                {t('onboarding.univRegion.title')}
               </Typography>
             </Box>
 
@@ -951,7 +926,7 @@ const StudyProfile: React.FC = () => {
                   fontWeight: 500,
                 }}
               >
-                희망하는 대학교
+                {t('onboarding.univRegion.univLabel')}
               </Typography>
               <Autocomplete
                 multiple
@@ -989,8 +964,8 @@ const StudyProfile: React.FC = () => {
                 renderInput={params => (
                   <StyledTextField
                     {...params}
-                    label="희망 대학교"
-                    placeholder="대학교를 검색하세요"
+                    label={t('onboarding.univRegion.univInputLabel')}
+                    placeholder={t('onboarding.univRegion.univPlaceholder')}
                     color="primary"
                     InputProps={{
                       ...params.InputProps,
@@ -1017,7 +992,7 @@ const StudyProfile: React.FC = () => {
                   fontWeight: 500,
                 }}
               >
-                희망 지역
+                {t('onboarding.univRegion.regionLabel')}
               </Typography>
               <Autocomplete
                 multiple
@@ -1053,8 +1028,8 @@ const StudyProfile: React.FC = () => {
                 renderInput={params => (
                   <StyledTextField
                     {...params}
-                    label="희망 지역"
-                    placeholder="지역을 검색하세요"
+                    label={t('onboarding.univRegion.regionInputLabel')}
+                    placeholder={t('onboarding.univRegion.regionPlaceholder')}
                     color="primary"
                     InputProps={{
                       ...params.InputProps,
@@ -1083,7 +1058,7 @@ const StudyProfile: React.FC = () => {
   const isNextDisabled = () => {
     switch (currentStep) {
       case 1: // 유학생 세부 프로필
-        return !formData.name || !formData.gender || !formData.nationality;
+        return !formData.age || !formData.nationality;
       case 2: // 학업 정보
         return !formData.studyType;
       case 3: // 유학 일정
@@ -1240,7 +1215,7 @@ const StudyProfile: React.FC = () => {
                 letterSpacing: '-0.01em',
               }}
             >
-              유학 프로필 설정
+              {t('onboarding.study.profileSetting')}
             </Typography>
             <Typography
               variant="body2"
@@ -1249,7 +1224,7 @@ const StudyProfile: React.FC = () => {
                 opacity: 0.85,
               }}
             >
-              한국 유학에 필요한 정보를 알려주세요
+              {t('onboarding.study.profileDescription')}
             </Typography>
           </Box>
         </Box>
@@ -1294,7 +1269,7 @@ const StudyProfile: React.FC = () => {
               textTransform: 'none',
             }}
           >
-            이전
+            {t('onboarding.travel.back')}
           </Button>
 
           <Button
@@ -1318,7 +1293,11 @@ const StudyProfile: React.FC = () => {
               textTransform: 'none',
             }}
           >
-            {currentStep === totalSteps ? (isSubmitting ? '저장 중...' : '완료') : '다음'}
+            {currentStep === totalSteps
+              ? isSubmitting
+                ? 'onboarding.travel.saving'
+                : 'onboarding.travel.finish'
+              : t('onboarding.travel.next')}
           </Button>
         </Box>
       </Container>

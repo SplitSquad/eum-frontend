@@ -16,6 +16,7 @@ import DebateApi, {
 } from '../api/debateApi';
 import CommentApi from '../api/commentApi';
 import { handleApiError } from '../utils/errorHandler';
+import { useLanguageStore } from '@/features/theme/store/languageStore'; // 실제 경로에 맞게 조정 필요
 
 interface DebateState {
   // 목록 관련 상태
@@ -95,6 +96,30 @@ interface DebateState {
   fetchHotIssue: () => Promise<void>;
   fetchBalancedIssue: () => Promise<void>;
 }
+
+// 언어 변경 시 토론 목록 자동 새로고침 리스너
+
+export const setupDebateLanguageChangeListener = () => {
+  let previousLanguage = useLanguageStore.getState().language;
+  console.log(`[INFO] 초기 언어 설정: ${previousLanguage}`);
+  useLanguageStore.subscribe(state => {
+    const currentLanguage = state.language;
+    if (currentLanguage !== previousLanguage) {
+      console.log(
+        `[INFO] 언어가 변경됨: ${previousLanguage} → ${currentLanguage}, 토론 목록 새로고침`
+      );
+      previousLanguage = currentLanguage;
+
+      const debateState = useDebateStore.getState();
+      const { currentPage, category } = debateState;
+
+      // 기존 데이터는 유지, 백그라운드에서 새로고침
+      setTimeout(() => {
+        useDebateStore.getState().getDebates(currentPage, 20, category);
+      }, 50);
+    }
+  });
+};
 
 export const useDebateStore = create<DebateState>()(
   devtools(
@@ -554,16 +579,7 @@ export const useDebateStore = create<DebateState>()(
                 : comment
             );
 
-            // 현재 토론에 댓글 수 업데이트
-            const currentDebate = get().currentDebate;
-            const updatedCurrentDebate = currentDebate
-              ? {
-                  ...currentDebate,
-                  commentCount: currentDebate.commentCount + 1, // 답글도 전체 댓글 수에 포함
-                }
-              : null;
-
-            // 즉시 UI에 임시 대댓글 추가
+            // 즉시 UI에 임시 대댓글 추가 (currentDebate.commentCount 업데이트 제거)
             set({
               replies: {
                 ...currentReplies,
@@ -571,7 +587,6 @@ export const useDebateStore = create<DebateState>()(
               },
               comments: updatedComments,
               totalComments: get().totalComments + 1, // 총 댓글 수에 1 추가
-              currentDebate: updatedCurrentDebate,
               isLoading: false,
             });
 
@@ -1018,3 +1033,5 @@ export const useDebateStore = create<DebateState>()(
     )
   )
 );
+
+setupDebateLanguageChangeListener();

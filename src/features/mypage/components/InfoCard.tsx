@@ -26,7 +26,7 @@ const CardContainer = styled.div<{ noPadding?: boolean }>`
   transition: all 0.2s ease;
   position: relative;
   z-index: 1;
-  
+
   &:hover {
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
   }
@@ -43,11 +43,11 @@ const CardHeader = styled.div<StyledCardHeaderProps>`
 const CardTitle = styled.h3`
   font-size: 1.125rem;
   font-weight: 600;
-  color: #333;
+  color: #222;
   margin: 0;
   position: relative;
   padding-left: 8px;
-  
+
   &::before {
     content: '';
     position: absolute;
@@ -56,7 +56,7 @@ const CardTitle = styled.h3`
     transform: translateY(-50%);
     width: 3px;
     height: 14px;
-    background: #FF9999;
+    background: #222;
     border-radius: 1px;
   }
 `;
@@ -66,7 +66,7 @@ const IconWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #FF9999;
+  color: #888;
   font-size: 1rem;
 `;
 
@@ -88,7 +88,7 @@ const InfoCard: React.FC<InfoCardProps> = ({
   children,
   className,
   noPadding = false,
-  footer
+  footer,
 }) => {
   return (
     <CardContainer className={className} noPadding={noPadding}>
@@ -96,12 +96,10 @@ const InfoCard: React.FC<InfoCardProps> = ({
         {icon && <IconWrapper>{icon}</IconWrapper>}
         <CardTitle>{title}</CardTitle>
       </CardHeader>
-      <CardContent noPadding={noPadding}>
-        {children}
-      </CardContent>
+      <CardContent noPadding={noPadding}>{children}</CardContent>
       {footer && <CardFooter>{footer}</CardFooter>}
     </CardContainer>
   );
 };
 
-export default InfoCard; 
+export default InfoCard;

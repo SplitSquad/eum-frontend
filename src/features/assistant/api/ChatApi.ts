@@ -1,17 +1,6 @@
 'use client';
 
-// 서버로부터 받을 챗봇 응답 형식 정의
-export interface ChatResponse {
-  response: string; // 실질적으로 채팅에 뿌려질 메시지
-  metadata?: {
-    // 추가 정보 (선택 사항 추가해도 무방)
-    query: string; // 원본 질문 내용
-    state?: string; // 세션 상태 값
-    uid?: string; // 사용자 식별자
-    error?: string; // 에러 메시지
-    rag_type?: string; // 분류 정보 (RAG 매핑용)
-  };
-}
+import { ChatResponse } from '../types';
 
 /**
  * fetchChatbotResponse

@@ -381,7 +381,7 @@ const KakaoMapWidget: React.FC = () => {
     // 컴포넌트 언마운트 시 정리
     return () => {
       clearTimeout(initTimer);
-      
+
       // 검색 타이머 정리
       if (searchTimeoutRef.current) {
         clearTimeout(searchTimeoutRef.current);
@@ -545,7 +545,10 @@ const KakaoMapWidget: React.FC = () => {
     if (!selectedPlace || !fullMap) return;
 
     if (selectedPlace.latitude && selectedPlace.longitude) {
-      const position = new window.kakao.maps.LatLng(selectedPlace.latitude, selectedPlace.longitude);
+      const position = new window.kakao.maps.LatLng(
+        selectedPlace.latitude,
+        selectedPlace.longitude
+      );
       fullMap.setCenter(position);
       fullMap.setLevel(3);
     }
@@ -866,16 +869,19 @@ const KakaoMapWidget: React.FC = () => {
         setPlaces(newPlaces);
       } else {
         console.error('장소 검색 실패:', status, '재시도 횟수:', retryCount);
-        
+
         // 401 에러 또는 기타 일시적 오류인 경우 재시도
         if (retryCount < 2 && (status === kakaoMaps.services.Status.ERROR || !status)) {
           console.log(`장소 검색 재시도 중... (${retryCount + 1}/3)`);
-          setTimeout(() => {
-            searchNearbyPlaces(mapInstance, kakaoMaps, lat, lng, keyword, retryCount + 1);
-          }, 1000 * (retryCount + 1)); // 1초, 2초, 3초 간격으로 재시도
+          setTimeout(
+            () => {
+              searchNearbyPlaces(mapInstance, kakaoMaps, lat, lng, keyword, retryCount + 1);
+            },
+            1000 * (retryCount + 1)
+          ); // 1초, 2초, 3초 간격으로 재시도
           return;
         }
-        
+
         setError(`주변 장소를 검색하는데 실패했습니다 (상태: ${status})`);
         setPlaces([]);
       }
@@ -1058,16 +1064,19 @@ const KakaoMapWidget: React.FC = () => {
           setPlaces(newPlaces);
         } else {
           console.error('카테고리 검색 실패:', status, '재시도 횟수:', retryCount);
-          
+
           // 401 에러 또는 기타 일시적 오류인 경우 재시도
           if (retryCount < 2 && (status === kakaoMaps.services.Status.ERROR || !status)) {
             console.log(`카테고리 검색 재시도 중... (${retryCount + 1}/3)`);
-            setTimeout(() => {
-              searchByCategory(categoryCode, categoryId, retryCount + 1);
-            }, 1000 * (retryCount + 1)); // 1초, 2초, 3초 간격으로 재시도
+            setTimeout(
+              () => {
+                searchByCategory(categoryCode, categoryId, retryCount + 1);
+              },
+              1000 * (retryCount + 1)
+            ); // 1초, 2초, 3초 간격으로 재시도
             return;
           }
-          
+
           setError(`카테고리 검색에 실패했습니다 (상태: ${status})`);
           setPlaces([]);
         }
@@ -1883,7 +1892,9 @@ const applyEnhancedMapStyle = (mapInstance: any) => {
   try {
     // 지도 인스턴스 유효성 검사
     if (!mapInstance || typeof mapInstance.getContainer !== 'function') {
-      console.warn('지도 인스턴스가 완전히 초기화되지 않았습니다. 향상된 스타일 적용을 건너뜁니다.');
+      console.warn(
+        '지도 인스턴스가 완전히 초기화되지 않았습니다. 향상된 스타일 적용을 건너뜁니다.'
+      );
       return;
     }
 
@@ -1895,7 +1906,9 @@ const applyEnhancedMapStyle = (mapInstance: any) => {
     }
 
     // 기존 오버레이 제거 (중복 방지)
-    const existingOverlays = mapContainer.querySelectorAll('.map-style-overlay, .map-shadow-overlay');
+    const existingOverlays = mapContainer.querySelectorAll(
+      '.map-style-overlay, .map-shadow-overlay'
+    );
     existingOverlays.forEach(overlay => overlay.remove());
 
     // 전체 지도에 스타일 오버레이 추가
