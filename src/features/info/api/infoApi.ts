@@ -199,7 +199,7 @@ export const uploadInfoImage = async (
 };
 
 export const getRecommendations = async (): Promise<any> => {
-  const res = await apiClient.get('/information/recommendation');
+  const res = await apiClient.get('/information/recommendations');
   return res;
 };
 
