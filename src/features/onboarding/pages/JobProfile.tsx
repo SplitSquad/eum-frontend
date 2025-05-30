@@ -526,7 +526,7 @@ const JobProfile: React.FC = () => {
                 mb: 2,
               }}
             >
-              <StyledTextField
+              {/* <StyledTextField
                 label={t('onboarding.worker.form.name')}
                 name="name"
                 value={formData.name}
@@ -541,7 +541,7 @@ const JobProfile: React.FC = () => {
                     </InputAdornment>
                   ),
                 }}
-              />
+              /> */}
 
               <Box>
                 <FormControl component="fieldset" fullWidth>

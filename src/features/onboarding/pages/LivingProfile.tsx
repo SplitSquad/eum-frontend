@@ -547,7 +547,7 @@ const LivingProfile: React.FC = () => {
                 mb: 2,
               }}
             >
-              <StyledTextField
+              {/* <StyledTextField
                 label={t('onboarding.living.form.name')}
                 name="name"
                 value={formData.name}
@@ -561,7 +561,7 @@ const LivingProfile: React.FC = () => {
                     </InputAdornment>
                   ),
                 }}
-              />
+              /> */}
 
               <FormControl component="fieldset" fullWidth>
                 <FormLabel

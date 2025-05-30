@@ -59,6 +59,13 @@ interface WebLog {
   content: string;
 }
 
+function formatDateTime(date: Date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
 // BASE URL에 엔드포인트 설정
 const BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -548,13 +555,7 @@ export default function InfoDetailPage() {
                     </svg>
                     <span className="font-medium">{detail.userName}</span>
                     <span className="mx-2">•</span>
-                    <span>
-                      {new Date(detail.createdAt).toLocaleDateString('ko-KR', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })}
-                    </span>
+                    <span>{formatDateTime(new Date(detail.createdAt))}</span>
                     <span className="mx-2">•</span>
                     <span className="flex items-center gap-1">
                       <svg
@@ -687,11 +688,7 @@ export default function InfoDetailPage() {
                     {t('infoPage.content.createdAt')}
                   </p>
                   <p className="text-sm text-gray-600">
-                    {new Date(detail.createdAt).toLocaleDateString('ko-KR', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                    })}
+                    <span>{formatDateTime(new Date(detail.createdAt))}</span>
                   </p>
                 </div>
 
@@ -719,12 +716,10 @@ export default function InfoDetailPage() {
                         const newBookmarks = bookmarks.filter((id: number) => id !== currentId);
                         localStorage.setItem('bookmarkedIds', JSON.stringify(newBookmarks));
                         setIsBookmarked(false);
-                        alert(t('infoPage.detail.bookmarkRemoved'));
                       } else {
                         bookmarks.push(currentId);
                         localStorage.setItem('bookmarkedIds', JSON.stringify(bookmarks));
                         setIsBookmarked(true);
-                        alert(t('infoPage.detail.bookmarkAdded'));
                       }
                     }}
                     className={`w-full py-2 px-3 rounded text-sm transition-colors flex items-center justify-center gap-2 ${
@@ -747,8 +742,8 @@ export default function InfoDetailPage() {
                       />
                     </svg>
                     {isBookmarked
-                      ? `✅ ${t('infoPage.actions.bookmark')}`
-                      : `🔖 ${t('infoPage.actions.bookmark')}`}
+                      ? ` ${t('infoPage.actions.bookmark')}`
+                      : ` ${t('infoPage.actions.bookmark')}`}
                   </button>
 
                   <button
@@ -802,7 +797,7 @@ export default function InfoDetailPage() {
                                 <h1>${detail.title}</h1>
                                 <div class="meta">
                                   카테고리: ${detail.category} | 작성자: ${detail.userName} | 
-                                  작성일: ${new Date(detail.createdAt).toLocaleDateString('ko-KR')}
+                                  작성일: ${(<span>{formatDateTime(new Date(detail.createdAt))}</span>)}
                                 </div>
                               </div>
                               <div class="content">${printContent}</div>

@@ -509,7 +509,7 @@ const TravelProfile: React.FC = () => {
                 mb: 2,
               }}
             >
-              <StyledTextField
+              {/* <StyledTextField
                 label={t('onboarding.travel.name')}
                 name="name"
                 value={formData.name}
@@ -524,7 +524,7 @@ const TravelProfile: React.FC = () => {
                     </InputAdornment>
                   ),
                 }}
-              />
+              /> */}
 
               <Box>
                 <FormControl component="fieldset" fullWidth>

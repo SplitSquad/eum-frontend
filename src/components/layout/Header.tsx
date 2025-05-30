@@ -584,9 +584,13 @@ function Header({ isVisible = true, notifications }: HeaderProps) {
 
   const handleLanguageChange = (languageCode: string) => {
     changeLanguage(languageCode);
+
+    // 온보딩 페이지 언어 변경은 새로고침이 되어야 번역 돼서 새로기침 로직 추가해요!
+    if (location.pathname.startsWith('/onboarding')) {
+      window.location.reload();
+    }
     handleLanguageMenuClose();
   };
-
   const handleMenuClick = (path: string, menuName: string) => {
     logMenuClick(menuName, location.pathname, path);
     navigate(path);
@@ -868,13 +872,16 @@ function Header({ isVisible = true, notifications }: HeaderProps) {
           )}
 
           {/* 언어 선택 메뉴 - Only render if isVisible is true */}
-          {isVisible && (
-            <Menu
-              anchorEl={languageAnchorEl}
-              open={Boolean(languageAnchorEl)}
-              onClose={handleLanguageMenuClose}
-            >
-              {SUPPORTED_LANGUAGES.map(lang => (
+          <Menu
+            anchorEl={languageAnchorEl}
+            open={Boolean(languageAnchorEl)}
+            onClose={handleLanguageMenuClose}
+          >
+            {(location.pathname.startsWith('/onboarding')
+              ? SUPPORTED_LANGUAGES.slice(0, 2) // 온보딩: 상위 2개만 표시되도록 수정했습니다. (언어 번역이 영어까지만 돼서 ㅠㅠ)
+              : SUPPORTED_LANGUAGES
+            ) // 그 외: 전체
+              .map(lang => (
                 <MenuItem
                   key={lang.code}
                   onClick={() => handleLanguageChange(lang.code)}
@@ -883,8 +890,7 @@ function Header({ isVisible = true, notifications }: HeaderProps) {
                   {lang.name}
                 </MenuItem>
               ))}
-            </Menu>
-          )}
+          </Menu>
 
           {/* 모바일 드로어 - Only render if isVisible is true */}
           {isVisible && (
