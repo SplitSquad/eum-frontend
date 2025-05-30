@@ -650,6 +650,18 @@ export const PostApi = {
     }
   },
 
+  // 게시글 원문 조회
+  getPostOriginal: async (postId: number): Promise<string> => {
+    try {
+      const response = await apiClient.get<string>(`${BASE_URL}/origin/${postId}`);
+      console.log('[DEBUG] 게시글 원문 조회 응답:', response);
+      return response;
+    } catch (error) {
+      console.error('게시글 원문 조회 실패:', error);
+      throw error;
+    }
+  },
+
   /**
    * 게시글 조회수 증가
    * 참고: 현재 getPostById API 호출 시 백엔드에서 자동으로 조회수가 증가하므로
