@@ -116,6 +116,11 @@ type Post = {
   writer?: User; // 작성자 정보 객체 추가
 };
 
+type fetchedOriginPost = {
+  title?: string;
+  content?: string;
+};
+
 // 스타일 컴포넌트
 const StyledChip = styled(Chip)(({ theme }) => ({
   backgroundColor: 'rgba(202, 202, 202, 0.2)',
@@ -224,6 +229,9 @@ const PostDetailPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [originTitle, setOriginTitle] = useState<string | null>(null);
+  const [originContent, setOriginContent] = useState<string | null>(null);
+  const [showOriginal, setShowOriginal] = useState(false);
 
   // 신고 기능 관련 상태 추가
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
@@ -301,7 +309,7 @@ const PostDetailPage: React.FC = () => {
           });
         }
 
-        // 2단계: 게시글 데이터 가져오기 (조회수 증가 결정에 따라)
+        // 2단계: 게시글, 게시글 원문 데이터 가져오기 (조회수 증가 결정에 따라)
         const fetchedPost = await api.getPostById(numericPostId, signal, !shouldIncreaseViewCount);
 
         // 요청이 중단되었다면 처리 중단
@@ -367,6 +375,17 @@ const PostDetailPage: React.FC = () => {
           shouldIncreaseViewCount,
           viewCount: mappedPost.viewCount,
         });
+
+        const fetchedOriginPost = (await api.getPostOriginal(numericPostId)) as fetchedOriginPost;
+
+        if (fetchedOriginPost && typeof fetchedOriginPost === 'object') {
+          setOriginTitle(fetchedOriginPost.title || '[제목 없음]');
+          setOriginContent(fetchedOriginPost.content || '');
+          console.log('[DEBUG] 원문 게시글 로드 성공:', {
+            title: fetchedOriginPost.title,
+            content: fetchedOriginPost.content,
+          });
+        }
 
         // 상태 업데이트 (React 18 자동 배칭 활용)
         setPost(mappedPost);
@@ -690,6 +709,10 @@ const PostDetailPage: React.FC = () => {
     );
   }
 
+  const toggleOriginalView = () => {
+    setShowOriginal(prev => !prev);
+  };
+
   return (
     <Container maxWidth="md" sx={{ py: 4, minHeight: 'calc(100vh - 70px)' }}>
       {loading ? (
@@ -709,7 +732,7 @@ const PostDetailPage: React.FC = () => {
         </Alert>
       ) : post ? (
         <>
-          {/* 뒤로가기 버튼 */}
+          {/* 뒤로가기 버튼 및 수정/삭제, 신고 버튼 */}
           <Box
             sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}
           >
@@ -717,7 +740,6 @@ const PostDetailPage: React.FC = () => {
               <ArrowBackIcon />
             </IconButton>
 
-            {/* 게시글 작성자 또는 관리자일 경우 수정/삭제 버튼 표시 */}
             {canEditDelete ? (
               <Box>
                 <Button
@@ -740,7 +762,6 @@ const PostDetailPage: React.FC = () => {
                 </Button>
               </Box>
             ) : (
-              /* 신고 버튼 - 작성자가 아닌 로그인한 사용자에게만 표시 */
               currentUser && (
                 <Box>
                   <Button
@@ -757,27 +778,10 @@ const PostDetailPage: React.FC = () => {
             )}
           </Box>
 
-          {/* 게시글 삭제 확인 다이얼로그 */}
-          <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-            <DialogTitle>{t('community.posts.delete')}</DialogTitle>
-            <DialogContent>
-              <Typography>{t('community.posts.deleteConfirm')}</Typography>
-              <Typography variant="caption" color="error">
-                삭제된 게시글은 복구할 수 없습니다.
-              </Typography>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setDeleteDialogOpen(false)}>{t('buttons.cancel')}</Button>
-              <Button onClick={handleDeletePost} color="error">
-                {t('community.posts.delete')}
-              </Button>
-            </DialogActions>
-          </Dialog>
-
           {/* 게시글 제목 및 정보 */}
           <Box mb={3}>
             <Typography variant="h4" fontWeight="bold" gutterBottom>
-              {post.title}
+              {showOriginal && originTitle !== null ? originTitle : post.title}
             </Typography>
             <Box display="flex" alignItems="center" mb={1}>
               <Avatar alt={post.userName} sx={{ width: 32, height: 32, mr: 1 }} />
@@ -794,6 +798,7 @@ const PostDetailPage: React.FC = () => {
                   </Typography>
                 )}
               </Box>
+
               <Typography variant="body2" color="text.secondary" sx={{ mr: 2 }}>
                 {formatDateToAbsolute(post.createdAt ?? '')}
               </Typography>
@@ -805,13 +810,31 @@ const PostDetailPage: React.FC = () => {
               </Box>
             </Box>
 
-            {/* 태그 표시 */}
             {post.tags && post.tags.length > 0 && (
-              <Box mb={2}>
-                {post.tags.map((tag: any, index) => {
-                  const tagName = tag.name || tag;
-                  return <StyledChip key={index} label={translateTag(tagName)} size="small" />;
-                })}
+              <Box mb={2} display="flex" justifyContent="space-between" alignItems="center">
+                {/* 태그 그룹 */}
+                <Box>
+                  {post.tags.map((tag: any, index) => {
+                    const tagName = tag.name || tag;
+                    return (
+                      <StyledChip
+                        key={index}
+                        label={translateTag(tagName)}
+                        size="small"
+                        sx={{ mr: 0.5 }}
+                      />
+                    );
+                  })}
+                </Box>
+
+                {/* 원문보기 토글 버튼 */}
+                <Button
+                  variant={showOriginal ? 'contained' : 'outlined'}
+                  size="small"
+                  onClick={toggleOriginalView}
+                >
+                  {showOriginal ? '원문 숨기기' : '원문 보기'}
+                </Button>
               </Box>
             )}
           </Box>
@@ -834,7 +857,7 @@ const PostDetailPage: React.FC = () => {
                 minHeight: '150px',
               }}
             >
-              {post.content}
+              {showOriginal && originContent !== null ? originContent : post.content}
             </Typography>
 
             {/* 첨부파일 표시 (있는 경우) */}
@@ -917,26 +940,25 @@ const PostDetailPage: React.FC = () => {
                                     }}
                                     onError={e => {
                                       e.currentTarget.style.display = 'none';
-                                      // 이미지 로드 실패 시 폴백 표시
                                       const parent = e.currentTarget.parentElement;
                                       if (parent) {
                                         parent.innerHTML = `
-                                            <div style="
-                                              width: 100%;
-                                              height: 150px;
-                                              background: #f5f5f5;
-                                              display: flex;
-                                              flex-direction: column;
-                                              align-items: center;
-                                              justify-content: center;
-                                              color: #999;
-                                            ">
-                                              <svg width="32" height="32" fill="currentColor" viewBox="0 0 24 24">
-                                                <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
-                                              </svg>
-                                              <span style="margin-top: 8px; font-size: 12px;">이미지 로드 실패</span>
-                                            </div>
-                                          `;
+                                          <div style="
+                                            width: 100%;
+                                            height: 150px;
+                                            background: #f5f5f5;
+                                            display: flex;
+                                            flex-direction: column;
+                                            align-items: center;
+                                            justify-content: center;
+                                            color: #999;
+                                          ">
+                                            <svg width="32" height="32" fill="currentColor" viewBox="0 0 24 24">
+                                              <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                                            </svg>
+                                            <span style="margin-top: 8px; font-size: 12px;">이미지 로드 실패</span>
+                                          </div>
+                                        `;
                                       }
                                     }}
                                   />
@@ -1065,7 +1087,7 @@ const PostDetailPage: React.FC = () => {
             )}
           </Box>
 
-          {/* 게시글 평가 버튼 - disabled 속성 추가 */}
+          {/* 게시글 평가 버튼 */}
           <Box
             display="flex"
             justifyContent="center"

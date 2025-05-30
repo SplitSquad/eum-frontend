@@ -244,22 +244,22 @@ const ko = {
       description: '한국어를 능숙하게 구사합니다',
     },
   },
-  studySchedule: {
-    title: '유학 일정',
-    selectDuration: '예상 유학 기간을 선택해주세요',
-    durationLabel: '예상 유학 기간',
-    underSixMonths: '6개월 미만',
-    sixMonthsToOneYear: '6개월~1년',
-    oneYearToTwoYears: '1~2년',
-    twoYearsToFourYears: '2~4년',
-    overFourYears: '4년 이상',
-    startDateLabel: '시작 예정일',
-    startDate: '시작 날짜',
-    endDateLabel: '종료 예정일',
-    endDate: '종료 날짜',
-  },
 
   onboarding: {
+    studySchedule: {
+      title: '유학 일정',
+      selectDuration: '예상 유학 기간을 선택해주세요',
+      durationLabel: '예상 유학 기간',
+      underSixMonths: '6개월 미만',
+      sixMonthsToOneYear: '6개월~1년',
+      oneYearToTwoYears: '1~2년',
+      twoYearsToFourYears: '2~4년',
+      overFourYears: '4년 이상',
+      startDateLabel: '시작 예정일',
+      startDate: '시작 날짜',
+      endDateLabel: '종료 예정일',
+      endDate: '종료 날짜',
+    },
     worker: {
       preference: {
         title: '희망 근무 조건',
@@ -695,6 +695,7 @@ const ko = {
     study: {
       profileSetting: '유학 프로필 설정',
       profileDescription: '한국 유학에 필요한 정보를 알려주세요.',
+      academicTitle: '학업 정보',
       steps: {
         profile: '프로필',
         academic: '학업정보',
@@ -715,7 +716,7 @@ const ko = {
         nationality: '국적',
         uiLanguage: 'UI 언어 선택',
         uiLanguageHelper: '앱에서 사용할 언어를 선택해주세요',
-        StudyType: '학업 유형',
+        studyType: '학업 유형',
         majorField: '전공 분야',
         academicLevel: '학업 과정',
         desiredSchool: '비자 종류',

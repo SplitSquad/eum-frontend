@@ -456,7 +456,7 @@ export default function InfoListPage() {
                                 e.stopPropagation();
                                 handleBookmark(post.informationId);
                               }}
-                              className={`ml-4 p-2 rounded-lg transition-colors ${
+                              className={`ml-4 p-2 rounded-lg transition-colors focus:outline-none ${
                                 post.isState === 1
                                   ? 'text-yellow-500 bg-yellow-50'
                                   : 'text-gray-400 hover:text-yellow-500 hover:bg-yellow-50'
@@ -468,12 +468,12 @@ export default function InfoListPage() {
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
                               >
-                                <path
+                                {/* <path
                                   strokeLinecap="round"
                                   strokeLinejoin="round"
                                   strokeWidth={2}
                                   d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-                                />
+                                /> */}
                               </svg>
                             </button>
                           </div>
