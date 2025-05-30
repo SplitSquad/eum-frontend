@@ -163,7 +163,7 @@ const LoginPage: React.FC = () => {
       }
     } catch (err: any) {
       setLoading(false);
-      setError(err.message || t('login.loginError'));
+      setError(t('login.loginError'));
     }
   };
 
