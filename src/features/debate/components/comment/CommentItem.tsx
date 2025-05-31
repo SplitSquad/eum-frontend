@@ -491,11 +491,11 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
             <FlagIconSvg countryCode="ko" /> {/* <- 강제 테스트 */}
             {countryCode && <FlagIconSvg countryCode={nation ?? ''} />}
             {/* 입장 표시 - 댓글 내용에서 추출한 stance 사용 */}
-            <StanceChip
+            {/*<StanceChip
               label={extractedStance === 'con' ? '반대' : '찬성'}
               stance={extractedStance}
               size="small"
-            />
+            />*/}
           </Box>
         }
         subheader={

@@ -535,7 +535,7 @@ const MainIssuesPage: React.FC = () => {
         t={t}
         navigate={navigate}
       />
-      <CategorySidebar
+      {/*<CategorySidebar
         selectedCategory={selectedCategory}
         setSelectedCategory={setSelectedCategory}
         selectedSpecialLabel={selectedSpecialLabel}
@@ -544,7 +544,7 @@ const MainIssuesPage: React.FC = () => {
         t={t}
         navigate={navigate}
         fetchDebates={fetchDebates}
-      />
+      />*/}
     </SidebarContainer>
   );
 

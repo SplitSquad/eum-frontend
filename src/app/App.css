@@ -225,14 +225,9 @@ body.theme-professional .MuiButton-contained:hover {
   background: transparent !important;
 }
 
-.app-content.dimmed {
-  filter: brightness(0.5);
-  pointer-events: none;
-}
-
 /* Modal styles */
 .modal-open {
-  overflow: hidden;
+  /*overflow: hidden;*/
 }
 
 /* Modal toggle button styles */
