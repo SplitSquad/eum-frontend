@@ -892,6 +892,8 @@ const zh = {
           unsavedChanges: '您有未保存的更改。是否要离开此页面？',
         },
       },
+      showOriginal: '查看原文',
+      hideOriginal: '隐藏原文',
     },
     comments: {
       title: '评论',

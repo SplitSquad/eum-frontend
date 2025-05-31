@@ -934,6 +934,8 @@ const de = {
             'Sie haben ungespeicherte Änderungen. Möchten Sie diese Seite wirklich verlassen?',
         },
       },
+      showOriginal: 'Original anzeigen',
+      hideOriginal: 'Original ausblenden',
     },
     comments: {
       title: 'Kommentare',

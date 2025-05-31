@@ -934,6 +934,8 @@ const es = {
           unsavedChanges: 'Tiene cambios sin guardar. ¿Desea salir de esta página?',
         },
       },
+      showOriginal: 'Ver original',
+      hideOriginal: 'Ocultar original',
     },
     comments: {
       title: 'Comentarios',

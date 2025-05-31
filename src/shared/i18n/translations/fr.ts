@@ -919,6 +919,8 @@ const fr = {
             'Vous avez des modifications non enregistrées. Voulez-vous quitter cette page?',
         },
       },
+      showOriginal: "Voir l'original",
+      hideOriginal: "Masquer l'original",
     },
     comments: {
       title: 'Commentaires',

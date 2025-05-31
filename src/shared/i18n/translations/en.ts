@@ -1254,6 +1254,8 @@ const en = {
           unsavedChanges: 'You have unsaved changes. Do you want to leave this page?',
         },
       },
+      showOriginal: 'Show Original',
+      hideOriginal: 'Hide Original',
     },
     comments: {
       title: 'Comments',
