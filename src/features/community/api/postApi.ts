@@ -144,19 +144,25 @@ export const PostApi = {
         apiParams.region = location === '전체' ? '전체' : location;
       }
 
-      // 태그 처리 (단일 선택만 지원)
-      if (params.tag && params.tag !== '전체') {
-        // 단일 태그이므로 배열 대신 문자열로 전송
-        const tagsArray = params.tag.split(',').map(tag => tag.trim());
-        
-        // Spring Boot가 기대하는 형식으로 tags 배열 전달
-        apiParams.tags = tagsArray; // 배열 형태
+      // 태그 처리 - undefined, null, 빈 문자열이거나 '전체'인 경우 태그 필터링 해제
+      if (!params.tag || params.tag === '전체' || params.tag === '') {
+        // 태그 필터링 해제 - tags 파라미터를 명시적으로 제거
+        console.log('[DEBUG] postApi - 태그 필터링 해제');
+      } else {
+        // 태그가 있는 경우에만 처리
+        const tagsArray = params.tag.split(',').map(tag => tag.trim()).filter(tag => tag);
+        if (tagsArray.length > 0) {
+          // Spring Boot가 기대하는 형식으로 tags 배열 전달
+          apiParams.tags = tagsArray; // 배열 형태
 
-        // 로그에 태그 정보 명확하게 표시
-        console.log('[DEBUG] 태그 필터링 적용:', {
-          원본태그: params.tag,
-          태그배열: tagsArray,
-        });
+          // 로그에 태그 정보 명확하게 표시
+          console.log('[DEBUG] 태그 필터링 적용:', {
+            원본태그: params.tag,
+            태그배열: tagsArray,
+          });
+        } else {
+          console.log('[DEBUG] postApi - 빈 태그 배열, 태그 필터링 해제');
+        }
       }
       
       // postStore에서 tags 배열로 전달되는 경우도 처리
