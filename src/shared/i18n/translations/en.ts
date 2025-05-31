@@ -1158,6 +1158,8 @@ const en = {
       authorSearch: 'Author Search',
     },
     posts: {
+      showOriginal: 'Show Original',
+      returnOriginal: 'Go back',
       title: 'Post Title',
       content: 'Post Content',
       author: 'Author',
@@ -1546,6 +1548,7 @@ const en = {
     next: 'Next',
   },
   debate: {
+    noDebates: 'No debates available',
     title: 'Hot Issue Debate',
     description:
       "Join the discussion on today's hottest social issues and share your diverse opinions.",

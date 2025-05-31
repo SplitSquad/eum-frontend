@@ -1214,6 +1214,8 @@ const ko = {
       authorSearch: '작성자 검색',
     },
     posts: {
+      showOriginal: '원본 보기',
+      returnOriginal: '돌아가기',
       title: '게시글 제목',
       content: '게시글 내용',
       author: '작성자',
@@ -1612,6 +1614,7 @@ const ko = {
     next: '다음',
   },
   debate: {
+    noDebates: '등록된 토론이 없습니다.',
     title: '핫 이슈 토론',
     description: '지금 가장 뜨거운 사회 이슈에 대해 자유롭게 토론하고 다양한 의견을 나눠보세요.',
     categories: {
@@ -1659,6 +1662,7 @@ const ko = {
       cancel: '취소',
     },
     reply: {
+      replyLoading: '답글을 불러오는 중...',
       placeholder: '답글을 입력하세요',
       add: '답글 추가',
       edit: '답글 수정',

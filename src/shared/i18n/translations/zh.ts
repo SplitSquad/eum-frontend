@@ -801,6 +801,8 @@ const zh = {
       authorSearch: '作者搜索',
     },
     posts: {
+      showOriginal: '原帖',
+      returnOriginal: '返回原帖',
       title: '帖子标题',
       content: '帖子内容',
       author: '作者',
@@ -1184,6 +1186,9 @@ const zh = {
     next: '下一页',
   },
   debate: {
+    showOriginal: '查看原文',
+    returnOriginal: '返回',
+    noDebates: '暂无辩论议题',
     title: '热点议题辩论',
     description: '就当前最热门的社会议题自由讨论，分享你的多元观点。',
     categories: {

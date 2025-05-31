@@ -842,6 +842,8 @@ const de = {
       authorSearch: 'Autorensuche',
     },
     posts: {
+      showOriginal: 'Original anzeigen',
+      returnOriginal: 'Zurück zum Original',
       title: 'Beitragstitel',
       content: 'Beitragsinhalt',
       author: 'Autor',
@@ -1220,6 +1222,7 @@ const de = {
     next: 'Weiter',
   },
   debate: {
+    noDebates: 'Keine Debatten verfügbar',
     title: 'Heiße Debatte',
     description:
       'Diskutieren Sie frei über die aktuell heißesten gesellschaftlichen Themen und teilen Sie Ihre vielfältigen Meinungen.',

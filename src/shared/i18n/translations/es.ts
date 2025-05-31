@@ -843,6 +843,8 @@ const es = {
       authorSearch: 'Búsqueda de autor',
     },
     posts: {
+      showOriginal: 'Ver publicación original',
+      returnOriginal: 'Volver a la publicación original',
       title: 'Título de publicación',
       content: 'Contenido de publicación',
       author: 'Autor',
@@ -1227,6 +1229,9 @@ const es = {
     next: 'Siguiente',
   },
   debate: {
+    showOriginal: 'prospecto',
+    returnOriginal: 'vuelta',
+    noDebates: 'No hay debates activos en este momento.',
     title: 'Debate de temas candentes',
     description:
       'Participa en el debate sobre los temas sociales más candentes del momento y comparte tus opiniones diversas.',

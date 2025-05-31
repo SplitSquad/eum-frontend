@@ -827,6 +827,8 @@ const fr = {
       authorSearch: "Recherche d'auteur",
     },
     posts: {
+      showOriginal: 'Afficher la publication originale',
+      returnOriginal: 'Retour à la publication originale',
       title: 'Titre de publication',
       content: 'Contenu de publication',
       author: 'Auteur',
@@ -1221,6 +1223,9 @@ const fr = {
     next: 'Suivant',
   },
   debate: {
+    showOriginal: "Voir l'original",
+    returnOriginal: "Retour à l'original",
+    noDebates: 'Aucun débat en cours pour le moment. Soyez le premier à lancer un sujet !',
     title: 'Débat sur les sujets brûlants',
     description:
       'Participez à la discussion sur les sujets de société les plus brûlants du moment et partagez vos opinions variées.',

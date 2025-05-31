@@ -809,6 +809,8 @@ const ja = {
       authorSearch: '作成者検索',
     },
     posts: {
+      showOriginal: '元の投稿を表示',
+      returnOriginal: '元の投稿に戻る',
       title: '投稿タイトル',
       content: '投稿内容',
       author: '作成者',
@@ -1193,6 +1195,7 @@ const ja = {
     next: '次へ',
   },
   debate: {
+    noDebates: '現在のところディベートはありません',
     title: 'ホットイシューディベート',
     description:
       '今最も注目されている社会的な話題について自由に議論し、多様な意見を交換しましょう。',
