@@ -49,7 +49,7 @@ export default function AppLayout() {
           {content ?? <ModalContent />}
         </Modal>
       )}
-      <div className={`app-content ${isModalOpen ? 'dimmed' : ''}`}>
+      <div className={`app-content`}>
         <Header isVisible={isHeaderVisible} />
         <SeasonalBackground>
           <main className="main-content">
@@ -94,12 +94,6 @@ export default function AppLayout() {
           )}
         </SeasonalBackground>
         <Footer />
-        {/* 오버레이 radius 제거용 스타일 */}
-        <style>{`
-          .dimmed {
-            border-radius: 0 !important;
-          }
-        `}</style>
       </div>
       <FloatingNavigator isHeaderVisible={isHeaderVisible} />
     </div>
