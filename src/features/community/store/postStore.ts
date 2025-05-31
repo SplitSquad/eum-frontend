@@ -654,8 +654,13 @@ export const usePostStore = create<PostState & PostActions>()(
                 }
 
                 // 태그 처리 - 백엔드가 기대하는 형식으로 전달
-                if (apiParams.tag && apiParams.tag !== '전체' && apiParams.tag !== '') {
-                  // 콤마로 분리된 태그 문자열을 배열로 변환
+                // tag가 undefined, null, 빈 문자열이거나 '전체'인 경우 태그 필터링 해제
+                if (!apiParams.tag || apiParams.tag === '전체' || apiParams.tag === '') {
+                  // 태그 필터링 해제 - tags 파라미터를 명시적으로 제거
+                  delete finalApiParams.tags;
+                  console.log('[DEBUG] 태그 필터링 해제 - tags 파라미터 제거');
+                } else {
+                  // 태그가 있는 경우에만 처리
                   const tagsArray = apiParams.tag.split(',').map(tag => tag.trim()).filter(tag => tag);
                   if (tagsArray.length > 0) {
                     // 백엔드가 기대하는 형식: tags 배열로 전달
@@ -667,6 +672,10 @@ export const usePostStore = create<PostState & PostActions>()(
                       태그배열: tagsArray,
                       최종파라미터: finalApiParams
                     });
+                  } else {
+                    // 빈 배열인 경우에도 태그 필터링 해제
+                    delete finalApiParams.tags;
+                    console.log('[DEBUG] 빈 태그 배열 - tags 파라미터 제거');
                   }
                 }
 
