@@ -138,7 +138,6 @@ const AnimatedCircle = styled(motion.div)(({ theme }) => ({
  * 거주 온보딩 정보 데이터
  */
 interface LivingProfileData {
-  name: string;
   gender: string;
   age: string;
   nationality: string;
@@ -257,7 +256,6 @@ const LivingProfile: React.FC = () => {
 
   // 데이터 스테이트
   const [formData, setFormData] = useState<LivingProfileData>({
-    name: '',
     gender: '',
     age: '',
     nationality: '',
@@ -452,7 +450,6 @@ const LivingProfile: React.FC = () => {
         uiLanguage: formData.uiLanguage || 'ko', // language 필드로 매핑
 
         // 상세 정보 (onBoardingPreference JSON으로 저장됨)
-        name: formData.name,
         age: formData.age,
         residenceStatus: formData.residenceStatus,
         housingType: formData.housingType,
@@ -547,21 +544,6 @@ const LivingProfile: React.FC = () => {
                 mb: 2,
               }}
             >
-              {/* <StyledTextField
-                label={t('onboarding.living.form.name')}
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                fullWidth
-                required
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <PersonIcon sx={{ color: theme.palette.primary.main }} />
-                    </InputAdornment>
-                  ),
-                }}
-              /> */}
 
               <FormControl component="fieldset" fullWidth>
                 <FormLabel
@@ -598,16 +580,8 @@ const LivingProfile: React.FC = () => {
                   />
                 </RadioGroup>
               </FormControl>
-            </Box>
 
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-                gap: 3,
-                mb: 2,
-              }}
-            >
+
               <StyledTextField
                 label={t('onboarding.living.form.age')}
                 name="age"
@@ -617,13 +591,6 @@ const LivingProfile: React.FC = () => {
                 type="number"
               />
 
-              <StyledTextField
-                label={t('onboarding.living.form.nationality')}
-                name="nationality"
-                value={formData.nationality}
-                onChange={handleInputChange}
-                fullWidth
-              />
             </Box>
 
             <Box
@@ -633,6 +600,17 @@ const LivingProfile: React.FC = () => {
                 gap: 3,
               }}
             >
+
+              <StyledTextField
+                label={t('onboarding.living.form.nationality')}
+                name="nationality"
+                value={formData.nationality}
+                onChange={handleInputChange}
+                fullWidth
+              />
+
+
+
               <StyledTextField
                 select
                 label={t('onboarding.living.form.uiLanguage')}
@@ -1210,7 +1188,7 @@ const LivingProfile: React.FC = () => {
   const isNextDisabled = () => {
     switch (currentStep) {
       case 1: // 거주자 세부 프로필
-        return !formData.name || !formData.gender || !formData.nationality;
+        return !formData.gender || !formData.age || !formData.nationality;
       case 2: // 거주 목적
         return !formData.livingPurpose || !formData.livingSituation;
       case 3: // 거주 일정

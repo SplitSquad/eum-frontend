@@ -208,8 +208,8 @@ export const CommentApi = {
       // 숫자형으로 강제 변환하여 타입 문제 방지
       const numericPostId = Number(postId);
       
-      // 언어 감지
-      const detectedLanguage = detectLanguage(content);
+      // 언어 감지 - await를 제대로 처리
+      const detectedLanguage = await detectLanguage(content);
       
       debugLog('댓글 언어 감지 결과:', {
         content: content.substring(0, 50) + '...',
@@ -233,7 +233,7 @@ export const CommentApi = {
       const payload = {
         postId: numericPostId,
         content,
-        language: detectedLanguage.toUpperCase(),  // 감지된 언어를 대문자로 변환
+        language: detectedLanguage.toUpperCase(),  // 이제 await된 문자열 결과
         anonymous: false,  // 익명 댓글 명시적으로 비활성화 - 항상 실명 사용
       };
       
@@ -454,8 +454,8 @@ export const CommentApi = {
         throw new Error('유효하지 않은 게시글 ID 또는 댓글 ID입니다.');
       }
 
-      // 언어 감지
-      const detectedLanguage = detectLanguage(content);
+      // 언어 감지 - await를 제대로 처리
+      const detectedLanguage = await detectLanguage(content);
       
       debugLog('대댓글 언어 감지 결과:', {
         content: content.substring(0, 50) + '...',
@@ -468,7 +468,7 @@ export const CommentApi = {
         postId: Number(postId),
         commentId: Number(commentId),
         content,
-        language: detectedLanguage.toUpperCase(), // 감지된 언어를 대문자로 변환
+        language: detectedLanguage.toUpperCase(), // 이제 await된 문자열 결과
       };
 
       debugLog('대댓글 생성 페이로드:', payload);
@@ -488,8 +488,8 @@ export const CommentApi = {
    */
   updateReply: async (replyId: number, content: string): Promise<Reply> => {
     try {
-      // 언어 감지
-      const detectedLanguage = detectLanguage(content);
+      // 언어 감지 - await를 제대로 처리
+      const detectedLanguage = await detectLanguage(content);
       
       debugLog('대댓글 수정 언어 감지 결과:', {
         content: content.substring(0, 50) + '...',
@@ -500,7 +500,7 @@ export const CommentApi = {
       // 백엔드 API 요청 형식에 맞게 수정
       const response = await apiClient.patch<Reply>(`${REPLIES_BASE_URL}/${replyId}`, {
         content,
-        language: detectedLanguage.toUpperCase(), // 감지된 언어를 대문자로 변환
+        language: detectedLanguage.toUpperCase(), // 이제 await된 문자열 결과
       });
       return response;
     } catch (error) {

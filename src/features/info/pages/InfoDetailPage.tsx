@@ -555,7 +555,9 @@ export default function InfoDetailPage() {
                     </svg>
                     <span className="font-medium">{detail.userName}</span>
                     <span className="mx-2">•</span>
+
                     <span>{formatDateTime(new Date(detail.createdAt))}</span>
+
                     <span className="mx-2">•</span>
                     <span className="flex items-center gap-1">
                       <svg
@@ -742,8 +744,10 @@ export default function InfoDetailPage() {
                       />
                     </svg>
                     {isBookmarked
+
                       ? ` ${t('infoPage.actions.bookmark')}`
                       : ` ${t('infoPage.actions.bookmark')}`}
+
                   </button>
 
                   <button

@@ -16,7 +16,6 @@ import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 import useUserStore from '../store/userStore';
-import RegionSelector from '@/features/community/components/shared/RegionSelector';
 import { registerUser } from '../api/authApi';
 import { seasonalColors } from '@/components/layout/springTheme';
 import { useThemeStore } from '@/features/theme/store/themeStore';
@@ -78,9 +77,6 @@ const SignUpInputs = ({
   phone,
   setPhone,
   errors = {},
-  handleRegionChange,
-  regionSelection,
-  setRegionSelection,
   t,
 }: {
   id: string;
@@ -96,17 +92,6 @@ const SignUpInputs = ({
   phone: string;
   setPhone: (v: string) => void;
   errors?: InputErrors;
-  regionSelection: { city: string | null; district: string | null; neighborhood: string | null };
-  setRegionSelection: (v: {
-    city: string | null;
-    district: string | null;
-    neighborhood: string | null;
-  }) => void;
-  handleRegionChange: (
-    city: string | null,
-    district: string | null,
-    neighborhood: string | null
-  ) => void;
   t: (key: string) => string;
 }) => {
   // 실시간 비밀번호 일치 메시지
@@ -243,7 +228,6 @@ const SignUpInputs = ({
         error={!!errors.phone}
         helperText={errors.phone || ''}
       />
-      <RegionSelector onChange={handleRegionChange} />
     </InputBox>
   );
 };
@@ -305,26 +289,9 @@ const SignUpPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [inputErrors, setInputErrors] = useState<InputErrors>({});
   const setNewUser = useUserStore(state => state.setNewUser);
-  const [regionSelection, setRegionSelection] = useState<{
-    city: string | null;
-    district: string | null;
-    neighborhood: string | null;
-  }>({ city: '', district: '', neighborhood: '' });
   const { t } = useTranslation();
   const season = useThemeStore(state => state.season);
   const colors = seasonalColors[season] || seasonalColors.spring;
-
-  const handleRegionChange = useCallback(
-    (city: string | null, district: string | null, neighborhood: string | null) => {
-      setRegionSelection({
-        city: city || '',
-        district: district || '',
-        neighborhood: neighborhood || '',
-      });
-      if (inputErrors.address) setInputErrors(prev => ({ ...prev, address: '' }));
-    },
-    [inputErrors]
-  );
 
   // 실시간 유효성 검사: 입력값이 변경되면 errors 해당 필드 제거
   const handleInputChange = (field: keyof InputErrors, value: string) => {
@@ -365,7 +332,7 @@ const SignUpPage: React.FC = () => {
     if (!name) errors.name = t('signup.nameRequired');
     if (!birthday) errors.birthday = t('signup.birthdayRequired');
     if (!phone) errors.phone = t('signup.phoneRequired');
-    if (!regionSelection.city) errors.address = t('signup.addressRequired');
+    // 주소는 선택사항으로 변경
     setInputErrors(errors);
     if (Object.keys(errors).length > 0) return;
 
@@ -391,28 +358,19 @@ const SignUpPage: React.FC = () => {
     setLoading(true);
     setError(null);
 
-    const addressValue = [
-      regionSelection.city,
-      regionSelection.district,
-      regionSelection.neighborhood,
-    ]
-      .filter(Boolean)
-      .join(' ');
-    setAddress(addressValue);
-
     setNewUser({
       id,
       password,
       name,
       birthday,
       phone,
-      address: addressValue,
+      address,
     });
 
     try {
       await registerUser({
         name,
-        address: addressValue,
+        address,
         phoneNumber: phone,
         birthday,
         email: id,
@@ -491,9 +449,6 @@ const SignUpPage: React.FC = () => {
                 phone={phone}
                 setPhone={v => handleInputChange('phone', v)}
                 errors={inputErrors}
-                regionSelection={regionSelection}
-                setRegionSelection={setRegionSelection}
-                handleRegionChange={handleRegionChange}
                 t={t}
               />
               <Box sx={{ display: 'flex', gap: 2, mt: 2, justifyContent: 'flex-end' }}>

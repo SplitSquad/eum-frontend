@@ -536,28 +536,25 @@ const MainIssuesPage: React.FC = () => {
   };
 
   // 사이드바 렌더링
-  const renderSidebar = React.useCallback(
-    () => (
-      <SidebarContainer sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        <SpecialIssueSidebar
-          selectedSpecialLabel={selectedSpecialLabel}
-          setSelectedSpecialLabel={setSelectedSpecialLabel}
-          t={t}
-          navigate={navigate}
-        />
-        <CategorySidebar
-          selectedCategory={selectedCategory}
-          setSelectedCategory={setSelectedCategory}
-          selectedSpecialLabel={selectedSpecialLabel}
-          setSelectedSpecialLabel={setSelectedSpecialLabel}
-          categoryMappings={categoryMappings}
-          t={t}
-          navigate={navigate}
-          fetchDebates={fetchDebates}
-        />
-      </SidebarContainer>
-    ),
-    [selectedSpecialLabel, selectedCategory, categoryMappings, t, navigate, fetchDebates]
+  const renderSidebar = () => (
+    <SidebarContainer sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <SpecialIssueSidebar
+        selectedSpecialLabel={selectedSpecialLabel}
+        setSelectedSpecialLabel={setSelectedSpecialLabel}
+        t={t}
+        navigate={navigate}
+      />
+      {/*<CategorySidebar
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+        selectedSpecialLabel={selectedSpecialLabel}
+        setSelectedSpecialLabel={setSelectedSpecialLabel}
+        categoryMappings={categoryMappings}
+        t={t}
+        navigate={navigate}
+        fetchDebates={fetchDebates}
+      />*/}
+    </SidebarContainer>
   );
 
   // 토론 카드 렌더링

@@ -667,27 +667,29 @@ const DebateApi = {
   },
 
   /**
-   * 토론 주제 작성하기
+   * 토론 주제 작성 (파일 업로드 지원)
+   * @param data 토론 데이터
+   * @returns 생성된 토론 ID 또는 null
    */
   createDebate: async (data: DebateReqDto): Promise<number | null> => {
     try {
       // 언어 감지 - 제목과 내용을 결합하여 감지
       const combinedText = (data.title || '') + ' ' + (data.content || '');
-      const detectedLanguage = detectLanguage(combinedText);
-      
+      const detectedLanguage = await detectLanguage(combinedText);
+
       debugLog('토론 게시글 언어 감지 결과:', {
         title: (data.title || '').substring(0, 50) + '...',
         content: (data.content || '').substring(0, 50) + '...',
         detectedLanguage,
-        combinedTextLength: combinedText.length
+        combinedTextLength: combinedText.length,
       });
 
       // 언어 정보를 포함한 데이터 생성
       const requestData = {
         ...data,
-        language: detectedLanguage.toUpperCase() // 감지된 언어를 대문자로 변환
+        language: detectedLanguage.toUpperCase(), // 감지된 언어를 대문자로 변환
       };
-      
+
       debugLog('토론 게시글 생성 페이로드:', requestData);
 
       const response = await apiClient.post<any>('/debate', requestData);
