@@ -29,7 +29,8 @@ function IntroSlider({ currentIndex, children }: Props) {
   }, []);
 
   return (
-    <div className="w-full relative overflow-hidden" style={{ minHeight: viewportHeight }}>
+    <div className="w-auto h-auto relative overflow-hidden">
+      {/* style={{ minHeight: viewportHeight }}>style={{ minHeight: viewportHeight }}*/}
       <AnimatePresence>
         <motion.div
           key={currentIndex}
@@ -37,8 +38,6 @@ function IntroSlider({ currentIndex, children }: Props) {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -100 }}
           transition={{ duration: 0.6 }}
-          className="absolute w-full"
-          style={{ minHeight: viewportHeight }}
         >
           {children[currentIndex]}
         </motion.div>

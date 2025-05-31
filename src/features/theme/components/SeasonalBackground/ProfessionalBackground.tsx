@@ -18,7 +18,7 @@ const ProfessionalContainer = styled(Box, {
   shouldForwardProp: prop => prop !== 'noPadding',
 })<ProfessionalBackgroundProps>`
   width: 100%;
-  min-height: 100vh;
+  min-height: 80vh;
   background: linear-gradient(to bottom, #fff 0%, #f5f5f5 100%);
   padding: ${p => (p.noPadding ? '0' : '0')};
   padding-bottom: ${p => (p.noPadding ? '0' : '0')};

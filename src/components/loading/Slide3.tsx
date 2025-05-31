@@ -27,14 +27,6 @@ const Slide3 = () => {
         <br />
         새로운 경험을 위한 준비가 완료되었어요.
       </p>
-      <motion.div
-        className="w-32 h-32 rounded-full bg-gradient-to-r from-purple-300 to-purple-500 opacity-20"
-        animate={{
-          scale: [1, 1.2, 1],
-          opacity: [0.2, 0.3, 0.2],
-        }}
-        transition={{ duration: 2, repeat: Infinity }}
-      />
     </motion.div>
   );
 };

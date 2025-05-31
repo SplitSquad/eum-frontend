@@ -22,23 +22,6 @@ const Slide2 = () => {
         이음이가 당신을 위한 최적의 경험을 준비하고 있어요.
         <br />곧 멋진 여정이 시작됩니다.
       </p>
-      <div className="flex space-x-2 mt-4">
-        <motion.div
-          className="w-3 h-3 bg-blue-400 rounded-full"
-          animate={{ scale: [1, 1.2, 1] }}
-          transition={{ duration: 1, repeat: Infinity, repeatDelay: 0.2 }}
-        />
-        <motion.div
-          className="w-3 h-3 bg-blue-500 rounded-full"
-          animate={{ scale: [1, 1.2, 1] }}
-          transition={{ duration: 1, repeat: Infinity, repeatDelay: 0.4 }}
-        />
-        <motion.div
-          className="w-3 h-3 bg-blue-600 rounded-full"
-          animate={{ scale: [1, 1.2, 1] }}
-          transition={{ duration: 1, repeat: Infinity, repeatDelay: 0.6 }}
-        />
-      </div>
     </motion.div>
   );
 };
