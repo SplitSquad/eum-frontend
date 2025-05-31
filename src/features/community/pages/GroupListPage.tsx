@@ -37,9 +37,11 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import TuneIcon from '@mui/icons-material/Tune';
 import CreateIcon from '@mui/icons-material/Create';
 import ClearIcon from '@mui/icons-material/Clear';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import { styled } from '@mui/system';
 
-import SpringBackground from '../components/shared/SpringBackground';
+
 import CategoryTabs from '../components/shared/CategoryTabs';
 import PostList from '../components/post/PostList';
 import RegionSelector from '../components/shared/RegionSelector';
@@ -155,18 +157,21 @@ const GroupListPage: React.FC = () => {
     postType: (queryParams.get('postType') as PostType) || '모임',
   });
 
-  // 컴포넌트 마운트 시 게시글 목록 조회를 위한 트래킹
-  const initialDataLoadedRef = useRef(false);
-
   // 컴포넌트 마운트 시 게시글 목록 조회
   useEffect(() => {
-    // 이미 데이터를 로드했으면 중복 요청 방지
-    if (initialDataLoadedRef.current) {
-      console.log('PostListPage - 이미 초기 데이터가 로드됨, 중복 요청 방지');
-      return;
-    }
+    console.log('GroupListPage 컴포넌트 마운트, 게시글 목록 조회 시작');
 
-    console.log('PostListPage 컴포넌트 마운트, 게시글 목록 조회 시작');
+    // 새 게시글 생성 플래그 확인 (localStorage)
+    const newPostCreated = localStorage.getItem('newPostCreated');
+    const newPostType = localStorage.getItem('newPostType');
+    const isNewPostForThisPage = newPostCreated && newPostType === '모임';
+    
+    if (isNewPostForThisPage) {
+      console.log('새 모임 게시글이 생성됨 - 강제 새로고침 실행');
+      // 플래그 제거
+      localStorage.removeItem('newPostCreated');
+      localStorage.removeItem('newPostType');
+    }
 
     // 현재 카테고리에 맞는 태그 목록 설정
     if (filter.category && filter.category !== '전체') {
@@ -180,7 +185,7 @@ const GroupListPage: React.FC = () => {
       setSelectedTags(filter.tag.split(','));
     }
 
-    // 초기 로드 시 명시적으로 기본 필터 설정 (자유 게시글, 자유 지역)
+    // 초기 로드 시 명시적으로 기본 필터 설정 (모임 게시글, 전체 지역)
     const initialFilter = {
       ...filter,
       postType: '모임' as PostType,
@@ -190,14 +195,30 @@ const GroupListPage: React.FC = () => {
     };
     setFilter(initialFilter);
 
-    // 게시글 목록 조회
-    fetchPosts(initialFilter);
+    // 게시글 목록 조회 - 항상 최신 데이터 가져오기 (캐시 무시)
+    fetchPosts({
+      ...initialFilter,
+      _forceRefresh: Date.now() // 매번 새로운 타임스탬프로 캐시 무효화
+    });
     // 인기 게시글 로드
     fetchTopPosts(5);
-
-    // 초기 데이터 로드 완료 플래그 설정
-    initialDataLoadedRef.current = true;
   }, []);
+
+  // 페이지 재진입 감지 - location.pathname이 변경될 때 새 데이터 로드
+  useEffect(() => {
+    if (location.pathname === '/community/groups') {
+      console.log('GroupListPage - /community/groups 경로로 복귀, 최신 데이터 로드');
+      if (!isSearchMode) {
+        // 약간의 지연 후 새로고침 (네비게이션 완료 후)
+        setTimeout(() => {
+          fetchPosts({
+            ...filter,
+            _forceRefresh: Date.now()
+          });
+        }, 100);
+      }
+    }
+  }, [location.pathname, filter, isSearchMode]);
 
   // 검색 상태 표시를 위한 추가 컴포넌트
   const SearchStatusIndicator = () => {
@@ -483,7 +504,17 @@ const GroupListPage: React.FC = () => {
   };
 
   return (
-    <div>
+    <Container
+      maxWidth="lg"
+      sx={{
+        py: 3,
+        display: 'flex',
+        flexDirection: 'column',
+        flexGrow: 1,
+        position: 'relative',
+        zIndex: 5,
+      }}
+    >
       {/* 페이지 헤더 */}
       <PageHeaderText
         isMobile={isMobile}
@@ -509,6 +540,80 @@ const GroupListPage: React.FC = () => {
       >
         모임 게시판
       </PageHeaderText>
+
+      {/* 커뮤니티 타입 전환 버튼 - 더 눈에 띄도록 개선 */}
+      <Box
+        sx={{
+          mb: 4,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          position: 'relative',
+        }}
+      >
+        <Paper
+          elevation={3}
+          sx={{
+            borderRadius: '60px',
+            p: 0.5,
+            bgcolor: 'white',
+            border: '3px solid #FFAAA5',
+            boxShadow: '0 12px 40px rgba(255, 170, 165, 0.3)',
+          }}
+        >
+          <ToggleButtonGroup
+            color="primary"
+            value="groups"
+            exclusive
+            onChange={(e, newType) => {
+              if (newType === 'board') {
+                navigate('/community/board');
+              }
+            }}
+            size="large"
+            sx={{
+              borderRadius: '50px',
+              '& .MuiToggleButton-root': {
+                borderRadius: '50px',
+                border: 'none',
+                px: 5,
+                py: 2,
+                minWidth: '160px',
+                fontSize: '1.2rem',
+                fontWeight: 700,
+                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                textTransform: 'none',
+                '&.Mui-selected': {
+                  bgcolor: '#FFAAA5',
+                  color: 'white',
+                  transform: 'scale(1.05)',
+                  boxShadow: '0 8px 25px rgba(255, 170, 165, 0.4)',
+                  '&:hover': {
+                    bgcolor: '#FF8B8B',
+                    transform: 'scale(1.08)',
+                  },
+                },
+                '&:not(.Mui-selected)': {
+                  color: '#999',
+                  bgcolor: 'transparent',
+                  '&:hover': {
+                    bgcolor: 'rgba(255, 170, 165, 0.1)',
+                    color: '#666',
+                    transform: 'scale(1.02)',
+                  },
+                },
+              },
+            }}
+          >
+            <ToggleButton value="groups">
+              📱 소모임
+            </ToggleButton>
+            <ToggleButton value="board">
+              💬 자유게시판
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </Paper>
+      </Box>
 
       {/* 상단 필터링 및 검색 영역 */}
       <Paper
@@ -895,7 +1000,7 @@ const GroupListPage: React.FC = () => {
           <PostList />
         </Box>
       )}
-    </div>
+    </Container>
   );
 };
 

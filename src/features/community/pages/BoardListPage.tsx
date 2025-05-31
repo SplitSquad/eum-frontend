@@ -37,6 +37,7 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import TuneIcon from '@mui/icons-material/Tune';
 import CreateIcon from '@mui/icons-material/Create';
 import ClearIcon from '@mui/icons-material/Clear';
+import GroupIcon from '@mui/icons-material/Group';
 import { styled } from '@mui/system';
 
 import PostList from '../components/post/PostList';
@@ -49,6 +50,7 @@ import { PostApi } from '../api/postApi';
 import { PostType } from '../types-folder';
 import { useTranslation } from '../../../shared/i18n';
 import { useLanguageStore } from '../../../features/theme/store/languageStore';
+import { useLanguageContext } from '../../../features/theme/components/LanguageProvider';
 
 /**
  * 게시글 목록 페이지 컴포넌트
@@ -102,6 +104,7 @@ interface LocalPostFilter {
 
 const BoardListPage: React.FC = () => {
   const { t } = useTranslation();
+  const { currentLanguage } = useLanguageContext();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
@@ -203,22 +206,23 @@ const BoardListPage: React.FC = () => {
     postType: (queryParams.get('postType') as PostType) || '자유',
   });
 
-  // 컴포넌트 마운트 시 게시글 목록 조회를 위한 트래킹
-  const initialDataLoadedRef = useRef(false);
-
-  // 언어 변경 감지를 위한 ref
-  const hasInitialDataLoaded = useRef(false);
-  const { language } = useLanguageStore();
-
   // 컴포넌트 마운트 시 게시글 목록 조회
   useEffect(() => {
-    // 이미 데이터를 로드했으면 중복 요청 방지
-    if (initialDataLoadedRef.current) {
-      console.log('PostListPage - 이미 초기 데이터가 로드됨, 중복 요청 방지');
-      return;
+    console.log('BoardListPage 컴포넌트 마운트, 게시글 목록 조회 시작');
+
+    // 새 게시글 생성 플래그 확인 (localStorage)
+    const newPostCreated = localStorage.getItem('newPostCreated');
+    const newPostType = localStorage.getItem('newPostType');
+    const isNewPostForThisPage = newPostCreated && newPostType === '자유';
+    
+    if (isNewPostForThisPage) {
+      console.log('새 자유 게시글이 생성됨 - 강제 새로고침 실행');
+      // 플래그 제거
+      localStorage.removeItem('newPostCreated');
+      localStorage.removeItem('newPostType');
     }
 
-    console.log('PostListPage 컴포넌트 마운트, 게시글 목록 조회 시작');
+    // 항상 최신 데이터를 가져오도록 함
 
     // 현재 카테고리에 맞는 태그 목록 설정
     if (filter.category && filter.category !== t('community.filters.all')) {
@@ -240,37 +244,56 @@ const BoardListPage: React.FC = () => {
     };
     setFilter(initialFilter);
 
-    // 게시글 목록 조회
-    fetchPosts(initialFilter);
+    // 게시글 목록 조회 - 항상 최신 데이터 가져오기 (캐시 무시)
+    fetchPosts({
+      ...initialFilter,
+      _forceRefresh: Date.now() // 매번 새로운 타임스탬프로 캐시 무효화
+    });
     // 인기 게시글 로드
     fetchTopPosts(5);
-
-    // 초기 데이터 로드 완료 플래그 설정
-    initialDataLoadedRef.current = true;
-    hasInitialDataLoaded.current = true;
   }, []);
+
+  // 페이지 재진입 감지 - location.pathname이 변경될 때 새 데이터 로드
+  useEffect(() => {
+    if (location.pathname === '/community/board') {
+      console.log('BoardListPage - /community/board 경로로 복귀, 최신 데이터 로드');
+      if (!isSearchMode) {
+        // 약간의 지연 후 새로고침 (네비게이션 완료 후)
+        setTimeout(() => {
+          fetchPosts({
+            ...filter,
+            _forceRefresh: Date.now()
+          });
+        }, 100);
+      }
+    }
+  }, [location.pathname, filter, isSearchMode]);
 
   // 언어 변경 감지 및 검색 상태 유지
   useEffect(() => {
-    // 초기 로드가 완료된 후에만 언어 변경에 반응
-    if (!hasInitialDataLoaded.current) {
-      return;
+    // 언어 변경 시 검색 상태가 아닐 때만 새로고침
+    if (!isSearchMode) {
+      console.log('[DEBUG] 언어 변경 감지됨, 게시글 목록 새로고침');
+
+      // 검색 상태인 경우 검색 상태를 유지하면서 새로고침
+      if (isSearchMode && searchTerm) {
+        console.log('[DEBUG] 검색 상태에서 언어 변경 - 검색 상태 유지');
+
+        // 약간의 지연 후 검색 재실행 (번역이 완료된 후)
+        setTimeout(() => {
+          handleSearch();
+        }, 100);
+      } else {
+        // 검색 상태가 아니면 일반 게시글 목록 새로고침
+        setTimeout(() => {
+          fetchPosts({
+            ...filter,
+            _forceRefresh: Date.now()
+          });
+        }, 100);
+      }
     }
-
-    console.log('[DEBUG] 언어 변경 감지됨:', language);
-
-    // 검색 상태인 경우 검색 상태를 유지하면서 새로고침
-    if (isSearchMode && searchTerm) {
-      console.log('[DEBUG] 검색 상태에서 언어 변경 - 검색 상태 유지');
-
-      // 약간의 지연 후 검색 재실행 (번역이 완료된 후)
-      setTimeout(() => {
-        handleSearch();
-      }, 100);
-    }
-    // 언어 변경 시 초기 데이터 로드 플래그 리셋
-    hasInitialDataLoaded.current = false;
-  }, [language]);
+  }, [currentLanguage]); // currentLanguage 의존성 사용
 
   // 검색 상태 표시를 위한 추가 컴포넌트
   const SearchStatusIndicator = () => {
@@ -331,79 +354,64 @@ const BoardListPage: React.FC = () => {
     );
   };
 
-  // 필터 변경 시 검색 상태를 유지하는 함수
-  const applyFilterWithSearchState = (newFilter: Partial<LocalPostFilter>) => {
-    const updatedFilter = { ...filter, ...newFilter };
-
-    if (isSearchMode && searchTerm) {
-      // 검색 중이면 필터와 함께 검색 재실행
-      console.log('[DEBUG] 검색 상태에서 필터 변경 - 세부 정보:', {
-        현재필터: filter,
-        새필터: newFilter,
-        병합필터: updatedFilter,
-        검색어: searchTerm,
-        검색타입: searchType,
-      });
-
-      // UI용 필터 상태 먼저 업데이트 (로딩 상태 표시용)
-      setFilter(updatedFilter);
-
-      // searchPosts 함수 호출 - 필터 변경 사항 적용하여 재검색
-      const searchOptions = {
-        page: updatedFilter.page !== undefined ? updatedFilter.page : 0,
-        size: updatedFilter.size || 6,
-        postType: '자유' as PostType,
-        region: updatedFilter.location,
-        category: updatedFilter.category,
-        tag: updatedFilter.tag,
-        sort: updatedFilter.sortBy === 'popular' ? 'views,desc' : 'createdAt,desc',
-      };
-
-      console.log('[DEBUG] 검색 API 파라미터:', searchOptions);
-
-      // 이번에는 서버에 직접 API 요청 (postApi 직접 사용)
-      try {
-        const postApi = usePostStore.getState();
-        postApi.searchPosts(searchTerm, searchType, searchOptions);
-      } catch (error) {
-        console.error('검색 중 오류 발생:', error);
-      }
-    } else {
-      // 검색 중이 아니면 일반 필터 적용
-      setFilter(updatedFilter);
-      fetchPosts(updatedFilter);
-    }
-  };
-
   // 카테고리 변경 핸들러
   const handleCategoryChange = (category: string) => {
     console.log('[DEBUG] 카테고리 변경:', category);
 
+    // 표시값을 내부값으로 변환
+    const internalCategory = getInternalCategoryValue(category);
+    console.log('[DEBUG] 내부 카테고리값:', internalCategory);
+
     // 이전 카테고리와 같으면 변경 없음
-    if (category === selectedCategory) {
+    if (internalCategory === selectedCategory) {
       console.log('[DEBUG] 같은 카테고리 선택, 변경 없음');
       return;
     }
 
-    // 카테고리 상태 업데이트
-    setSelectedCategory(category);
+    // 카테고리 상태 업데이트 (내부값으로)
+    setSelectedCategory(internalCategory);
 
     // 카테고리에 맞는 태그 목록 설정
-    if (category && category !== t('community.filters.all')) {
-      setAvailableTags(categoryTags[category as keyof typeof categoryTags] || []);
+    if (internalCategory && internalCategory !== '전체') {
+      setAvailableTags(categoryTags[internalCategory as keyof typeof categoryTags] || []);
     } else {
       setAvailableTags([]);
     }
 
-    // 새 필터 생성
+    // 새 필터 생성 (내부값으로)
     const newFilter = {
       ...filter,
-      category,
+      category: internalCategory,
       page: 0,
     };
 
     // 필터 적용 (검색 상태 유지하면서)
     applyFilterWithSearchState(newFilter);
+  };
+
+  // 필터 변경 시 검색 상태를 유지하는 함수
+  const applyFilterWithSearchState = (newFilter: Partial<LocalPostFilter>) => {
+    const updatedFilter = { ...filter, ...newFilter };
+
+    // 카테고리 값을 내부값으로 변환
+    if (updatedFilter.category) {
+      updatedFilter.category = getInternalCategoryValue(updatedFilter.category);
+    }
+
+    console.log('[DEBUG] 필터 적용 시 카테고리 변환:', {
+      원본카테고리: newFilter.category,
+      변환된카테고리: updatedFilter.category
+    });
+
+    if (isSearchMode && searchTerm) {
+      // 검색 중이면 필터와 함께 검색 재실행
+      setFilter(updatedFilter);
+      searchPosts(searchTerm, searchType, updatedFilter);
+    } else {
+      // 검색이 아니면 일반 게시글 목록 조회
+      setFilter(updatedFilter);
+      fetchPosts(updatedFilter);
+    }
   };
 
   // 태그 선택 핸들러
@@ -469,24 +477,7 @@ const BoardListPage: React.FC = () => {
     };
     setFilter(searchFilter);
 
-    // 번역된 검색 타입을 한국어로 변환
-    let convertedSearchType = searchType;
-    const searchTypeMapping: Record<string, string> = {
-      // 한국어 (이미 변환된 상태)
-      '제목+내용': '제목_내용',
-      제목: '제목',
-      내용: '내용',
-      작성자: '작성자',
-      // 영어
-      'Title+Content': '제목_내용',
-      Title: '제목',
-      Content: '내용',
-      Author: '작성자',
-    };
-
-    convertedSearchType = searchTypeMapping[searchType] || searchType;
-    console.log('[DEBUG] 검색 타입 변환:', { 원본: searchType, 변환: convertedSearchType });
-
+    // 검색 타입 그대로 전달 (postApi.ts에서 변환 처리)
     const searchOptions = {
       page: 0,
       size: 6,
@@ -499,14 +490,14 @@ const BoardListPage: React.FC = () => {
 
     console.log('[DEBUG] 검색 API 파라미터:', {
       keyword: searchTerm,
-      searchType: convertedSearchType,
+      searchType,
       ...searchOptions,
     });
 
     // 검색 요청 직접 실행
     try {
       const postApi = usePostStore.getState();
-      postApi.searchPosts(searchTerm, convertedSearchType, searchOptions);
+      postApi.searchPosts(searchTerm, searchType, searchOptions);
       console.log('검색 요청 전송 완료');
     } catch (error) {
       console.error('검색 중 오류 발생:', error);
@@ -578,8 +569,62 @@ const BoardListPage: React.FC = () => {
     applyFilterWithSearchState(newFilter);
   };
 
+  // 내부 카테고리값 ↔ 표시값 매핑
+  const CATEGORY_INTERNAL_VALUES = {
+    ALL: '전체',
+    TRAVEL: 'travel',
+    LIVING: 'living',
+    STUDY: 'study',
+    JOB: 'job',
+  } as const;
+
+  // 표시값 → 내부값 변환
+  const getInternalCategoryValue = (displayValue: string): string => {
+    // 이미 내부값이면 그대로 반환
+    if (Object.values(CATEGORY_INTERNAL_VALUES).includes(displayValue as any)) {
+      return displayValue;
+    }
+
+    // 번역된 표시값을 내부값으로 변환
+    if (displayValue === t('community.filters.all')) return CATEGORY_INTERNAL_VALUES.ALL;
+    if (displayValue === t('community.categories.travel')) return CATEGORY_INTERNAL_VALUES.TRAVEL;
+    if (displayValue === t('community.categories.living')) return CATEGORY_INTERNAL_VALUES.LIVING;
+    if (displayValue === t('community.categories.study')) return CATEGORY_INTERNAL_VALUES.STUDY;
+    if (displayValue === t('community.categories.job')) return CATEGORY_INTERNAL_VALUES.JOB;
+    
+    return displayValue; // 기본값
+  };
+
+  // 내부값 → 표시값 변환
+  const getDisplayCategoryValue = (internalValue: string): string => {
+    switch (internalValue) {
+      case CATEGORY_INTERNAL_VALUES.ALL:
+        return t('community.filters.all');
+      case CATEGORY_INTERNAL_VALUES.TRAVEL:
+        return t('community.categories.travel');
+      case CATEGORY_INTERNAL_VALUES.LIVING:
+        return t('community.categories.living');
+      case CATEGORY_INTERNAL_VALUES.STUDY:
+        return t('community.categories.study');
+      case CATEGORY_INTERNAL_VALUES.JOB:
+        return t('community.categories.job');
+      default:
+        return internalValue;
+    }
+  };
+
   return (
-    <div>
+    <Container
+      maxWidth="lg"
+      sx={{
+        py: 3,
+        display: 'flex',
+        flexDirection: 'column',
+        flexGrow: 1,
+        position: 'relative',
+        zIndex: 5,
+      }}
+    >
       {/* 페이지 헤더 */}
       <Box
         sx={{
@@ -621,6 +666,80 @@ const BoardListPage: React.FC = () => {
         >
           {t('community.posts.writePost')}
         </Button>
+      </Box>
+
+      {/* 커뮤니티 타입 전환 버튼 - 더 눈에 띄도록 개선 */}
+      <Box
+        sx={{
+          mb: 4,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          position: 'relative',
+        }}
+      >
+        <Paper
+          elevation={3}
+          sx={{
+            borderRadius: '60px',
+            p: 0.5,
+            bgcolor: 'white',
+            border: '3px solid #FFAAA5',
+            boxShadow: '0 12px 40px rgba(255, 170, 165, 0.3)',
+          }}
+        >
+          <ToggleButtonGroup
+            color="primary"
+            value="board"
+            exclusive
+            onChange={(e, newType) => {
+              if (newType === 'groups') {
+                navigate('/community/group');
+              }
+            }}
+            size="large"
+            sx={{
+              borderRadius: '50px',
+              '& .MuiToggleButton-root': {
+                borderRadius: '50px',
+                border: 'none',
+                px: 5,
+                py: 2,
+                minWidth: '160px',
+                fontSize: '1.2rem',
+                fontWeight: 700,
+                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                textTransform: 'none',
+                '&.Mui-selected': {
+                  bgcolor: '#FFAAA5',
+                  color: 'white',
+                  transform: 'scale(1.05)',
+                  boxShadow: '0 8px 25px rgba(255, 170, 165, 0.4)',
+                  '&:hover': {
+                    bgcolor: '#FF8B8B',
+                    transform: 'scale(1.08)',
+                  },
+                },
+                '&:not(.Mui-selected)': {
+                  color: '#999',
+                  bgcolor: 'transparent',
+                  '&:hover': {
+                    bgcolor: 'rgba(255, 170, 165, 0.1)',
+                    color: '#666',
+                    transform: 'scale(1.02)',
+                  },
+                },
+              },
+            }}
+          >
+            <ToggleButton value="groups">
+              📱 소모임
+            </ToggleButton>
+            <ToggleButton value="board">
+              💬 자유게시판
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </Paper>
       </Box>
 
       {/* 상단 필터링 및 검색 영역 */}
@@ -1055,7 +1174,7 @@ const BoardListPage: React.FC = () => {
           <PostList />
         </Box>
       )}
-    </div>
+    </Container>
   );
 };
 

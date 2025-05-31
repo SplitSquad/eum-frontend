@@ -133,10 +133,9 @@ const AnimatedCircle = styled(motion.div)(({ theme }) => ({
 }));
 
 /**
- * 유학 온보딩 정보 데이터
+ * 유학생 온보딩 정보 데이터
  */
 interface StudyProfileData {
-  name: string;
   gender: string;
   age: string;
   nationality: string;
@@ -251,7 +250,6 @@ const StudyProfile: React.FC = () => {
 
   // 데이터 스테이트
   const [formData, setFormData] = useState<StudyProfileData>({
-    name: '',
     gender: '',
     age: '',
     nationality: '',
@@ -423,7 +421,6 @@ const StudyProfile: React.FC = () => {
         uiLanguage: formData.uiLanguage || 'ko', // language 필드로 매핑
 
         // 상세 정보 (onBoardingPreference JSON으로 저장됨)
-        name: formData.name,
         age: formData.age,
         educationLevel: formData.educationLevel,
         fieldOfStudy: formData.fieldOfStudy,
@@ -519,22 +516,6 @@ const StudyProfile: React.FC = () => {
                 mb: 2,
               }}
             >
-              {/* <StyledTextField
-                label={t('onboarding.study.form.name')}
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                fullWidth
-                required
-                color="primary"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <PersonIcon sx={{ color: alpha(primaryColor, 0.7) }} />
-                    </InputAdornment>
-                  ),
-                }}
-              /> */}
 
               <Box>
                 <FormControl component="fieldset" fullWidth>
@@ -594,16 +575,7 @@ const StudyProfile: React.FC = () => {
                   </RadioGroup>
                 </FormControl>
               </Box>
-            </Box>
 
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-                gap: 3,
-                mb: 2,
-              }}
-            >
               <StyledTextField
                 label={t('onboarding.study.form.age')}
                 name="age"
@@ -614,14 +586,6 @@ const StudyProfile: React.FC = () => {
                 type="number"
               />
 
-              <StyledTextField
-                label={t('onboarding.study.form.nationality')}
-                name="nationality"
-                value={formData.nationality}
-                onChange={handleInputChange}
-                fullWidth
-                color="primary"
-              />
             </Box>
 
             <Box
@@ -633,6 +597,18 @@ const StudyProfile: React.FC = () => {
             >
               <StyledTextField
                 select
+
+                label={t('onboarding.study.form.nationality')}
+                name="nationality"
+                value={formData.nationality}
+                onChange={handleInputChange}
+                fullWidth
+                color="primary"
+              />
+
+              <StyledTextField
+                select
+
                 label={t('onboarding.study.form.uiLanguage')}
                 name="uiLanguage"
                 value={formData.uiLanguage}
@@ -1086,7 +1062,7 @@ const StudyProfile: React.FC = () => {
   const isNextDisabled = () => {
     switch (currentStep) {
       case 1: // 유학생 세부 프로필
-        return !formData.name || !formData.gender || !formData.nationality;
+        return !formData.age || !formData.nationality;
       case 2: // 학업 정보
         return !formData.studyType;
       case 3: // 유학 일정

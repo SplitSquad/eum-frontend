@@ -140,7 +140,6 @@ const AnimatedCircle = styled(motion.div)(({ theme }) => ({
  * 취업 온보딩 정보 데이터
  */
 interface JobProfileData {
-  name: string;
   gender: string;
   age: string;
   nationality: string;
@@ -270,7 +269,6 @@ const JobProfile: React.FC = () => {
 
   // 데이터 스테이트
   const [formData, setFormData] = useState<JobProfileData>({
-    name: '',
     gender: '',
     age: '',
     nationality: '',
@@ -443,7 +441,6 @@ const JobProfile: React.FC = () => {
         uiLanguage: formData.uiLanguage || 'ko', // language 필드로 매핑
 
         // 상세 정보 (onBoardingPreference JSON으로 저장됨)
-        name: formData.name,
         age: formData.age,
         jobField: formData.jobField,
         workExperience: formData.workExperience,
@@ -526,6 +523,7 @@ const JobProfile: React.FC = () => {
                 mb: 2,
               }}
             >
+
               {/* <StyledTextField
                 label={t('onboarding.worker.form.name')}
                 name="name"
@@ -542,6 +540,7 @@ const JobProfile: React.FC = () => {
                   ),
                 }}
               /> */}
+
 
               <Box>
                 <FormControl component="fieldset" fullWidth>
@@ -601,16 +600,7 @@ const JobProfile: React.FC = () => {
                   </RadioGroup>
                 </FormControl>
               </Box>
-            </Box>
 
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-                gap: 3,
-                mb: 2,
-              }}
-            >
               <StyledTextField
                 label={t('onboarding.worker.form.age')}
                 name="age"
@@ -621,14 +611,6 @@ const JobProfile: React.FC = () => {
                 type="number"
               />
 
-              <StyledTextField
-                label={t('onboarding.worker.form.nationality')}
-                name="nationality"
-                value={formData.nationality}
-                onChange={handleInputChange}
-                fullWidth
-                color="primary"
-              />
             </Box>
 
             <Box
@@ -638,6 +620,16 @@ const JobProfile: React.FC = () => {
                 gap: 3,
               }}
             >
+
+              <StyledTextField
+                label={t('onboarding.worker.form.nationality')}
+                name="nationality"
+                value={formData.nationality}
+                onChange={handleInputChange}
+                fullWidth
+                color="primary"
+              />
+
               <StyledTextField
                 select
                 label={t('onboarding.worker.form.uiLanguage')}
@@ -1193,7 +1185,7 @@ const JobProfile: React.FC = () => {
   const isNextDisabled = () => {
     switch (currentStep) {
       case 1: // 취업자 세부 프로필
-        return !formData.name || !formData.gender || !formData.nationality;
+        return !formData.gender || !formData.nationality;
       case 2: // 직업 상세 정보
         return !formData.jobField || !formData.workExperience;
       case 3: // 취업 날짜 및 기간

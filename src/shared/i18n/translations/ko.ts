@@ -245,6 +245,7 @@ const ko = {
     },
   },
 
+
   onboarding: {
     studySchedule: {
       title: '유학 일정',
@@ -260,6 +261,7 @@ const ko = {
       endDateLabel: '종료 예정일',
       endDate: '종료 날짜',
     },
+
     worker: {
       preference: {
         title: '희망 근무 조건',
@@ -695,7 +697,9 @@ const ko = {
     study: {
       profileSetting: '유학 프로필 설정',
       profileDescription: '한국 유학에 필요한 정보를 알려주세요.',
+
       academicTitle: '학업 정보',
+
       steps: {
         profile: '프로필',
         academic: '학업정보',
@@ -716,7 +720,11 @@ const ko = {
         nationality: '국적',
         uiLanguage: 'UI 언어 선택',
         uiLanguageHelper: '앱에서 사용할 언어를 선택해주세요',
+
+        StudyType: '학업 유형',
+
         studyType: '학업 유형',
+
         majorField: '전공 분야',
         academicLevel: '학업 과정',
         desiredSchool: '비자 종류',

@@ -286,7 +286,7 @@ const CommentApi = {
   }): Promise<DebateComment | null> => {
     try {
       // 언어 감지 - 사용자가 입력한 댓글 내용에서 자동 감지
-      const detectedLanguage = detectLanguage(commentRequest.content);
+      const detectedLanguage = await detectLanguage(commentRequest.content);
       
       debugLog('토론 댓글 언어 감지 결과:', {
         content: commentRequest.content.substring(0, 50) + '...',
@@ -364,7 +364,7 @@ const CommentApi = {
   updateComment: async (commentId: number, content: string): Promise<boolean> => {
     try {
       // 언어 감지 - 수정된 댓글 내용에서 자동 감지
-      const detectedLanguage = detectLanguage(content);
+      const detectedLanguage = await detectLanguage(content);
       
       debugLog('토론 댓글 수정 언어 감지 결과:', {
         content: content.substring(0, 50) + '...',
@@ -529,7 +529,7 @@ const CommentApi = {
   createReply: async (commentId: number, content: string): Promise<DebateReply | null> => {
     try {
       // 언어 감지 - 사용자가 입력한 대댓글 내용에서 자동 감지
-      const detectedLanguage = detectLanguage(content);
+      const detectedLanguage = await detectLanguage(content);
       
       debugLog('토론 대댓글 언어 감지 결과:', {
         content: content.substring(0, 50) + '...',
@@ -573,7 +573,7 @@ const CommentApi = {
   updateReply: async (replyId: number, content: string): Promise<boolean> => {
     try {
       // 언어 감지 - 수정된 대댓글 내용에서 자동 감지
-      const detectedLanguage = detectLanguage(content);
+      const detectedLanguage = await detectLanguage(content);
       
       debugLog('토론 대댓글 수정 언어 감지 결과:', {
         content: content.substring(0, 50) + '...',

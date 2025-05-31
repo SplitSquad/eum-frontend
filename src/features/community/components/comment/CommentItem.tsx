@@ -106,6 +106,12 @@ const CommentItem: React.FC<CommentItemProps> = ({
     ((currentUser as any)?.id ?? (currentUser as any)?.userId)?.toString() ===
     ((comment.writer as any)?.id ?? (comment.writer as any)?.userId)?.toString();
 
+  // 관리자 권한 확인
+  const isAdmin = currentUser?.role === 'ROLE_ADMIN';
+
+  // 수정/삭제 권한 확인 (본인 또는 관리자)
+  const canEditOrDelete = isCommentAuthor || isAdmin;
+
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
     console.log('handleMenuClick 실행됨', isCommentAuthor);
     setAnchorEl(event.currentTarget);
@@ -222,10 +228,28 @@ const CommentItem: React.FC<CommentItemProps> = ({
             </Box>
           </Box>
 
-          {isCommentAuthor && (
-            <IconButton size="small" onClick={handleMenuClick} sx={{ color: '#888' }}>
-              <MoreVertIcon fontSize="small" />
-            </IconButton>
+          {/* 본인이 작성했거나 관리자인 경우 수정/삭제 버튼, 아니면 신고 버튼 */}
+          {currentUser && (
+            <>
+              {canEditOrDelete ? (
+                <IconButton size="small" onClick={handleMenuClick} sx={{ color: '#888' }}>
+                  <MoreVertIcon fontSize="small" />
+                </IconButton>
+              ) : (
+                <IconButton
+                  size="small"
+                  onClick={handleOpenReportDialog}
+                  sx={{ 
+                    color: '#888',
+                    '&:hover': {
+                      color: '#f57c00',
+                    },
+                  }}
+                >
+                  <FlagIcon fontSize="small" />
+                </IconButton>
+              )}
+            </>
           )}
 
           <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
@@ -351,8 +375,8 @@ const CommentItem: React.FC<CommentItemProps> = ({
             답글 작성 {comment.replies?.length ? `(${comment.replies.length})` : ''}
           </ActionButton>
 
-          {/* 신고 버튼 - 작성자가 아닌 경우에만 표시 */}
-          {currentUser && !isCommentAuthor && (
+          {/* 신고 버튼 - 작성자가 아니고 관리자가 아닌 경우에만 표시 */}
+          {currentUser && !canEditOrDelete && (
             <ActionButton
               startIcon={<FlagIcon fontSize="small" />}
               onClick={handleOpenReportDialog}

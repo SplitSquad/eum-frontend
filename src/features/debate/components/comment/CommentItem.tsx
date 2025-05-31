@@ -488,8 +488,20 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
         title={
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, alignItems: 'center' }}>
             <Typography variant="subtitle2">{userName || '익명'}</Typography>
-            <FlagIconSvg countryCode="ko" /> {/* <- 강제 테스트 */}
-            {countryCode && <FlagIconSvg countryCode={nation ?? ''} />}
+
+            
+            {/* 국가/국기 표시 */}
+            {nation && (
+              <FlagDisplay 
+                nation={nation} 
+                size="small"
+                showName={false}
+                sx={{ mr: 0.5 }}
+              />
+            )}
+            
+
+
             {/* 입장 표시 - 댓글 내용에서 추출한 stance 사용 */}
             <StanceChip
               label={extractedStance === 'con' ? '반대' : '찬성'}
@@ -633,6 +645,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
             startIcon={<ReplyIcon />}
             onClick={handleReplyClick}
             color={showReplyForm ? 'secondary' : 'primary'}
+            type="button"
           >
             {showReplyForm ? '취소' : '답글 작성'}
           </ActionButton>
@@ -644,6 +657,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
               onClick={handleToggleReplies}
               color="inherit"
               sx={{ pointerEvents: 'auto' }}
+              type="button"
             >
               {showReplies ? '답글 숨기기' : `답글 ${replyCount}개`}
             </ActionButton>

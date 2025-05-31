@@ -13,13 +13,21 @@ import {
   Card,
   CardContent,
   Chip,
-  Stack
+  Stack,
+  Menu,
+  MenuItem
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FlagIcon from '@mui/icons-material/Flag';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import FlagDisplay from '../../../../shared/components/FlagDisplay';
+import { useAuthStore } from '../../../auth';
+import ReportDialog, {
+  ReportTargetType,
+  ServiceType,
+} from '../../../common/components/ReportDialog';
 
 interface ReplyItemProps {
   reply: DebateReply;
@@ -54,16 +62,52 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
     updatedAt,
     reactions,
     countryCode,
-    countryName
+    countryName,
+    nation
   } = reply;
 
   const { updateReply, deleteReply } = useDebateStore();
+  const { user } = useAuthStore();
 
   // 로컬 상태
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(initialContent);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [content, setContent] = useState(initialContent); // 로컬에서 관리할 내용 상태
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+
+  // 내가 작성한 답글인지 확인
+  const isMyReply = userId && ((user as any)?.id ?? (user as any)?.userId) === userId;
+
+  // 관리자 권한 확인
+  const isAdmin = user?.role === 'ROLE_ADMIN';
+
+  // 수정/삭제 권한 확인 (본인 또는 관리자)
+  const canEditOrDelete = isMyReply || isAdmin;
+
+  // 메뉴 관련 핸들러
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  // 신고 대화상자 핸들러
+  const handleOpenReportDialog = () => {
+    if (!user) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+    setReportDialogOpen(true);
+  };
+
+  const handleCloseReportDialog = () => {
+    setReportDialogOpen(false);
+  };
 
   // 대댓글 수정 핸들러
   const handleEdit = async (e?: React.MouseEvent) => {
@@ -135,6 +179,7 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
     e.preventDefault();
     e.stopPropagation();
     setIsEditing(true);
+    handleMenuClose();
   };
 
   // 편집 취소
@@ -176,8 +221,14 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
                   {userName}
                 </Typography>
                 
-                {countryName && (
-                  <FlagDisplay nation={countryName} size="small" inline={true} />
+                {/* 국가/국기 표시 */}
+                {nation && (
+                  <FlagDisplay 
+                    nation={nation} 
+                    size="small"
+                    showName={false}
+                    sx={{ mr: 0.5 }}
+                  />
                 )}
                 
                 <Typography variant="caption" color="text.secondary" sx={{ ml: 0.5 }}>
@@ -186,14 +237,50 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
                 </Typography>
               </Box>
               
-              <Box>
-                <IconButton size="small" onClick={toggleEdit} sx={{ p: 0.5 }}>
-                  <EditIcon fontSize="small" sx={{ fontSize: '0.9rem' }} />
-                </IconButton>
-                <IconButton size="small" onClick={handleDelete} sx={{ p: 0.5 }}>
-                  <DeleteIcon fontSize="small" sx={{ fontSize: '0.9rem' }} />
-                </IconButton>
-              </Box>
+              {/* 본인이 작성했거나 관리자인 경우 수정/삭제 버튼, 아니면 신고 버튼 */}
+              {user && (
+                <>
+                  {canEditOrDelete ? (
+                    <IconButton size="small" onClick={handleMenuOpen} sx={{ p: 0.5 }}>
+                      <MoreVertIcon fontSize="small" sx={{ fontSize: '0.9rem' }} />
+                    </IconButton>
+                  ) : (
+                    <IconButton
+                      size="small"
+                      onClick={handleOpenReportDialog}
+                      sx={{ 
+                        p: 0.5,
+                        '&:hover': {
+                          color: 'error.main',
+                        },
+                      }}
+                    >
+                      <FlagIcon fontSize="small" sx={{ fontSize: '0.9rem' }} />
+                    </IconButton>
+                  )}
+                </>
+              )}
+
+              {/* 수정/삭제 메뉴 */}
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleMenuClose}
+                onClick={e => e.stopPropagation()}
+              >
+                <MenuItem onClick={toggleEdit}>
+                  수정
+                </MenuItem>
+                <MenuItem
+                  onClick={e => {
+                    e.stopPropagation();
+                    handleMenuClose();
+                    handleDelete();
+                  }}
+                >
+                  삭제
+                </MenuItem>
+              </Menu>
             </Box>
             
             {/* 댓글 내용 */}
@@ -260,6 +347,16 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
           </Box>
         </Box>
       </CardContent>
+
+      {/* 신고 다이얼로그 */}
+      <ReportDialog
+        open={reportDialogOpen}
+        onClose={handleCloseReportDialog}
+        targetId={id}
+        targetType={'REPLY'}
+        serviceType={'DEBATE'}
+        reportedUserId={userId || 0}
+      />
     </StyledCard>
   );
 };

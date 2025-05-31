@@ -1120,7 +1120,11 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                 variant="caption"
                 sx={{ fontSize: '0.7rem', color: '#999', mt: 0.2, display: 'block' }}
               >
+
+                <FlagDisplay nation={comment.writer.nation} size="small" showName={false} />
+
                 <FlagDisplay nation={comment.writer.nation} size="small" />
+
               </Typography>
             )}
             <Typography variant="caption" color="text.secondary">
@@ -1310,7 +1314,11 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                                       display: 'block',
                                     }}
                                   >
+
+                                    <FlagDisplay nation={reply.writer.nation} size="small" showName={false} />
+
                                     <FlagDisplay nation={reply.writer.nation} size="small" />
+
                                   </Typography>
                                 )}
                                 <Typography variant="caption" color="text.secondary">
