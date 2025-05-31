@@ -34,18 +34,14 @@ const ProfessionalContainer = styled(Box, {
 `;
 
 const BackgroundImage = styled('img')`
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 90vw;
-  height: 90vh;
-  min-width: 240px;
-  min-height: 180px;
-  max-width: 100vw;
-  max-height: 100vh;
+  position: fixed; /* absolute → fixed */
+  top: 0; /* 화면 최상단에 고정 */
+  left: 0; /* 화면 최좌측에 고정 */
+  width: 90vw; /* 뷰포트 너비 전체 */
+  height: 90vh; /* 뷰포트 높이 전체 */
   opacity: 0.5;
   pointer-events: none;
-  z-index: 1;
+  z-index: 1; /* 컨텐츠 뒤로 보내기 */
   user-select: none;
 `;
 

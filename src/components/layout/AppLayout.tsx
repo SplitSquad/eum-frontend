@@ -6,7 +6,7 @@ import Modal from '@/components/ai/Modal';
 import ModalContent from '@/components/ai/ModalContent';
 import { useModalStore } from '@/shared/store/ModalStore';
 import useAuthStore from '@/features/auth/store/authStore';
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import eum2Image from '@/assets/images/characters/이음이.png';
 import '../../app/App.css';
@@ -19,6 +19,7 @@ export default function AppLayout() {
   const { isAuthenticated, loadUser } = useAuthStore();
   const btnRef = useRef<HTMLImageElement>(null);
   const { isHeaderVisible, isModalVisible } = useLayoutVisibility();
+  const [modalAdjustKey, setModalAdjustKey] = useState(0);
 
   // 기존의 updateVisibility, useEffect 등은 필요에 따라 커스텀 훅으로 분리 가능
   // 여기서는 간단히 유지
@@ -32,14 +33,11 @@ export default function AppLayout() {
       closeModal();
     } else if (btnRef.current) {
       const rect = btnRef.current.getBoundingClientRect();
-      const scrollX = window.scrollX;
-      const scrollY = window.scrollY;
-      const offset = 8;
-      const MODAL_WIDTH = 350;
-      let x = rect.left - offset - MODAL_WIDTH + scrollX;
-      const y = rect.top + scrollY - 400;
-      if (x < 0) x = rect.right + offset + scrollX;
-      openModal(<ModalContent />, { x, y });
+      const offset = 16; // 대각선 오프셋
+      // 문서 전체 기준 좌표로 변환
+      let x = rect.left;
+      let y = rect.top;
+      openModal(<ModalContent btnRect={rect} />, { x: 0, y: 0 });
     }
   };
 

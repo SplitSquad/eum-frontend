@@ -138,7 +138,13 @@ interface VoteButtonProps {
   color: string;
   selected?: boolean;
 }
-
+const SidebarContainer = styled(Box)(({ theme }) => ({
+  position: 'sticky',
+  top: 80, // 헤더가 있다면 헤더 높이만큼 띄워주고
+  maxHeight: 'calc(100vh - 80px)', // 뷰포트 높이에서 top 만큼 뺀 높이까지
+  overflowY: 'auto', // 넘칠 시 내부 스크롤
+  paddingRight: theme.spacing(2), // 스크롤바 나올 공간
+}));
 const VoteButton = styled(Button, {
   shouldForwardProp: prop => prop !== 'color' && prop !== 'selected',
 })<VoteButtonProps>(({ theme, color, selected }) => ({
@@ -345,7 +351,8 @@ const CommentItem = styled(ListItem)(({ theme }) => ({
 }));
 
 const ChartContainer = styled(Box)(({ theme }) => ({
-  height: 160,
+  width: '100%',
+  aspectRatio: '1',
   marginTop: theme.spacing(2),
   marginBottom: theme.spacing(2),
 }));
@@ -1269,8 +1276,8 @@ const DebateDetailPage: React.FC = () => {
                     data={chartData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={32}
-                    outerRadius={52}
+                    innerRadius="20%"
+                    outerRadius="40%"
                     paddingAngle={5}
                     dataKey="value"
                     label={renderDiagonalLabel}
@@ -1370,7 +1377,7 @@ const DebateDetailPage: React.FC = () => {
   return (
     <DebateLayout
       sidebar={
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <SidebarContainer sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           <VoteButtonGroup>
             <VoteButton
               variant="outlined"
@@ -1415,7 +1422,7 @@ const DebateDetailPage: React.FC = () => {
             enhancedDebate={enhancedDebate}
           />
           <CountryStatsSection enhancedDebate={enhancedDebate} t={t} />
-        </Box>
+        </SidebarContainer>
       }
     >
       <Container maxWidth="md" sx={{ py: 2 }}>
@@ -1554,7 +1561,13 @@ const DebateDetailPage: React.FC = () => {
                   <span style={{ margin: '0 4px' }}>•</span>
                   {formatDate(enhancedDebate.createdAt)}
                 </Typography>
-                <Typography variant="h5" component="h1" fontWeight={700} gutterBottom>
+                <Typography
+                  variant="h5"
+                  component="h1"
+                  fontWeight={700}
+                  gutterBottom
+                  key={t('debate.title')}
+                >
                   {enhancedDebate.title}
                 </Typography>
               </Box>
