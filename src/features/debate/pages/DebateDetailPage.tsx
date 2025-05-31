@@ -1548,7 +1548,13 @@ const DebateDetailPage: React.FC = () => {
                   <span style={{ margin: '0 4px' }}>•</span>
                   {formatDate(enhancedDebate.createdAt)}
                 </Typography>
-                <Typography variant="h5" component="h1" fontWeight={700} gutterBottom>
+                <Typography
+                  variant="h5"
+                  component="h1"
+                  fontWeight={700}
+                  gutterBottom
+                  key={t('debate.title')}
+                >
                   {enhancedDebate.title}
                 </Typography>
               </Box>
