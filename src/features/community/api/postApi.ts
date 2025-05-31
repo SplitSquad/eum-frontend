@@ -117,6 +117,7 @@ export const PostApi = {
     sortBy?: string;
     location?: string;
     tag?: string;
+    tags?: string[];
     postType?: PostType;
   }): Promise<PostListResponse> => {
     try {
@@ -148,16 +149,21 @@ export const PostApi = {
         // 단일 태그이므로 배열 대신 문자열로 전송
         const tagsArray = params.tag.split(',').map(tag => tag.trim());
         
-        // 다양한 백엔드 파라미터 형식 시도
+        // Spring Boot가 기대하는 형식으로 tags 배열 전달
         apiParams.tags = tagsArray; // 배열 형태
-        apiParams.tag = params.tag; // 단일 문자열 형태
-        apiParams.tagList = tagsArray; // 대안 배열 형태
 
         // 로그에 태그 정보 명확하게 표시
         console.log('[DEBUG] 태그 필터링 적용:', {
           원본태그: params.tag,
           태그배열: tagsArray,
-
+        });
+      }
+      
+      // postStore에서 tags 배열로 전달되는 경우도 처리
+      if (params.tags && Array.isArray(params.tags) && params.tags.length > 0) {
+        apiParams.tags = params.tags;
+        console.log('[DEBUG] 태그 배열로 필터링 적용:', {
+          태그배열: params.tags,
         });
       }
 
@@ -172,12 +178,13 @@ export const PostApi = {
           const searchParams = new URLSearchParams();
           Object.entries(params).forEach(([key, value]) => {
             if (Array.isArray(value)) {
-              // 배열인 경우 key[]=value1&key[]=value2 형식으로 직렬화
-              value.forEach(v => searchParams.append(`${key}[]`, v));
+              // Spring Boot가 기대하는 형식: tags=tag1&tags=tag2
+              value.forEach(v => searchParams.append(key, v));
             } else {
               searchParams.append(key, String(value));
             }
           });
+          console.log('[DEBUG] 최종 쿼리 문자열:', searchParams.toString());
           return searchParams.toString();
         },
       });
