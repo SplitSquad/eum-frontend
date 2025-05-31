@@ -1,6 +1,7 @@
 import styled from '@emotion/styled';
 import {
   Alert,
+  Avatar,
   Box,
   Container,
   Fade,
@@ -11,6 +12,9 @@ import {
   TextField,
   Button,
   FormHelperText,
+  TextField as MuiTextField,
+  TextFieldProps,
+  alpha,
 } from '@mui/material';
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -20,7 +24,7 @@ import { registerUser } from '../api/authApi';
 import { seasonalColors } from '@/components/layout/springTheme';
 import { useThemeStore } from '@/features/theme/store/themeStore';
 import { useTranslation } from '@/shared/i18n';
-
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 // 스타일 컴포넌트 생략 (질문에 주신 코드 그대로 유지)
 
 const LoginCard = styled(Paper)<{ colors: typeof seasonalColors.spring }>`
@@ -62,6 +66,22 @@ type InputErrors = {
   phone?: string;
   address?: string;
 };
+
+// 이 페이지 전용: hover 시 배경색 변화 없는 TextField
+const StyledTextField = (props: TextFieldProps) => (
+  <MuiTextField
+    {...props}
+    sx={{
+      background: 'rgba(255,255,255,0.7)',
+      '& .MuiOutlinedInput-root': {
+        '&:hover': {
+          background: 'rgba(255,255,255,0.7)',
+        },
+      },
+      ...props.sx,
+    }}
+  />
+);
 
 const SignUpInputs = ({
   id,
@@ -114,7 +134,7 @@ const SignUpInputs = ({
 
   return (
     <InputBox>
-      <TextField
+      <StyledTextField
         label={t('signup.email')}
         variant="outlined"
         value={id}
@@ -124,12 +144,11 @@ const SignUpInputs = ({
         }}
         fullWidth
         autoComplete="username"
-        sx={{ background: 'rgba(255,255,255,0.7)' }}
         required
         error={!!errors.id}
         helperText={errors.id || ''}
       />
-      <TextField
+      <StyledTextField
         label={t('signup.password')}
         variant="outlined"
         type="password"
@@ -141,13 +160,12 @@ const SignUpInputs = ({
         fullWidth
         placeholder={t('signup.passwordPlaceholder')}
         autoComplete="new-password"
-        sx={{ background: 'rgba(255,255,255,0.7)' }}
         required
         error={!!errors.password}
         helperText={errors.password || ''}
       />
       <div>
-        <TextField
+        <StyledTextField
           label={t('signup.confirmPassword') || '비밀번호 확인'}
           variant="outlined"
           type="password"
@@ -159,7 +177,6 @@ const SignUpInputs = ({
           fullWidth
           placeholder={t('signup.passwordPlaceholder') || '비밀번호를 한 번 더 입력하세요'}
           autoComplete="new-password"
-          sx={{ background: 'rgba(255,255,255,0.7)' }}
           required
           error={!!errors.confirmPassword || (showConfirm && confirmColor === 'error')}
         />
@@ -181,7 +198,7 @@ const SignUpInputs = ({
           <FormHelperText sx={{ color: 'red', ml: 1 }}>{errors.confirmPassword}</FormHelperText>
         )}
       </div>
-      <TextField
+      <StyledTextField
         label={t('signup.name')}
         variant="outlined"
         value={name}
@@ -191,12 +208,11 @@ const SignUpInputs = ({
         }}
         fullWidth
         autoComplete="name"
-        sx={{ background: 'rgba(255,255,255,0.7)' }}
         required
         error={!!errors.name}
         helperText={errors.name || ''}
       />
-      <TextField
+      <StyledTextField
         label={t('signup.birthday')}
         variant="outlined"
         value={birthday}
@@ -206,13 +222,12 @@ const SignUpInputs = ({
         }}
         fullWidth
         autoComplete="birthday"
-        sx={{ background: 'rgba(255,255,255,0.7)' }}
-        required
         placeholder={t('signup.birthdayPlaceholder')}
+        required
         error={!!errors.birthday}
         helperText={errors.birthday || ''}
       />
-      <TextField
+      <StyledTextField
         label={t('signup.phone')}
         variant="outlined"
         value={phone}
@@ -222,9 +237,8 @@ const SignUpInputs = ({
         }}
         fullWidth
         autoComplete="phone"
-        sx={{ background: 'rgba(255,255,255,0.7)' }}
-        required
         placeholder={t('signup.phonePlaceholder')}
+        required
         error={!!errors.phone}
         helperText={errors.phone || ''}
       />
@@ -430,9 +444,6 @@ const SignUpPage: React.FC = () => {
                 width: '100%',
                 mt: 2,
                 transition: 'all 0.3s ease',
-                '&:hover': {
-                  transform: 'scale(1.02)',
-                },
               }}
             >
               <SignUpInputs
