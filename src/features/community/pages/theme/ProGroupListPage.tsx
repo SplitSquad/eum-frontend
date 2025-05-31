@@ -690,6 +690,73 @@ const ProGroupListPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+
+      {/* 커뮤니티 타입 전환 버튼 - Pro 테마용 */}
+      <div style={{ 
+        borderBottom: '1.5px solid #e5e7eb',
+        paddingBottom: '24px'
+      }}>
+        <div style={{ 
+          maxWidth: 1120, 
+          margin: '0 auto',
+          display: 'flex',
+          justifyContent: 'center',
+          paddingTop: '12px'
+        }}>
+          <div style={{
+            display: 'flex',
+            border: '1.5px solid #222',
+            borderRadius: '50px',
+            overflow: 'hidden',
+            backgroundColor: '#fff'
+          }}>
+            <button
+              style={{
+                ...proButton,
+                margin: 0,
+                padding: '12px 32px',
+                borderRadius: 0,
+                border: 'none',
+                backgroundColor: '#222',
+                fontSize: '1.1rem',
+                fontWeight: 700,
+                color: '#fff',
+                cursor: 'default'
+              }}
+            >
+              📱 소모임
+            </button>
+            <button
+              onClick={() => navigate('/community/board')}
+              style={{
+                ...proButton,
+                margin: 0,
+                padding: '12px 32px',
+                borderRadius: 0,
+                border: 'none',
+                backgroundColor: 'transparent',
+                fontSize: '1.1rem',
+                fontWeight: 700,
+                color: '#666',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(34, 34, 34, 0.1)';
+                e.currentTarget.style.color = '#222';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = '#666';
+              }}
+            >
+              💬 자유게시판
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div
         style={{
           maxWidth: 1120,

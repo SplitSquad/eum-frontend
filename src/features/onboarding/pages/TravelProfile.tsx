@@ -40,6 +40,9 @@ import { motion } from 'framer-motion';
 import { useAuthStore } from '../../auth/store/authStore';
 import { useTranslation } from '@/shared/i18n/';
 
+import CountrySelector from '@/shared/components/CountrySelector';
+
+
 // 아이콘 임포트
 import PersonIcon from '@mui/icons-material/Person';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
@@ -141,7 +144,6 @@ const AnimatedCircle = styled(motion.div)(({ theme }) => ({
  * 여행 온보딩 정보 데이터
  */
 interface TravelProfileData {
-  name: string;
   gender: string;
   age: string;
   nationality: string;
@@ -251,7 +253,6 @@ const TravelProfile: React.FC = () => {
 
   // 데이터 스테이트
   const [formData, setFormData] = useState<TravelProfileData>({
-    name: '',
     gender: '',
     age: '',
     nationality: '',
@@ -409,7 +410,6 @@ const TravelProfile: React.FC = () => {
         uiLanguage: formData.uiLanguage || 'ko', // language 필드로 매핑
 
         // 상세 정보 (onBoardingPreference JSON으로 저장됨)
-        name: formData.name,
         age: formData.age,
         travelType: formData.travelType,
         travelDuration: formData.travelDuration,
@@ -509,22 +509,6 @@ const TravelProfile: React.FC = () => {
                 mb: 2,
               }}
             >
-              {/* <StyledTextField
-                label={t('onboarding.travel.name')}
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                fullWidth
-                required
-                color="primary"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <PersonIcon sx={{ color: alpha(primaryColor, 0.7) }} />
-                    </InputAdornment>
-                  ),
-                }}
-              /> */}
 
               <Box>
                 <FormControl component="fieldset" fullWidth>
@@ -584,16 +568,7 @@ const TravelProfile: React.FC = () => {
                   </RadioGroup>
                 </FormControl>
               </Box>
-            </Box>
 
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-                gap: 3,
-                mb: 2,
-              }}
-            >
               <StyledTextField
                 label={t('onboarding.travel.age')}
                 name="age"
@@ -604,14 +579,6 @@ const TravelProfile: React.FC = () => {
                 type="number"
               />
 
-              <StyledTextField
-                label={t('onboarding.travel.country')}
-                name="nationality"
-                value={formData.nationality}
-                onChange={handleInputChange}
-                fullWidth
-                color="primary"
-              />
             </Box>
 
             <Box
@@ -619,9 +586,15 @@ const TravelProfile: React.FC = () => {
                 display: 'grid',
                 gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
                 gap: 3,
-                mb: 2,
               }}
             >
+              <CountrySelector
+                label={t('onboarding.travel.country')}
+                value={formData.nationality}
+                onChange={(value) => setFormData(prev => ({ ...prev, nationality: value }))}
+                fullWidth
+              />
+
               <StyledTextField
                 select
                 label={t('onboarding.travel.uiLanguage')}
@@ -646,108 +619,6 @@ const TravelProfile: React.FC = () => {
                 ))}
               </StyledTextField>
 
-              <StyledTextField
-                select
-                label={t('onboarding.travel.travelType')}
-                name="travelType"
-                value={formData.travelType}
-                onChange={handleInputChange}
-                fullWidth
-                required
-                color="primary"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <ExploreIcon sx={{ color: alpha(primaryColor, 0.7) }} />
-                    </InputAdornment>
-                  ),
-                }}
-              >
-                {travelTypeOptions.map(option => (
-                  <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </StyledTextField>
-            </Box>
-
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-                gap: 3,
-              }}
-            >
-              <StyledTextField
-                select
-                label={t('onboarding.travel.travelDuration')}
-                name="travelDuration"
-                value={formData.travelDuration}
-                onChange={handleInputChange}
-                fullWidth
-                color="primary"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <CalendarTodayIcon sx={{ color: alpha(primaryColor, 0.7) }} />
-                    </InputAdornment>
-                  ),
-                }}
-              >
-                {travelDurationOptions.map(option => (
-                  <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </StyledTextField>
-
-              <StyledTextField
-                select
-                label={t('onboarding.travel.travelCompanions')}
-                name="travelCompanions"
-                value={formData.travelCompanions}
-                onChange={handleInputChange}
-                fullWidth
-                color="primary"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <GroupIcon sx={{ color: alpha(primaryColor, 0.7) }} />
-                    </InputAdornment>
-                  ),
-                }}
-              >
-                {travelCompanionsOptions.map(option => (
-                  <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </StyledTextField>
-            </Box>
-
-            <Box sx={{ mt: 3 }}>
-              <StyledTextField
-                select
-                label={t('onboarding.travel.visaType')}
-                name="visaType"
-                value={formData.visaType}
-                onChange={handleInputChange}
-                fullWidth
-                color="primary"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <VisaIcon sx={{ color: alpha(primaryColor, 0.7) }} />
-                    </InputAdornment>
-                  ),
-                }}
-              >
-                {visaTypeOptions.map(option => (
-                  <MenuItem key={option.code} value={option.code}>
-                    {option.name}
-                  </MenuItem>
-                ))}
-              </StyledTextField>
             </Box>
           </StyledPaper>
         );
@@ -769,54 +640,7 @@ const TravelProfile: React.FC = () => {
               </Avatar>
               <Typography variant="h5" sx={{ fontWeight: 600, color: 'text.primary' }}>
                 {t('onboarding.travel.scheduleTitle')}
-              </Typography>
-            </Box>
 
-            <Box sx={{ mb: 4 }}>
-              <Typography
-                variant="subtitle2"
-                sx={{
-                  mb: 1,
-                  color: 'text.secondary',
-                  fontWeight: 500,
-                }}
-              >
-                {t('onboarding.travel.scheduleSelect')}
-              </Typography>
-              <StyledTextField
-                select
-                label={t('onboarding.travel.durationLabel')}
-                name="travelDuration"
-                value={formData.travelDuration}
-                onChange={handleInputChange}
-                fullWidth
-                color="primary"
-                required
-                sx={{ mb: 1 }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <CalendarTodayIcon sx={{ color: alpha(primaryColor, 0.7) }} />
-                    </InputAdornment>
-                  ),
-                }}
-              >
-                <MenuItem value="under_1week">{t('onboarding.travel.durations.short')}</MenuItem>
-                <MenuItem value="1week_2weeks">{t('onboarding.travel.durations.medium')}</MenuItem>
-                <MenuItem value="2weeks_1month">{t('onboarding.travel.durations.long')}</MenuItem>
-                <MenuItem value="1month_3months">
-                  {t('onboarding.travel.durations.extended')}
-                </MenuItem>
-              </StyledTextField>
-              <Typography
-                variant="caption"
-                sx={{
-                  color: 'text.secondary',
-                  display: 'block',
-                  mt: 0.5,
-                }}
-              >
-                {t('onboarding.travel.durationHelper')}
               </Typography>
             </Box>
 
@@ -889,17 +713,9 @@ const TravelProfile: React.FC = () => {
               </Box>
             </Box>
 
-            <Box sx={{ mb: 2 }}>
-              <Typography
-                variant="subtitle2"
-                sx={{
-                  mb: 1,
-                  color: 'text.secondary',
-                  fontWeight: 500,
-                }}
-              >
-                {t('onboarding.travel.visaTypeLabel')}
-              </Typography>
+
+            <Box sx={{ mt: 3 }}>
+
               <StyledTextField
                 select
                 label={t('onboarding.travel.visaTypeLabel')}
@@ -922,16 +738,7 @@ const TravelProfile: React.FC = () => {
                   </MenuItem>
                 ))}
               </StyledTextField>
-              <Typography
-                variant="caption"
-                sx={{
-                  color: 'text.secondary',
-                  display: 'block',
-                  mt: 0.5,
-                }}
-              >
-                {t('onboarding.travel.visaHelper')}
-              </Typography>
+
             </Box>
           </StyledPaper>
         );
@@ -1699,9 +1506,9 @@ const TravelProfile: React.FC = () => {
   const isNextDisabled = () => {
     switch (currentStep) {
       case 1: // 여행자 세부 프로필
-        return !formData.name || !formData.gender || !formData.nationality || !formData.travelType;
+        return !formData.gender || !formData.nationality;
       case 2: // 여행 기간 일정
-        return !formData.travelDuration;
+        return !formData.startDate || !formData.endDate;
       case 3: // 관심 도시 설정
         return formData.interestedCities.length === 0;
       case 4: // 여행 목적 선택

@@ -161,7 +161,10 @@ const ProBoardListPage: React.FC = () => {
       [t('community.tags.partTime')]: '알바/파트타임',
     };
 
+
+
     return tagReverseMapping[translatedTag] || translatedTag;
+
   };
 
   // 카테고리별 태그 매핑
@@ -372,6 +375,7 @@ const ProBoardListPage: React.FC = () => {
   const applyFilterWithSearchState = (newFilter: Partial<LocalPostFilter>) => {
     const updatedFilter = { ...filter, ...newFilter };
 
+
     if (isSearchMode && searchTerm) {
       // 검색 중이면 필터와 함께 검색 재실행
       console.log('[DEBUG] 검색 상태에서 필터 변경 - 세부 정보:', {
@@ -385,6 +389,8 @@ const ProBoardListPage: React.FC = () => {
       // UI용 필터 상태 먼저 업데이트 (로딩 상태 표시용)
       setFilter(updatedFilter);
 
+
+
       // searchPosts 함수 호출 - 필터 변경 사항 적용하여 재검색
       const searchOptions = {
         page: updatedFilter.page !== undefined ? updatedFilter.page : 0,
@@ -396,17 +402,23 @@ const ProBoardListPage: React.FC = () => {
         sort: updatedFilter.sortBy === 'popular' ? 'views,desc' : 'createdAt,desc',
       };
 
+
       console.log('[DEBUG] 검색 API 파라미터:', searchOptions);
+
 
       // 이번에는 서버에 직접 API 요청 (postApi 직접 사용)
       try {
         const postApi = usePostStore.getState();
+
         postApi.searchPosts(searchTerm, searchType, searchOptions);
+
       } catch (error) {
         console.error('검색 중 오류 발생:', error);
       }
     } else {
       // 검색 중이 아니면 일반 필터 적용
+
+
       setFilter(updatedFilter);
       fetchPosts(updatedFilter);
     }
@@ -445,7 +457,9 @@ const ProBoardListPage: React.FC = () => {
 
   // 태그 선택 핸들러
   const handleTagSelect = (tag: string) => {
+
     console.log('[DEBUG] 태그 선택:', tag);
+
 
     // 이미 선택된 태그면 취소
     if (selectedTags.includes(tag)) {
@@ -457,21 +471,26 @@ const ProBoardListPage: React.FC = () => {
       delete updatedFilter.tag;
       updatedFilter.page = 0;
 
+
       // 필터 적용 (검색 상태 유지하면서)
       applyFilterWithSearchState(updatedFilter);
     } else {
       // 새 태그 선택
+
       setSelectedTags([tag]);
 
       // 번역된 태그를 한국어 원본 태그로 변환
       const originalTagName = getOriginalTagName(tag);
+
       console.log('[DEBUG] 태그 변환:', { 번역태그: tag, 원본태그: originalTagName });
+
 
       const updatedFilter = { ...filter };
       // 원본 태그명으로 설정 (백엔드에서 인식할 수 있는 한국어 태그)
       updatedFilter.tag = originalTagName;
       // 페이지 초기화
       updatedFilter.page = 0;
+
 
       // 필터 적용 (검색 상태 유지하면서)
       applyFilterWithSearchState(updatedFilter);
@@ -648,6 +667,72 @@ const ProBoardListPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* 커뮤니티 타입 전환 버튼 - Pro 테마용 */}
+      <div style={{ 
+        borderBottom: '1.5px solid #e5e7eb',
+        paddingBottom: '24px'
+      }}>
+        <div style={{ 
+          maxWidth: 1120, 
+          margin: '0 auto',
+          display: 'flex',
+          justifyContent: 'center',
+          paddingTop: '12px'
+        }}>
+          <div style={{
+            display: 'flex',
+            border: '1.5px solid #222',
+            borderRadius: '50px',
+            overflow: 'hidden',
+            backgroundColor: '#fff'
+          }}>
+            <button
+              onClick={() => navigate('/community/groups')}
+              style={{
+                ...proButton,
+                margin: 0,
+                padding: '12px 32px',
+                borderRadius: 0,
+                border: 'none',
+                backgroundColor: 'transparent',
+                fontSize: '1.1rem',
+                fontWeight: 700,
+                color: '#666',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(34, 34, 34, 0.1)';
+                e.currentTarget.style.color = '#222';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = '#666';
+              }}
+            >
+              📱 소모임
+            </button>
+            <button
+              style={{
+                ...proButton,
+                margin: 0,
+                padding: '12px 32px',
+                borderRadius: 0,
+                border: 'none',
+                backgroundColor: '#222',
+                fontSize: '1.1rem',
+                fontWeight: 700,
+                color: '#fff',
+                cursor: 'default'
+              }}
+            >
+              💬 자유게시판
+            </button>
+          </div>
+        </div>
+      </div>
+
 
       {/* 메인 레이아웃 (ProInfoList와 동일) */}
       <div

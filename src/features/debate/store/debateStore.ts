@@ -579,16 +579,7 @@ export const useDebateStore = create<DebateState>()(
                 : comment
             );
 
-            // 현재 토론에 댓글 수 업데이트
-            const currentDebate = get().currentDebate;
-            const updatedCurrentDebate = currentDebate
-              ? {
-                  ...currentDebate,
-                  commentCount: currentDebate.commentCount + 1, // 답글도 전체 댓글 수에 포함
-                }
-              : null;
-
-            // 즉시 UI에 임시 대댓글 추가
+            // 즉시 UI에 임시 대댓글 추가 (currentDebate.commentCount 업데이트 제거)
             set({
               replies: {
                 ...currentReplies,
@@ -596,7 +587,6 @@ export const useDebateStore = create<DebateState>()(
               },
               comments: updatedComments,
               totalComments: get().totalComments + 1, // 총 댓글 수에 1 추가
-              currentDebate: updatedCurrentDebate,
               isLoading: false,
             });
 
