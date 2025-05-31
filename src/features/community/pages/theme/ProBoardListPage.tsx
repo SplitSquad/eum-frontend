@@ -168,7 +168,7 @@ const ProBoardListPage: React.FC = () => {
   };
 
   // 카테고리별 태그 매핑 - useState로 관리하여 언어 변경 시 자동 업데이트
-  const [categoryTags, setCategoryTags] = useState<{[key: string]: string[]}>({
+  const [categoryTags, setCategoryTags] = useState<{ [key: string]: string[] }>({
     travel: [],
     living: [],
     study: [],
@@ -228,6 +228,7 @@ const ProBoardListPage: React.FC = () => {
     postLoading,
     postError,
     selectedCategory,
+    postPageInfo,
     setSelectedCategory,
     fetchPosts,
     setPostFilter,
@@ -243,7 +244,7 @@ const ProBoardListPage: React.FC = () => {
       setAvailableTags(newAvailableTags);
       console.log('[DEBUG] ProBoard 카테고리/언어 변경으로 태그 목록 업데이트:', {
         카테고리: selectedCategory,
-        새태그목록: newAvailableTags
+        새태그목록: newAvailableTags,
       });
     } else {
       setAvailableTags([]);
@@ -258,14 +259,14 @@ const ProBoardListPage: React.FC = () => {
     // localStorage에서 자유게시판 전용 검색 상태 복구
     const savedState = localStorage.getItem('proBoardSearch');
     const saved = savedState ? JSON.parse(savedState) : {};
-    
+
     return {
       category: queryParams.get('category') || saved.category || t('community.filters.all'),
       location: queryParams.get('location') || saved.location || t('community.filters.all'),
       tag: queryParams.get('tag') || saved.tag || '',
       sortBy: (queryParams.get('sortBy') as 'latest' | 'popular') || saved.sortBy || 'latest',
-    page: queryParams.get('page') ? parseInt(queryParams.get('page') as string) - 1 : 0,
-    size: 4,
+      page: queryParams.get('page') ? parseInt(queryParams.get('page') as string) - 1 : 0,
+      size: 4,
       postType: '자유', // ProBoardListPage는 항상 자유 게시글
     };
   });
@@ -281,7 +282,7 @@ const ProBoardListPage: React.FC = () => {
       tag: filter.tag,
       sortBy: filter.sortBy,
       selectedTags: selectedTags, // 태그 상태도 저장
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
     localStorage.setItem('proBoardSearch', JSON.stringify(searchState));
   };
@@ -324,24 +325,24 @@ const ProBoardListPage: React.FC = () => {
       try {
         const saved = JSON.parse(savedState);
         // 1시간 이내의 검색 상태만 복구
-        if (saved.timestamp && (Date.now() - saved.timestamp) < 60 * 60 * 1000) {
+        if (saved.timestamp && Date.now() - saved.timestamp < 60 * 60 * 1000) {
           if (saved.isSearchMode && saved.searchTerm) {
             setSearchTerm(saved.searchTerm);
             // searchType을 현재 언어에 맞게 설정
             const validSearchTypes = [
               t('community.searchType.titleContent'),
-              t('community.searchType.author')
+              t('community.searchType.author'),
             ];
-            const restoredSearchType = validSearchTypes.includes(saved.searchType) 
-              ? saved.searchType 
+            const restoredSearchType = validSearchTypes.includes(saved.searchType)
+              ? saved.searchType
               : t('community.searchType.titleContent');
             setSearchType(restoredSearchType);
             setIsSearchMode(true);
             console.log('[DEBUG] 자유게시판 검색 상태 복구:', {
               ...saved,
-              searchType: restoredSearchType
+              searchType: restoredSearchType,
             });
-            
+
             // postStore에도 자유게시판 검색 상태 설정
             const postStore = usePostStore.getState();
             postStore.searchStates['자유'] = {
@@ -350,9 +351,14 @@ const ProBoardListPage: React.FC = () => {
               type: restoredSearchType,
             };
           }
-          
+
           // 🔥 자유게시판 전용 태그 상태만 복구 (검색 상태가 활성화된 경우에만)
-          if (saved.isSearchMode && saved.selectedTags && Array.isArray(saved.selectedTags) && saved.selectedTags.length > 0) {
+          if (
+            saved.isSearchMode &&
+            saved.selectedTags &&
+            Array.isArray(saved.selectedTags) &&
+            saved.selectedTags.length > 0
+          ) {
             console.log('[DEBUG] 자유게시판 검색 모드 - 태그 상태 복구:', saved.selectedTags);
             setSelectedTags(saved.selectedTags);
           }
@@ -375,9 +381,13 @@ const ProBoardListPage: React.FC = () => {
       console.log('[DEBUG] postStore에서 자유게시판 검색 상태 복구:', storeSearchState);
     } else {
       // 자유게시판이 아닌 다른 postType의 검색 상태가 활성화되어 있다면 초기화
-      const otherPostTypes = Object.keys(usePostStore.getState().searchStates).filter(pt => pt !== '자유');
-      const hasOtherActiveSearch = otherPostTypes.some(pt => usePostStore.getState().searchStates[pt].active);
-      
+      const otherPostTypes = Object.keys(usePostStore.getState().searchStates).filter(
+        pt => pt !== '자유'
+      );
+      const hasOtherActiveSearch = otherPostTypes.some(
+        pt => usePostStore.getState().searchStates[pt].active
+      );
+
       if (hasOtherActiveSearch) {
         console.log('[DEBUG] 다른 postType의 검색 상태 감지, 자유게시판 검색 상태 초기화');
         // 자유게시판 검색 상태만 초기화
@@ -490,7 +500,7 @@ const ProBoardListPage: React.FC = () => {
             setSearchTerm('');
             setSelectedTags([]); // 태그 상태도 초기화
             saveSearchState('', searchType, false); // 검색 상태 초기화
-            
+
             // postStore에서도 자유게시판 검색 상태 초기화
             const postStore = usePostStore.getState();
             postStore.searchStates['자유'] = {
@@ -498,7 +508,7 @@ const ProBoardListPage: React.FC = () => {
               term: '',
               type: '',
             };
-            
+
             fetchPosts({
               ...filter,
               page: 0,
@@ -558,22 +568,19 @@ const ProBoardListPage: React.FC = () => {
         sort: updatedFilter.sortBy === 'popular' ? 'views,desc' : 'createdAt,desc',
       };
 
-      console.log('[DEBUG] 검색 API 파라미터:', {
-        keyword: searchTerm,
-        searchType: convertedSearchType,
-        ...searchOptions,
-      });
+      console.log('[DEBUG] 검색 API 파라미터:', searchOptions);
 
-      // 검색 요청 직접 실행
+      // 이번에는 서버에 직접 API 요청 (postApi 직접 사용)
       try {
         const postApi = usePostStore.getState();
-        postApi.searchPosts(searchTerm, convertedSearchType, searchOptions);
-        console.log('검색 요청 전송 완료');
+
+        postApi.searchPosts(searchTerm, searchType, searchOptions);
       } catch (error) {
         console.error('검색 중 오류 발생:', error);
       }
     } else {
-      // 검색이 아니면 일반 게시글 목록 조회
+      // 검색 중이 아니면 일반 필터 적용
+
       setFilter(updatedFilter);
       fetchPosts(updatedFilter);
     }
@@ -642,9 +649,9 @@ const ProBoardListPage: React.FC = () => {
 
     setSelectedTags(newSelectedTags);
 
-    console.log('[DEBUG] 태그 변환:', { 
-      번역태그들: newSelectedTags, 
-      원본태그들: originalTagNames 
+    console.log('[DEBUG] 태그 변환:', {
+      번역태그들: newSelectedTags,
+      원본태그들: originalTagNames,
     });
 
     // 필터 업데이트 - 원본 태그명들로 설정
@@ -656,7 +663,7 @@ const ProBoardListPage: React.FC = () => {
 
     console.log('[DEBUG] 새로운 필터:', newFilter);
 
-      // 필터 적용 (검색 상태 유지하면서)
+    // 필터 적용 (검색 상태 유지하면서)
     applyFilterWithSearchState(newFilter);
   };
 
@@ -681,7 +688,7 @@ const ProBoardListPage: React.FC = () => {
     // 검색 모드 활성화
     setIsSearchMode(true);
     saveSearchState(searchTerm, searchType, true); // 검색 상태 저장
-    
+
     // postStore에도 자유게시판 검색 상태 설정
     const postStore = usePostStore.getState();
     postStore.searchStates['자유'] = {
@@ -842,24 +849,30 @@ const ProBoardListPage: React.FC = () => {
       </div>
 
       {/* 커뮤니티 타입 전환 버튼 - Pro 테마용 */}
-      <div style={{ 
-        borderBottom: '1.5px solid #e5e7eb',
-        paddingBottom: '24px'
-      }}>
-        <div style={{ 
-          maxWidth: 1120, 
-          margin: '0 auto',
-          display: 'flex',
-          justifyContent: 'center',
-          paddingTop: '12px'
-        }}>
-          <div style={{
+      <div
+        style={{
+          borderBottom: '1.5px solid #e5e7eb',
+          paddingBottom: '24px',
+        }}
+      >
+        <div
+          style={{
+            maxWidth: 1120,
+            margin: '0 auto',
             display: 'flex',
-            border: '1.5px solid #222',
-            borderRadius: '50px',
-            overflow: 'hidden',
-            backgroundColor: '#fff'
-          }}>
+            justifyContent: 'center',
+            paddingTop: '12px',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              border: '1.5px solid #222',
+              borderRadius: '50px',
+              overflow: 'hidden',
+              backgroundColor: '#fff',
+            }}
+          >
             <button
               onClick={() => navigate('/community/groups')}
               style={{
@@ -873,18 +886,18 @@ const ProBoardListPage: React.FC = () => {
                 fontWeight: 700,
                 color: '#666',
                 cursor: 'pointer',
-                transition: 'all 0.3s ease'
+                transition: 'all 0.3s ease',
               }}
-              onMouseEnter={(e) => {
+              onMouseEnter={e => {
                 e.currentTarget.style.backgroundColor = 'rgba(34, 34, 34, 0.1)';
                 e.currentTarget.style.color = '#222';
               }}
-              onMouseLeave={(e) => {
+              onMouseLeave={e => {
                 e.currentTarget.style.backgroundColor = 'transparent';
                 e.currentTarget.style.color = '#666';
               }}
             >
-              📱 소모임
+              {t('common.smallGroups')}
             </button>
             <button
               style={{
@@ -897,15 +910,14 @@ const ProBoardListPage: React.FC = () => {
                 fontSize: '1.1rem',
                 fontWeight: 700,
                 color: '#fff',
-                cursor: 'default'
+                cursor: 'default',
               }}
             >
-              💬 자유게시판
+              {t('common.communicationBoard')}
             </button>
           </div>
         </div>
       </div>
-
 
       {/* 메인 레이아웃 (ProInfoList와 동일) */}
       <div
@@ -1125,7 +1137,7 @@ const ProBoardListPage: React.FC = () => {
               width: 320,
               display: 'flex',
               flexDirection: 'column',
-              gap: 24,
+              gap: 12,
               position: 'sticky',
               top: 200,
               alignSelf: 'flex-start',
@@ -1145,10 +1157,13 @@ const ProBoardListPage: React.FC = () => {
                 boxShadow: '0 2px 8px rgba(226, 225, 225, 0.08)',
                 textAlign: 'center',
                 fontFamily: proCard.fontFamily,
+                marginBottom: 0,
               }}
             >
               <Typography variant="subtitle2" sx={{ color: '#222', fontWeight: 700, fontSize: 18 }}>
-                {t('community.messages.totalPosts', { count: posts.length.toString() })}
+                {t('community.messages.totalPosts', {
+                  count: postPageInfo.totalElements.toString(),
+                })}
               </Typography>
             </Paper>
 
@@ -1163,6 +1178,7 @@ const ProBoardListPage: React.FC = () => {
                 border: '1.5px solid #e5e7eb',
                 boxShadow: '0 8px 20px rgba(226, 225, 225, 0.15)',
                 backdropFilter: 'blur(8px)',
+                marginBottom: 0,
               }}
             >
               {/* 검색 필드 */}
@@ -1172,6 +1188,7 @@ const ProBoardListPage: React.FC = () => {
                   display: 'flex',
                   gap: 1,
                   flexWrap: 'wrap',
+                  marginBottom: 0,
                 }}
               >
                 {/* 검색 타입 선택 */}
@@ -1240,7 +1257,7 @@ const ProBoardListPage: React.FC = () => {
                   }}
                 />
 
-                {/* 작성자 검색 버튼 */}
+                {/* 작성자 검색 버튼 
                 <Button
                   variant="outlined"
                   onClick={handleAuthorSearch}
@@ -1260,7 +1277,7 @@ const ProBoardListPage: React.FC = () => {
                   }}
                 >
                   {t('community.actions.authorSearch')}
-                </Button>
+                </Button>*/}
               </Box>
             </Paper>
 
@@ -1278,7 +1295,6 @@ const ProBoardListPage: React.FC = () => {
                 backdropFilter: 'blur(8px)',
               }}
             >
-              <Divider sx={{ mb: 2, borderColor: '#e5e7eb' }} />
               <Box
                 sx={{
                   display: 'grid',

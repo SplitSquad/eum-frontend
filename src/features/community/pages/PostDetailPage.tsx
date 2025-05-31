@@ -802,7 +802,7 @@ const PostDetailPage: React.FC = () => {
           {/* 게시글 제목 및 정보 */}
           <Box mb={3}>
             <Typography variant="h4" fontWeight="bold" gutterBottom>
-              {post.title}
+              {showOriginal && originTitle !== null ? originTitle : post.title}
             </Typography>
             <Box display="flex" alignItems="center" mb={1}>
               <Avatar alt={post.userName} sx={{ width: 32, height: 32, mr: 1 }} />
@@ -844,7 +844,7 @@ const PostDetailPage: React.FC = () => {
               size="small"
               onClick={toggleOriginalView}
             >
-              {showOriginal ? '원문 숨기기' : '원문 보기'}
+              {showOriginal ? t('community.posts.hideOriginal') : t('community.posts.showOriginal')}
             </Button>
           </Box>
 

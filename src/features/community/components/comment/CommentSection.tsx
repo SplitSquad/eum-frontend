@@ -82,7 +82,7 @@ const ReactionButton = styled(Button)(({ theme }) => ({
 
 function formatDateToAbsolute(dateString: string, t: any) {
   try {
-    return format(new Date(dateString), 'yyyy년 MM월 dd일 HH:mm', { locale: ko });
+    return format(new Date(dateString), 'yyyy-MM-dd HH:mm', { locale: ko });
   } catch (e) {
     console.error('날짜 형식 변환 오류:', e);
     return t('community.posts.noDate');
@@ -891,6 +891,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         ...prev,
         [numericCommentId]: [...(prev[numericCommentId] || []), tempReply],
       }));
+      // 대댓글 optimistic 추가 시 total 증가
+      setTotal(prev => prev + 1);
 
       // 댓글의 대댓글 카운트 증가
       setComments(prevComments =>
@@ -944,6 +946,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         }
         return updatedReplies;
       });
+      // 대댓글 추가 실패 시 total 롤백
+      setTotal(prev => Math.max(0, prev - 1));
 
       // 댓글의 대댓글 카운트 복구
       setComments(prevComments =>
@@ -1032,6 +1036,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         }
         return updatedReplies;
       });
+      // 대댓글 optimistic 삭제 시 total 감소
+      setTotal(prev => Math.max(0, prev - 1));
 
       // 댓글의 대댓글 카운트 감소 (전체 새로고침 없이)
       setComments(prevComments =>
@@ -1054,6 +1060,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({
       // 에러 발생 시 대댓글만 다시 로드
       if (parentCommentId !== null) {
         loadReplies(parentCommentId);
+        // 대댓글 삭제 실패 시 total 롤백
+        setTotal(prev => prev + 1);
       }
     }
   };
@@ -1133,7 +1141,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
               </Typography>
             )}
             <Typography variant="caption" color="text.secondary">
-              {format(new Date(comment.createdAt), 'yyyy년 MM월 dd일 HH:mm', { locale: ko })}
+              {format(new Date(comment.createdAt), 'yyyy-MM-dd HH:mm', { locale: ko })}
               {comment.translating && (
                 <Typography
                   component="span"
@@ -1319,11 +1327,15 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                                       display: 'block',
                                     }}
                                   >
-                                    <FlagDisplay nation={reply.writer.nation} size="small" showName={false} />
+                                    <FlagDisplay
+                                      nation={reply.writer.nation}
+                                      size="small"
+                                      showName={false}
+                                    />
                                   </Typography>
                                 )}
                                 <Typography variant="caption" color="text.secondary">
-                                  {format(new Date(reply.createdAt), 'yyyy년 MM월 dd일 HH:mm', {
+                                  {format(new Date(reply.createdAt), 'yyyy-MM-dd HH:mm', {
                                     locale: ko,
                                   })}
                                 </Typography>
