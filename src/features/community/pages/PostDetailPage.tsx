@@ -860,9 +860,6 @@ const PostDetailPage: React.FC = () => {
             {/* 첨부파일 표시 (있는 경우) */}
             {post.files && post.files.length > 0 && (
               <Box mt={3}>
-                <Typography variant="subtitle2" fontWeight="bold" gutterBottom sx={{ mb: 2 }}>
-                  {t('community.posts.attachFiles')}
-                </Typography>
 
                 {/* 이미지 파일과 일반 파일 분리 */}
                 {(() => {
@@ -889,9 +886,6 @@ const PostDetailPage: React.FC = () => {
                       {/* 이미지 갤러리 */}
                       {imageFiles.length > 0 && (
                         <Box mb={nonImageFiles.length > 0 ? 3 : 0}>
-                          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-                            이미지 ({imageFiles.length}개)
-                          </Typography>
                           <Box
                             sx={{
                               display: 'grid',
@@ -1022,9 +1016,7 @@ const PostDetailPage: React.FC = () => {
                       {/* 일반 파일 목록 */}
                       {nonImageFiles.length > 0 && (
                         <Box>
-                          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-                            첨부파일 ({nonImageFiles.length}개)
-                          </Typography>
+                        
                           <List dense sx={{ bgcolor: '#f9f9f9', borderRadius: 2, p: 1 }}>
                             {nonImageFiles.map((file: any, index: number) => (
                               <ListItem
