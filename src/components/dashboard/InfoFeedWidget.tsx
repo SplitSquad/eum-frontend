@@ -204,21 +204,7 @@ const InfoItem = memo(({ info, onClick, t }: { info: InfoContent, onClick?: () =
         </Box>
       )}
 
-      {/* 평점 및 유형 */}
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
-        <Chip
-          label={info.contentType === 'guide' ? '가이드' : 
-                info.contentType === 'tip' ? '팁' : 
-                info.contentType === 'news' ? '뉴스' : '튜토리얼'}
-          size="small"
-          sx={{
-            fontSize: '0.65rem',
-            height: 18,
-            bgcolor: '#e8f5e9',
-            color: '#2e7d32',
-          }}
-        />
-      </Box>
+      
 
       {/* 하단 정보 */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -232,7 +218,7 @@ const InfoItem = memo(({ info, onClick, t }: { info: InfoContent, onClick?: () =
         {/* 카테고리 표시 */}
         {info.category && (
           <Chip
-            label={info.category}
+            label={translateInfoCategory(info.category, t)}
             size="small"
             sx={{
               fontSize: '0.65rem',
