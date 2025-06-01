@@ -673,23 +673,28 @@ const DebateApi = {
    */
   createDebate: async (data: DebateReqDto): Promise<number | null> => {
     try {
-      // 언어 감지 - 제목과 내용을 결합하여 감지
-      const combinedText = (data.title || '') + ' ' + (data.content || '');
+      // 제목과 내용을 합쳐서 언어 감지
+      const combinedText = `${data.title || ''} ${data.content || ''}`.trim();
+
+      debugLog('언어 감지 대상 텍스트:', combinedText);
+
+      // 언어 감지 실행 (비동기)
       const detectedLanguage = await detectLanguage(combinedText);
 
-      debugLog('토론 게시글 언어 감지 결과:', {
-        title: (data.title || '').substring(0, 50) + '...',
+      debugLog('감지된 언어:', {
+        originalTitle: data.title,
+        originalContent: data.content,
         content: (data.content || '').substring(0, 50) + '...',
         detectedLanguage,
-        combinedTextLength: combinedText.length,
+        combinedTextLength: combinedText.length
       });
 
       // 언어 정보를 포함한 데이터 생성
       const requestData = {
         ...data,
-        language: detectedLanguage.toUpperCase(), // 감지된 언어를 대문자로 변환
+        language: detectedLanguage.toUpperCase() // 감지된 언어를 대문자로 변환
       };
-
+      
       debugLog('토론 게시글 생성 페이로드:', requestData);
 
       const response = await apiClient.post<any>('/debate', requestData);

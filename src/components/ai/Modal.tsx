@@ -24,9 +24,6 @@ export default function Modal({ isOpen, onClose, children, position }: ModalProp
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
     document.addEventListener('keydown', onKey);
-    console.log(position);
-    console.log(window.scrollY);
-
     return () => document.removeEventListener('keydown', onKey);
   }, [onClose]);
 
@@ -39,24 +36,33 @@ export default function Modal({ isOpen, onClose, children, position }: ModalProp
       document.body.appendChild(el);
       return el;
     })();
+
   // 포탈을 사용해 모달 렌더링
   return createPortal(
     <AnimatePresence>
       {isOpen && (
         <>
+          {/* 백드롭 */}
+          <motion.div
+            className="fixed inset-0 bg-black/50 z-40"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.5 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+          />
+
           {/* 모달 래퍼 */}
-          <motion.div className="z-[1050] pointer-events-none">
+          <motion.div className="fixed inset-0 z-50 pointer-events-none">
             <div
               className="
                 pointer-events-auto
                 bg-white rounded-2xl shadow-xl 
                 max-w-sm w-[600px] overflow-hidden
-                z-[1051]
               "
               style={
                 position
                   ? ({
-                      position: 'fixed',
+                      position: 'absolute',
                       top: position.y,
                       left: position.x,
                       transform: 'translate(0, 0)',
@@ -65,29 +71,6 @@ export default function Modal({ isOpen, onClose, children, position }: ModalProp
               }
             >
               <div className="relative p-4">
-                {/* 닫기(X) 버튼 */}
-                <button
-                  onClick={onClose}
-                  aria-label="Close modal"
-                  className="absolute top-2 right-2 p-2 text-gray-400 hover:text-gray-600 focus:outline-none bg-transparent shadow-none border-none"
-                  style={{ boxShadow: 'none', background: 'none', outline: 'none' }}
-                  tabIndex={0}
-                >
-                  <svg
-                    width="28"
-                    height="28"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M7 7L17 17M17 7L7 17"
-                      stroke="currentColor"
-                      strokeWidth="2.2"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                </button>
                 {/* 모달 컨텐츠 */}
                 {children}
               </div>

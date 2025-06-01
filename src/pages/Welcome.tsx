@@ -13,11 +13,10 @@ const WelcomeCard = styled(Paper)`
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: rgba(250, 251, 252, 0.15);
+  background: #fafbfc;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
   border-radius: 18px;
   border: 1px solid #e0e0e0;
-  backdrop-filter: blur(10px);
 `;
 
 const EumiImg = styled('img')`
@@ -36,27 +35,39 @@ const Welcome: React.FC = () => {
   const { t } = useTranslation();
   const titleColor = '#222';
   return (
-    <Container
-      maxWidth="sm"
-      sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}
+    <Box
+      sx={{
+        minHeight: '100vh',
+        width: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#f5f6f7',
+        mt: -6,
+      }}
     >
-      <WelcomeCard elevation={3}>
-        <EumiImg src={eum2Image} alt={t('welcome.characterAlt') || '이음이 캐릭터'} />
-        <Typography variant="h3" fontWeight={800} style={{ color: titleColor }} gutterBottom>
-          {t('welcome.title')}
-        </Typography>
-        <Typography variant="h6" sx={{ mb: 3, color: '#555' }}>
-          {t('welcome.description')
-            .split('\n')
-            .map((line, idx) => (
-              <React.Fragment key={idx}>
-                {line}
-                <br />
-              </React.Fragment>
-            ))}
-        </Typography>
-      </WelcomeCard>
-    </Container>
+      <Container
+        maxWidth="sm"
+        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}
+      >
+        <WelcomeCard elevation={3}>
+          <EumiImg src={eum2Image} alt={t('welcome.characterAlt') || '이음이 캐릭터'} />
+          <Typography variant="h3" fontWeight={800} style={{ color: titleColor }} gutterBottom>
+            {t('welcome.title')}
+          </Typography>
+          <Typography variant="h6" sx={{ mb: 3, color: '#555' }}>
+            {t('welcome.description')
+              .split('\n')
+              .map((line, idx) => (
+                <React.Fragment key={idx}>
+                  {line}
+                  <br />
+                </React.Fragment>
+              ))}
+          </Typography>
+        </WelcomeCard>
+      </Container>
+    </Box>
   );
 };
 

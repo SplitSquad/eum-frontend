@@ -38,10 +38,12 @@ import BarChartIcon from '@mui/icons-material/BarChart';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import HowToVoteIcon from '@mui/icons-material/HowToVote';
+import ForumIcon from '@mui/icons-material/Forum';
 import { widgetPaperBase, widgetGradients, widgetCardBase, widgetChipBase } from './theme/dashboardWidgetTheme';
 import DebateApi from '../../features/debate/api/debateApi';
 import { Debate } from '../../features/debate/types';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from '../../shared/i18n';
 
 // 토론 포스트 타입 정의 (API에서 받아오는 데이터 구조에 맞춤)
 interface DebatePost {
@@ -82,7 +84,7 @@ const categoryColors: Record<string, string> = {
 };
 
 // 시간 포맷팅 함수
-const formatTimeAgo = (dateString: string): string => {
+const formatTimeAgo = (dateString: string, t: any): string => {
   const date = new Date(dateString);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -92,13 +94,13 @@ const formatTimeAgo = (dateString: string): string => {
   const diffDay = Math.floor(diffHour / 24);
 
   if (diffDay > 0) {
-    return diffDay === 1 ? '1일 전' : `${diffDay}일 전`;
+    return diffDay === 1 ? t('home.debateFeed.timeAgo.dayAgo') : t('home.debateFeed.timeAgo.daysAgo', { count: diffDay });
   } else if (diffHour > 0) {
-    return diffHour === 1 ? '1시간 전' : `${diffHour}시간 전`;
+    return diffHour === 1 ? t('home.debateFeed.timeAgo.hourAgo') : t('home.debateFeed.timeAgo.hoursAgo', { count: diffHour });
   } else if (diffMin > 0) {
-    return diffMin === 1 ? '1분 전' : `${diffMin}분 전`;
+    return diffMin === 1 ? t('home.debateFeed.timeAgo.minuteAgo') : t('home.debateFeed.timeAgo.minutesAgo', { count: diffMin });
   } else {
-    return '방금 전';
+    return t('home.debateFeed.timeAgo.justNow');
   }
 };
 
@@ -110,7 +112,7 @@ const calculateVotePercentage = (agree: number, disagree: number, type: 'agree' 
 };
 
 // 토론 아이템 컴포넌트
-const DebateItem = memo(({ debate, onClick }: { debate: DebatePost, onClick?: () => void }) => {
+const DebateItem = memo(({ debate, onClick, t }: { debate: DebatePost, onClick?: () => void, t: any }) => {
   return (
     <Box
       onClick={onClick}
@@ -148,10 +150,10 @@ const DebateItem = memo(({ debate, onClick }: { debate: DebatePost, onClick?: ()
         <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, mr: 1 }}>
           <HowToVoteIcon sx={{ fontSize: 14, mr: 0.5, color: '#3f51b5' }} />
           <Typography variant="caption" sx={{ color: '#3f51b5', fontWeight: 600, mr: 1 }}>
-            토론
+            {t('home.debateFeed.subtitle')}
           </Typography>
           <Typography variant="caption" color="text.secondary">
-            {formatTimeAgo(debate.createdAt)}
+            {formatTimeAgo(debate.createdAt, t)}
           </Typography>
         </Box>
         
@@ -173,7 +175,7 @@ const DebateItem = memo(({ debate, onClick }: { debate: DebatePost, onClick?: ()
           )}
           
           <Chip
-            label={debate.status === 'active' ? '진행중' : debate.status === 'closed' ? '종료' : '대기중'}
+            label={t(`home.debateFeed.statusLabels.${debate.status}`)}
             size="small"
             sx={{
               fontSize: '0.7rem',
@@ -222,13 +224,13 @@ const DebateItem = memo(({ debate, onClick }: { debate: DebatePost, onClick?: ()
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <ThumbUpIcon sx={{ fontSize: 12, color: '#4caf50', mr: 0.5 }} />
             <Typography variant="caption" color="text.secondary">
-              찬성 {debate.agreePercent}%
+              {t('home.debateFeed.voteLabels.agreePercent', { percent: debate.agreePercent })}
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <ThumbDownIcon sx={{ fontSize: 12, color: '#f44336', mr: 0.5 }} />
             <Typography variant="caption" color="text.secondary">
-              반대 {debate.disagreePercent}%
+              {t('home.debateFeed.voteLabels.disagreePercent', { percent: debate.disagreePercent })}
             </Typography>
           </Box>
         </Box>
@@ -262,7 +264,7 @@ const DebateItem = memo(({ debate, onClick }: { debate: DebatePost, onClick?: ()
       {/* 하단 정보 */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="caption" color="text.secondary">
-          총 {debate.voteCount}명 참여
+          {t('home.debateFeed.voteLabels.totalVotes', { count: debate.voteCount })}
         </Typography>
         
         {/* 카테고리 표시 */}
@@ -283,17 +285,61 @@ const DebateItem = memo(({ debate, onClick }: { debate: DebatePost, onClick?: ()
   );
 });
 
+// 토론 태그/카테고리 번역 함수
+const translateDebateTag = (tag: string, t: any): string => {
+  const tagMap: Record<string, string> = {
+    // 토론 카테고리
+    '정치/사회': 'debate.categories.politics',
+    '경제': 'debate.categories.economy', 
+    '생활/문화': 'debate.categories.culture',
+    '과학/기술': 'debate.categories.technology',
+    '스포츠': 'debate.categories.sports',
+    '엔터테인먼트': 'debate.categories.entertainment',
+    '기타': 'debate.categories.all',
+    
+    // 일반 관심 태그 - 중복 키 제거하고 고유한 키로 수정
+    '정치': 'interestTags.politics',
+    '사회이슈': 'interestTags.politics', // 사회는 사회이슈로 변경
+    '경제정보': 'interestTags.economy', // 경제는 경제정보로 변경  
+    '문화': 'interestTags.life_culture',
+    '생활정보': 'interestTags.life_culture', // 생활은 생활정보로 변경
+    '기술': 'interestTags.science_tech',
+    '과학': 'interestTags.science_tech',
+    '스포츠뉴스': 'interestTags.sports_news', // 스포츠는 스포츠뉴스로 변경
+    '연예뉴스': 'interestTags.entertainment_news', // 엔터테인먼트는 연예뉴스로 변경
+  };
+  
+  return tagMap[tag] ? t(tagMap[tag]) : tag;
+};
+
+// 토론 카테고리 번역 함수
+const translateDebateCategory = (category: string, t: any): string => {
+  const categoryMap: Record<string, string> = {
+    '정치/사회': 'debate.categories.politics',
+    '경제': 'debate.categories.economy',
+    '생활/문화': 'debate.categories.culture', 
+    '과학/기술': 'debate.categories.technology',
+    '스포츠': 'debate.categories.sports',
+    '엔터테인먼트': 'debate.categories.entertainment',
+    '기타': 'debate.categories.all',
+  };
+  
+  return categoryMap[category] ? t(categoryMap[category]) : category;
+};
+
 // 토론 취향 분석 모달 컴포넌트
 interface DebatePreferenceModalProps {
   open: boolean;
   onClose: () => void;
   preference: DebatePreferenceData;
+  t: any;
 }
 
 const DebatePreferenceModal: React.FC<DebatePreferenceModalProps> = ({ 
   open, 
   onClose, 
-  preference 
+  preference,
+  t
 }) => {
   return (
     <Modal
@@ -343,13 +389,13 @@ const DebatePreferenceModal: React.FC<DebatePreferenceModalProps> = ({
             </IconButton>
             
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <RecordVoiceOverIcon sx={{ color: 'white', mr: 1.5, fontSize: 22 }} />
+              <ForumIcon sx={{ color: 'white', mr: 1.5, fontSize: 22 }} />
               <Box>
                 <Typography variant="h6" fontWeight={600}>
-                  토론 취향 분석
+                  {t('home.debateFeed.modal.title')}
                 </Typography>
                 <Typography variant="caption" sx={{ opacity: 0.9 }}>
-                  최근 활동을 기반으로 한 토론 성향 분석
+                  {t('home.debateFeed.modal.subtitle')}
                 </Typography>
               </Box>
             </Box>
@@ -365,7 +411,7 @@ const DebatePreferenceModal: React.FC<DebatePreferenceModalProps> = ({
                 sx={{ mb: 1.5, display: 'flex', alignItems: 'center' }}
               >
                 <LoyaltyIcon sx={{ fontSize: 16, mr: 1, color: 'primary.main' }} />
-                관심 키워드
+                {t('home.debateFeed.modal.sections.keywords')}
               </Typography>
 
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.8 }}>
@@ -375,7 +421,7 @@ const DebatePreferenceModal: React.FC<DebatePreferenceModalProps> = ({
                   return (
                     <Chip
                       key={keyword.id}
-                      label={keyword.name}
+                      label={translateDebateTag(keyword.name, t)}
                       size="small"
                       sx={{
                         height: 'auto',
@@ -402,7 +448,7 @@ const DebatePreferenceModal: React.FC<DebatePreferenceModalProps> = ({
                 sx={{ mb: 1.5, display: 'flex', alignItems: 'center' }}
               >
                 <LocalOfferIcon sx={{ fontSize: 16, mr: 1, color: 'text.secondary' }} />
-                관심분야 TOP 5
+                {t('home.debateFeed.modal.sections.topCategories')}
               </Typography>
 
               {preference.categoryData.slice(0, 5).map((category, index) => (
@@ -426,7 +472,7 @@ const DebatePreferenceModal: React.FC<DebatePreferenceModalProps> = ({
                         }}
                       />
                       <Typography variant="body2" fontWeight={500}>
-                        #{index + 1} {category.name}
+                        #{index + 1} {translateDebateCategory(category.name, t)}
                       </Typography>
                     </Box>
                     <Typography variant="body2" fontWeight={600} color={category.color}>
@@ -463,6 +509,7 @@ const DebateFeedWidget: React.FC = () => {
   const [preference, setPreference] = useState<DebatePreferenceData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // 토론 추천 데이터 가져오기
   const fetchDebateData = useCallback(async () => {
@@ -488,7 +535,7 @@ const DebateFeedWidget: React.FC = () => {
           return {
             id: String(debate.id),
             title: debate.title || '',
-            content: debate.content || '내용이 없습니다.',
+            content: debate.content || '',
             category: debate.category || '기타',
             proCount: debate.proCount || 0,
             conCount: debate.conCount || 0,
@@ -561,11 +608,11 @@ const DebateFeedWidget: React.FC = () => {
       }
     } catch (error) {
       console.error('토론 데이터 가져오기 실패:', error);
-      setError('데이터를 불러오는데 실패했습니다.');
+      setError('FETCH_ERROR'); // 번역 키를 위한 임시 값
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, []); // t 의존성 제거하여 무한 루프 방지
 
   // 데이터 로딩
   useEffect(() => {
@@ -621,7 +668,7 @@ const DebateFeedWidget: React.FC = () => {
         }}
       >
         <Typography variant="body2" color="error" sx={{ mb: 2 }}>
-          {error}
+          {error === 'FETCH_ERROR' ? t('home.debateFeed.messages.error') : error}
         </Typography>
         <Button 
           variant="outlined" 
@@ -630,7 +677,7 @@ const DebateFeedWidget: React.FC = () => {
           startIcon={<RefreshIcon />}
           sx={{ borderRadius: 2 }}
         >
-          다시 시도
+          {t('home.debateFeed.actions.retry')}
         </Button>
       </Paper>
     );
@@ -668,7 +715,7 @@ const DebateFeedWidget: React.FC = () => {
               <RecordVoiceOverIcon />
             </Avatar>
             <Typography variant="h6" fontWeight={600}>
-              토론 피드
+              {t('home.debateFeed.title')}
             </Typography>
           </Box>
           <Box>
@@ -711,6 +758,7 @@ const DebateFeedWidget: React.FC = () => {
                   <DebateItem 
                     debate={debate} 
                     onClick={() => navigate(`/debate/${debate.id}`)}
+                    t={t}
                   />
                   {index < debates.length - 1 && <Divider sx={{ my: 0.5 }} />}
                 </React.Fragment>
@@ -728,7 +776,7 @@ const DebateFeedWidget: React.FC = () => {
             }}>
               <RecordVoiceOverIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
               <Typography variant="body2" color="text.secondary">
-                추천할 토론이 없습니다
+                {t('home.debateFeed.messages.noDebates')}
               </Typography>
             </Box>
           )}
@@ -738,7 +786,7 @@ const DebateFeedWidget: React.FC = () => {
         {debates.length > 0 && (
           <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
             <Typography variant="caption" color="text.secondary" textAlign="center" sx={{ mb: 1, display: 'block' }}>
-              {debates.length}개의 추천 토론
+              {t('home.debateFeed.messages.debateCount', { count: debates.length.toString() })}
             </Typography>
             <Button 
               variant="outlined" 
@@ -746,7 +794,7 @@ const DebateFeedWidget: React.FC = () => {
               sx={{ borderRadius: 2, textTransform: 'none', px: 3, width: '100%' }}
               onClick={() => navigate('/debate')}
             >
-              토론 더 보기
+              {t('home.debateFeed.actions.viewMore')}
             </Button>
           </Box>
         )}
@@ -758,6 +806,7 @@ const DebateFeedWidget: React.FC = () => {
           open={modalOpen}
           onClose={handleCloseModal}
           preference={preference}
+          t={t}
         />
       )}
     </>
