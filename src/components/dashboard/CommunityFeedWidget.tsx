@@ -349,7 +349,7 @@ const PostItem = memo(({ post, onClick, t }: { post: Post, onClick?: () => void,
             {post.tags.slice(0, 2).map((tag, index) => (
               <Chip
                 key={index}
-                label={tag}
+                label={translateCommunityTag(tag, t)}
                 size="small"
                 sx={{
                   fontSize: '0.65rem',
