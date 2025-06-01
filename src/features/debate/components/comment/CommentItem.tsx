@@ -195,9 +195,9 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
   // localContent는 이미 초기값으로 설정되었으므로 추가 작업 필요 없음
 
   // 추가 디버그 로그
-  console.log(
-    `[DEBUG] 토론 댓글 ID: ${id}, 작성자 ID: ${userId}, 작성자 이름: ${userName}, 찬반 입장: ${extractedStance}, 원본: ${content}, 표시: ${displayContent}, 국가 코드: ${nation}, `
-  );
+  // console.log(
+  //   `[DEBUG] 토론 댓글 ID: ${id}, 작성자 ID: ${userId}, 작성자 이름: ${userName}, 찬반 입장: ${extractedStance}, 원본: ${content}, 표시: ${displayContent}, 국가 코드: ${nation}, `
+  // );
 
   // Store access
   const {

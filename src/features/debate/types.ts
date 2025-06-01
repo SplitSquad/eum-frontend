@@ -100,6 +100,7 @@ export interface DebateReply {
   content: string;
   createdAt: string;
   updatedAt?: string;
+  voteState?: '찬성' | '반대' | null; // 입장 여부
 
   // 감정표현
   reactions: {
@@ -110,6 +111,8 @@ export interface DebateReply {
     sad: number;
     unsure: number;
   };
+
+  stance?: 'pro' | 'con' | null; // 입장 여부
 
   // 국가 정보
   nation?: string; // 국가 정보 추가
@@ -246,6 +249,8 @@ export interface ReplyResDto {
   content: string;
   userName: string;
   userId?: number; // 백엔드에서 userId를 제공할 수 있음
+  stance?: 'pro' | 'con' | null;
+  voteState?: '찬성' | '반대' | null; // 입장 여부
   createdAt: string;
   nation?: string; // 국가 정보 추가
   countryCode?: string; // 국가 코드 추가
@@ -368,6 +373,7 @@ export function mapReplyResToFrontend(dto: ReplyResDto, commentId: number): Deba
       unsure: 0, // 백엔드에 없음
     },
     isState: dto.isState,
+    stance: dto.stance === 'pro' || dto.stance === 'con' ? dto.stance : null, // 1순위: 백엔드 응답의 stance, 2순위: 기본값 'pro'
     nation: dto.nation,
     countryCode: dto.countryCode,
     countryName: dto.countryName,

@@ -516,10 +516,19 @@ const CommentApi = {
         return response.replyList.map((item: ReplyResDto) => {
           // userId 필드를 찾아서 추출
           const userId = item.userId || 0;
+          let extractedStance: 'pro' | 'con' | null = null;
+
+          if (item.voteState === '찬성') {
+            extractedStance = 'pro';
+          } else if (item.voteState === '반대') {
+            extractedStance = 'con';
+          } else {
+            extractedStance = null; // voteState가 없거나 다른 값일 때 null 유지
+          }
 
           // 답글 매핑 전 원본 데이터 로깅
           console.log(
-            `[DEBUG] 답글 ID: ${item.replyId}, 작성자 ID: ${userId}, 작성자 이름: ${item.userName}`
+            `[DEBUG] 대댓글 ID: ${item.replyId}, 작성자 ID: ${userId}, 작성자 이름: ${item.userName}, stance: ${extractedStance}******************************`
           );
 
           // 답글 매핑 시 추출한 userId 전달
@@ -527,17 +536,27 @@ const CommentApi = {
             {
               ...item,
               userId,
+              stance: extractedStance, // 내용에서 추출한 stance 값을 우선 사용
             },
             commentId
           );
         });
       } else if (response && Array.isArray(response)) {
         // 배열로 응답할 경우
-        console.log('원본 답글 배열 데이터:', JSON.stringify(response, null, 2));
+        console.log('원본 대댓글 배열 데이터:', JSON.stringify(response, null, 2));
 
         return response.map((item: ReplyResDto) => {
           // userId 필드를 찾아서 추출
           const userId = item.userId || 0;
+          let extractedStance: 'pro' | 'con' | null = null;
+
+          if (item.voteState === '찬성') {
+            extractedStance = 'pro';
+          } else if (item.voteState === '반대') {
+            extractedStance = 'con';
+          } else {
+            extractedStance = null; // voteState가 없거나 다른 값일 때 null 유지
+          }
 
           // 답글 매핑 전 원본 데이터 로깅
           console.log(
@@ -549,6 +568,7 @@ const CommentApi = {
             {
               ...item,
               userId,
+              stance: extractedStance, // 내용에서 추출한 stance 값을 우선 사용
             },
             commentId
           );
