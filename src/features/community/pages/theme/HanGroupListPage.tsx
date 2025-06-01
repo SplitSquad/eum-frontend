@@ -388,7 +388,7 @@ const HanGroupListPage: React.FC = () => {
     const newFilter = {
       ...filter,
       category,
-      tag: '', // 태그 초기화
+      tag: undefined, // 태그 초기화 (빈 문자열 대신 undefined 사용)
       page: 0,
     };
 
@@ -425,7 +425,7 @@ const HanGroupListPage: React.FC = () => {
     // 필터 업데이트 - 원본 태그명들로 설정
     const newFilter = {
       ...filter,
-      tag: originalTagNames.join(','),
+      tag: originalTagNames.length > 0 ? originalTagNames.join(',') : undefined,
       page: 0,
     };
 

@@ -146,7 +146,7 @@ export const useMypageStore = create<MypageState>((set, get) => ({
     }
   },
 
-  fetchMyPosts: async (page = 0, size = 10) => {
+  fetchMyPosts: async (page = 0, size = 5) => {
     set({ postsLoading: 'loading', postsError: null });
     try {
       // 현재 사용자 ID 가져오기
@@ -171,7 +171,7 @@ export const useMypageStore = create<MypageState>((set, get) => ({
     }
   },
 
-  fetchMyComments: async (page = 0, size = 10) => {
+  fetchMyComments: async (page = 0, size = 5) => {
     set({ commentsLoading: 'loading', commentsError: null });
     try {
       // 현재 사용자 ID 가져오기
@@ -196,7 +196,7 @@ export const useMypageStore = create<MypageState>((set, get) => ({
     }
   },
 
-  fetchMyDebates: async (page = 0, size = 10) => {
+  fetchMyDebates: async (page = 0, size = 5) => {
     set({ debatesLoading: 'loading', debatesError: null });
     try {
       // 현재 사용자 ID 가져오기
@@ -221,7 +221,7 @@ export const useMypageStore = create<MypageState>((set, get) => ({
     }
   },
 
-  fetchMyBookmarks: async (page = 0, size = 10) => {
+  fetchMyBookmarks: async (page = 0, size = 5) => {
     set({ bookmarksLoading: 'loading', bookmarksError: null });
     try {
       // 현재 사용자 ID 가져오기

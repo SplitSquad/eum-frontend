@@ -8,6 +8,33 @@ import { useTranslation } from '../../../shared/i18n';
 import { useLanguageStore } from '@/features/theme/store/languageStore';
 import { useAiAssistantStore } from '@/features/assistant/store/aiAssistantStore';
 
+// 스크롤바 스타일 CSS
+const scrollbarStyles = `
+  .chat-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(139, 69, 19, 0.5) rgba(139, 69, 19, 0.1);
+  }
+  
+  .chat-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .chat-scrollbar::-webkit-scrollbar-track {
+    background: rgba(139, 69, 19, 0.1);
+    border-radius: 4px;
+  }
+  
+  .chat-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(139, 69, 19, 0.5);
+    border-radius: 4px;
+    transition: background 0.3s ease;
+  }
+  
+  .chat-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(139, 69, 19, 0.7);
+  }
+`;
+
 // userId 꺼내오는 헬퍼
 export function getUserId(): number | null {
   try {
@@ -64,6 +91,7 @@ export default function ChatContent({
   const { messages, setMessages, loading, setLoading } = useAiAssistantStore();
 
   const [input, setInput] = useState('');
+  const [showScrollButton, setShowScrollButton] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
 
   // 1. 전체 채팅 컨테이너의 높이 고정 (아래 style 참조)
@@ -181,284 +209,361 @@ export default function ChatContent({
     }
   }, [messages[messages.length - 1]?.id]);
 
-  // 메시지 추가 시 스크롤 하단
+  // 메시지 추가 시 스크롤 하단으로 부드럽게 이동 - 개선된 버전
   useEffect(() => {
     if (listRef.current) {
+      // 즉시 스크롤과 지연 스크롤 둘 다 적용
       listRef.current.scrollTop = listRef.current.scrollHeight;
+      
+      const timer = setTimeout(() => {
+        if (listRef.current) {
+          listRef.current.scrollTo({
+            top: listRef.current.scrollHeight,
+            behavior: 'smooth'
+          });
+        }
+      }, 50);
+      
+      return () => clearTimeout(timer);
     }
   }, [messages, loading]);
+
+  // 스크롤 위치 감지하여 버튼 표시 여부 결정
+  useEffect(() => {
+    const handleScroll = () => {
+      if (listRef.current) {
+        const { scrollTop, scrollHeight, clientHeight } = listRef.current;
+        const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100;
+        setShowScrollButton(!isNearBottom && messages.length > 3);
+      }
+    };
+
+    const listElement = listRef.current;
+    if (listElement) {
+      listElement.addEventListener('scroll', handleScroll);
+      return () => listElement.removeEventListener('scroll', handleScroll);
+    }
+  }, [messages.length]);
+
+  // 스크롤 맨 아래로 이동하는 함수
+  const scrollToBottom = () => {
+    if (listRef.current) {
+      listRef.current.scrollTo({
+        top: listRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+      setShowScrollButton(false);
+    }
+  };
 
   // -------------- 여기부터 실제 레이아웃 ---------------
 
   return (
-    // 최상단 div: 고정 높이 채팅 레이아웃(원하는 값으로 조정 가능)
-    <div
-      className="flex flex-col"
-      style={{
-        height: '600px', // ★ 고정 높이
-        minHeight: '400px', // 필요시 조정
-        maxHeight: '90vh',
-        width: '100%',
-      }}
-    >
+    <>
+      {/* 스크롤바 스타일 추가 */}
+      <style>{scrollbarStyles}</style>
+      
+      {/* 최상단 div: 고정 높이 채팅 레이아웃(원하는 값으로 조정 가능) */}
       <div
-        className="flex-1 relative overflow-hidden"
+        className="flex flex-col"
         style={{
-          borderRadius: '16px',
-          border: '2px solid rgba(139, 69, 19, 0.2)',
-          display: 'flex',
-          flexDirection: 'column',
-          minHeight: 0, // flexbox 스크롤 안정화
-          height: '100%',
+          height: '600px', // ★ 고정 높이
+          minHeight: '400px', // 필요시 조정
+          maxHeight: '90vh',
+          width: '100%',
         }}
       >
-        {/* 채팅 헤더 */}
         <div
-          className="px-6 py-4 border-b"
+          className="flex-1 relative overflow-hidden"
           style={{
-            borderColor: 'rgba(139, 69, 19, 0.15)',
-            background:
-              'linear-gradient(90deg, rgba(212, 175, 55, 0.1) 0%, rgba(139, 69, 19, 0.05) 100%)',
+            borderRadius: '16px',
+            border: '2px solid rgba(139, 69, 19, 0.2)',
+            display: 'flex',
+            flexDirection: 'column',
+            minHeight: 0, // flexbox 스크롤 안정화
+            height: '100%',
           }}
         >
-          <div className="flex items-center justify-between">
-            <h3
-              className="text-lg font-bold"
-              style={{
-                color: '#8B4513',
-                fontFamily: '"Noto Serif KR", serif',
-                letterSpacing: '0.05em',
-              }}
-            >
-              {t('aiAssistant.chat.title')}
-            </h3>
-            <div
-              className="px-3 py-1 rounded-full text-sm"
-              style={{
-                background: 'rgba(139, 69, 19, 0.1)',
-                color: '#8B4513',
-                fontFamily: '"Noto Sans KR", sans-serif',
-                fontWeight: '500',
-              }}
-            >
-              {t('aiAssistant.chat.currentField', { category: categoryLabel })}
-            </div>
-          </div>
-        </div>
-
-        {/* 메시지 리스트: 여기에만 스크롤 (height, minHeight 꼭 적용) */}
-        <div
-          ref={listRef}
-          className="flex-1 overflow-auto p-6 space-y-4"
-          style={{
-            minHeight: 0,
-            maxHeight: '100%',
-            background: `
-              radial-gradient(circle at 20% 30%, rgba(245, 240, 225, 0.3) 0%, transparent 50%),
-              radial-gradient(circle at 80% 70%, rgba(240, 235, 210, 0.2) 0%, transparent 50%),
-              linear-gradient(180deg, rgba(250, 245, 230, 0.1) 0%, rgba(245, 240, 225, 0.2) 100%)
-            `,
-          }}
-        >
-          {messages.map((m, index) => (
-            <div
-              key={m.id}
-              className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'} mb-4`}
-            >
-              {m.sender === 'user' ? (
-                <div className="max-w-[70%] group">
-                  <div
-                    className="relative p-4 rounded-2xl"
-                    style={{
-                      background: `
-                        linear-gradient(145deg, rgba(139, 69, 19, 0.9) 0%, rgba(101, 67, 33, 0.95) 100%)
-                      `,
-                      border: '1px solid rgba(212, 175, 55, 0.3)',
-                      boxShadow: `
-                        0 4px 16px rgba(139, 69, 19, 0.3),
-                        inset 0 1px 0 rgba(255, 255, 255, 0.1)
-                      `,
-                      color: '#F5DEB3',
-                      fontFamily: '"Noto Sans KR", sans-serif',
-                      fontSize: '15px',
-                      lineHeight: '1.6',
-                      letterSpacing: '0.02em',
-                    }}
-                  >
-                    <div
-                      className="absolute top-4 -right-2 w-4 h-4 transform rotate-45"
-                      style={{
-                        background:
-                          'linear-gradient(145deg, rgba(139, 69, 19, 0.9) 0%, rgba(101, 67, 33, 0.95) 100%)',
-                        border: '1px solid rgba(212, 175, 55, 0.3)',
-                        borderLeft: 'none',
-                        borderBottom: 'none',
-                      }}
-                    />
-                    <div className="relative z-10">{m.text}</div>
-                  </div>
-                  <div className="text-xs mt-1 text-right opacity-60" style={{ color: '#8B4513' }}>
-                    {t('aiAssistant.chat.justNow')}
-                  </div>
-                </div>
-              ) : (
-                <div className="max-w-[70%] group">
-                  <div
-                    className="relative p-4 rounded-2xl"
-                    style={{
-                      background: `
-                        linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(250, 245, 230, 0.95) 100%)
-                      `,
-                      border: '2px solid rgba(139, 69, 19, 0.2)',
-                      boxShadow: `
-                        0 4px 16px rgba(139, 69, 19, 0.1),
-                        inset 0 1px 0 rgba(255, 255, 255, 0.8)
-                      `,
-                      color: '#5D4037',
-                      fontFamily: '"Noto Sans KR", sans-serif',
-                      fontSize: '15px',
-                      lineHeight: '1.7',
-                      letterSpacing: '0.02em',
-                    }}
-                  >
-                    <div
-                      className="absolute top-4 -left-2 w-4 h-4 transform rotate-45"
-                      style={{
-                        background:
-                          'linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(250, 245, 230, 0.95) 100%)',
-                        border: '2px solid rgba(139, 69, 19, 0.2)',
-                        borderRight: 'none',
-                        borderBottom: 'none',
-                      }}
-                    />
-                    <div
-                      className="absolute inset-0 rounded-2xl opacity-20 pointer-events-none"
-                      style={{
-                        backgroundImage: `
-                          radial-gradient(circle at 2px 2px, rgba(139, 69, 19, 0.1) 1px, transparent 0)
-                        `,
-                        backgroundSize: '16px 16px',
-                      }}
-                    />
-                    <div className="relative z-10">
-                      <ReactMarkdown
-                        remarkPlugins={[remarkGfm]}
-                        components={{
-                          p: ({ children }) => <div className="mb-2 last:mb-0">{children}</div>,
-                          strong: ({ children }) => (
-                            <span className="font-semibold text-amber-800">{children}</span>
-                          ),
-                          em: ({ children }) => (
-                            <span className="italic text-amber-700">{children}</span>
-                          ),
-                        }}
-                        children={m.displayText ?? m.text}
-                      />
-                    </div>
-                  </div>
-                  <div className="text-xs mt-1 opacity-60" style={{ color: '#8B4513' }}>
-                    {t('aiAssistant.chat.aiExpert')}
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-          {/* 로딩 인디케이터 */}
-          {loading && (
-            <div className="flex justify-start mb-4">
-              <div
-                className="px-4 py-3 rounded-2xl"
+          {/* 채팅 헤더 */}
+          <div
+            className="px-6 py-4 border-b"
+            style={{
+              borderColor: 'rgba(139, 69, 19, 0.15)',
+              background:
+                'linear-gradient(90deg, rgba(212, 175, 55, 0.1) 0%, rgba(139, 69, 19, 0.05) 100%)',
+            }}
+          >
+            <div className="flex items-center justify-between">
+              <h3
+                className="text-lg font-bold"
                 style={{
-                  background:
-                    'linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(250, 245, 230, 0.95) 100%)',
-                  border: '2px solid rgba(139, 69, 19, 0.2)',
                   color: '#8B4513',
+                  fontFamily: '"Noto Serif KR", serif',
+                  letterSpacing: '0.05em',
                 }}
               >
-                <div className="flex items-center space-x-2">
-                  <div className="flex space-x-1">
-                    <div
-                      className="w-2 h-2 bg-amber-600 rounded-full animate-bounce"
-                      style={{ animationDelay: '0ms' }}
-                    ></div>
-                    <div
-                      className="w-2 h-2 bg-amber-600 rounded-full animate-bounce"
-                      style={{ animationDelay: '150ms' }}
-                    ></div>
-                    <div
-                      className="w-2 h-2 bg-amber-600 rounded-full animate-bounce"
-                      style={{ animationDelay: '300ms' }}
-                    ></div>
-                  </div>
-                  <span className="text-sm font-medium">{t('aiAssistant.chat.loading')}</span>
-                </div>
+                {t('aiAssistant.chat.title')}
+              </h3>
+              <div
+                className="px-3 py-1 rounded-full text-sm"
+                style={{
+                  background: 'rgba(139, 69, 19, 0.1)',
+                  color: '#8B4513',
+                  fontFamily: '"Noto Sans KR", sans-serif',
+                  fontWeight: '500',
+                }}
+              >
+                {t('aiAssistant.chat.currentField', { category: categoryLabel })}
               </div>
             </div>
-          )}
-        </div>
-        {/* 입력창 */}
-        <div
-          className="px-6 py-4 border-t"
-          style={{
-            borderColor: 'rgba(139, 69, 19, 0.15)',
-            background:
-              'linear-gradient(90deg, rgba(139, 69, 19, 0.02) 0%, rgba(212, 175, 55, 0.05) 50%, rgba(139, 69, 19, 0.02) 100%)',
-          }}
-        >
-          <div className="flex items-center space-x-4">
-            <div className="flex-1 relative">
-              <input
-                type="text"
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && !loading && sendMessage()}
-                disabled={loading}
-                className="w-full px-4 py-3 rounded-full border-2 focus:outline-none transition-all duration-300"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.9)',
-                  borderColor: 'rgba(139, 69, 19, 0.2)',
-                  color: '#5D4037',
-                  fontFamily: '"Noto Sans KR", sans-serif',
-                  fontSize: '15px',
-                  boxShadow: 'inset 0 2px 4px rgba(139, 69, 19, 0.1)',
-                  backdropFilter: 'blur(10px)',
-                }}
-                placeholder={t('aiAssistant.chat.placeholder')}
-                onFocus={e => {
-                  e.target.style.borderColor = 'rgba(212, 175, 55, 0.5)';
-                  e.target.style.boxShadow =
-                    '0 0 0 3px rgba(212, 175, 55, 0.1), inset 0 2px 4px rgba(139, 69, 19, 0.1)';
-                }}
-                onBlur={e => {
-                  e.target.style.borderColor = 'rgba(139, 69, 19, 0.2)';
-                  e.target.style.boxShadow = 'inset 0 2px 4px rgba(139, 69, 19, 0.1)';
-                }}
-              />
-            </div>
+          </div>
+
+          {/* 메시지 리스트: 여기에만 스크롤 (height, minHeight 꼭 적용) */}
+          <div
+            ref={listRef}
+            className="flex-1 overflow-auto p-6 space-y-4 chat-scrollbar relative"
+            style={{
+              minHeight: 0,
+              maxHeight: '100%',
+              background: `
+                radial-gradient(circle at 20% 30%, rgba(245, 240, 225, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(240, 235, 210, 0.2) 0%, transparent 50%),
+                linear-gradient(180deg, rgba(250, 245, 230, 0.1) 0%, rgba(245, 240, 225, 0.2) 100%)
+              `,
+            }}
+          >
+            {messages.map((m, index) => (
+              <div
+                key={m.id}
+                className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'} mb-4`}
+              >
+                {m.sender === 'user' ? (
+                  <div className="max-w-[70%] group">
+                    <div
+                      className="relative p-4 rounded-2xl"
+                      style={{
+                        background: `
+                          linear-gradient(145deg, rgba(139, 69, 19, 0.9) 0%, rgba(101, 67, 33, 0.95) 100%)
+                        `,
+                        border: '1px solid rgba(212, 175, 55, 0.3)',
+                        boxShadow: `
+                          0 4px 16px rgba(139, 69, 19, 0.3),
+                          inset 0 1px 0 rgba(255, 255, 255, 0.1)
+                        `,
+                        color: '#F5DEB3',
+                        fontFamily: '"Noto Sans KR", sans-serif',
+                        fontSize: '15px',
+                        lineHeight: '1.6',
+                        letterSpacing: '0.02em',
+                      }}
+                    >
+                      <div
+                        className="absolute top-4 -right-2 w-4 h-4 transform rotate-45"
+                        style={{
+                          background:
+                            'linear-gradient(145deg, rgba(139, 69, 19, 0.9) 0%, rgba(101, 67, 33, 0.95) 100%)',
+                          border: '1px solid rgba(212, 175, 55, 0.3)',
+                          borderLeft: 'none',
+                          borderBottom: 'none',
+                        }}
+                      />
+                      <div className="relative z-10">{m.text}</div>
+                    </div>
+                    <div className="text-xs mt-1 text-right opacity-60" style={{ color: '#8B4513' }}>
+                      {t('aiAssistant.chat.justNow')}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="max-w-[70%] group">
+                    <div
+                      className="relative p-4 rounded-2xl"
+                      style={{
+                        background: `
+                          linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(250, 245, 230, 0.95) 100%)
+                        `,
+                        border: '2px solid rgba(139, 69, 19, 0.2)',
+                        boxShadow: `
+                          0 4px 16px rgba(139, 69, 19, 0.1),
+                          inset 0 1px 0 rgba(255, 255, 255, 0.8)
+                        `,
+                        color: '#5D4037',
+                        fontFamily: '"Noto Sans KR", sans-serif',
+                        fontSize: '15px',
+                        lineHeight: '1.7',
+                        letterSpacing: '0.02em',
+                      }}
+                    >
+                      <div
+                        className="absolute top-4 -left-2 w-4 h-4 transform rotate-45"
+                        style={{
+                          background:
+                            'linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(250, 245, 230, 0.95) 100%)',
+                          border: '2px solid rgba(139, 69, 19, 0.2)',
+                          borderRight: 'none',
+                          borderBottom: 'none',
+                        }}
+                      />
+                      <div
+                        className="absolute inset-0 rounded-2xl opacity-20 pointer-events-none"
+                        style={{
+                          backgroundImage: `
+                            radial-gradient(circle at 2px 2px, rgba(139, 69, 19, 0.1) 1px, transparent 0)
+                          `,
+                          backgroundSize: '16px 16px',
+                        }}
+                      />
+                      <div className="relative z-10">
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            p: ({ children }) => <div className="mb-2 last:mb-0">{children}</div>,
+                            strong: ({ children }) => (
+                              <span className="font-semibold text-amber-800">{children}</span>
+                            ),
+                            em: ({ children }) => (
+                              <span className="italic text-amber-700">{children}</span>
+                            ),
+                          }}
+                          children={m.displayText ?? m.text}
+                        />
+                      </div>
+                    </div>
+                    <div className="text-xs mt-1 opacity-60" style={{ color: '#8B4513' }}>
+                      {t('aiAssistant.chat.aiExpert')}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+            {/* 로딩 인디케이터 */}
+            {loading && (
+              <div className="flex justify-start mb-4">
+                <div
+                  className="px-4 py-3 rounded-2xl"
+                  style={{
+                    background:
+                      'linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(250, 245, 230, 0.95) 100%)',
+                    border: '2px solid rgba(139, 69, 19, 0.2)',
+                    color: '#8B4513',
+                  }}
+                >
+                  <div className="flex items-center space-x-2">
+                    <div className="flex space-x-1">
+                      <div
+                        className="w-2 h-2 bg-amber-600 rounded-full animate-bounce"
+                        style={{ animationDelay: '0ms' }}
+                      ></div>
+                      <div
+                        className="w-2 h-2 bg-amber-600 rounded-full animate-bounce"
+                        style={{ animationDelay: '150ms' }}
+                      ></div>
+                      <div
+                        className="w-2 h-2 bg-amber-600 rounded-full animate-bounce"
+                        style={{ animationDelay: '300ms' }}
+                      ></div>
+                    </div>
+                    <span className="text-sm font-medium">{t('aiAssistant.chat.loading')}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {/* 🔥 스크롤 맨 아래로 이동 버튼 */}
+          {showScrollButton && (
             <button
-              onClick={() => sendMessage()}
-              disabled={loading || !input.trim()}
-              className="px-6 py-3 rounded-full font-medium transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95"
+              onClick={scrollToBottom}
+              className="absolute bottom-4 right-4 w-12 h-12 rounded-full shadow-lg transition-all duration-300 hover:scale-110 active:scale-95 z-10"
               style={{
-                background:
-                  loading || !input.trim()
-                    ? 'linear-gradient(145deg, rgba(139, 69, 19, 0.3) 0%, rgba(101, 67, 33, 0.3) 100%)'
-                    : 'linear-gradient(145deg, rgba(139, 69, 19, 0.9) 0%, rgba(101, 67, 33, 0.95) 100%)',
+                background: 'linear-gradient(145deg, rgba(139, 69, 19, 0.9) 0%, rgba(101, 67, 33, 0.95) 100%)',
+                border: '2px solid rgba(212, 175, 55, 0.3)',
                 color: '#F5DEB3',
-                border: '1px solid rgba(212, 175, 55, 0.3)',
-                boxShadow:
-                  loading || !input.trim()
-                    ? 'none'
-                    : '0 4px 16px rgba(139, 69, 19, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
-                fontFamily: '"Noto Sans KR", sans-serif',
-                letterSpacing: '0.02em',
+                boxShadow: '0 4px 16px rgba(139, 69, 19, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
               }}
+              title="최신 메시지로 이동"
             >
-              {loading ? t('aiAssistant.chat.sending') : t('aiAssistant.chat.send')}
+              <svg 
+                width="24" 
+                height="24" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                style={{ margin: 'auto' }}
+              >
+                <path 
+                  d="M7 14L12 19L17 14M12 19V5" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                />
+              </svg>
             </button>
+          )}
+
+          {/* 입력창 */}
+          <div
+            className="px-6 py-4 border-t"
+            style={{
+              borderColor: 'rgba(139, 69, 19, 0.15)',
+              background:
+                'linear-gradient(90deg, rgba(139, 69, 19, 0.02) 0%, rgba(212, 175, 55, 0.05) 50%, rgba(139, 69, 19, 0.02) 100%)',
+            }}
+          >
+            <div className="flex items-center space-x-4">
+              <div className="flex-1 relative">
+                <input
+                  type="text"
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && !loading && sendMessage()}
+                  disabled={loading}
+                  className="w-full px-4 py-3 rounded-full border-2 focus:outline-none transition-all duration-300"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.9)',
+                    borderColor: 'rgba(139, 69, 19, 0.2)',
+                    color: '#5D4037',
+                    fontFamily: '"Noto Sans KR", sans-serif',
+                    fontSize: '15px',
+                    boxShadow: 'inset 0 2px 4px rgba(139, 69, 19, 0.1)',
+                    backdropFilter: 'blur(10px)',
+                  }}
+                  placeholder={t('aiAssistant.chat.placeholder')}
+                  onFocus={e => {
+                    e.target.style.borderColor = 'rgba(212, 175, 55, 0.5)';
+                    e.target.style.boxShadow =
+                      '0 0 0 3px rgba(212, 175, 55, 0.1), inset 0 2px 4px rgba(139, 69, 19, 0.1)';
+                  }}
+                  onBlur={e => {
+                    e.target.style.borderColor = 'rgba(139, 69, 19, 0.2)';
+                    e.target.style.boxShadow = 'inset 0 2px 4px rgba(139, 69, 19, 0.1)';
+                  }}
+                />
+              </div>
+              <button
+                onClick={() => sendMessage()}
+                disabled={loading || !input.trim()}
+                className="px-6 py-3 rounded-full font-medium transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95"
+                style={{
+                  background:
+                    loading || !input.trim()
+                      ? 'linear-gradient(145deg, rgba(139, 69, 19, 0.3) 0%, rgba(101, 67, 33, 0.3) 100%)'
+                      : 'linear-gradient(145deg, rgba(139, 69, 19, 0.9) 0%, rgba(101, 67, 33, 0.95) 100%)',
+                  color: '#F5DEB3',
+                  border: '1px solid rgba(212, 175, 55, 0.3)',
+                  boxShadow:
+                    loading || !input.trim()
+                      ? 'none'
+                      : '0 4px 16px rgba(139, 69, 19, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+                  fontFamily: '"Noto Sans KR", sans-serif',
+                  letterSpacing: '0.02em',
+                }}
+              >
+                {loading ? t('aiAssistant.chat.sending') : t('aiAssistant.chat.send')}
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

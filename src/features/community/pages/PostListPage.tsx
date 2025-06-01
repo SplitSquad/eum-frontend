@@ -154,35 +154,49 @@ const PostListPage: React.FC = () => {
     return tagReverseMapping[translatedTag] || translatedTag;
   };
 
-  // 카테고리별 태그 매핑
-  const categoryTags = {
-    travel: [
-      t('community.tags.tourism'),
-      t('community.tags.food'),
-      t('community.tags.transport'),
-      t('community.tags.accommodation'),
-      t('community.tags.embassy'),
-    ],
-    living: [
-      t('community.tags.realEstate'),
-      t('community.tags.livingEnvironment'),
-      t('community.tags.culture'),
-      t('community.tags.housing'),
-    ],
-    study: [
-      t('community.tags.academic'),
-      t('community.tags.studySupport'),
-      t('community.tags.visa'),
-      t('community.tags.dormitory'),
-    ],
-    job: [
-      t('community.tags.career'),
-      t('community.tags.labor'),
-      t('community.tags.jobFair'),
-      t('community.tags.partTime'),
-    ],
-    전체: [], // 한국어 고정값 사용 (내부값)
-  };
+  // 카테고리별 태그 매핑 - useState로 관리하여 언어 변경 시 자동 업데이트
+  const [categoryTags, setCategoryTags] = useState<{[key: string]: string[]}>({
+    travel: [],
+    living: [],
+    study: [],
+    job: [],
+    전체: [],
+  });
+
+  // 언어 변경 시 카테고리 태그 업데이트
+  useEffect(() => {
+    const newCategoryTags = {
+      travel: [
+        t('community.tags.tourism'),
+        t('community.tags.food'),
+        t('community.tags.transport'),
+        t('community.tags.accommodation'),
+        t('community.tags.embassy'),
+      ],
+      living: [
+        t('community.tags.realEstate'),
+        t('community.tags.livingEnvironment'),
+        t('community.tags.culture'),
+        t('community.tags.housing'),
+      ],
+      study: [
+        t('community.tags.academic'),
+        t('community.tags.studySupport'),
+        t('community.tags.visa'),
+        t('community.tags.dormitory'),
+      ],
+      job: [
+        t('community.tags.career'),
+        t('community.tags.labor'),
+        t('community.tags.jobFair'),
+        t('community.tags.partTime'),
+      ],
+      전체: [], // 한국어 고정값 사용 (내부값)
+    };
+
+    setCategoryTags(newCategoryTags);
+    console.log('[DEBUG] PostList 언어 변경으로 카테고리 태그 업데이트:', newCategoryTags);
+  }, [t]); // t 함수 변경 시에만 실행
 
   // 내부 카테고리값 ↔ 표시값 매핑
   const CATEGORY_INTERNAL_VALUES = {
@@ -246,16 +260,30 @@ const PostListPage: React.FC = () => {
   // 현재 URL에서 쿼리 파라미터 가져오기
   const queryParams = new URLSearchParams(location.search);
 
-  // URL 쿼리 파라미터에서 필터 상태 초기화 (상수 사용)
+  // URL 쿼리 파라미터에서 필터 상태 초기화
   const [filter, setFilter] = useState<LocalPostFilter>({
-    category: queryParams.get('category') || '전체',
-    location: queryParams.get('location') || '자유',
-    tag: queryParams.get('tag') || undefined,
-    postType: (queryParams.get('postType') as PostType) || '자유',
-    sortBy: (queryParams.get('sortBy') as 'latest' | 'popular' | 'oldest') || 'latest',
+    category: queryParams.get('category') || t('community.filters.all'),
+    location: queryParams.get('location') || t('community.filters.all'),
+    tag: queryParams.get('tag') || '',
+    sortBy: (queryParams.get('sortBy') as 'latest' | 'popular') || 'latest',
+    page: queryParams.get('page') ? parseInt(queryParams.get('page') as string) - 1 : 0,
     size: 6,
-    page: parseInt(queryParams.get('page') || '1') - 1, // URL은 1부터 시작, 내부는 0부터
+    postType: (queryParams.get('postType') as PostType) || '전체',
   });
+
+  // 카테고리 또는 카테고리 태그가 변경될 때 사용 가능한 태그 목록 업데이트
+  useEffect(() => {
+    if (selectedCategory && selectedCategory !== '전체') {
+      const newAvailableTags = categoryTags[selectedCategory as keyof typeof categoryTags] || [];
+      setAvailableTags(newAvailableTags);
+      console.log('[DEBUG] PostList 카테고리/언어 변경으로 태그 목록 업데이트:', {
+        카테고리: selectedCategory,
+        새태그목록: newAvailableTags
+      });
+    } else {
+      setAvailableTags([]);
+    }
+  }, [selectedCategory, categoryTags]); // selectedCategory와 categoryTags 변경 시 실행
 
   // 컴포넌트 마운트 시 게시글 목록 조회를 위한 트래킹
   const initialDataLoadedRef = useRef(false);

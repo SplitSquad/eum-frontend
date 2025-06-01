@@ -184,7 +184,7 @@ const CommentApi = {
     debateId: number;
     page?: number;
     size?: number;
-    sortBy?: string;
+    sortBy?: string; // 'latest' | 'oldest' | 'popular' (백엔드에서는 heart로 변환)
     language?: string;
   }): Promise<{
     comments: DebateComment[];
@@ -194,6 +194,18 @@ const CommentApi = {
     try {
       // 실제 API 연동 (MOCK 데이터 사용 대신 실제 API 호출)
       const { debateId, page = 1, size = 10, sortBy = 'latest', language = 'ko' } = params;
+      
+      // 정렬 파라미터 변환 (프론트엔드 → 백엔드)
+      let backendSort = 'latest'; // 기본값
+      if (sortBy === 'popular') {
+        backendSort = 'heart'; // 인기순 (좋아요 기준)
+      } else if (sortBy === 'oldest') {
+        backendSort = 'oldest'; // 오래된순
+      } else {
+        backendSort = 'latest'; // 최신순 (기본값)
+      }
+      
+      console.log(`[DEBUG] 토론 댓글 정렬 파라미터 변환: ${sortBy} → ${backendSort}`);
       
       // API 호출
       const token = localStorage.getItem('token') || '';
@@ -205,7 +217,7 @@ const CommentApi = {
           debateId,
           page: page - 1, // Spring Boot는 0부터 시작하는 페이지 인덱스 사용
           size,
-          sort: sortBy,
+          sort: backendSort, // 변환된 정렬 파라미터 사용
           language // 사용자 언어 설정 추가
         }
       });
@@ -225,16 +237,18 @@ const CommentApi = {
           // userId 필드를 찾아서 추출
           const userId = item.userId || 0;
           
-          // 댓글 내용에서 stance 정보 추출
+          // 댓글 내용에서 stance 접두사 제거 (기존 접두사가 있다면 제거만 하고 새로 추가하지 않음)
           let extractedStance: 'pro' | 'con' | undefined = undefined;
           let content = item.content || '';
           
           if (content.startsWith('【반대】')) {
             extractedStance = 'con';
-            console.log(`[DEBUG] 댓글 ID ${item.commentId}에서 반대 의견 접두사 발견`);
+            content = content.replace('【반대】 ', ''); // 접두사 제거
+            console.log(`[DEBUG] 댓글 ID ${item.commentId}에서 반대 의견 접두사 제거`);
           } else if (content.startsWith('【찬성】')) {
             extractedStance = 'pro';
-            console.log(`[DEBUG] 댓글 ID ${item.commentId}에서 찬성 의견 접두사 발견`);
+            content = content.replace('【찬성】 ', ''); // 접두사 제거
+            console.log(`[DEBUG] 댓글 ID ${item.commentId}에서 찬성 의견 접두사 제거`);
           }
           
           // 댓글 매핑 전 원본 데이터 로깅
@@ -243,6 +257,7 @@ const CommentApi = {
           // 댓글 매핑 시 추출한 userId와 내용에서 추출한 stance 값 전달
           const comment = mapCommentResToFrontend({
             ...item,
+            content, // 접두사가 제거된 순수한 내용 사용
             userId,
             stance: extractedStance || item.stance  // 내용에서 추출한 stance 값을 우선 사용
           }, debateId);
@@ -297,15 +312,14 @@ const CommentApi = {
       // stance 값을 콘솔에 출력하여 디버깅
       console.log('[DEBUG] 댓글 작성 시 선택한 입장(stance):', commentRequest.stance);
       
-      // stance 정보를 댓글 내용 앞에 추가
-      const stancePrefix = commentRequest.stance === 'con' ? '【반대】 ' : '【찬성】 ';
-      const contentWithStance = stancePrefix + commentRequest.content;
+      // stance 정보는 별도 필드로 전송하고 내용에는 접두사를 붙이지 않음
+      const contentWithoutStancePrefix = commentRequest.content; // 순수한 내용만 사용
       
       // 백엔드 API 요청 형식으로 변환
       const requestData: CommentReqDto = {
-        content: contentWithStance, // stance 정보가 포함된 내용
+        content: contentWithoutStancePrefix, // 순수한 내용만 전송
         debateId: commentRequest.debateId,
-        stance: commentRequest.stance, // 백엔드에서 사용하지 않더라도 보내기
+        stance: commentRequest.stance, // stance는 별도 필드로 전송
         language: detectedLanguage.toUpperCase() // 감지된 언어를 대문자로 변환
       };
       

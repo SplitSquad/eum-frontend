@@ -130,14 +130,30 @@ export const CommentApi = {
     postId: number,
     targetType: string = 'post', // targetType은 내부적으로만 사용, 백엔드에 전달하지 않음
     page: number = 0,
-    size: number = 5
+    size: number = 5,
+    sort: string = 'latest' // 정렬 파라미터 추가: 'latest' | 'popular'
   ): Promise<CommentResponseData> => {
     try {
-      console.log(`[DEBUG] 댓글 목록 API 호출 - postId: ${postId}`);
+      console.log(`[DEBUG] 댓글 목록 API 호출 - postId: ${postId}, sort: ${sort}`);
+      
+      // 정렬 파라미터 변환 (프론트엔드 → 백엔드)
+      let sortParam = 'latest'; // 기본값은 최신순
+      if (sort === 'popular') {
+        sortParam = 'heart'; // 인기순 (좋아요 기준)
+      } else if (sort === 'oldest') {
+        sortParam = 'oldest'; // 오래된순
+      } else {
+        sortParam = 'latest'; // 최신순 (기본값)
+      }
+      
+      console.log(`[DEBUG] 정렬 파라미터 변환: ${sort} → ${sortParam}`);
+      
+      // 최종 URL 생성 - 백엔드 스펙에 맞게 수정
+      const url = `${COMMENTS_BASE_URL}?postId=${postId}&page=${page}&size=${size}&sort=${sortParam}`;
+      console.log(`[DEBUG] 댓글 API 요청 URL: ${url}`);
+      
       // 백엔드 API 요청 형식에 맞게 수정
-      const response = await apiClient.get<CommentResponseData>(
-        `${COMMENTS_BASE_URL}?postId=${postId}&page=${page}&size=${size}&sort=latest`
-      );
+      const response = await apiClient.get<CommentResponseData>(url);
 
       console.log('[DEBUG] 댓글 원본 응답:', JSON.stringify(response, null, 2));
 

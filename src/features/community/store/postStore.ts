@@ -638,19 +638,38 @@ export const usePostStore = create<PostState & PostActions>()(
                   page: apiParams.page !== undefined ? apiParams.page : 0,
                   size: apiParams.size || 6,
                   category: apiParams.category || '전체',
-                  sort: apiParams.sortBy === 'popular' ? 'views' : apiParams.sortBy === 'oldest' ? 'oldest' : 'latest',
+                  sortBy: apiParams.sortBy || 'latest', // sortBy를 그대로 전달하여 postApi에서 변환하도록 함
+                  location: apiParams.location, // location 필드 추가 - 지역 필터링을 위해 필수
                 };
+
+                console.log('[DEBUG] 정렬 파라미터 전달:', { 
+                  원본sortBy: apiParams.sortBy, 
+                  전달될sortBy: finalApiParams.sortBy 
+                });
 
                 // postType 처리 - 백엔드는 빈 문자열을 허용하지 않음, 항상 값이 있어야 함
                 const postType = apiParams.postType || '자유';
                 finalApiParams.postType = postType;
 
-                // region(지역) 처리 - 자유 게시글이면 무조건 '자유'로, 그렇지 않으면 location 값 사용
+                // region(지역) 처리 수정 - 올바른 지역 값 전달
                 if (finalApiParams.postType === '자유') {
                   finalApiParams.region = '자유';
                 } else {
-                  const location = apiParams.location || '전체';
-                  finalApiParams.region = location === '전체' ? '전체' : location;
+                  // 모임 게시글의 경우 실제 선택된 location 값 사용
+                  const location = apiParams.location;
+                  console.log('[DEBUG] 지역 처리:', { 
+                    원본location: location, 
+                    postType: finalApiParams.postType 
+                  });
+                  
+                  if (!location || location === '전체') {
+                    finalApiParams.region = '전체';
+                  } else {
+                    // 실제 선택된 지역명을 그대로 사용
+                    finalApiParams.region = location;
+                  }
+                  
+                  console.log('[DEBUG] 최종 region 설정:', finalApiParams.region);
                 }
 
                 // 태그 처리 - 백엔드가 기대하는 형식으로 전달

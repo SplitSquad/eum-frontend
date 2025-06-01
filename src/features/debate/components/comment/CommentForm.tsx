@@ -68,7 +68,7 @@ const CommentForm: React.FC<CommentFormProps> = ({ debateId, onSuccess }) => {
         userId,
         userName: currentUserName,
         userProfileImage: '', // 프로필 이미지 추가
-        content: (stance === 'con' ? '【반대】 ' : '【찬성】 ') + content, // 댓글 내용에 stance 접두사 추가
+        content: content, // 댓글 내용에 stance 접두사를 제거 (순수한 내용만 사용)
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         stance: stance || 'pro',

@@ -132,16 +132,34 @@ export const PostApi = {
           params.sortBy === 'popular' ? 'views' : params.sortBy === 'oldest' ? 'oldest' : 'latest',
       };
 
+      console.log('[DEBUG] getPosts 정렬 파라미터 변환:', { 
+        원본sortBy: params.sortBy, 
+        변환후sort: apiParams.sort 
+      });
+
       // postType 처리 - 백엔드는 빈 문자열을 허용하지 않음, 항상 값이 있어야 함
       const postType = params.postType || '자유';
       apiParams.postType = postType;
 
-      // region(지역) 처리 - 자유 게시글이면 무조건 '자유'로, 그렇지 않으면 location 값 사용
+      // region(지역) 처리 수정 - postStore에서 전달된 값 그대로 사용
       if (apiParams.postType === '자유') {
         apiParams.region = '자유';
       } else {
-        const location = params.location || '전체';
-        apiParams.region = location === '전체' ? '전체' : location;
+        // 모임 게시글의 경우 postStore에서 전달된 location 값을 그대로 사용
+        const location = params.location;
+        console.log('[DEBUG] postApi region 처리:', { 
+          전달받은location: location, 
+          postType: apiParams.postType 
+        });
+        
+        if (!location || location === '전체') {
+          apiParams.region = '전체';
+        } else {
+          // postStore에서 전달된 실제 지역명을 그대로 사용
+          apiParams.region = location;
+        }
+        
+        console.log('[DEBUG] postApi 최종 region 설정:', apiParams.region);
       }
 
       // 태그 처리 - undefined, null, 빈 문자열이거나 '전체'인 경우 태그 필터링 해제
@@ -435,15 +453,21 @@ export const PostApi = {
       const sortValue = options.sort || 'createdAt,desc';
       // SpringBoot 형식의 sort를 backend 형식으로 변환
       let backendSort;
-      if (sortValue.includes('createdAt,desc')) {
-        backendSort = 'latest';
+      if (sortValue.includes('views,desc') || sortValue.includes('views')) {
+        backendSort = 'views'; // 조회수 내림차순 (인기순)
       } else if (sortValue.includes('createdAt,asc')) {
-        backendSort = 'oldest';
-      } else if (sortValue.includes('views')) {
-        backendSort = 'views';
+        backendSort = 'oldest'; // 날짜 오름차순 (오래된순)
+      } else if (sortValue.includes('createdAt,desc') || sortValue === 'latest') {
+        backendSort = 'latest'; // 날짜 내림차순 (최신순)
       } else {
         backendSort = 'latest'; // 기본값
       }
+      
+      console.log('[DEBUG] 정렬 파라미터 변환:', { 
+        원본: sortValue, 
+        변환후: backendSort 
+      });
+      
       searchParams.append('sort', backendSort);
 
       // 카테고리 (전체인 경우 '전체' 값으로 명시적 전달)

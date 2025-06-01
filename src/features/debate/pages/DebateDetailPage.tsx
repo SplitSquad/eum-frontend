@@ -34,7 +34,6 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 import FlagDisplay from '../../../shared/components/FlagDisplay';
 
-
 // Import the recharts library for pie charts
 // The recharts package should be installed with: npm install recharts
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
@@ -1315,13 +1314,7 @@ const DebateDetailPage: React.FC = () => {
             return (
               <CountryStatItem key={index}>
                 <CountryFlag>
-
-                  <FlagDisplay 
-                    nation={stat.countryCode} 
-                    size="small"
-                    showName={true}
-                  />
-
+                  <FlagDisplay nation={stat.countryCode} size="small" showName={true} />
                 </CountryFlag>
                 <Box sx={{ flex: 1, ml: 1, mr: 1 }}>
                   <Box

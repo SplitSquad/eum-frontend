@@ -132,7 +132,10 @@ const ProBoardListPage: React.FC = () => {
   const [showFilters, setShowFilters] = useState<boolean>(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedRegion, setSelectedRegion] = useState<string>(t('community.filters.all'));
-  const [searchType, setSearchType] = useState<string>(t('community.searchType.titleContent'));
+  const [searchType, setSearchType] = useState<string>(() => {
+    // 현재 언어에 맞는 기본 검색 타입 설정
+    return t('community.searchType.titleContent');
+  });
   const [isSearchMode, setIsSearchMode] = useState<boolean>(false);
 
   // 태그 번역 역변환 함수 (번역된 태그 → 한국어 원본 태그)
@@ -161,41 +164,61 @@ const ProBoardListPage: React.FC = () => {
       [t('community.tags.partTime')]: '알바/파트타임',
     };
 
-
-
     return tagReverseMapping[translatedTag] || translatedTag;
-
   };
 
-  // 카테고리별 태그 매핑
-  const categoryTags = {
-    travel: [
-      t('community.tags.tourism'),
-      t('community.tags.food'),
-      t('community.tags.transport'),
-      t('community.tags.accommodation'),
-      t('community.tags.embassy'),
-    ],
-    living: [
-      t('community.tags.realEstate'),
-      t('community.tags.livingEnvironment'),
-      t('community.tags.culture'),
-      t('community.tags.housing'),
-    ],
-    study: [
-      t('community.tags.academic'),
-      t('community.tags.studySupport'),
-      t('community.tags.visa'),
-      t('community.tags.dormitory'),
-    ],
-    job: [
-      t('community.tags.career'),
-      t('community.tags.labor'),
-      t('community.tags.jobFair'),
-      t('community.tags.partTime'),
-    ],
+  // 카테고리별 태그 매핑 - useState로 관리하여 언어 변경 시 자동 업데이트
+  const [categoryTags, setCategoryTags] = useState<{[key: string]: string[]}>({
+    travel: [],
+    living: [],
+    study: [],
+    job: [],
     전체: [],
-  };
+  });
+
+  // 언어 변경 감지를 위한 ref
+  const hasInitialDataLoaded = useRef(false);
+  const { language } = useLanguageStore();
+
+  // 태그 업데이트 함수를 useCallback으로 안정화
+  const updateCategoryTags = useCallback(() => {
+    const newCategoryTags = {
+      travel: [
+        t('community.tags.tourism'),
+        t('community.tags.food'),
+        t('community.tags.transport'),
+        t('community.tags.accommodation'),
+        t('community.tags.embassy'),
+      ],
+      living: [
+        t('community.tags.realEstate'),
+        t('community.tags.livingEnvironment'),
+        t('community.tags.culture'),
+        t('community.tags.housing'),
+      ],
+      study: [
+        t('community.tags.academic'),
+        t('community.tags.studySupport'),
+        t('community.tags.visa'),
+        t('community.tags.dormitory'),
+      ],
+      job: [
+        t('community.tags.career'),
+        t('community.tags.labor'),
+        t('community.tags.jobFair'),
+        t('community.tags.partTime'),
+      ],
+      전체: [], // 한국어 고정값 사용 (내부값)
+    };
+
+    setCategoryTags(newCategoryTags);
+    console.log('[DEBUG] ProBoard 언어 변경으로 카테고리 태그 업데이트:', newCategoryTags);
+  }, [language]); // language 변경 시에만 재생성
+
+  // 언어 변경 시 카테고리 태그 업데이트
+  useEffect(() => {
+    updateCategoryTags();
+  }, [updateCategoryTags]); // updateCategoryTags 변경 시에만 실행
 
   // 현재 선택된 카테고리에 해당하는 태그 목록
   const [availableTags, setAvailableTags] = useState<string[]>([]);
@@ -213,26 +236,58 @@ const ProBoardListPage: React.FC = () => {
     topPosts,
   } = useCommunityStore();
 
+  // 카테고리 또는 카테고리 태그가 변경될 때 사용 가능한 태그 목록 업데이트
+  useEffect(() => {
+    if (selectedCategory && selectedCategory !== '전체') {
+      const newAvailableTags = categoryTags[selectedCategory as keyof typeof categoryTags] || [];
+      setAvailableTags(newAvailableTags);
+      console.log('[DEBUG] ProBoard 카테고리/언어 변경으로 태그 목록 업데이트:', {
+        카테고리: selectedCategory,
+        새태그목록: newAvailableTags
+      });
+    } else {
+      setAvailableTags([]);
+    }
+  }, [selectedCategory, categoryTags]); // selectedCategory와 categoryTags 변경 시 실행
+
   // 현재 URL에서 쿼리 파라미터 가져오기
   const queryParams = new URLSearchParams(location.search);
 
   // URL 쿼리 파라미터에서 필터 상태 초기화
-  const [filter, setFilter] = useState<LocalPostFilter>({
-    category: queryParams.get('category') || t('community.filters.all'),
-    location: queryParams.get('location') || t('community.filters.all'),
-    tag: queryParams.get('tag') || '',
-    sortBy: (queryParams.get('sortBy') as 'latest' | 'popular') || 'latest',
+  const [filter, setFilter] = useState<LocalPostFilter>(() => {
+    // localStorage에서 자유게시판 전용 검색 상태 복구
+    const savedState = localStorage.getItem('proBoardSearch');
+    const saved = savedState ? JSON.parse(savedState) : {};
+    
+    return {
+      category: queryParams.get('category') || saved.category || t('community.filters.all'),
+      location: queryParams.get('location') || saved.location || t('community.filters.all'),
+      tag: queryParams.get('tag') || saved.tag || '',
+      sortBy: (queryParams.get('sortBy') as 'latest' | 'popular') || saved.sortBy || 'latest',
     page: queryParams.get('page') ? parseInt(queryParams.get('page') as string) - 1 : 0,
     size: 4,
-    postType: (queryParams.get('postType') as PostType) || '자유',
+      postType: '자유', // ProBoardListPage는 항상 자유 게시글
+    };
   });
+
+  // 검색 상태를 localStorage에 저장하는 함수
+  const saveSearchState = (searchTerm: string, searchType: string, isActive: boolean) => {
+    const searchState = {
+      searchTerm,
+      searchType,
+      isSearchMode: isActive,
+      category: filter.category,
+      location: filter.location,
+      tag: filter.tag,
+      sortBy: filter.sortBy,
+      selectedTags: selectedTags, // 태그 상태도 저장
+      timestamp: Date.now()
+    };
+    localStorage.setItem('proBoardSearch', JSON.stringify(searchState));
+  };
 
   // 컴포넌트 마운트 시 게시글 목록 조회를 위한 트래킹
   const initialDataLoadedRef = useRef(false);
-
-  // 언어 변경 감지를 위한 ref
-  const hasInitialDataLoaded = useRef(false);
-  const { language } = useLanguageStore();
 
   // ADMIN 권한 여부 확인
   const [isAdmin, setIsAdmin] = useState(false);
@@ -257,7 +312,83 @@ const ProBoardListPage: React.FC = () => {
       return;
     }
 
-    console.log('PostListPage 컴포넌트 마운트, 게시글 목록 조회 시작');
+    console.log('ProBoardListPage 컴포넌트 마운트, 게시글 목록 조회 시작');
+
+    // 🔥 페이지 진입 시 태그 상태 무조건 초기화
+    console.log('[DEBUG] 자유게시판 진입 - 태그 상태 초기화');
+    setSelectedTags([]);
+
+    // localStorage에서 저장된 검색 상태 복구
+    const savedState = localStorage.getItem('proBoardSearch');
+    if (savedState) {
+      try {
+        const saved = JSON.parse(savedState);
+        // 1시간 이내의 검색 상태만 복구
+        if (saved.timestamp && (Date.now() - saved.timestamp) < 60 * 60 * 1000) {
+          if (saved.isSearchMode && saved.searchTerm) {
+            setSearchTerm(saved.searchTerm);
+            // searchType을 현재 언어에 맞게 설정
+            const validSearchTypes = [
+              t('community.searchType.titleContent'),
+              t('community.searchType.author')
+            ];
+            const restoredSearchType = validSearchTypes.includes(saved.searchType) 
+              ? saved.searchType 
+              : t('community.searchType.titleContent');
+            setSearchType(restoredSearchType);
+            setIsSearchMode(true);
+            console.log('[DEBUG] 자유게시판 검색 상태 복구:', {
+              ...saved,
+              searchType: restoredSearchType
+            });
+            
+            // postStore에도 자유게시판 검색 상태 설정
+            const postStore = usePostStore.getState();
+            postStore.searchStates['자유'] = {
+              active: true,
+              term: saved.searchTerm,
+              type: restoredSearchType,
+            };
+          }
+          
+          // 🔥 자유게시판 전용 태그 상태만 복구 (검색 상태가 활성화된 경우에만)
+          if (saved.isSearchMode && saved.selectedTags && Array.isArray(saved.selectedTags) && saved.selectedTags.length > 0) {
+            console.log('[DEBUG] 자유게시판 검색 모드 - 태그 상태 복구:', saved.selectedTags);
+            setSelectedTags(saved.selectedTags);
+          }
+        } else {
+          // 만료된 상태 제거
+          localStorage.removeItem('proBoardSearch');
+        }
+      } catch (error) {
+        console.error('[ERROR] 검색 상태 복구 실패:', error);
+        localStorage.removeItem('proBoardSearch');
+      }
+    }
+
+    // postStore에서 자유게시판 검색 상태 확인
+    const storeSearchState = usePostStore.getState().searchStates['자유'];
+    if (storeSearchState?.active && storeSearchState?.term && !isSearchMode) {
+      setSearchTerm(storeSearchState.term);
+      setSearchType(storeSearchState.type || t('community.searchType.titleContent'));
+      setIsSearchMode(true);
+      console.log('[DEBUG] postStore에서 자유게시판 검색 상태 복구:', storeSearchState);
+    } else {
+      // 자유게시판이 아닌 다른 postType의 검색 상태가 활성화되어 있다면 초기화
+      const otherPostTypes = Object.keys(usePostStore.getState().searchStates).filter(pt => pt !== '자유');
+      const hasOtherActiveSearch = otherPostTypes.some(pt => usePostStore.getState().searchStates[pt].active);
+      
+      if (hasOtherActiveSearch) {
+        console.log('[DEBUG] 다른 postType의 검색 상태 감지, 자유게시판 검색 상태 초기화');
+        // 자유게시판 검색 상태만 초기화
+        const postStore = usePostStore.getState();
+        postStore.searchStates['자유'] = {
+          active: false,
+          term: '',
+          type: '',
+        };
+      }
+    }
 
     // 현재 카테고리에 맞는 태그 목록 설정
     if (filter.category && filter.category !== t('community.filters.all')) {
@@ -357,9 +488,21 @@ const ProBoardListPage: React.FC = () => {
           onClick={() => {
             setIsSearchMode(false);
             setSearchTerm('');
+            setSelectedTags([]); // 태그 상태도 초기화
+            saveSearchState('', searchType, false); // 검색 상태 초기화
+            
+            // postStore에서도 자유게시판 검색 상태 초기화
+            const postStore = usePostStore.getState();
+            postStore.searchStates['자유'] = {
+              active: false,
+              term: '',
+              type: '',
+            };
+            
             fetchPosts({
               ...filter,
               page: 0,
+              tag: undefined, // 태그 필터도 제거
               resetSearch: true, // 검색 상태만 초기화
             });
           }}
@@ -375,7 +518,6 @@ const ProBoardListPage: React.FC = () => {
   const applyFilterWithSearchState = (newFilter: Partial<LocalPostFilter>) => {
     const updatedFilter = { ...filter, ...newFilter };
 
-
     if (isSearchMode && searchTerm) {
       // 검색 중이면 필터와 함께 검색 재실행
       console.log('[DEBUG] 검색 상태에서 필터 변경 - 세부 정보:', {
@@ -389,36 +531,49 @@ const ProBoardListPage: React.FC = () => {
       // UI용 필터 상태 먼저 업데이트 (로딩 상태 표시용)
       setFilter(updatedFilter);
 
+      // 번역된 검색 타입을 한국어로 변환
+      let convertedSearchType = searchType;
+      const searchTypeMapping: Record<string, string> = {
+        // 한국어 (이미 변환된 상태)
+        '제목+내용': '제목_내용',
+        제목: '제목',
+        내용: '내용',
+        작성자: '작성자',
+        // 영어
+        'Title+Content': '제목_내용',
+        Title: '제목',
+        Content: '내용',
+        Author: '작성자',
+      };
 
+      convertedSearchType = searchTypeMapping[searchType] || searchType;
 
-      // searchPosts 함수 호출 - 필터 변경 사항 적용하여 재검색
       const searchOptions = {
         page: updatedFilter.page !== undefined ? updatedFilter.page : 0,
-        size: updatedFilter.size || 4,
+        size: updatedFilter.size || 6,
         postType: '자유' as PostType,
-        region: updatedFilter.location,
+        region: '자유', // 자유게시판은 항상 '자유'
         category: updatedFilter.category,
         tag: updatedFilter.tag,
         sort: updatedFilter.sortBy === 'popular' ? 'views,desc' : 'createdAt,desc',
       };
 
+      console.log('[DEBUG] 검색 API 파라미터:', {
+        keyword: searchTerm,
+        searchType: convertedSearchType,
+        ...searchOptions,
+      });
 
-      console.log('[DEBUG] 검색 API 파라미터:', searchOptions);
-
-
-      // 이번에는 서버에 직접 API 요청 (postApi 직접 사용)
+      // 검색 요청 직접 실행
       try {
         const postApi = usePostStore.getState();
-
-        postApi.searchPosts(searchTerm, searchType, searchOptions);
-
+        postApi.searchPosts(searchTerm, convertedSearchType, searchOptions);
+        console.log('검색 요청 전송 완료');
       } catch (error) {
         console.error('검색 중 오류 발생:', error);
       }
     } else {
-      // 검색 중이 아니면 일반 필터 적용
-
-
+      // 검색이 아니면 일반 게시글 목록 조회
       setFilter(updatedFilter);
       fetchPosts(updatedFilter);
     }
@@ -437,6 +592,10 @@ const ProBoardListPage: React.FC = () => {
     // 카테고리 상태 업데이트
     setSelectedCategory(category);
 
+    // 🔥 태그 상태 완전 초기화 (카테고리가 바뀌면 태그도 무조건 초기화)
+    console.log('[DEBUG] 카테고리 변경으로 태그 완전 초기화');
+    setSelectedTags([]);
+
     // 카테고리에 맞는 태그 목록 설정
     if (category && category !== t('community.filters.all')) {
       setAvailableTags(categoryTags[category as keyof typeof categoryTags] || []);
@@ -444,12 +603,15 @@ const ProBoardListPage: React.FC = () => {
       setAvailableTags([]);
     }
 
-    // 새 필터 생성
+    // 새 필터 생성 (태그도 완전 제거)
     const newFilter = {
       ...filter,
       category,
+      tag: undefined, // 태그 완전 제거
       page: 0,
     };
+
+    console.log('[DEBUG] 카테고리 변경 후 새 필터 (태그 제거됨):', newFilter);
 
     // 필터 적용 (검색 상태 유지하면서)
     applyFilterWithSearchState(newFilter);
@@ -457,44 +619,45 @@ const ProBoardListPage: React.FC = () => {
 
   // 태그 선택 핸들러
   const handleTagSelect = (tag: string) => {
-
     console.log('[DEBUG] 태그 선택:', tag);
+    console.log('[DEBUG] 현재 selectedTags:', selectedTags);
+    console.log('[DEBUG] selectedTags.includes(tag):', selectedTags.includes(tag));
 
+    let newSelectedTags: string[];
+    let originalTagNames: string[];
 
-    // 이미 선택된 태그면 취소
     if (selectedTags.includes(tag)) {
-      console.log('[DEBUG] 태그 선택 취소');
-      setSelectedTags([]);
-
-      // 필터에서 태그 제거
-      const updatedFilter = { ...filter };
-      delete updatedFilter.tag;
-      updatedFilter.page = 0;
-
-
-      // 필터 적용 (검색 상태 유지하면서)
-      applyFilterWithSearchState(updatedFilter);
+      // 이미 선택된 태그면 제거
+      console.log('[DEBUG] 태그 제거 로직 실행');
+      newSelectedTags = selectedTags.filter(t => t !== tag);
+      // 원본 태그명들로 변환
+      originalTagNames = newSelectedTags.map(t => getOriginalTagName(t));
     } else {
-      // 새 태그 선택
+      // 새로운 태그 추가
+      console.log('[DEBUG] 태그 추가 로직 실행');
+      newSelectedTags = [...selectedTags, tag];
+      // 원본 태그명들로 변환
+      originalTagNames = newSelectedTags.map(t => getOriginalTagName(t));
+    }
 
-      setSelectedTags([tag]);
+    setSelectedTags(newSelectedTags);
 
-      // 번역된 태그를 한국어 원본 태그로 변환
-      const originalTagName = getOriginalTagName(tag);
+    console.log('[DEBUG] 태그 변환:', { 
+      번역태그들: newSelectedTags, 
+      원본태그들: originalTagNames 
+    });
 
-      console.log('[DEBUG] 태그 변환:', { 번역태그: tag, 원본태그: originalTagName });
+    // 필터 업데이트 - 원본 태그명들로 설정
+    const newFilter = {
+      ...filter,
+      tag: originalTagNames.length > 0 ? originalTagNames.join(',') : undefined,
+      page: 0,
+    };
 
-
-      const updatedFilter = { ...filter };
-      // 원본 태그명으로 설정 (백엔드에서 인식할 수 있는 한국어 태그)
-      updatedFilter.tag = originalTagName;
-      // 페이지 초기화
-      updatedFilter.page = 0;
-
+    console.log('[DEBUG] 새로운 필터:', newFilter);
 
       // 필터 적용 (검색 상태 유지하면서)
-      applyFilterWithSearchState(updatedFilter);
-    }
+    applyFilterWithSearchState(newFilter);
   };
 
   // 검색 타입 변경 핸들러
@@ -510,12 +673,22 @@ const ProBoardListPage: React.FC = () => {
     if (!searchTerm.trim()) {
       console.log('검색어가 비어있어 전체 목록을 불러옵니다.');
       setIsSearchMode(false);
+      saveSearchState('', searchType, false); // 검색 상태 초기화
       fetchPosts({ ...filter, page: 0, resetSearch: true });
       return;
     }
 
     // 검색 모드 활성화
     setIsSearchMode(true);
+    saveSearchState(searchTerm, searchType, true); // 검색 상태 저장
+    
+    // postStore에도 자유게시판 검색 상태 설정
+    const postStore = usePostStore.getState();
+    postStore.searchStates['자유'] = {
+      active: true,
+      term: searchTerm,
+      type: searchType,
+    };
 
     // 검색 시 필터 상태 업데이트
     const searchFilter = {
@@ -603,7 +776,7 @@ const ProBoardListPage: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // 정렬 방식 변경 핸들러
+  // 정렬 방식 변경 핸들러 수정
   const handleSortChange = (sortBy: 'latest' | 'popular') => {
     console.log('정렬 방식 변경:', sortBy);
 
@@ -611,7 +784,7 @@ const ProBoardListPage: React.FC = () => {
     applyFilterWithSearchState({ sortBy, page: 0 });
   };
 
-  // 지역 변경 핸들러
+  // 지역 변경 핸들러 수정
   const handleRegionChange = (region: string) => {
     console.log('[DEBUG] 지역 변경:', region);
 
@@ -623,10 +796,10 @@ const ProBoardListPage: React.FC = () => {
 
     setSelectedRegion(region);
 
-    // 필터 업데이트
+    // 자유게시판은 항상 지역이 '자유'로 설정되므로 실제로는 지역 필터링이 적용되지 않음
     const newFilter = {
       ...filter,
-      location: region,
+      location: '자유', // 자유게시판은 항상 '자유'
       page: 0,
     };
 
@@ -1179,6 +1352,7 @@ const ProBoardListPage: React.FC = () => {
                     {t('community.filters.tags')}
                   </Typography>
                   <Box
+                    key={`tags-${selectedCategory}-${selectedTags.length}`}
                     sx={{
                       display: 'flex',
                       flexWrap: 'wrap',
@@ -1188,7 +1362,7 @@ const ProBoardListPage: React.FC = () => {
                   >
                     {availableTags.map(tag => (
                       <Chip
-                        key={tag}
+                        key={`${tag}-${selectedTags.includes(tag)}`}
                         label={tag}
                         onClick={() => handleTagSelect(tag)}
                         color={selectedTags.includes(tag) ? 'primary' : 'default'}
