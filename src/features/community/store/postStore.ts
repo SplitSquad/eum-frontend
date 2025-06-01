@@ -64,7 +64,21 @@ interface PostState {
   totalPages: number;
   totalElements: number;
 
-  // 검색 상태 유지를 위한 필드 추가
+  // 검색 상태 유지를 위한 필드 추가 - postType별로 분리
+  searchStates: {
+    '자유': {
+      active: boolean;
+      term: string;
+      type: string;
+    };
+    '모임': {
+      active: boolean;
+      term: string;
+      type: string;
+    };
+  };
+
+  // 레거시 검색 상태 (하위 호환성 위해 유지)
   searchActive: boolean;
   searchTerm: string;
   searchType: string;
@@ -267,7 +281,21 @@ export const usePostStore = create<PostState & PostActions>()(
       totalPages: 0,
       totalElements: 0,
 
-      // 검색 상태 유지를 위한 필드 추가
+      // 검색 상태 유지를 위한 필드 추가 - postType별로 분리
+      searchStates: {
+        '자유': {
+          active: false,
+          term: '',
+          type: '',
+        },
+        '모임': {
+          active: false,
+          term: '',
+          type: '',
+        },
+      },
+
+      // 레거시 검색 상태 (하위 호환성 위해 유지)
       searchActive: false,
       searchTerm: '',
       searchType: '',
@@ -288,28 +316,55 @@ export const usePostStore = create<PostState & PostActions>()(
           // resetSearch가 명시적으로 true인 경우에만 검색 상태 초기화
           if (filter?.resetSearch === true) {
             console.log('[DEBUG] resetSearch가 true, 검색 상태 초기화');
-            set({
+            const postType = filter.postType || currentState.postFilter.postType || '자유';
+            set(state => ({
+              searchStates: {
+                ...state.searchStates,
+                [postType]: {
+                  active: false,
+                  term: '',
+                  type: '',
+                },
+              },
+              // 레거시 호환성
               searchActive: false,
               searchTerm: '',
               searchType: '',
-            });
+            }));
           }
-          // 검색 활성화된 경우, 검색 상태 유지하고 페이지 이동만 처리
-          else if (currentState.searchActive && currentState.searchTerm) {
-            console.log(
-              '[DEBUG] 검색 상태에서 페이지 이동:',
-              currentState.searchTerm,
-              currentState.searchType
-            );
-            // 검색 API로 페이지 이동
-            return get().searchPosts({
-              page: filter?.page !== undefined ? filter.page : currentState.postPageInfo.page,
-              size: 6,
-              sort: currentState.postFilter.sortBy,
-              postType: filter?.postType || currentState.postFilter.postType,
-              region: filter?.location || currentState.postFilter.location,
-              category: filter?.category || currentState.postFilter.category,
+          // 검색 활성화된 경우, 해당 postType의 검색 상태 확인
+          else {
+            const postType = filter?.postType || currentState.postFilter.postType || '자유';
+            const searchState = currentState.searchStates[postType];
+            
+            console.log('[DEBUG] fetchPosts - 검색 상태 확인:', {
+              postType,
+              searchState,
+              레거시검색상태: {
+                active: currentState.searchActive,
+                term: currentState.searchTerm,
+                type: currentState.searchType
+              }
             });
+            
+            if (searchState?.active && searchState?.term) {
+              console.log(
+                '[DEBUG] 검색 상태에서 페이지 이동:',
+                postType,
+                searchState.term,
+                searchState.type
+              );
+              // 검색 API로 페이지 이동 - 올바른 검색어와 타입 사용
+              return get().searchPosts(searchState.term, searchState.type, {
+                page: filter?.page !== undefined ? filter.page : currentState.postPageInfo.page,
+                size: 6,
+                sort: currentState.postFilter.sortBy === 'popular' ? 'views,desc' : 'createdAt,desc',
+                postType: filter?.postType || currentState.postFilter.postType,
+                region: filter?.location || currentState.postFilter.location,
+                category: filter?.category || currentState.postFilter.category,
+                tag: filter?.tag || currentState.postFilter.tag,
+              });
+            }
           }
 
           // 필터 병합 전에 언어 변경 확인
@@ -336,7 +391,7 @@ export const usePostStore = create<PostState & PostActions>()(
             category: filter?.category || currentState.postFilter.category || '전체',
             // 지역 처리
             location: filter?.location || currentState.postFilter.location,
-            // 태그 처리 - 새 필터에서 tag가 명시적으로 전달된 경우 해당 값 사용 (undefined, 빈 문자열 포함)
+            // 태그 처리 - 번역 없이 그대로 전달
             tag: filter && 'tag' in filter ? filter.tag : currentState.postFilter.tag,
             // postType 처리 - 빈 문자열이거나 undefined이면 '전체'로 설정
             postType:
@@ -583,33 +638,64 @@ export const usePostStore = create<PostState & PostActions>()(
                   page: apiParams.page !== undefined ? apiParams.page : 0,
                   size: apiParams.size || 6,
                   category: apiParams.category || '전체',
-                  sort: apiParams.sortBy === 'popular' ? 'views' : apiParams.sortBy === 'oldest' ? 'oldest' : 'latest',
+                  sortBy: apiParams.sortBy || 'latest', // sortBy를 그대로 전달하여 postApi에서 변환하도록 함
+                  location: apiParams.location, // location 필드 추가 - 지역 필터링을 위해 필수
                 };
+
+                console.log('[DEBUG] 정렬 파라미터 전달:', { 
+                  원본sortBy: apiParams.sortBy, 
+                  전달될sortBy: finalApiParams.sortBy 
+                });
 
                 // postType 처리 - 백엔드는 빈 문자열을 허용하지 않음, 항상 값이 있어야 함
                 const postType = apiParams.postType || '자유';
                 finalApiParams.postType = postType;
 
-                // region(지역) 처리 - 자유 게시글이면 무조건 '자유'로, 그렇지 않으면 location 값 사용
+                // region(지역) 처리 수정 - 올바른 지역 값 전달
                 if (finalApiParams.postType === '자유') {
                   finalApiParams.region = '자유';
                 } else {
-                  const location = apiParams.location || '전체';
-                  finalApiParams.region = location === '전체' ? '전체' : location;
+                  // 모임 게시글의 경우 실제 선택된 location 값 사용
+                  const location = apiParams.location;
+                  console.log('[DEBUG] 지역 처리:', { 
+                    원본location: location, 
+                    postType: finalApiParams.postType 
+                  });
+                  
+                  if (!location || location === '전체') {
+                    finalApiParams.region = '전체';
+                  } else {
+                    // 실제 선택된 지역명을 그대로 사용
+                    finalApiParams.region = location;
+                  }
+                  
+                  console.log('[DEBUG] 최종 region 설정:', finalApiParams.region);
                 }
 
-                // 태그 처리 - 번역 없이 그대로 전달
-                if (apiParams.tag && apiParams.tag !== '전체') {
-                  // 콤마로 분리된 태그 문자열을 배열로 변환
-                  const tagsArray = apiParams.tag.split(',').map(tag => tag.trim());
-                  // 태그 배열을 직접 할당
-                  finalApiParams.tags = tagsArray;
+                // 태그 처리 - 백엔드가 기대하는 형식으로 전달
+                // tag가 undefined, null, 빈 문자열이거나 '전체'인 경우 태그 필터링 해제
+                if (!apiParams.tag || apiParams.tag === '전체' || apiParams.tag === '') {
+                  // 태그 필터링 해제 - tags 파라미터를 명시적으로 제거
+                  delete finalApiParams.tags;
+                  console.log('[DEBUG] 태그 필터링 해제 - tags 파라미터 제거');
+                } else {
+                  // 태그가 있는 경우에만 처리
+                  const tagsArray = apiParams.tag.split(',').map(tag => tag.trim()).filter(tag => tag);
+                  if (tagsArray.length > 0) {
+                    // 백엔드가 기대하는 형식: tags 배열로 전달
+                    finalApiParams.tags = tagsArray;
 
-                  // 로그에 태그 정보 명확하게 표시
-                  console.log('[DEBUG] 태그 필터링 적용:', { 
-                    원본태그: apiParams.tag, 
-                    태그배열: tagsArray 
-                  });
+                    // 로그에 태그 정보 명확하게 표시
+                    console.log('[DEBUG] 태그 필터링 적용:', { 
+                      원본태그: apiParams.tag, 
+                      태그배열: tagsArray,
+                      최종파라미터: finalApiParams
+                    });
+                  } else {
+                    // 빈 배열인 경우에도 태그 필터링 해제
+                    delete finalApiParams.tags;
+                    console.log('[DEBUG] 빈 태그 배열 - tags 파라미터 제거');
+                  }
                 }
 
                 // 디버그 로그 - 실제 전송되는 파라미터
@@ -1191,12 +1277,14 @@ export const usePostStore = create<PostState & PostActions>()(
           // First argument is an object (for backward compatibility)
           if (typeof keywordOrOptions === 'object' && keywordOrOptions !== null) {
             searchOptions = keywordOrOptions;
-            keyword = get().searchTerm || '';
-            searchType = get().searchType || '제목_내용';
+            // postType별 검색 상태 사용
+            const currentPostType = searchOptions.postType || get().postFilter.postType || '자유';
+            const currentSearchState = get().searchStates[currentPostType];
+            keyword = currentSearchState?.term || '';
+            searchType = currentSearchState?.type || '제목_내용';
             console.log(
-              '[DEBUG] Object argument detected, using existing search term/type:',
-              keyword,
-              searchType
+              '[DEBUG] Object argument detected, using postType-specific search term/type:',
+              { postType: currentPostType, keyword, searchType }
             );
           } else {
             keyword = keywordOrOptions as string;
@@ -1210,36 +1298,47 @@ export const usePostStore = create<PostState & PostActions>()(
           const currentState = get();
 
           // 검색 상태 설정 - 항상 로딩 시작
-          set({
+          const currentPostType = searchOptions.postType || currentState.postFilter.postType || '자유';
+          
+          set(state => ({
             postLoading: true,
-            searchActive: true,
-            searchTerm: keyword,
-            searchType: searchType,
+            searchStates: {
+              ...state.searchStates,
+              [currentPostType]: {
+                active: true,
+                term: keyword,
+                type: searchType || '',
+              },
+            },
+            // 레거시 호환성을 위해 현재 postType의 검색 상태로만 설정
+            searchActive: currentPostType === (state.postFilter.postType || '자유'),
+            searchTerm: currentPostType === (state.postFilter.postType || '자유') ? keyword : state.searchTerm,
+            searchType: currentPostType === (state.postFilter.postType || '자유') ? (searchType || '') : state.searchType,
             postPageInfo: {
-              ...currentState.postPageInfo,
+              ...state.postPageInfo,
               page: searchOptions.page || 0,
             },
             // 필터 상태 업데이트 - 검색 시 필터도 함께 업데이트
             postFilter: {
-              ...currentState.postFilter,
+              ...state.postFilter,
               category:
                 searchOptions.category !== undefined
                   ? searchOptions.category
-                  : currentState.postFilter.category,
+                  : state.postFilter.category,
               location:
                 searchOptions.region !== undefined
                   ? searchOptions.region
-                  : currentState.postFilter.location,
+                  : state.postFilter.location,
               postType:
                 searchOptions.postType !== undefined
                   ? (searchOptions.postType as PostType)
-                  : currentState.postFilter.postType,
+                  : state.postFilter.postType,
               tag:
-                searchOptions.tag !== undefined ? searchOptions.tag : currentState.postFilter.tag,
+                searchOptions.tag !== undefined ? searchOptions.tag : state.postFilter.tag,
               sortBy: searchOptions.sort === 'views,desc' ? 'popular' : 'latest',
               page: searchOptions.page || 0,
             },
-          });
+          }));
 
           // 번역된 검색 타입을 한국어로 변환
           let convertedSearchType = searchType;

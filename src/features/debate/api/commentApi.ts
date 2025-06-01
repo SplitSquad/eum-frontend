@@ -190,7 +190,7 @@ const CommentApi = {
     debateId: number;
     page?: number;
     size?: number;
-    sortBy?: string;
+    sortBy?: string; // 'latest' | 'oldest' | 'popular' (백엔드에서는 heart로 변환)
     language?: string;
   }): Promise<{
     comments: DebateComment[];
@@ -200,6 +200,18 @@ const CommentApi = {
     try {
       // 실제 API 연동 (MOCK 데이터 사용 대신 실제 API 호출)
       const { debateId, page = 1, size = 10, sortBy = 'latest', language = 'ko' } = params;
+
+      // 정렬 파라미터 변환 (프론트엔드 → 백엔드)
+      let backendSort = 'latest'; // 기본값
+      if (sortBy === 'popular') {
+        backendSort = 'heart'; // 인기순 (좋아요 기준)
+      } else if (sortBy === 'oldest') {
+        backendSort = 'oldest'; // 오래된순
+      } else {
+        backendSort = 'latest'; // 최신순 (기본값)
+      }
+
+      console.log(`[DEBUG] 토론 댓글 정렬 파라미터 변환: ${sortBy} → ${backendSort}`);
 
       // API 호출
       const token = localStorage.getItem('token') || '';
@@ -211,7 +223,7 @@ const CommentApi = {
           debateId,
           page: page - 1, // Spring Boot는 0부터 시작하는 페이지 인덱스 사용
           size,
-          sort: sortBy,
+          sort: backendSort, // 변환된 정렬 파라미터 사용
           language, // 사용자 언어 설정 추가
         },
       });
@@ -332,7 +344,6 @@ const CommentApi = {
 
       // 백엔드 API 요청 형식으로 변환
       const requestData: CommentReqDto = {
-        content: contentWithStance, // stance 정보가 포함된 내용
         debateId: commentRequest.debateId,
         stance: commentRequest.stance ?? undefined, // null을 undefined로 변환하여 타입 오류 방지
         language: detectedLanguage.toUpperCase(), // 감지된 언어를 대문자로 변환

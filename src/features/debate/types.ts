@@ -331,7 +331,7 @@ export function mapCommentResToFrontend(dto: CommentResDto, debateId: number): D
     debateId: debateId,
     userId: dto.userId || 0, // 백엔드에서 userId를 제공하는 경우 사용
     userName: dto.userName || '익명',
-    content: dto.content || '',
+    content: content, // 접두사가 제거된 순수한 내용 사용
     createdAt: dto.createdAt || new Date().toISOString(),
     reactions: {
       like: dto.like || 0,

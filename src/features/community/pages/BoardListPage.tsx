@@ -118,64 +118,14 @@ const BoardListPage: React.FC = () => {
   const [searchType, setSearchType] = useState<string>(t('community.searchType.titleContent'));
   const [isSearchMode, setIsSearchMode] = useState<boolean>(false);
 
-  // 태그 번역 역변환 함수 (번역된 태그 → 한국어 원본 태그)
-  const getOriginalTagName = (translatedTag: string): string => {
-    const tagReverseMapping: Record<string, string> = {
-      // 관광/여행 관련
-      [t('community.tags.tourism')]: '관광/체험',
-      [t('community.tags.food')]: '식도락/맛집',
-      [t('community.tags.transport')]: '교통/이동',
-      [t('community.tags.accommodation')]: '숙소/지역정보',
-      [t('community.tags.embassy')]: '대사관/응급',
-      // 생활 관련
-      [t('community.tags.realEstate')]: '부동산/계약',
-      [t('community.tags.livingEnvironment')]: '생활환경/편의',
-      [t('community.tags.culture')]: '문화/생활',
-      [t('community.tags.housing')]: '주거지 관리/유지',
-      // 학업 관련
-      [t('community.tags.academic')]: '학사/캠퍼스',
-      [t('community.tags.studySupport')]: '학업지원/시설',
-      [t('community.tags.visa')]: '행정/비자/서류',
-      [t('community.tags.dormitory')]: '기숙사/주거',
-      // 취업 관련
-      [t('community.tags.career')]: '이력/채용준비',
-      [t('community.tags.labor')]: '비자/법률/노동',
-      [t('community.tags.jobFair')]: '잡페어/네트워킹',
-      [t('community.tags.partTime')]: '알바/파트타임',
-    };
-
-    return tagReverseMapping[translatedTag] || translatedTag;
-  };
-
-  // 카테고리별 태그 매핑
-  const categoryTags = {
-    travel: [
-      t('community.tags.tourism'),
-      t('community.tags.food'),
-      t('community.tags.transport'),
-      t('community.tags.accommodation'),
-      t('community.tags.embassy'),
-    ],
-    living: [
-      t('community.tags.realEstate'),
-      t('community.tags.livingEnvironment'),
-      t('community.tags.culture'),
-      t('community.tags.housing'),
-    ],
-    study: [
-      t('community.tags.academic'),
-      t('community.tags.studySupport'),
-      t('community.tags.visa'),
-      t('community.tags.dormitory'),
-    ],
-    job: [
-      t('community.tags.career'),
-      t('community.tags.labor'),
-      t('community.tags.jobFair'),
-      t('community.tags.partTime'),
-    ],
+  // 카테고리별 태그 매핑 - useState로 관리하여 언어 변경 시 자동 업데이트
+  const [categoryTags, setCategoryTags] = useState<{[key: string]: string[]}>({
+    travel: [],
+    living: [],
+    study: [],
+    job: [],
     전체: [],
-  };
+  });
 
   // 현재 선택된 카테고리에 해당하는 태그 목록
   const [availableTags, setAvailableTags] = useState<string[]>([]);
@@ -191,6 +141,65 @@ const BoardListPage: React.FC = () => {
     searchPosts,
     fetchTopPosts,
   } = useCommunityStore();
+
+  // 언어 변경 감지를 위한 ref
+  const hasInitialDataLoaded = useRef(false);
+  const { language } = useLanguageStore();
+
+  // 태그 업데이트 함수를 useCallback으로 안정화
+  const updateCategoryTags = useCallback(() => {
+    const newCategoryTags = {
+      travel: [
+        t('community.tags.tourism'),
+        t('community.tags.food'),
+        t('community.tags.transport'),
+        t('community.tags.accommodation'),
+        t('community.tags.embassy'),
+      ],
+      living: [
+        t('community.tags.realEstate'),
+        t('community.tags.livingEnvironment'),
+        t('community.tags.culture'),
+        t('community.tags.housing'),
+      ],
+      study: [
+        t('community.tags.academic'),
+        t('community.tags.studySupport'),
+        t('community.tags.visa'),
+        t('community.tags.dormitory'),
+      ],
+      job: [
+        t('community.tags.career'),
+        t('community.tags.labor'),
+        t('community.tags.jobFair'),
+        t('community.tags.partTime'),
+      ],
+      전체: [], // 한국어 고정값 사용 (내부값)
+    };
+
+    setCategoryTags(newCategoryTags);
+    console.log('[DEBUG] 언어 변경으로 카테고리 태그 업데이트:', newCategoryTags);
+
+    // 현재 선택된 태그가 있으면 새로운 언어로 업데이트
+    if (selectedTags.length > 0 && selectedCategory && selectedCategory !== '전체') {
+      const newTags = newCategoryTags[selectedCategory as keyof typeof newCategoryTags] || [];
+      console.log('[DEBUG] 선택된 태그 언어 업데이트:', {
+        기존태그: selectedTags,
+        새태그목록: newTags,
+        카테고리: selectedCategory
+      });
+      
+      // 기존 선택을 유지하되 새로운 언어의 첫 번째 태그로 업데이트 (임시 방안)
+      if (newTags.length > 0 && selectedTags[0]) {
+        setSelectedTags([newTags[0]]);
+      }
+    }
+  }, [language, selectedTags, selectedCategory]); // 필요한 의존성만 포함
+
+  // 언어 변경 시 카테고리 태그 업데이트
+  useEffect(() => {
+    updateCategoryTags();
+  }, [updateCategoryTags]); // updateCategoryTags 변경 시에만 실행
 
   // 현재 URL에서 쿼리 파라미터 가져오기
   const queryParams = new URLSearchParams(location.search);
@@ -406,7 +415,32 @@ const BoardListPage: React.FC = () => {
     if (isSearchMode && searchTerm) {
       // 검색 중이면 필터와 함께 검색 재실행
       setFilter(updatedFilter);
-      searchPosts(searchTerm, searchType, updatedFilter);
+      
+      // 검색 옵션을 제대로 구성하여 전달
+      const searchOptions = {
+        page: updatedFilter.page !== undefined ? updatedFilter.page : 0,
+        size: updatedFilter.size || 6,
+        postType: '자유' as PostType,
+        region: selectedRegion,
+        category: selectedCategory,
+        tag: updatedFilter.tag,
+        sort: updatedFilter.sortBy === 'popular' ? 'views,desc' : 'createdAt,desc',
+      };
+
+      console.log('[DEBUG] 필터 변경 시 검색 재실행 파라미터:', {
+        keyword: searchTerm,
+        searchType,
+        ...searchOptions,
+      });
+
+      // postStore에 직접 요청
+      try {
+        const postApi = usePostStore.getState();
+        postApi.searchPosts(searchTerm, searchType, searchOptions);
+        console.log('필터 변경 시 검색 요청 전송 완료');
+      } catch (error) {
+        console.error('필터 변경 시 검색 중 오류 발생:', error);
+      }
     } else {
       // 검색이 아니면 일반 게시글 목록 조회
       setFilter(updatedFilter);
@@ -611,6 +645,35 @@ const BoardListPage: React.FC = () => {
       default:
         return internalValue;
     }
+  };
+
+  // 태그 번역 역변환 함수 (번역된 태그 → 한국어 원본 태그)
+  const getOriginalTagName = (translatedTag: string): string => {
+    const tagReverseMapping: Record<string, string> = {
+      // 관광/여행 관련
+      [t('community.tags.tourism')]: '관광/체험',
+      [t('community.tags.food')]: '식도락/맛집',
+      [t('community.tags.transport')]: '교통/이동',
+      [t('community.tags.accommodation')]: '숙소/지역정보',
+      [t('community.tags.embassy')]: '대사관/응급',
+      // 생활 관련
+      [t('community.tags.realEstate')]: '부동산/계약',
+      [t('community.tags.livingEnvironment')]: '생활환경/편의',
+      [t('community.tags.culture')]: '문화/생활',
+      [t('community.tags.housing')]: '주거지 관리/유지',
+      // 학업 관련
+      [t('community.tags.academic')]: '학사/캠퍼스',
+      [t('community.tags.studySupport')]: '학업지원/시설',
+      [t('community.tags.visa')]: '행정/비자/서류',
+      [t('community.tags.dormitory')]: '기숙사/주거',
+      // 취업 관련
+      [t('community.tags.career')]: '이력/채용준비',
+      [t('community.tags.labor')]: '비자/법률/노동',
+      [t('community.tags.jobFair')]: '잡페어/네트워킹',
+      [t('community.tags.partTime')]: '알바/파트타임',
+    };
+
+    return tagReverseMapping[translatedTag] || translatedTag;
   };
 
   return (

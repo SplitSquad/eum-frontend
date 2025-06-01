@@ -8,18 +8,12 @@ import {
   Typography,
   Button,
   CircularProgress,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
   Divider,
   Paper,
   Stack,
-  SelectChangeEvent,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import AddCommentIcon from '@mui/icons-material/AddComment';
-import SortIcon from '@mui/icons-material/Sort';
 import { DebateComment } from '../../types';
 import { useTranslation } from '@/shared/i18n';
 
@@ -72,11 +66,18 @@ const CommentListContainer = styled(Stack)(({ theme }) => ({
 }));
 
 const CommentSection: React.FC<CommentSectionProps> = ({ debateId }) => {
-  const { comments, totalComments, commentPages, currentCommentPage, isLoading, getComments } =
-    useDebateStore();
+  const { 
+    comments, 
+    totalComments, 
+    commentPages, 
+    currentCommentPage, 
+    isLoading, 
+    getComments,
+    commentSortBy,
+    setCommentSortBy
+  } = useDebateStore();
   const { t } = useTranslation();
   const [showCommentForm, setShowCommentForm] = useState(false);
-  const [sortBy, setSortBy] = useState('latest');
   const [localComments, setLocalComments] = useState<DebateComment[]>([]);
 
   // 새 댓글 추가 성공 핸들러
@@ -103,15 +104,15 @@ const CommentSection: React.FC<CommentSectionProps> = ({ debateId }) => {
     getComments(debateId, page);
   };
 
-  // 정렬 변경 핸들러
-  const handleSortChange = (event: SelectChangeEvent) => {
-    const value = event.target.value;
-    setSortBy(value);
+  // 정렬 변경 핸들러 - 버튼 방식으로 변경
+  const handleSortChange = (newSort: string) => {
+    console.log('[DEBUG] 토론 댓글 정렬 변경:', commentSortBy, '→', newSort);
+    setCommentSortBy(newSort);
 
     // 정렬 변경 시 로컬 댓글 초기화
     setLocalComments([]);
 
-    // 서버에서 새로 데이터 가져오기 (정렬 옵션은 백엔드에서 처리)
+    // 서버에서 새로 데이터 가져오기 (정렬 옵션과 함께)
     getComments(debateId, 1);
   };
 
@@ -144,21 +145,51 @@ const CommentSection: React.FC<CommentSectionProps> = ({ debateId }) => {
         </Typography>
 
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-          {/* 정렬 옵션 선택 */}
-          <FormControl variant="outlined" size="small" sx={{ minWidth: 120 }}>
-            <InputLabel id="comment-sort-label">{t('debate.comment.order')}</InputLabel>
-            <Select
-              labelId="comment-sort-label"
-              value={sortBy}
-              onChange={handleSortChange}
-              label="정렬"
-              startAdornment={<SortIcon fontSize="small" sx={{ color: 'action.active', mr: 1 }} />}
+          {/* 댓글 정렬 버튼 */}
+          <Box display="flex" gap={1}>
+            <Button
+              variant={commentSortBy === 'latest' ? 'contained' : 'outlined'}
+              size="small"
+              onClick={() => handleSortChange('latest')}
+              sx={{
+                backgroundColor: commentSortBy === 'latest' ? 'primary.main' : 'transparent',
+                color: commentSortBy === 'latest' ? 'white' : 'primary.main',
+                '&:hover': {
+                  backgroundColor: commentSortBy === 'latest' ? 'primary.dark' : 'primary.light',
+                },
+              }}
             >
-              <MenuItem value="latest">{t('debate.comment.newest')}</MenuItem>
-              <MenuItem value="oldest">{t('debate.comment.oldest')}</MenuItem>
-              <MenuItem value="popular">{t('debate.comment.mostLiked')}</MenuItem>
-            </Select>
-          </FormControl>
+              기본순
+            </Button>
+            <Button
+              variant={commentSortBy === 'popular' ? 'contained' : 'outlined'}
+              size="small"
+              onClick={() => handleSortChange('popular')}
+              sx={{
+                backgroundColor: commentSortBy === 'popular' ? 'primary.main' : 'transparent',
+                color: commentSortBy === 'popular' ? 'white' : 'primary.main',
+                '&:hover': {
+                  backgroundColor: commentSortBy === 'popular' ? 'primary.dark' : 'primary.light',
+                },
+              }}
+            >
+              인기순
+            </Button>
+            <Button
+              variant={commentSortBy === 'oldest' ? 'contained' : 'outlined'}
+              size="small"
+              onClick={() => handleSortChange('oldest')}
+              sx={{
+                backgroundColor: commentSortBy === 'oldest' ? 'primary.main' : 'transparent',
+                color: commentSortBy === 'oldest' ? 'white' : 'primary.main',
+                '&:hover': {
+                  backgroundColor: commentSortBy === 'oldest' ? 'primary.dark' : 'primary.light',
+                },
+              }}
+            >
+              오래된순
+            </Button>
+          </Box>
 
           {/* 댓글 작성 버튼 */}
           <ActionButton

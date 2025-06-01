@@ -618,16 +618,9 @@ const PostCard: React.FC<PostCardProps> = ({
 
   const handleCardClick = async () => {
     const uid = getUserId() || 0;
-    // content는 받아 올 수가 없어, api 호출 후 값을 받아와서 웹 로그로 전송
-    // noViewCount=true 파라미터를 추가하여 조회수 증가 방지
-    const res = await fetch(`${BASE}/community/post/${post.postId}?noViewCount=true`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: localStorage.getItem('auth_token') || '',
-      },
-    });
-    const postContent = await res.json();
+    
+    // 게시글 목록에서 상세 페이지로 이동함을 표시
+    sessionStorage.setItem('fromPostList', 'true');
 
     if (onClick) {
       onClick(post);
@@ -635,7 +628,7 @@ const PostCard: React.FC<PostCardProps> = ({
       navigate(`/community/post/${post.postId}`);
     }
 
-    // 웹로그 전송
+    // 웹로그 전송 (API 호출 제거하고 기본 정보만 전송)
     sendWebLog({
       userId: uid,
       content: JSON.stringify({
@@ -644,7 +637,10 @@ const PostCard: React.FC<PostCardProps> = ({
         TAG: Array.isArray(post.tags) ? post.tags.join(',') : post.tags,
         CurrentPath: location.pathname,
         Event: 'click',
-        Content: null,
+        Content: {
+          title: post.title,
+          postId: post.postId
+        },
         Timestamp: new Date().toISOString(),
       }),
     });

@@ -308,10 +308,18 @@ const PostDetailPage: React.FC = () => {
             alreadyViewed,
             shouldIncreaseViewCount,
           });
+
+          // 새로운 조회인 경우 즉시 조회 기록 추가 (중복 방지)
+          if (shouldIncreaseViewCount) {
+            ViewTracker.markAsViewed(numericPostId);
+            console.log('[DEBUG] 조회 기록 즉시 추가됨:', numericPostId);
+          }
         }
 
-        // 2단계: 게시글, 원문 게시글 가져오기 데이터 가져오기 (조회수 증가 결정에 따라)
-        const fetchedPost = await api.getPostById(numericPostId, signal, !shouldIncreaseViewCount);
+
+        // 2단계: 게시글 데이터 가져오기 - 조회수 증가는 ViewTracker에서 결정
+        const fetchedPost = await api.getPostById(numericPostId, signal);
+
 
         // 요청이 중단되었다면 처리 중단
         if (signal.aborted) {
@@ -348,12 +356,9 @@ const PostDetailPage: React.FC = () => {
           },
         } as Post;
 
-        // 3단계: 새로운 조회인 경우 ViewTracker 기록 및 웹 로그 전송
+        // 3단계: 새로운 조회인 경우 웹 로그 전송
         if (shouldIncreaseViewCount) {
-          // 조회 기록 추가
-          ViewTracker.markAsViewed(numericPostId);
-
-          // 웹 로그 전송
+          // 웹 로그 전송 (조회수 증가는 백엔드에서 처리되었음)
           ViewTracker.sendViewLog(
             numericPostId,
             mappedPost.title,
@@ -362,7 +367,7 @@ const PostDetailPage: React.FC = () => {
             location.pathname
           );
 
-          console.log('[DEBUG] 새로운 게시글 조회 기록됨:', {
+          console.log('[DEBUG] 새로운 게시글 조회 처리됨:', {
             postId: numericPostId,
             title: mappedPost.title,
             viewCount: mappedPost.viewCount,

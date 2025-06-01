@@ -368,9 +368,9 @@ const ActivitiesPage: React.FC = () => {
 
         // 모든 활동 데이터를 동시에 로드
         const dataPromises = [
-          fetchMyPosts(0, 10),
-          fetchMyComments(0, 10),
-          fetchMyDebates(0, 10),
+          fetchMyPosts(0, 5),
+          fetchMyComments(0, 5),
+          fetchMyDebates(0, 5),
           fetchMyBookmarks(0, 5),
         ];
 
@@ -423,7 +423,7 @@ const ActivitiesPage: React.FC = () => {
     }, 150); // 사라지는 시간 단축
   };
 
-  // 페이지 변경 핸들러
+  // 페이지 변경 핸들러 - 서버 측 페이지네이션으로 변경
   const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
     setCurrentPages(prev => ({
       ...prev,
@@ -432,8 +432,34 @@ const ActivitiesPage: React.FC = () => {
 
     // 페이지 변경 시 부드러운 전환
     setIsContentVisible(false);
-    setTimeout(() => {
+    
+    // 해당 탭의 데이터를 서버에서 새로 가져오기 (페이지는 0-based)
+    const pageToFetch = value - 1;
+    
+    setTimeout(async () => {
+      try {
+        if (activeTab === 'posts') {
+          await fetchMyPosts(pageToFetch, itemsPerPage);
+        } else if (activeTab === 'comments') {
+          await fetchMyComments(pageToFetch, itemsPerPage);
+        } else if (activeTab === 'debates') {
+          await fetchMyDebates(pageToFetch, itemsPerPage);
+        } else if (activeTab === 'bookmarks') {
+          await fetchMyBookmarks(pageToFetch, itemsPerPage);
+        } else if (activeTab === 'all') {
+          // 전체 탭인 경우 모든 데이터의 해당 페이지를 가져오기
+          await Promise.all([
+            fetchMyPosts(pageToFetch, itemsPerPage),
+            fetchMyComments(pageToFetch, itemsPerPage),
+            fetchMyDebates(pageToFetch, itemsPerPage),
+            fetchMyBookmarks(pageToFetch, itemsPerPage),
+          ]);
+        }
+      } catch (error) {
+        console.error('페이지 데이터 로딩 실패:', error);
+      } finally {
       setIsContentVisible(true);
+      }
     }, 100);
   };
 
@@ -535,14 +561,14 @@ const ActivitiesPage: React.FC = () => {
     }
   };
 
-  // 활동 목록 생성 (페이지네이션 적용)
+  // 활동 목록 생성 - 서버 페이지네이션 데이터 직접 사용
   const getActivities = () => {
-    const allActivities: ActivityItem[] = [];
+    let activities: ActivityItem[] = [];
+    let totalPages = 1;
+    let totalElements = 0;
 
-    // 게시글 활동
-    if ((activeTab === 'all' || activeTab === 'posts') && posts?.content) {
-      console.log('[DEBUG] 게시글 활동 데이터:', posts.content);
-      const postActivities = posts.content.map(post => ({
+    if (activeTab === 'posts' && posts?.content) {
+      activities = posts.content.map(post => ({
         id: post.id || 0,
         type: 'post',
         title: '게시물 작성',
@@ -550,13 +576,10 @@ const ActivitiesPage: React.FC = () => {
         date: post.createdAt || '',
         onClick: () => handleActivityClick('post', post.id || 0),
       }));
-      allActivities.push(...postActivities);
-    }
-
-    // 댓글 활동
-    if ((activeTab === 'all' || activeTab === 'comments') && comments?.content) {
-      console.log('[DEBUG] 댓글 활동 데이터:', comments.content);
-      const commentActivities = comments.content.map(comment => ({
+      totalPages = posts.totalPages || 1;
+      totalElements = posts.totalElements || 0;
+    } else if (activeTab === 'comments' && comments?.content) {
+      activities = comments.content.map(comment => ({
         id: comment.postId || 0,
         type: 'comment',
         title: '댓글 작성',
@@ -564,12 +587,59 @@ const ActivitiesPage: React.FC = () => {
         date: comment.createdAt || '',
         onClick: () => handleActivityClick('comment', comment.postId || 0),
       }));
-      allActivities.push(...commentActivities);
-    }
+      totalPages = comments.totalPages || 1;
+      totalElements = comments.totalElements || 0;
+    } else if (activeTab === 'debates' && debates?.content) {
+      activities = debates.content.map(debate => ({
+        id: debate.id || 0,
+        type: 'debate',
+        title: '토론 참여',
+        description: debate.title || '',
+        date: debate.createdAt || '',
+        onClick: () => handleActivityClick('debate', debate.id || 0),
+      }));
+      totalPages = debates.totalPages || 1;
+      totalElements = debates.totalElements || 0;
+    } else if (activeTab === 'bookmarks' && bookmarks?.content) {
+      activities = bookmarks.content.map(bookmark => ({
+        id: bookmark.id || 0,
+        type: 'bookmark',
+        title: '북마크 보관',
+        description: bookmark.title || '',
+        date: bookmark.createdAt || '',
+        onClick: () => handleActivityClick('bookmark', bookmark.id || 0),
+      }));
+      totalPages = bookmarks.totalPages || 1;
+      totalElements = bookmarks.totalElements || 0;
+    } else if (activeTab === 'all') {
+      // 전체 탭의 경우 모든 활동을 합쳐서 표시
+      const allActivities: ActivityItem[] = [];
 
-    // 토론 투표 활동
-    if ((activeTab === 'all' || activeTab === 'debates') && debates?.content) {
-      console.log('[DEBUG] 토론 활동 데이터:', debates.content);
+      if (posts?.content) {
+        const postActivities = posts.content.map(post => ({
+          id: post.id || 0,
+          type: 'post',
+          title: '게시물 작성',
+          description: post.title || '',
+          date: post.createdAt || '',
+          onClick: () => handleActivityClick('post', post.id || 0),
+        }));
+        allActivities.push(...postActivities);
+      }
+
+      if (comments?.content) {
+        const commentActivities = comments.content.map(comment => ({
+          id: comment.postId || 0,
+          type: 'comment',
+          title: '댓글 작성',
+          description: `${comment.postTitle || ''}: ${comment.content || ''}`,
+          date: comment.createdAt || '',
+          onClick: () => handleActivityClick('comment', comment.postId || 0),
+        }));
+        allActivities.push(...commentActivities);
+      }
+
+      if (debates?.content) {
       const debateActivities = debates.content.map(debate => ({
         id: debate.id || 0,
         type: 'debate',
@@ -581,9 +651,7 @@ const ActivitiesPage: React.FC = () => {
       allActivities.push(...debateActivities);
     }
 
-    // 북마크 활동
-    if ((activeTab === 'all' || activeTab === 'bookmarks') && bookmarks?.content) {
-      console.log('[DEBUG] 북마크 활동 데이터:', bookmarks.content);
+      if (bookmarks?.content) {
       const bookmarkActivities = bookmarks.content.map(bookmark => ({
         id: bookmark.id || 0,
         type: 'bookmark',
@@ -595,20 +663,24 @@ const ActivitiesPage: React.FC = () => {
       allActivities.push(...bookmarkActivities);
     }
 
-    // 날짜순으로 정렬 (최신순)
+      // 전체 탭에서는 날짜순 정렬 후 현재 페이지만큼 잘라서 표시
     const sortedActivities = allActivities.sort(
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     );
 
-    // 페이지네이션 적용
     const currentPage = currentPages[activeTab];
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
 
+      activities = sortedActivities.slice(startIndex, endIndex);
+      totalPages = Math.ceil(sortedActivities.length / itemsPerPage);
+      totalElements = sortedActivities.length;
+    }
+
     return {
-      activities: sortedActivities.slice(startIndex, endIndex),
-      totalPages: Math.ceil(sortedActivities.length / itemsPerPage),
-      totalItems: sortedActivities.length,
+      activities,
+      totalPages,
+      totalItems: totalElements,
     };
   };
 

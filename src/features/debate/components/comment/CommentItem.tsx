@@ -335,9 +335,8 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
     setIsEditing(false);
 
     try {
-      // 댓글 수정 시 stance 정보 유지하기
-      const stancePrefix = extractedStance === 'con' ? '【반대】 ' : '【찬성】 ';
-      const updatedContent = stancePrefix + editText;
+      // 댓글 수정 시 순수한 내용만 전송 (stance 접두사 제거)
+      const updatedContent = editText; // 접두사 없이 순수한 내용만 사용
 
       // 백엔드 API 호출
       const success = await updateComment(id, updatedContent);
