@@ -14,10 +14,7 @@ export function useLayoutVisibility() {
 
   // Modal: hide on /onboarding/*, /assistant, and if not authenticated
   const isModalVisible =
-    isAuthenticated &&
-    !path.startsWith('/onboarding') &&
-    path !== '/assistant' &&
-    !path.startsWith('/init');
+    isAuthenticated && !path.startsWith('/onboarding') && path !== '/assistant';
 
   return { isHeaderVisible, isModalVisible };
 }

@@ -41,6 +41,7 @@ import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import { widgetPaperBase, widgetGradients, widgetCardBase, widgetChipBase } from './theme/dashboardWidgetTheme';
 import infoApi from '../../features/info/api/infoApi';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from '../../shared/i18n';
 
 // 정보 콘텐츠 타입 정의 (API에서 받아오는 데이터 구조에 맞춤)
 interface InfoContent {
@@ -95,7 +96,7 @@ const CONTENT_TYPE_COLORS = {
 };
 
 // 정보 아이템 컴포넌트
-const InfoItem = memo(({ info, onClick }: { info: InfoContent, onClick?: () => void }) => {
+const InfoItem = memo(({ info, onClick, t }: { info: InfoContent, onClick?: () => void, t: any }) => {
   const difficultyColor = info.difficulty === 'beginner' ? '#4caf50' : 
                          info.difficulty === 'intermediate' ? '#ff9800' : '#f44336';
   
@@ -136,10 +137,10 @@ const InfoItem = memo(({ info, onClick }: { info: InfoContent, onClick?: () => v
         <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, mr: 1 }}>
           <InfoIcon sx={{ fontSize: 14, mr: 0.5, color: '#4caf50' }} />
           <Typography variant="caption" sx={{ color: '#4caf50', fontWeight: 600, mr: 1 }}>
-            정보
+            {t('home.infoFeed.subtitle')}
           </Typography>
           <Typography variant="caption" color="text.secondary">
-            {formatTimeAgo(info.createdAt)}
+            {formatTimeAgo(info.createdAt, t)}
           </Typography>
         </Box>
         
@@ -161,8 +162,7 @@ const InfoItem = memo(({ info, onClick }: { info: InfoContent, onClick?: () => v
           )}
           
           <Chip
-            label={info.difficulty === 'beginner' ? '초급' : 
-                  info.difficulty === 'intermediate' ? '중급' : '고급'}
+            label={t(`home.infoFeed.difficultyLabels.${info.difficulty}`)}
             size="small"
             sx={{
               fontSize: '0.7rem',
@@ -247,25 +247,77 @@ const InfoItem = memo(({ info, onClick }: { info: InfoContent, onClick?: () => v
   );
 });
 
-// 시간 포맷팅 유틸리티 함수
-const formatTimeAgo = (dateString: string): string => {
-  const date = new Date(dateString);
+// 시간 전 포맷 함수
+const formatTimeAgo = (dateString: string, t: any): string => {
   const now = new Date();
+  const date = new Date(dateString);
   const diffMs = now.getTime() - date.getTime();
-  const diffSec = Math.floor(diffMs / 1000);
-  const diffMin = Math.floor(diffSec / 60);
-  const diffHour = Math.floor(diffMin / 60);
-  const diffDay = Math.floor(diffHour / 24);
+  const diffMinutes = Math.floor(diffMs / (1000 * 60));
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-  if (diffDay > 0) {
-    return diffDay === 1 ? '1일 전' : `${diffDay}일 전`;
-  } else if (diffHour > 0) {
-    return diffHour === 1 ? '1시간 전' : `${diffHour}시간 전`;
-  } else if (diffMin > 0) {
-    return diffMin === 1 ? '1분 전' : `${diffMin}분 전`;
+  if (diffMinutes < 1) {
+    return t('home.infoFeed.timeAgo.justNow');
+  } else if (diffMinutes === 1) {
+    return t('home.infoFeed.timeAgo.minuteAgo');
+  } else if (diffMinutes < 60) {
+    return t('home.infoFeed.timeAgo.minutesAgo', { count: diffMinutes.toString() });
+  } else if (diffHours === 1) {
+    return t('home.infoFeed.timeAgo.hourAgo');
+  } else if (diffHours < 24) {
+    return t('home.infoFeed.timeAgo.hoursAgo', { count: diffHours.toString() });
+  } else if (diffDays === 1) {
+    return t('home.infoFeed.timeAgo.dayAgo');
   } else {
-    return '방금 전';
+    return t('home.infoFeed.timeAgo.daysAgo', { count: diffDays.toString() });
   }
+};
+
+// 정보 태그/카테고리 번역 함수
+const translateInfoTag = (tag: string, t: any): string => {
+  const tagMap: Record<string, string> = {
+    // 정보 카테고리
+    '교육': 'infoPage.categories.education',
+    '금융/세금': 'infoPage.categories.finance',
+    '비자/법률': 'infoPage.categories.visa',
+    '쇼핑': 'infoPage.categories.shopping',
+    '의료/건강': 'infoPage.categories.healthcare',
+    '주거/부동산': 'infoPage.categories.housing',
+    '취업/직장': 'infoPage.categories.employment',
+    '교통': 'infoPage.categories.transportation',
+    
+    // 일반 관심 태그
+    '비자': 'interestTags.visa_legal',
+    '법률': 'interestTags.visa_legal',
+    '금융': 'interestTags.finance_tax',
+    '세금': 'interestTags.finance_tax',
+    '의료': 'interestTags.healthcare',
+    '건강': 'interestTags.healthcare',
+    '주거': 'interestTags.housing_realestate',
+    '부동산': 'interestTags.housing_realestate',
+    '취업': 'interestTags.employment_workplace',
+    '직장': 'interestTags.employment_workplace',
+    '교통정보': 'interestTags.transportation_info',
+  };
+  
+  return tagMap[tag] ? t(tagMap[tag]) : tag;
+};
+
+// 정보 카테고리 번역 함수
+const translateInfoCategory = (category: string, t: any): string => {
+  const categoryMap: Record<string, string> = {
+    '교육': 'infoPage.categories.education',
+    '금융/세금': 'infoPage.categories.finance',
+    '비자/법률': 'infoPage.categories.visa',
+    '쇼핑': 'infoPage.categories.shopping',
+    '의료/건강': 'infoPage.categories.healthcare',
+    '주거/부동산': 'infoPage.categories.housing',
+    '취업/직장': 'infoPage.categories.employment',
+    '교통': 'infoPage.categories.transportation',
+    '전체': 'infoPage.categories.all',
+  };
+  
+  return categoryMap[category] ? t(categoryMap[category]) : category;
 };
 
 // 정보 취향 분석 모달 컴포넌트
@@ -273,12 +325,14 @@ interface InfoPreferenceModalProps {
   open: boolean;
   onClose: () => void;
   preference: InfoPreferenceData;
+  t: any;
 }
 
 const InfoPreferenceModal: React.FC<InfoPreferenceModalProps> = ({ 
   open, 
   onClose, 
-  preference 
+  preference,
+  t
 }) => {
   return (
     <Modal
@@ -307,7 +361,7 @@ const InfoPreferenceModal: React.FC<InfoPreferenceModalProps> = ({
         }}>
           {/* 헤더 */}
           <Box sx={{ 
-            background: 'linear-gradient(135deg, #4caf50 0%, #388e3c 100%)',
+            background: 'linear-gradient(135deg, #4caf50 0%, #2e7d32 100%)',
             color: 'white',
             p: 3,
             position: 'relative'
@@ -328,13 +382,13 @@ const InfoPreferenceModal: React.FC<InfoPreferenceModalProps> = ({
             </IconButton>
             
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <InfoIcon sx={{ color: 'white', mr: 1.5, fontSize: 22 }} />
+              <MenuBookIcon sx={{ color: 'white', mr: 1.5, fontSize: 22 }} />
               <Box>
                 <Typography variant="h6" fontWeight={600}>
-                  정보 취향 분석
+                  {t('home.infoFeed.modal.title')}
                 </Typography>
                 <Typography variant="caption" sx={{ opacity: 0.9 }}>
-                  최근 활동을 기반으로 한 정보 관심사 분석
+                  {t('home.infoFeed.modal.subtitle')}
                 </Typography>
               </Box>
             </Box>
@@ -350,7 +404,7 @@ const InfoPreferenceModal: React.FC<InfoPreferenceModalProps> = ({
                 sx={{ mb: 1.5, display: 'flex', alignItems: 'center' }}
               >
                 <LoyaltyIcon sx={{ fontSize: 16, mr: 1, color: 'primary.main' }} />
-                관심 키워드
+                {t('home.infoFeed.modal.sections.keywords')}
               </Typography>
 
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.8 }}>
@@ -360,7 +414,7 @@ const InfoPreferenceModal: React.FC<InfoPreferenceModalProps> = ({
                   return (
                     <Chip
                       key={keyword.id}
-                      label={keyword.name}
+                      label={translateInfoTag(keyword.name, t)}
                       size="small"
                       sx={{
                         height: 'auto',
@@ -387,7 +441,7 @@ const InfoPreferenceModal: React.FC<InfoPreferenceModalProps> = ({
                 sx={{ mb: 1.5, display: 'flex', alignItems: 'center' }}
               >
                 <LocalOfferIcon sx={{ fontSize: 16, mr: 1, color: 'text.secondary' }} />
-                관심분야 TOP 5
+                {t('home.infoFeed.modal.sections.topCategories')}
               </Typography>
 
               {preference.categoryData.slice(0, 5).map((category, index) => (
@@ -411,7 +465,7 @@ const InfoPreferenceModal: React.FC<InfoPreferenceModalProps> = ({
                         }}
                       />
                       <Typography variant="body2" fontWeight={500}>
-                        #{index + 1} {category.name}
+                        #{index + 1} {translateInfoCategory(category.name, t)}
                       </Typography>
                     </Box>
                     <Typography variant="body2" fontWeight={600} color={category.color}>
@@ -448,6 +502,7 @@ const InfoFeedWidget: React.FC = () => {
   const [preference, setPreference] = useState<InfoPreferenceData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // 정보 추천 데이터 가져오기
   const fetchInfoData = useCallback(async () => {
@@ -471,7 +526,7 @@ const InfoFeedWidget: React.FC = () => {
           }
           
           // HTML 태그 제거
-          const plainContent = info.content ? info.content.replace(/<[^>]*>/g, '').trim() : '내용이 없습니다.';
+          const plainContent = info.content ? info.content.replace(/<[^>]*>/g, '').trim() : '';
           
           return {
             id: String(info.informationId || Math.random()),
@@ -546,11 +601,11 @@ const InfoFeedWidget: React.FC = () => {
       }
     } catch (error) {
       console.error('정보 데이터 가져오기 실패:', error);
-      setError('데이터를 불러오는데 실패했습니다.');
+      setError('FETCH_ERROR'); // 번역 키를 위한 임시 값
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, []); // 무한 루프 방지를 위해 의존성 배열을 빈 배열로 설정
 
   // 데이터 로딩
   useEffect(() => {
@@ -606,7 +661,7 @@ const InfoFeedWidget: React.FC = () => {
         }}
       >
         <Typography variant="body2" color="error" sx={{ mb: 2 }}>
-          {error}
+          {error === 'FETCH_ERROR' ? t('home.infoFeed.messages.error') : error}
         </Typography>
         <Button 
           variant="outlined" 
@@ -615,7 +670,7 @@ const InfoFeedWidget: React.FC = () => {
           startIcon={<RefreshIcon />}
           sx={{ borderRadius: 2 }}
         >
-          다시 시도
+          {t('home.infoFeed.actions.retry')}
         </Button>
       </Paper>
     );
@@ -653,7 +708,7 @@ const InfoFeedWidget: React.FC = () => {
               <InfoIcon />
             </Avatar>
             <Typography variant="h6" fontWeight={600}>
-              정보 피드
+              {t('home.infoFeed.title')}
             </Typography>
           </Box>
           <Box>
@@ -696,6 +751,7 @@ const InfoFeedWidget: React.FC = () => {
                   <InfoItem 
                     info={info} 
                     onClick={() => navigate(`/info/${info.id}`)}
+                    t={t}
                   />
                   {index < content.length - 1 && <Divider sx={{ my: 0.5 }} />}
                 </React.Fragment>
@@ -713,7 +769,7 @@ const InfoFeedWidget: React.FC = () => {
             }}>
               <InfoIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
               <Typography variant="body2" color="text.secondary">
-                추천할 정보가 없습니다
+                {t('home.infoFeed.messages.noInfos')}
               </Typography>
             </Box>
           )}
@@ -723,7 +779,7 @@ const InfoFeedWidget: React.FC = () => {
         {content.length > 0 && (
           <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
             <Typography variant="caption" color="text.secondary" textAlign="center" sx={{ mb: 1, display: 'block' }}>
-              {content.length}개의 추천 정보
+              {t('home.infoFeed.messages.infoCount', { count: content.length.toString() })}
             </Typography>
             <Button 
               variant="outlined" 
@@ -731,7 +787,7 @@ const InfoFeedWidget: React.FC = () => {
               sx={{ borderRadius: 2, textTransform: 'none', px: 3, width: '100%' }}
               onClick={() => navigate('/info')}
             >
-              정보 더 보기
+              {t('home.infoFeed.actions.viewMore')}
             </Button>
           </Box>
         )}
@@ -743,6 +799,7 @@ const InfoFeedWidget: React.FC = () => {
           open={modalOpen}
           onClose={handleCloseModal}
           preference={preference}
+          t={t}
         />
       )}
     </>

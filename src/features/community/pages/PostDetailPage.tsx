@@ -116,12 +116,6 @@ type Post = {
   writer?: User; // 작성자 정보 객체 추가
 };
 
-// 원본 게시글 타입
-type fetchedOriginPost = {
-  title?: string;
-  content?: string;
-};
-
 // 스타일 컴포넌트
 const StyledChip = styled(Chip)(({ theme }) => ({
   backgroundColor: 'rgba(202, 202, 202, 0.2)',
@@ -230,9 +224,6 @@ const PostDetailPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [originTitle, setOriginTitle] = useState<string | null>(null);
-  const [originContent, setOriginContent] = useState<string | null>(null);
-  const [showOriginal, setShowOriginal] = useState(false);
 
   // 신고 기능 관련 상태 추가
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
@@ -316,10 +307,8 @@ const PostDetailPage: React.FC = () => {
           }
         }
 
-
         // 2단계: 게시글 데이터 가져오기 - 조회수 증가는 ViewTracker에서 결정
         const fetchedPost = await api.getPostById(numericPostId, signal);
-
 
         // 요청이 중단되었다면 처리 중단
         if (signal.aborted) {
@@ -381,15 +370,7 @@ const PostDetailPage: React.FC = () => {
           shouldIncreaseViewCount,
           viewCount: mappedPost.viewCount,
         });
-        const fetchedOriginPost = (await api.getPostOriginal(numericPostId)) as fetchedOriginPost;
-        if (fetchedOriginPost && typeof fetchedOriginPost === 'object') {
-          setOriginTitle(fetchedOriginPost.title || '[제목 없음]');
-          setOriginContent(fetchedOriginPost.content || '');
-          console.log('[DEBUG] 원문 게시글 로드 성공:', {
-            title: fetchedOriginPost.title,
-            content: fetchedOriginPost.content,
-          });
-        }
+
         // 상태 업데이트 (React 18 자동 배칭 활용)
         setPost(mappedPost);
         setLoading(false);
@@ -711,9 +692,6 @@ const PostDetailPage: React.FC = () => {
       </Container>
     );
   }
-  const toggleOriginalView = () => {
-    setShowOriginal(prev => !prev);
-  };
 
   return (
     <Container maxWidth="md" sx={{ py: 4, minHeight: 'calc(100vh - 70px)' }}>
@@ -839,13 +817,6 @@ const PostDetailPage: React.FC = () => {
                 })}
               </Box>
             )}
-            <Button
-              variant={showOriginal ? 'contained' : 'outlined'}
-              size="small"
-              onClick={toggleOriginalView}
-            >
-              {showOriginal ? '원문 숨기기' : '원문 보기'}
-            </Button>
           </Box>
 
           {/* 게시글 내용 */}
@@ -857,6 +828,122 @@ const PostDetailPage: React.FC = () => {
               borderRadius: 2,
             }}
           >
+            {/* 이미지 갤러리 - 게시글 내용 맨 위에 표시 */}
+            {post.files && post.files.length > 0 && (() => {
+              const imageFiles = post.files.filter((file: any) => {
+                const url = file.url || file;
+                const fileName = file.name || url.split('/').pop() || '';
+                return (
+                  /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(fileName) ||
+                  /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(url)
+                );
+              });
+
+              return imageFiles.length > 0 && (
+                <Box mb={3}>
+                  <Box
+                    sx={{
+                      display: 'grid',
+                      gridTemplateColumns: imageFiles.length === 1 
+                        ? '1fr' 
+                        : 'repeat(auto-fit, minmax(250px, 1fr))',
+                      gap: 2,
+                      maxHeight: imageFiles.length === 1 ? '500px' : '400px',
+                      overflowY: 'auto',
+                    }}
+                  >
+                    {imageFiles.map((file: any, index: number) => {
+                      const imageUrl = file.url || file;
+                      const fileName =
+                        file.name || imageUrl.split('/').pop() || `이미지 ${index + 1}`;
+
+                      return (
+                        <Box
+                          key={index}
+                          sx={{
+                            position: 'relative',
+                            borderRadius: 2,
+                            overflow: 'hidden',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                            transition: 'all 0.3s ease',
+                            cursor: 'pointer',
+                            height: imageFiles.length === 1 ? 'auto' : '200px',
+                            '&:hover': {
+                              transform: 'translateY(-2px)',
+                              boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
+                              '& .zoom-icon': {
+                                opacity: 1,
+                              },
+                            },
+                          }}
+                          onClick={() => window.open(imageUrl, '_blank')}
+                        >
+                          <img
+                            src={imageUrl}
+                            alt={fileName}
+                            style={{
+                              width: '100%',
+                              height: imageFiles.length === 1 ? 'auto' : '200px',
+                              maxHeight: imageFiles.length === 1 ? '500px' : '200px',
+                              objectFit: imageFiles.length === 1 ? 'contain' : 'cover',
+                              display: 'block',
+                            }}
+                            onError={e => {
+                              e.currentTarget.style.display = 'none';
+                              const parent = e.currentTarget.parentElement;
+                              if (parent) {
+                                parent.innerHTML = `
+                                  <div style="
+                                    width: 100%;
+                                    height: 200px;
+                                    background: #f5f5f5;
+                                    display: flex;
+                                    flex-direction: column;
+                                    align-items: center;
+                                    justify-content: center;
+                                    color: #999;
+                                  ">
+                                    <svg width="32" height="32" fill="currentColor" viewBox="0 0 24 24">
+                                      <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                                    </svg>
+                                    <span style="margin-top: 8px; font-size: 12px;">이미지 로드 실패</span>
+                                  </div>
+                                `;
+                              }
+                            }}
+                          />
+
+                          {/* 확대 아이콘 */}
+                          <Box
+                            sx={{
+                              position: 'absolute',
+                              top: 8,
+                              right: 8,
+                              width: 24,
+                              height: 24,
+                              borderRadius: '50%',
+                              background: 'rgba(0,0,0,0.6)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              opacity: 0,
+                              transition: 'opacity 0.3s ease',
+                            }}
+                            className="zoom-icon"
+                          >
+                            <svg width="14" height="14" fill="white" viewBox="0 0 24 24">
+                              <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                              <path d="M12 10h-2v2H9v-2H7V9h2V7h1v2h2v1z" />
+                            </svg>
+                          </Box>
+                        </Box>
+                      );
+                    })}
+                  </Box>
+                </Box>
+              );
+            })()}
+
             <Typography
               variant="body1"
               component="div"
@@ -866,235 +953,80 @@ const PostDetailPage: React.FC = () => {
                 minHeight: '150px',
               }}
             >
-              {showOriginal && originContent !== null ? originContent : post.content}
+              {post.content}
             </Typography>
 
-            {/* 첨부파일 표시 (있는 경우) */}
-            {post.files && post.files.length > 0 && (
-              <Box mt={3}>
-                <Typography variant="subtitle2" fontWeight="bold" gutterBottom sx={{ mb: 2 }}>
-                  {t('community.posts.attachFiles')}
-                </Typography>
+            {/* 첨부파일 표시 (이미지 제외한 일반 파일만) */}
+            {post.files && post.files.length > 0 && (() => {
+              const nonImageFiles = post.files.filter((file: any) => {
+                const url = file.url || file;
+                const fileName = file.name || url.split('/').pop() || '';
+                return (
+                  !/\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(fileName) &&
+                  !/\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(url)
+                );
+              });
 
-                {/* 이미지 파일과 일반 파일 분리 */}
-                {(() => {
-                  const imageFiles = post.files.filter((file: any) => {
-                    const url = file.url || file;
-                    const fileName = file.name || url.split('/').pop() || '';
-                    return (
-                      /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(fileName) ||
-                      /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(url)
-                    );
-                  });
-
-                  const nonImageFiles = post.files.filter((file: any) => {
-                    const url = file.url || file;
-                    const fileName = file.name || url.split('/').pop() || '';
-                    return (
-                      !/\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(fileName) &&
-                      !/\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(url)
-                    );
-                  });
-
-                  return (
-                    <>
-                      {/* 이미지 갤러리 */}
-                      {imageFiles.length > 0 && (
-                        <Box mb={nonImageFiles.length > 0 ? 3 : 0}>
-                          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-                            이미지 ({imageFiles.length}개)
-                          </Typography>
-                          <Box
-                            sx={{
-                              display: 'grid',
-                              gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-                              gap: 2,
-                              maxHeight: '400px',
-                              overflowY: 'auto',
-                            }}
-                          >
-                            {imageFiles.map((file: any, index: number) => {
-                              const imageUrl = file.url || file;
-                              const fileName =
-                                file.name || imageUrl.split('/').pop() || `이미지 ${index + 1}`;
-
-                              return (
-                                <Box
-                                  key={index}
-                                  sx={{
-                                    position: 'relative',
-                                    borderRadius: 2,
-                                    overflow: 'hidden',
-                                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                                    transition: 'all 0.3s ease',
-                                    cursor: 'pointer',
-                                    '&:hover': {
-                                      transform: 'translateY(-4px)',
-                                      boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
-                                      '& .zoom-icon': {
-                                        opacity: 1,
-                                      },
-                                    },
-                                  }}
-                                  onClick={() => window.open(imageUrl, '_blank')}
-                                >
-                                  <img
-                                    src={imageUrl}
-                                    alt={fileName}
-                                    style={{
-                                      width: '100%',
-                                      height: '150px',
-                                      objectFit: 'cover',
-                                      display: 'block',
-                                    }}
-                                    onError={e => {
-                                      e.currentTarget.style.display = 'none';
-                                      // 이미지 로드 실패 시 폴백 표시
-                                      const parent = e.currentTarget.parentElement;
-                                      if (parent) {
-                                        parent.innerHTML = `
-                                            <div style="
-                                              width: 100%;
-                                              height: 150px;
-                                              background: #f5f5f5;
-                                              display: flex;
-                                              flex-direction: column;
-                                              align-items: center;
-                                              justify-content: center;
-                                              color: #999;
-                                            ">
-                                              <svg width="32" height="32" fill="currentColor" viewBox="0 0 24 24">
-                                                <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
-                                              </svg>
-                                              <span style="margin-top: 8px; font-size: 12px;">이미지 로드 실패</span>
-                                            </div>
-                                          `;
-                                      }
-                                    }}
-                                  />
-
-                                  {/* 이미지 오버레이 정보 */}
-                                  <Box
-                                    sx={{
-                                      position: 'absolute',
-                                      bottom: 0,
-                                      left: 0,
-                                      right: 0,
-                                      background: 'linear-gradient(transparent, rgba(0,0,0,0.7))',
-                                      color: 'white',
-                                      p: 1.5,
-                                      fontSize: '0.75rem',
-                                    }}
-                                  >
-                                    <Typography
-                                      variant="caption"
-                                      sx={{ fontWeight: 500, display: 'block' }}
-                                    >
-                                      {fileName.length > 25
-                                        ? fileName.substring(0, 25) + '...'
-                                        : fileName}
-                                    </Typography>
-                                    {file.size && (
-                                      <Typography variant="caption" sx={{ opacity: 0.8 }}>
-                                        {(file.size / 1024).toFixed(1)} KB
-                                      </Typography>
-                                    )}
-                                  </Box>
-
-                                  {/* 확대 아이콘 */}
-                                  <Box
-                                    sx={{
-                                      position: 'absolute',
-                                      top: 8,
-                                      right: 8,
-                                      width: 24,
-                                      height: 24,
-                                      borderRadius: '50%',
-                                      background: 'rgba(0,0,0,0.5)',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      opacity: 0,
-                                      transition: 'opacity 0.3s ease',
-                                    }}
-                                    className="zoom-icon"
-                                  >
-                                    <svg width="14" height="14" fill="white" viewBox="0 0 24 24">
-                                      <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
-                                      <path d="M12 10h-2v2H9v-2H7V9h2V7h1v2h2v1z" />
-                                    </svg>
-                                  </Box>
-                                </Box>
-                              );
-                            })}
-                          </Box>
-                        </Box>
-                      )}
-
-                      {/* 일반 파일 목록 */}
-                      {nonImageFiles.length > 0 && (
-                        <Box>
-                          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-                            첨부파일 ({nonImageFiles.length}개)
-                          </Typography>
-                          <List dense sx={{ bgcolor: '#f9f9f9', borderRadius: 2, p: 1 }}>
-                            {nonImageFiles.map((file: any, index: number) => (
-                              <ListItem
-                                key={index}
-                                sx={{
-                                  px: 2,
-                                  py: 1,
-                                  mb: 1,
-                                  bgcolor: 'white',
-                                  borderRadius: 1,
-                                  '&:last-child': { mb: 0 },
-                                  '&:hover': { bgcolor: '#f5f5f5' },
-                                  transition: 'background-color 0.2s ease',
-                                }}
-                              >
-                                <ListItemAvatar sx={{ minWidth: 40 }}>
-                                  <InsertDriveFileIcon fontSize="small" sx={{ color: '#FF9999' }} />
-                                </ListItemAvatar>
-                                <ListItemText
-                                  primary={
-                                    <Typography
-                                      variant="body2"
-                                      component="a"
-                                      href={file.url || file}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      sx={{
-                                        color: '#FF9999',
-                                        textDecoration: 'none',
-                                        fontWeight: 500,
-                                        '&:hover': {
-                                          textDecoration: 'underline',
-                                          color: '#ff7777',
-                                        },
-                                      }}
-                                    >
-                                      {file.name ||
-                                        `${t('community.posts.attachFiles')} ${index + 1}`}
-                                    </Typography>
-                                  }
-                                  secondary={
-                                    file.size && (
-                                      <Typography variant="caption" sx={{ color: '#999' }}>
-                                        {(file.size / 1024).toFixed(1)} KB
-                                      </Typography>
-                                    )
-                                  }
-                                />
-                              </ListItem>
-                            ))}
-                          </List>
-                        </Box>
-                      )}
-                    </>
-                  );
-                })()}
-              </Box>
-            )}
+              return nonImageFiles.length > 0 && (
+                <Box mt={3}>
+                  <Typography variant="subtitle2" fontWeight="bold" gutterBottom sx={{ mb: 2 }}>
+                    {t('community.posts.attachFiles')}
+                  </Typography>
+                  <List dense sx={{ bgcolor: '#f9f9f9', borderRadius: 2, p: 1 }}>
+                    {nonImageFiles.map((file: any, index: number) => (
+                      <ListItem
+                        key={index}
+                        sx={{
+                          px: 2,
+                          py: 1,
+                          mb: 1,
+                          bgcolor: 'white',
+                          borderRadius: 1,
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                          '&:hover': {
+                            bgcolor: '#f0f9ff',
+                          },
+                        }}
+                      >
+                        <ListItemAvatar sx={{ minWidth: 36 }}>
+                          <InsertDriveFileIcon fontSize="small" sx={{ color: '#FF9999' }} />
+                        </ListItemAvatar>
+                        <ListItemText
+                          primary={
+                            <Typography
+                              variant="body2"
+                              component="a"
+                              href={file.url || file}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              sx={{
+                                color: '#FF9999',
+                                textDecoration: 'none',
+                                fontWeight: 500,
+                                '&:hover': {
+                                  textDecoration: 'underline',
+                                  color: '#ff7777',
+                                },
+                              }}
+                            >
+                              {file.name ||
+                                `${t('community.posts.attachFiles')} ${index + 1}`}
+                            </Typography>
+                          }
+                          secondary={
+                            file.size && (
+                              <Typography variant="caption" sx={{ color: '#999' }}>
+                                {(file.size / 1024).toFixed(1)} KB
+                              </Typography>
+                            )
+                          }
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                </Box>
+              );
+            })()}
           </Box>
 
           {/* 게시글 평가 버튼 - disabled 속성 추가 */}
