@@ -82,8 +82,7 @@ const de = {
 
   welcome: {
     title: 'Willkommen bei EUM',
-    description:
-      'EUM ist eine Plattform für die Kommunikation und Kooperation von Menschen aus verschiedenen Ländern.',
+    description: `Wir helfen Ihnen, in Korea sorgenfrei und komfortabel zu leben.\nAlle wichtigen Informationen und Services für die Eingewöhnung finden Sie an einem Ort.\nVom ersten Moment Ihrer Ankunft in Korea sind wir als verlässlicher Freund an Ihrer Seite!`,
   },
   common: {
     home: 'Startseite',

@@ -163,8 +163,24 @@ axiosInstance.interceptors.response.use(
 
       // 401 Unauthorized - 인증 실패/토큰 만료 처리
       if (status === 401 && originalRequest) {
-        // 토큰 갱신 API가 아닌 경우에만 갱신 시도
+        // 게스트 허용 페이지라면 리다이렉트하지 않음
+        const guestAllowedPaths = [
+          '/home',
+          '/404',
+          '/access-denied',
+          '/google-login',
+          '/login',
+          '/signup',
+        ];
+        const isGuestAllowed = guestAllowedPaths.some(path =>
+          window.location.pathname.startsWith(path)
+        );
+
         if (requestUrl !== '/auth/refresh' && !isRefreshing) {
+          if (isGuestAllowed) {
+            // 게스트 페이지에서는 리다이렉트하지 않고 에러만 반환
+            return Promise.reject(error);
+          }
           // 토큰 갱신 중 플래그 설정
           isRefreshing = true;
 

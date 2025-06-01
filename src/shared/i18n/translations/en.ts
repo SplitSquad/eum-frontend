@@ -81,8 +81,7 @@ const en = {
 
   welcome: {
     title: 'Welcome to EUM',
-    description:
-      'EUM is a platform for communication and cooperation between people from different countries.',
+    description: `We help you live comfortably and without worries in Korea.\nAll the essential information and services you need to adapt are gathered in one place.\nFrom the moment you set foot in Korea, we'll be your reliable friend by your side!`,
   },
   common: {
     authenticatedError: 'After logging in, you can access the service.',

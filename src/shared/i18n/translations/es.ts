@@ -72,8 +72,7 @@ const es = {
 
   welcome: {
     title: 'BienvenidoEUM',
-    description:
-      'EUM es una platafo a rma para la comunicación y cooperación entre personas de diferentes países.',
+    description: `Te ayudamos a vivir en Corea cómodamente y sin preocupaciones.\nToda la información y los servicios esenciales para adaptarte están reunidos en un solo lugar.\nDesde el momento en que pises Corea, seremos ese amigo confiable a tu lado.`,
   },
   common: {
     home: 'Inicio',

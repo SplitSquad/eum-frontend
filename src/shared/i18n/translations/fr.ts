@@ -75,8 +75,7 @@ const fr = {
 
   welcome: {
     title: 'Bienvenue sur EUM',
-    description:
-      'EUM est une plateforme pour la communication et la coopération entre des personnes de différents pays.',
+    description: `Nous vous aidons à vivre en Corée en toute sérénité et confort.\nToutes les informations et services essentiels pour votre adaptation sont réunis ici.\nDès votre arrivée en Corée, nous serons un ami fidèle à vos côtés !`,
   },
   common: {
     home: 'Accueil',
