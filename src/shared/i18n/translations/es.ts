@@ -107,6 +107,13 @@ const es = {
   nav: {
     accountSettings: 'Configuración de cuenta',
   },
+  accessDenied: {
+    title: 'Acceso denegado',
+    description:
+      'No tienes permiso para acceder a esta página. Por favor, vuelve a la página principal o contacta con soporte.',
+    goHome: 'Ir a inicio',
+    contact: 'Contactar soporte',
+  },
   auth: {
     loginWithGoogle: 'Iniciar sesión con Google',
     loginRequired: 'Inicio de sesión requerido',

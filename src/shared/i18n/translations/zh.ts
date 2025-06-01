@@ -108,6 +108,13 @@ const zh = {
   nav: {
     accountSettings: '账号设置',
   },
+  accessDenied: {
+    title: 'Access Denied',
+    description:
+      'You do not have permission to access this page. Please return to the homepage or contact support.',
+    goHome: 'Go Home',
+    contact: 'Contact Support',
+  },
   auth: {
     loginWithGoogle: '使用谷歌登录',
     loginRequired: '需要登录',

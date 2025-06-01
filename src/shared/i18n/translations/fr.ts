@@ -110,6 +110,13 @@ const fr = {
   nav: {
     accountSettings: 'Paramètres du compte',
   },
+  accessDenied: {
+    title: 'Accès refusé',
+    description:
+      "Vous n'avez pas la permission d'accéder à cette page. Veuillez retourner à l'accueil ou contacter le support.",
+    goHome: "Retour à l'accueil",
+    contact: 'Contacter le support',
+  },
   auth: {
     loginWithGoogle: 'Se connecter avec Google',
     loginRequired: 'Connexion requise',

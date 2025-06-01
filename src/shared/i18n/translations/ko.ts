@@ -1816,6 +1816,13 @@ const ko = {
       loginRequired: '로그인이 필요한 기능입니다.',
     },
   },
+  accessDenied: {
+    title: '접근 권한이 없습니다',
+    description:
+      '이 페이지에 접근할 수 있는 권한이 없습니다. 홈페이지로 돌아가거나 관리자에게 문의하세요.',
+    goHome: '홈으로 이동',
+    contact: '고객센터',
+  },
 };
 
 export default ko;

@@ -21,8 +21,6 @@ import { seasonalColors } from '@/components/layout/springTheme';
 import { useThemeStore } from '@/features/theme/store/themeStore';
 
 // 로그인 카드 스타일
-const { t } = useTranslation();
-
 const LoginCard = styled(Paper)<{ colors: typeof seasonalColors.spring }>`
   padding: 2rem;
   border-radius: 16px;
@@ -86,53 +84,61 @@ const LoginInputs = ({ id, setId, password, setPassword }) => (
   </InputBox>
 );
 
-const LoginActionButton = ({ onClick, loading, colors }) => (
-  <Button
-    variant="contained"
-    color="primary"
-    fullWidth
-    size="large"
-    sx={{
-      mt: 1,
-      borderRadius: 2,
-      fontWeight: 700,
-      background: colors.gradient,
-      boxShadow: '0 2px 8px rgba(187, 142, 45, 0.33)',
-    }}
-    onClick={onClick}
-    disabled={loading}
-  >
-    {loading ? t('login.loading') : t('login.login')}
-  </Button>
-);
+const LoginActionButton = ({ onClick, loading, colors }) => {
+  const { t } = useTranslation();
 
-const SignupButton = ({ onClick, colors }) => (
-  <Button
-    variant="outlined"
-    color="secondary"
-    fullWidth
-    sx={{
-      mt: 2,
-      borderRadius: 2,
-      fontWeight: 700,
-      borderColor: colors.primary,
-      color: colors.primary,
-      '&:hover': {
+  return (
+    <Button
+      variant="contained"
+      color="primary"
+      fullWidth
+      size="large"
+      sx={{
+        mt: 1,
+        borderRadius: 2,
+        fontWeight: 700,
+        background: colors.gradient,
+        boxShadow: '0 2px 8px rgba(187, 142, 45, 0.33)',
+      }}
+      onClick={onClick}
+      disabled={loading}
+    >
+      {loading ? t('login.loading') : t('login.login')}
+    </Button>
+  );
+};
+
+const SignupButton = ({ onClick, colors }) => {
+  const { t } = useTranslation();
+  return (
+    <Button
+      variant="outlined"
+      color="secondary"
+      fullWidth
+      sx={{
+        mt: 2,
+        borderRadius: 2,
+        fontWeight: 700,
         borderColor: colors.primary,
-        background: colors.hover,
-      },
-    }}
-    onClick={onClick}
-  >
-    {t('login.signup')}
-  </Button>
-);
+        color: colors.primary,
+        '&:hover': {
+          borderColor: colors.primary,
+          background: colors.hover,
+        },
+      }}
+      onClick={onClick}
+    >
+      {t('login.signup')}
+    </Button>
+  );
+};
 
 /**
  * 로그인 페이지 컴포넌트
  * 봄 테마를 적용한 디자인으로 구글 로그인 기능 제공
  */
 const LoginPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));

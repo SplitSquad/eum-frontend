@@ -17,7 +17,7 @@ const WelcomeCard = styled(Paper)`
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
   border-radius: 18px;
   border: 1px solid #e0e0e0;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(4px);
 `;
 
 const EumiImg = styled('img')`
@@ -38,7 +38,12 @@ const Welcome: React.FC = () => {
   return (
     <Container
       maxWidth="sm"
-      sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '70vh',
+      }}
     >
       <WelcomeCard elevation={3}>
         <EumiImg src={eum2Image} alt={t('welcome.characterAlt') || '이음이 캐릭터'} />

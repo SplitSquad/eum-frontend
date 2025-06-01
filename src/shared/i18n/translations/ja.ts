@@ -1445,6 +1445,13 @@ const ja = {
     logout: 'ログアウト',
     adminpage: '管理者ページ',
   },
+  accessDenied: {
+    title: 'アクセス権限がありません',
+    description:
+      'このページにアクセスする権限がありません。ホームに戻るか、サポートにお問い合わせください。',
+    goHome: 'ホームに戻る',
+    contact: 'サポート',
+  },
 };
 
 export default ja;

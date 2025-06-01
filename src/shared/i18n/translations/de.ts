@@ -117,6 +117,13 @@ const de = {
   nav: {
     accountSettings: 'Kontoeinstellungen',
   },
+  accessDenied: {
+    title: 'Zugriff verweigert',
+    description:
+      'Sie haben keine Berechtigung, auf diese Seite zuzugreifen. Bitte kehren Sie zur Startseite zurück oder kontaktieren Sie den Support.',
+    goHome: 'Zur Startseite',
+    contact: 'Support kontaktieren',
+  },
   auth: {
     loginWithGoogle: 'Mit Google anmelden',
     loginRequired: 'Anmeldung erforderlich',

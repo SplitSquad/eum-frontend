@@ -32,7 +32,6 @@ const TransparentSnackbar = styled('div')<{ color: string }>(({ color }) => ({
   gap: 12,
 }));
 
-const { t } = useTranslation();
 // 로그인 카드 스타일
 const LoginCard = styled(Paper)<{ colors: typeof seasonalColors.spring }>`
   padding: 2.5rem 2rem;

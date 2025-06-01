@@ -119,11 +119,18 @@ const en = {
   nav: {
     accountSettings: 'Account Settings',
   },
+  accessDenied: {
+    title: 'Access Denied',
+    description:
+      'You do not have permission to access this page. Please return to the homepage or contact support.',
+    goHome: 'Go Home',
+    contact: 'Contact Support',
+  },
   auth: {
     loginWithGoogle: 'Login with Google',
     loginRequired: 'Login Required',
-    accessDenied: 'Access Denied',
     welcome: 'Welcome',
+    accessDenied: 'Access Denied',
     loginDescription: 'Sign in easily with your Google account',
     loginWithGoogleButton: 'Sign in with Google',
     loginWithGeneral: 'Sign in with General Account',
