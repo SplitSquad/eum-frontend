@@ -841,72 +841,6 @@ const ProBoardListPage: React.FC = () => {
         </div>
       </div>
 
-      {/* 커뮤니티 타입 전환 버튼 - Pro 테마용 */}
-      <div style={{ 
-        borderBottom: '1.5px solid #e5e7eb',
-        paddingBottom: '24px'
-      }}>
-        <div style={{ 
-          maxWidth: 1120, 
-          margin: '0 auto',
-          display: 'flex',
-          justifyContent: 'center',
-          paddingTop: '12px'
-        }}>
-          <div style={{
-            display: 'flex',
-            border: '1.5px solid #222',
-            borderRadius: '50px',
-            overflow: 'hidden',
-            backgroundColor: '#fff'
-          }}>
-            <button
-              onClick={() => navigate('/community/groups')}
-              style={{
-                ...proButton,
-                margin: 0,
-                padding: '12px 32px',
-                borderRadius: 0,
-                border: 'none',
-                backgroundColor: 'transparent',
-                fontSize: '1.1rem',
-                fontWeight: 700,
-                color: '#666',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(34, 34, 34, 0.1)';
-                e.currentTarget.style.color = '#222';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.color = '#666';
-              }}
-            >
-              📱 소모임
-            </button>
-            <button
-              style={{
-                ...proButton,
-                margin: 0,
-                padding: '12px 32px',
-                borderRadius: 0,
-                border: 'none',
-                backgroundColor: '#222',
-                fontSize: '1.1rem',
-                fontWeight: 700,
-                color: '#fff',
-                cursor: 'default'
-              }}
-            >
-              💬 자유게시판
-            </button>
-          </div>
-        </div>
-      </div>
-
-
       {/* 메인 레이아웃 (ProInfoList와 동일) */}
       <div
         style={{
@@ -926,27 +860,80 @@ const ProBoardListPage: React.FC = () => {
         >
           {/* 메인 컨텐츠 */}
           <div style={{ flex: 1, paddingRight: 32 }}>
-            {/* 카테고리/아이콘 영역 */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24 }}>
-              <img
-                src={squareImg}
-                alt="logo"
-                style={{ height: 24, width: 24, objectFit: 'contain' }}
-              />
-              <h2
-                style={{
-                  fontSize: 22,
-                  fontWeight: 700,
-                  color: '#111',
-                  fontFamily: proCard.fontFamily,
-                  margin: 0,
-                }}
-              >
-                {selectedCategory === '전체'
-                  ? t('infoPage.content.allInfo')
-                  : t(`community.categories.${selectedCategory}`) || selectedCategory}
-              </h2>
-              {/* 글쓰기 버튼 왼쪽, 정렬 드롭다운 오른쪽, 둘 다 오른쪽 정렬 */}
+            {/* 카테고리/아이콘 영역과 커뮤니티 타입 전환 버튼 통합 */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
+              {/* 왼쪽: 카테고리 아이콘과 텍스트 */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <img
+                  src={squareImg}
+                  alt="logo"
+                  style={{ height: 24, width: 24, objectFit: 'contain' }}
+                />
+                <h2
+                  style={{
+                    fontSize: 22,
+                    fontWeight: 700,
+                    color: '#111',
+                    fontFamily: proCard.fontFamily,
+                    margin: 0,
+                  }}
+                >
+                  {selectedCategory === '전체'
+                    ? t('infoPage.content.allInfo')
+                    : t(`community.categories.${selectedCategory}`) || selectedCategory}
+                </h2>
+              </div>
+
+              {/* 중앙: 커뮤니티 타입 전환 버튼 */}
+              <div style={{
+                display: 'flex',
+                border: '1.5px solid #222',
+                borderRadius: '25px',
+                overflow: 'hidden',
+                backgroundColor: '#fff',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+              }}>
+                <button
+                  onClick={() => navigate('/community/groups')}
+                  style={{
+                    padding: '8px 20px',
+                    border: 'none',
+                    backgroundColor: 'transparent',
+                    fontSize: '0.9rem',
+                    fontWeight: 600,
+                    color: '#666',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    fontFamily: proCard.fontFamily,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(34, 34, 34, 0.08)';
+                    e.currentTarget.style.color = '#222';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = '#666';
+                  }}
+                >
+                  📱 소모임
+                </button>
+                <button
+                  style={{
+                    padding: '8px 20px',
+                    border: 'none',
+                    backgroundColor: '#222',
+                    fontSize: '0.9rem',
+                    fontWeight: 600,
+                    color: '#fff',
+                    cursor: 'default',
+                    fontFamily: proCard.fontFamily,
+                  }}
+                >
+                  💬 자유게시판
+                </button>
+              </div>
+
+              {/* 오른쪽: 글쓰기 버튼과 정렬 드롭다운 */}
               <div
                 style={{
                   display: 'flex',

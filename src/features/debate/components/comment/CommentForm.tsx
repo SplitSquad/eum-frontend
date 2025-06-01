@@ -127,7 +127,7 @@ const CommentForm: React.FC<CommentFormProps> = ({ debateId, onSuccess }) => {
       <div className="mb-3">
         <h3 className="text-lg font-medium mb-2">의견 작성</h3>
 
-        {/* 찬반 선택 
+        {/* 찬반 선택 */}
         <div className="flex gap-4 mb-3">
           <label className="inline-flex items-center">
             <input
@@ -151,7 +151,7 @@ const CommentForm: React.FC<CommentFormProps> = ({ debateId, onSuccess }) => {
             />
             <span className="ml-2 text-red-700">반대</span>
           </label>
-        </div>*/}
+        </div>
 
         {/* 댓글 입력 영역 */}
         <textarea

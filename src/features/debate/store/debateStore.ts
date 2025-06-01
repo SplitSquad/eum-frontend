@@ -100,10 +100,10 @@ interface DebateState {
 }
 
 // 언어 변경 시 토론 목록 자동 새로고침 리스너
+
 export const setupDebateLanguageChangeListener = () => {
   let previousLanguage = useLanguageStore.getState().language;
   console.log(`[INFO] 초기 언어 설정: ${previousLanguage}`);
-
   useLanguageStore.subscribe(state => {
     const currentLanguage = state.language;
     if (currentLanguage !== previousLanguage) {
@@ -115,11 +115,10 @@ export const setupDebateLanguageChangeListener = () => {
       const debateState = useDebateStore.getState();
       const { currentPage, category } = debateState;
 
-      // 모든 데이터 새로고침
-      debateState.getDebates(currentPage, 20, category);
-      debateState.fetchTodayIssues();
-      debateState.fetchHotIssue();
-      debateState.fetchBalancedIssue();
+      // 기존 데이터는 유지, 백그라운드에서 새로고침
+      setTimeout(() => {
+        useDebateStore.getState().getDebates(currentPage, 20, category);
+      }, 50);
     }
   });
 };
