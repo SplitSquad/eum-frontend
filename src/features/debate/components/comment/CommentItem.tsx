@@ -176,7 +176,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
   let extractedStance: 'pro' | 'con' = stance || 'pro';
   let displayContent = content || '';
 
-  // 댓글 내용에서 stance 프리픽스 확인 및 추출
+  // 댓글 내용에서 stance 프리픽스 확인 및 제거 - 기존 접두사가 있다면 제거만 하고 새로 추가하지 않음
   if (displayContent.startsWith('【반대】')) {
     extractedStance = 'con';
     displayContent = displayContent.replace('【반대】 ', '');
@@ -328,9 +328,8 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
     setIsEditing(false);
 
     try {
-      // 댓글 수정 시 stance 정보 유지하기
-      const stancePrefix = extractedStance === 'con' ? '【반대】 ' : '【찬성】 ';
-      const updatedContent = stancePrefix + editText;
+      // 댓글 수정 시 순수한 내용만 전송 (stance 접두사 제거)
+      const updatedContent = editText; // 접두사 없이 순수한 내용만 사용
 
       // 백엔드 API 호출
       const success = await updateComment(id, updatedContent);

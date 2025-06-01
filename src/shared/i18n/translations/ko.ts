@@ -245,7 +245,6 @@ const ko = {
     },
   },
 
-
   onboarding: {
     studySchedule: {
       title: '유학 일정',

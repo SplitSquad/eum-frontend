@@ -480,6 +480,147 @@ export default function InfoDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* 플로팅 툴바 - 항상 보이는 유용한 기능들 */}
+      <div className="fixed right-6 top-1/2 transform -translate-y-1/2 z-50">
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-4 space-y-4 min-w-[140px]">
+          {/* 북마크 버튼 */}
+          <button
+            onClick={() => {
+              // 북마크 기능 (목록 페이지와 동일한 로컬스토리지 키 사용)
+              const bookmarks = JSON.parse(localStorage.getItem('bookmarkedIds') || '[]');
+              const currentId = detail?.informationId;
+
+              if (isBookmarked) {
+                const newBookmarks = bookmarks.filter((id: number) => id !== currentId);
+                localStorage.setItem('bookmarkedIds', JSON.stringify(newBookmarks));
+                setIsBookmarked(false);
+              } else {
+                if (currentId) {
+                  bookmarks.push(currentId);
+                  localStorage.setItem('bookmarkedIds', JSON.stringify(bookmarks));
+                  setIsBookmarked(true);
+                }
+              }
+            }}
+            className={`w-full px-3 py-3 rounded-xl flex items-center gap-3 transition-all duration-200 text-sm font-medium ${
+              isBookmarked
+                ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+                : 'bg-gray-100 text-gray-700 hover:bg-yellow-50 hover:text-yellow-700'
+            }`}
+          >
+            <svg
+              className="w-6 h-6 flex-shrink-0"
+              fill={isBookmarked ? 'currentColor' : 'none'}
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
+              />
+            </svg>
+            <span>{isBookmarked ? '저장됨' : '북마크'}</span>
+          </button>
+
+          {/* 공유 버튼 */}
+          <button
+            onClick={() => {
+              if (!detail) return;
+              const text = `${detail.title}\n\n${window.location.href}\n\n한국 생활 정보 - EUM 커뮤니티에서 공유`;
+              if (navigator.share) {
+                navigator.share({
+                  title: detail.title,
+                  text: '유용한 한국 생활 정보입니다.',
+                  url: window.location.href,
+                });
+              } else {
+                navigator.clipboard.writeText(text);
+                alert('링크가 클립보드에 복사되었습니다.');
+              }
+            }}
+            className="w-full px-3 py-3 rounded-xl bg-gray-100 text-gray-700 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-3 transition-all duration-200 text-sm font-medium"
+          >
+            <svg className="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
+              />
+            </svg>
+            <span>공유하기</span>
+          </button>
+
+          {/* 인쇄 버튼 */}
+          <button
+            onClick={() => {
+              if (!detail) return;
+              const printContent =
+                document.querySelector('.article-content')?.innerHTML || '';
+              const printWindow = window.open('', '_blank');
+              if (printWindow) {
+                printWindow.document.write(`
+                  <html>
+                    <head>
+                      <title>${detail.title}</title>
+                      <style>
+                        body { font-family: 'Noto Sans KR', sans-serif; line-height: 1.6; margin: 40px; }
+                        h1, h2, h3 { color: #1f2937; margin-top: 2em; margin-bottom: 1em; }
+                        p { margin-bottom: 1em; }
+                        img { max-width: 100%; height: auto; }
+                        .header { border-bottom: 2px solid #e5e7eb; padding-bottom: 20px; margin-bottom: 30px; }
+                        .meta { color: #6b7280; font-size: 14px; margin-top: 10px; }
+                      </style>
+                    </head>
+                    <body>
+                      <div class="header">
+                        <h1>${detail.title}</h1>
+                        <div class="meta">
+                          카테고리: ${detail.category} | 작성자: ${detail.userName} | 
+                          작성일: ${formatDateTime(new Date(detail.createdAt))}
+                        </div>
+                      </div>
+                      <div class="content">${printContent}</div>
+                    </body>
+                  </html>
+                `);
+                printWindow.document.close();
+                printWindow.print();
+              }
+            }}
+            className="w-full px-3 py-3 rounded-xl bg-gray-100 text-gray-700 hover:bg-green-50 hover:text-green-700 flex items-center gap-3 transition-all duration-200 text-sm font-medium"
+          >
+            <svg className="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z"
+              />
+            </svg>
+            <span>인쇄하기</span>
+          </button>
+
+          {/* 맨 위로 버튼 */}
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="w-full px-3 py-3 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 flex items-center gap-3 transition-all duration-200 text-sm font-medium"
+          >
+            <svg className="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 10l7-7m0 0l7 7m-7-7v18"
+              />
+            </svg>
+            <span>맨 위로</span>
+          </button>
+        </div>
+      </div>
+
       {/* 상단 네비게이션 */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 py-3">
@@ -699,131 +840,6 @@ export default function InfoDetailPage() {
                     {t('infoPage.content.views')}
                   </p>
                   <p className="text-sm text-gray-600">{detail.views.toLocaleString()}</p>
-                </div>
-              </div>
-
-              {/* 북마크 및 유용한 기능들 */}
-              <div className="mt-6 pt-6 border-t border-gray-200">
-                <h4 className="font-medium text-gray-900 mb-3">
-                  {t('infoPage.detail.usefulFeatures')}
-                </h4>
-                <div className="space-y-2">
-                  <button
-                    onClick={() => {
-                      // 북마크 기능 (목록 페이지와 동일한 로컬스토리지 키 사용)
-                      const bookmarks = JSON.parse(localStorage.getItem('bookmarkedIds') || '[]');
-                      const currentId = detail.informationId;
-
-                      if (isBookmarked) {
-                        const newBookmarks = bookmarks.filter((id: number) => id !== currentId);
-                        localStorage.setItem('bookmarkedIds', JSON.stringify(newBookmarks));
-                        setIsBookmarked(false);
-                      } else {
-                        bookmarks.push(currentId);
-                        localStorage.setItem('bookmarkedIds', JSON.stringify(bookmarks));
-                        setIsBookmarked(true);
-                      }
-                    }}
-                    className={`w-full py-2 px-3 rounded text-sm transition-colors flex items-center justify-center gap-2 ${
-                      isBookmarked
-                        ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
-                        : 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100'
-                    }`}
-                  >
-                    <svg
-                      className="w-4 h-4"
-                      fill={isBookmarked ? 'currentColor' : 'none'}
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-                      />
-                    </svg>
-                    {isBookmarked
-
-                      ? ` ${t('infoPage.actions.bookmark')}`
-                      : ` ${t('infoPage.actions.bookmark')}`}
-
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      const text = `${detail.title}\n\n${window.location.href}\n\n한국 생활 정보 - EUM 커뮤니티에서 공유`;
-                      if (navigator.share) {
-                        navigator.share({
-                          title: detail.title,
-                          text: '유용한 한국 생활 정보입니다.',
-                          url: window.location.href,
-                        });
-                      } else {
-                        navigator.clipboard.writeText(text);
-                        alert(t('infoPage.detail.shareSuccess'));
-                      }
-                    }}
-                    className="w-full py-2 px-3 bg-blue-50 text-blue-700 rounded text-sm hover:bg-blue-100 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
-                      />
-                    </svg>
-                    {t('infoPage.actions.share')}
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      const printContent =
-                        document.querySelector('.article-content')?.innerHTML || '';
-                      const printWindow = window.open('', '_blank');
-                      if (printWindow) {
-                        printWindow.document.write(`
-                          <html>
-                            <head>
-                              <title>${detail.title}</title>
-                              <style>
-                                body { font-family: 'Noto Sans KR', sans-serif; line-height: 1.6; margin: 40px; }
-                                h1, h2, h3 { color: #1f2937; margin-top: 2em; margin-bottom: 1em; }
-                                p { margin-bottom: 1em; }
-                                img { max-width: 100%; height: auto; }
-                                .header { border-bottom: 2px solid #e5e7eb; padding-bottom: 20px; margin-bottom: 30px; }
-                                .meta { color: #6b7280; font-size: 14px; margin-top: 10px; }
-                              </style>
-                            </head>
-                            <body>
-                              <div class="header">
-                                <h1>${detail.title}</h1>
-                                <div class="meta">
-                                  카테고리: ${detail.category} | 작성자: ${detail.userName} | 
-                                  작성일: ${(<span>{formatDateTime(new Date(detail.createdAt))}</span>)}
-                                </div>
-                              </div>
-                              <div class="content">${printContent}</div>
-                            </body>
-                          </html>
-                        `);
-                        printWindow.document.close();
-                        printWindow.print();
-                      }
-                    }}
-                    className="w-full py-2 px-3 bg-green-50 text-green-700 rounded text-sm hover:bg-green-100 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z"
-                      />
-                    </svg>
-                    {t('infoPage.actions.print')}
-                  </button>
                 </div>
               </div>
 

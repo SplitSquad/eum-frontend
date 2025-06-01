@@ -117,6 +117,7 @@ export const PostApi = {
     sortBy?: string;
     location?: string;
     tag?: string;
+    tags?: string[];
     postType?: PostType;
   }): Promise<PostListResponse> => {
     try {
@@ -131,33 +132,62 @@ export const PostApi = {
           params.sortBy === 'popular' ? 'views' : params.sortBy === 'oldest' ? 'oldest' : 'latest',
       };
 
+      console.log('[DEBUG] getPosts 정렬 파라미터 변환:', { 
+        원본sortBy: params.sortBy, 
+        변환후sort: apiParams.sort 
+      });
+
       // postType 처리 - 백엔드는 빈 문자열을 허용하지 않음, 항상 값이 있어야 함
       const postType = params.postType || '자유';
       apiParams.postType = postType;
 
-      // region(지역) 처리 - 자유 게시글이면 무조건 '자유'로, 그렇지 않으면 location 값 사용
+      // region(지역) 처리 수정 - postStore에서 전달된 값 그대로 사용
       if (apiParams.postType === '자유') {
         apiParams.region = '자유';
       } else {
-        const location = params.location || '전체';
-        apiParams.region = location === '전체' ? '전체' : location;
+        // 모임 게시글의 경우 postStore에서 전달된 location 값을 그대로 사용
+        const location = params.location;
+        console.log('[DEBUG] postApi region 처리:', { 
+          전달받은location: location, 
+          postType: apiParams.postType 
+        });
+        
+        if (!location || location === '전체') {
+          apiParams.region = '전체';
+        } else {
+          // postStore에서 전달된 실제 지역명을 그대로 사용
+          apiParams.region = location;
+        }
+        
+        console.log('[DEBUG] postApi 최종 region 설정:', apiParams.region);
       }
 
-      // 태그 처리 (단일 선택만 지원)
-      if (params.tag && params.tag !== '전체') {
-        // 단일 태그이므로 배열 대신 문자열로 전송
-        const tagsArray = params.tag.split(',').map(tag => tag.trim());
-        
-        // 다양한 백엔드 파라미터 형식 시도
-        apiParams.tags = tagsArray; // 배열 형태
-        apiParams.tag = params.tag; // 단일 문자열 형태
-        apiParams.tagList = tagsArray; // 대안 배열 형태
+      // 태그 처리 - undefined, null, 빈 문자열이거나 '전체'인 경우 태그 필터링 해제
+      if (!params.tag || params.tag === '전체' || params.tag === '') {
+        // 태그 필터링 해제 - tags 파라미터를 명시적으로 제거
+        console.log('[DEBUG] postApi - 태그 필터링 해제');
+      } else {
+        // 태그가 있는 경우에만 처리
+        const tagsArray = params.tag.split(',').map(tag => tag.trim()).filter(tag => tag);
+        if (tagsArray.length > 0) {
+          // Spring Boot가 기대하는 형식으로 tags 배열 전달
+          apiParams.tags = tagsArray; // 배열 형태
 
-        // 로그에 태그 정보 명확하게 표시
-        console.log('[DEBUG] 태그 필터링 적용:', {
-          원본태그: params.tag,
-          태그배열: tagsArray,
-
+          // 로그에 태그 정보 명확하게 표시
+          console.log('[DEBUG] 태그 필터링 적용:', {
+            원본태그: params.tag,
+            태그배열: tagsArray,
+          });
+        } else {
+          console.log('[DEBUG] postApi - 빈 태그 배열, 태그 필터링 해제');
+        }
+      }
+      
+      // postStore에서 tags 배열로 전달되는 경우도 처리
+      if (params.tags && Array.isArray(params.tags) && params.tags.length > 0) {
+        apiParams.tags = params.tags;
+        console.log('[DEBUG] 태그 배열로 필터링 적용:', {
+          태그배열: params.tags,
         });
       }
 
@@ -172,12 +202,13 @@ export const PostApi = {
           const searchParams = new URLSearchParams();
           Object.entries(params).forEach(([key, value]) => {
             if (Array.isArray(value)) {
-              // 배열인 경우 key[]=value1&key[]=value2 형식으로 직렬화
-              value.forEach(v => searchParams.append(`${key}[]`, v));
+              // Spring Boot가 기대하는 형식: tags=tag1&tags=tag2
+              value.forEach(v => searchParams.append(key, v));
             } else {
               searchParams.append(key, String(value));
             }
           });
+          console.log('[DEBUG] 최종 쿼리 문자열:', searchParams.toString());
           return searchParams.toString();
         },
       });
@@ -422,15 +453,21 @@ export const PostApi = {
       const sortValue = options.sort || 'createdAt,desc';
       // SpringBoot 형식의 sort를 backend 형식으로 변환
       let backendSort;
-      if (sortValue.includes('createdAt,desc')) {
-        backendSort = 'latest';
+      if (sortValue.includes('views,desc') || sortValue.includes('views')) {
+        backendSort = 'views'; // 조회수 내림차순 (인기순)
       } else if (sortValue.includes('createdAt,asc')) {
-        backendSort = 'oldest';
-      } else if (sortValue.includes('views')) {
-        backendSort = 'views';
+        backendSort = 'oldest'; // 날짜 오름차순 (오래된순)
+      } else if (sortValue.includes('createdAt,desc') || sortValue === 'latest') {
+        backendSort = 'latest'; // 날짜 내림차순 (최신순)
       } else {
         backendSort = 'latest'; // 기본값
       }
+      
+      console.log('[DEBUG] 정렬 파라미터 변환:', { 
+        원본: sortValue, 
+        변환후: backendSort 
+      });
+      
       searchParams.append('sort', backendSort);
 
       // 카테고리 (전체인 경우 '전체' 값으로 명시적 전달)

@@ -369,7 +369,12 @@ const CategorySidebar: React.FC<{
               if (key === 'all') {
                 navigate('/debate/list');
               } else {
-                fetchDebates(1, 20, apiCategory);
+                navigate('/debate/list', { 
+                  state: { 
+                    category: key,
+                    apiCategory: apiCategory 
+                  } 
+                });
               }
             }}
           >

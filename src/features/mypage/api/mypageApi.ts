@@ -315,7 +315,7 @@ class MypageApi {
   async getMyPosts(
     userId: number,
     page: number = 0,
-    size: number = 10
+    size: number = 5
   ): Promise<PaginatedResponse<MyPost>> {
     try {
       if (!userId) {
@@ -371,7 +371,7 @@ class MypageApi {
   async getMyComments(
     userId: number,
     page: number = 0,
-    size: number = 10
+    size: number = 5
   ): Promise<PaginatedResponse<MyComment>> {
     try {
       if (!userId) {
@@ -424,7 +424,7 @@ class MypageApi {
   async getMyDebates(
     userId: number,
     page: number = 0,
-    size: number = 10
+    size: number = 5
   ): Promise<PaginatedResponse<MyDebate>> {
     try {
       if (!userId) {

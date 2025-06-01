@@ -304,17 +304,19 @@ export function mapCommentResToFrontend(dto: CommentResDto, debateId: number): D
     `[DEBUG] 국가 정보 확인 - nation: ${dto.nation}, countryCode: ${dto.countryCode}, countryName: ${dto.countryName}`
   );
 
-  // 댓글 내용으로부터 stance 값 추출
+  // 댓글 내용으로부터 stance 접두사 제거 (기존 접두사가 있다면 제거만 하고 새로 추가하지 않음)
   let extractedStance: 'pro' | 'con' = 'pro'; // 기본값은 pro
   let content = dto.content || '';
 
-  // 댓글 내용에서 stance 정보 확인
+  // 댓글 내용에서 stance 접두사 확인 및 제거
   if (content.startsWith('【반대】')) {
     extractedStance = 'con';
-    console.log(`[DEBUG] 댓글 ID ${dto.commentId}에서 반대 의견 접두사 발견`);
+    content = content.replace('【반대】 ', ''); // 접두사 제거
+    console.log(`[DEBUG] 댓글 ID ${dto.commentId}에서 반대 의견 접두사 제거`);
   } else if (content.startsWith('【찬성】')) {
     extractedStance = 'pro';
-    console.log(`[DEBUG] 댓글 ID ${dto.commentId}에서 찬성 의견 접두사 발견`);
+    content = content.replace('【찬성】 ', ''); // 접두사 제거
+    console.log(`[DEBUG] 댓글 ID ${dto.commentId}에서 찬성 의견 접두사 제거`);
   }
 
   // stance 값 디버깅 출력
@@ -325,7 +327,7 @@ export function mapCommentResToFrontend(dto: CommentResDto, debateId: number): D
     debateId: debateId,
     userId: dto.userId || 0, // 백엔드에서 userId를 제공하는 경우 사용
     userName: dto.userName || '익명',
-    content: dto.content || '',
+    content: content, // 접두사가 제거된 순수한 내용 사용
     createdAt: dto.createdAt || new Date().toISOString(),
     reactions: {
       like: dto.like || 0,

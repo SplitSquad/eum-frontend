@@ -160,6 +160,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(5);
   const [totalPages, setTotalPages] = useState<number>(0);
+  const [sortBy, setSortBy] = useState<'latest' | 'popular' | 'oldest'>('latest');
 
   // Snackbar notifications
   const { enqueueSnackbar } = useSnackbar();
@@ -181,11 +182,11 @@ const CommentSection: React.FC<CommentSectionProps> = ({
 
   // 댓글 목록 불러오기 - useCallback으로 최적화
   const fetchComments = useCallback(
-    async (page: number = currentPage) => {
+    async (page: number = currentPage, sort: string = sortBy) => {
       setIsLoading(true);
       try {
-        console.log('[DEBUG] 댓글 가져오기 시작 - postId:', postId, 'page:', page);
-        const response = await CommentApi.getComments(postId, 'post', page, pageSize);
+        console.log('[DEBUG] 댓글 가져오기 시작 - postId:', postId, 'page:', page, 'sort:', sort);
+        const response = await CommentApi.getComments(postId, 'post', page, pageSize, sort);
         console.log('[DEBUG] 댓글 응답 구조:', JSON.stringify(response, null, 2));
 
         if (response && response.commentList) {
@@ -244,7 +245,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         setIsLoading(false);
       }
     },
-    [postId, pageSize, enqueueSnackbar]
+    [postId, pageSize, enqueueSnackbar, sortBy]
   );
 
   // 페이지 변경 핸들러
@@ -252,6 +253,14 @@ const CommentSection: React.FC<CommentSectionProps> = ({
     // API는 0부터 시작하는 페이지 인덱스 사용
     const apiPageIndex = page - 1;
     fetchComments(apiPageIndex);
+  };
+
+  // 정렬 변경 핸들러 추가
+  const handleSortChange = (newSort: 'latest' | 'popular' | 'oldest') => {
+    console.log('[DEBUG] 댓글 정렬 변경:', sortBy, '→', newSort);
+    setSortBy(newSort);
+    setCurrentPage(0); // 첫 페이지로 리셋
+    fetchComments(0, newSort); // 새로운 정렬로 첫 페이지부터 로드
   };
 
   // 대댓글 로드 함수 - useCallback으로 최적화
@@ -1120,11 +1129,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                 variant="caption"
                 sx={{ fontSize: '0.7rem', color: '#999', mt: 0.2, display: 'block' }}
               >
-
                 <FlagDisplay nation={comment.writer.nation} size="small" showName={false} />
-
-                <FlagDisplay nation={comment.writer.nation} size="small" />
-
               </Typography>
             )}
             <Typography variant="caption" color="text.secondary">
@@ -1314,11 +1319,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                                       display: 'block',
                                     }}
                                   >
-
                                     <FlagDisplay nation={reply.writer.nation} size="small" showName={false} />
-
-                                    <FlagDisplay nation={reply.writer.nation} size="small" />
-
                                   </Typography>
                                 )}
                                 <Typography variant="caption" color="text.secondary">
@@ -1494,6 +1495,52 @@ const CommentSection: React.FC<CommentSectionProps> = ({
       >
         {t('community.comments.totalComments', { count: total.toString() })}
       </Typography>
+
+      {/* 댓글 정렬 버튼 */}
+      <Box display="flex" gap={1} mb={3}>
+        <Button
+          variant={sortBy === 'latest' ? 'contained' : 'outlined'}
+          size="small"
+          onClick={() => handleSortChange('latest')}
+          sx={{
+            backgroundColor: sortBy === 'latest' ? 'primary.main' : 'transparent',
+            color: sortBy === 'latest' ? 'white' : 'primary.main',
+            '&:hover': {
+              backgroundColor: sortBy === 'latest' ? 'primary.dark' : 'primary.light',
+            },
+          }}
+        >
+          기본순
+        </Button>
+        <Button
+          variant={sortBy === 'popular' ? 'contained' : 'outlined'}
+          size="small"
+          onClick={() => handleSortChange('popular')}
+          sx={{
+            backgroundColor: sortBy === 'popular' ? 'primary.main' : 'transparent',
+            color: sortBy === 'popular' ? 'white' : 'primary.main',
+            '&:hover': {
+              backgroundColor: sortBy === 'popular' ? 'primary.dark' : 'primary.light',
+            },
+          }}
+        >
+          인기순
+        </Button>
+        <Button
+          variant={sortBy === 'oldest' ? 'contained' : 'outlined'}
+          size="small"
+          onClick={() => handleSortChange('oldest')}
+          sx={{
+            backgroundColor: sortBy === 'oldest' ? 'primary.main' : 'transparent',
+            color: sortBy === 'oldest' ? 'white' : 'primary.main',
+            '&:hover': {
+              backgroundColor: sortBy === 'oldest' ? 'primary.dark' : 'primary.light',
+            },
+          }}
+        >
+          오래된순
+        </Button>
+      </Box>
 
       {/* 새 댓글 작성 폼 */}
       <Box mb={4}>

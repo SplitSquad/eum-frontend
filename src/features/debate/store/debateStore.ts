@@ -42,6 +42,7 @@ interface DebateState {
   totalComments: number;
   commentPages: number;
   currentCommentPage: number;
+  commentSortBy: string;
 
   // 대댓글 관련 상태
   replies: Record<number, DebateReply[]>; // commentId를 키로 사용하는 객체
@@ -89,6 +90,7 @@ interface DebateState {
   setCategory: (category: string) => void;
   resetSearchFilters: () => void;
   resetDebateState: () => void;
+  setCommentSortBy: (sortBy: string) => void;
 
   // 특별 이슈 관련 액션
   fetchSpecialIssues: () => Promise<void>;
@@ -143,6 +145,7 @@ export const useDebateStore = create<DebateState>()(
         totalComments: 0,
         commentPages: 0,
         currentCommentPage: 1,
+        commentSortBy: 'latest',
         replies: {},
 
         // 특별 이슈 초기 상태
@@ -293,7 +296,7 @@ export const useDebateStore = create<DebateState>()(
               debateId,
               page,
               size,
-              sortBy: 'latest',
+              sortBy: get().commentSortBy,
               language: userLanguage, // 사용자 언어 설정 추가
             });
 
@@ -928,8 +931,13 @@ export const useDebateStore = create<DebateState>()(
             totalComments: 0,
             commentPages: 0,
             currentCommentPage: 1,
+            commentSortBy: 'latest',
             replies: {},
           });
+        },
+
+        setCommentSortBy: sortBy => {
+          set({ commentSortBy: sortBy });
         },
 
         // 특별 이슈 관련 액션 구현
