@@ -857,18 +857,6 @@ const PostDetailPage: React.FC = () => {
               borderRadius: 2,
             }}
           >
-            <Typography
-              variant="body1"
-              component="div"
-              sx={{
-                whiteSpace: 'pre-wrap',
-                overflowWrap: 'break-word',
-                minHeight: '150px',
-              }}
-            >
-              {showOriginal && originContent !== null ? originContent : post.content}
-            </Typography>
-
             {/* 첨부파일 표시 (있는 경우) */}
             {post.files && post.files.length > 0 && (
               <Box mt={3}>
@@ -1095,6 +1083,17 @@ const PostDetailPage: React.FC = () => {
                 })()}
               </Box>
             )}
+            <Typography
+              variant="body1"
+              component="div"
+              sx={{
+                whiteSpace: 'pre-wrap',
+                overflowWrap: 'break-word',
+                minHeight: '150px',
+              }}
+            >
+              {showOriginal && originContent !== null ? originContent : post.content}
+            </Typography>
           </Box>
 
           {/* 게시글 평가 버튼 - disabled 속성 추가 */}
