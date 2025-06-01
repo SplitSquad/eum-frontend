@@ -347,6 +347,7 @@ const CommentApi = {
         debateId: commentRequest.debateId,
         stance: commentRequest.stance ?? undefined, // null을 undefined로 변환하여 타입 오류 방지
         language: detectedLanguage.toUpperCase(), // 감지된 언어를 대문자로 변환
+        content: commentRequest.content,
       };
 
       debugLog('토론 댓글 생성 페이로드:', requestData);

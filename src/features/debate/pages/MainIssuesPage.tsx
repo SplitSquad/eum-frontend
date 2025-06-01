@@ -368,11 +368,11 @@ const CategorySidebar: React.FC<{
               if (key === 'all') {
                 navigate('/debate/list');
               } else {
-                navigate('/debate/list', { 
-                  state: { 
+                navigate('/debate/list', {
+                  state: {
                     category: key,
-                    apiCategory: apiCategory 
-                  } 
+                    apiCategory: apiCategory,
+                  },
                 });
               }
             }}
@@ -740,7 +740,7 @@ const MainIssuesPage: React.FC = () => {
             }}
           >
             <Typography sx={{ fontWeight: 'bold', color: '#888' }}>
-              등록된 토론이 없습니다.
+              {t('debate.noDebates')}
             </Typography>
           </Paper>
         )}
@@ -785,7 +785,7 @@ const MainIssuesPage: React.FC = () => {
             }}
           >
             <Typography sx={{ fontWeight: 'bold', color: '#888' }}>
-              등록된 토론이 없습니다.
+              {t('debate.noDebates')}
             </Typography>
           </Paper>
         )}
@@ -830,7 +830,7 @@ const MainIssuesPage: React.FC = () => {
             }}
           >
             <Typography sx={{ fontWeight: 'bold', color: '#888' }}>
-              등록된 토론이 없습니다.
+              {t('debate.noDebates')}
             </Typography>
           </Paper>
         )}

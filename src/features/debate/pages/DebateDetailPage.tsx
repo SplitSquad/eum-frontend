@@ -1011,48 +1011,48 @@ const DebateDetailPage: React.FC = () => {
       ko: {
         topic: ['토론주제', '토론 주제', '주제'],
         pro: ['찬성측의견', '찬성측 의견', '찬성', '찬성 의견'],
-        con: ['반대측의견', '반대측 의견', '반대', '반대 의견']
+        con: ['반대측의견', '반대측 의견', '반대', '반대 의견'],
       },
       en: {
         topic: ['debate topic', 'topic', 'debate subject', 'subject'],
         pro: ['pro opinion', 'supporting opinion', 'agree', 'for', 'support'],
-        con: ['con opinion', 'opposing opinion', 'disagree', 'against', 'oppose']
+        con: ['con opinion', 'opposing opinion', 'disagree', 'against', 'oppose'],
       },
       zh: {
         topic: ['讨论主题', '主题', '辩论主题'],
         pro: ['赞成意见', '支持意见', '赞成', '支持'],
-        con: ['反对意见', '反对']
+        con: ['反对意见', '反对'],
       },
       ja: {
         topic: ['討論トピック', 'トピック', '議題'],
         pro: ['賛成意見', '賛成', '支持'],
-        con: ['反対意見', '反対']
+        con: ['反対意見', '反対'],
       },
       es: {
         topic: ['tema de debate', 'tema', 'asunto'],
         pro: ['opinión a favor', 'a favor', 'apoyo'],
-        con: ['opinión en contra', 'en contra', 'oposición']
+        con: ['opinión en contra', 'en contra', 'oposición'],
       },
       fr: {
         topic: ['sujet de débat', 'sujet', 'thème'],
         pro: ['opinion pour', 'pour', 'soutien'],
-        con: ['opinion contre', 'contre', 'opposition']
+        con: ['opinion contre', 'contre', 'opposition'],
       },
       de: {
         topic: ['debattenthema', 'thema', 'diskussionsthema'],
         pro: ['befürwortende meinung', 'befürwortung', 'dafür'],
-        con: ['ablehnende meinung', 'ablehnung', 'dagegen']
+        con: ['ablehnende meinung', 'ablehnung', 'dagegen'],
       },
       ru: {
         topic: ['тема дебатов', 'тема', 'предмет обсуждения'],
         pro: ['мнение за', 'за', 'поддержка'],
-        con: ['мнение против', 'против']
+        con: ['мнение против', 'против'],
       },
       vi: {
         topic: ['chủ đề tranh luận', 'chủ đề'],
         pro: ['ý kiến ủng hộ', 'ủng hộ', 'đồng ý'],
-        con: ['ý kiến phản đối', 'phản đối', 'không đồng ý']
-      }
+        con: ['ý kiến phản đối', 'phản đối', 'không đồng ý'],
+      },
     };
 
     let beforeContent = '';
@@ -1065,23 +1065,29 @@ const DebateDetailPage: React.FC = () => {
     for (const [lang, keywordSet] of Object.entries(keywords)) {
       // 토론주제 패턴 생성 및 시도
       for (const topicKeyword of keywordSet.topic) {
-        const topicPattern = new RegExp(`(.*?)${topicKeyword}\\s*[:：]\\s*(.*?)(?=\\s*(?:${keywordSet.pro.join('|')})|$)`, 'is');
+        const topicPattern = new RegExp(
+          `(.*?)${topicKeyword}\\s*[:：]\\s*(.*?)(?=\\s*(?:${keywordSet.pro.join('|')})|$)`,
+          'is'
+        );
         const topicMatch = content.match(topicPattern);
-        
+
         if (topicMatch) {
           beforeContent = topicMatch[1].trim();
           topic = topicMatch[2].trim();
-          
+
           // 찬성 의견 찾기
           for (const proKeyword of keywordSet.pro) {
-            const proPattern = new RegExp(`${proKeyword}\\s*[:：]\\s*(.*?)(?=\\s*(?:${keywordSet.con.join('|')})|$)`, 'is');
+            const proPattern = new RegExp(
+              `${proKeyword}\\s*[:：]\\s*(.*?)(?=\\s*(?:${keywordSet.con.join('|')})|$)`,
+              'is'
+            );
             const proMatch = content.match(proPattern);
             if (proMatch) {
               proOpinion = proMatch[1].trim();
               break;
             }
           }
-          
+
           // 반대 의견 찾기
           for (const conKeyword of keywordSet.con) {
             const conPattern = new RegExp(`${conKeyword}\\s*[:：]\\s*(.*?)$`, 'is');
@@ -1091,7 +1097,7 @@ const DebateDetailPage: React.FC = () => {
               break;
             }
           }
-          
+
           if (topic && (proOpinion || conOpinion)) {
             return {
               beforeContent,

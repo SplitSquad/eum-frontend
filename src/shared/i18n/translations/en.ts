@@ -1140,7 +1140,8 @@ const en = {
     },
     auth: {
       googleLoginRequired: 'Google Login Required',
-      googleLoginDescription: 'Calendar features are only available to users logged in with a Google account.',
+      googleLoginDescription:
+        'Calendar features are only available to users logged in with a Google account.',
       feature1: '• Manage schedules by syncing with Google Calendar',
       feature2: '• Real-time sync allows you to check schedules on all devices',
       feature3: '• Never miss important events with notification settings',
@@ -1594,7 +1595,7 @@ const en = {
       title: 'Nearby Exploration',
       purposeLabels: {
         travel: 'Travel',
-        work: 'Work', 
+        work: 'Work',
         residence: 'Residence',
         study: 'Study',
       },
@@ -1611,16 +1612,16 @@ const en = {
         culture: 'Cultural Facilities',
         transport: 'Transportation',
         hotel: 'Accommodation',
-        
-        // Work categories  
+
+        // Work categories
         business: 'Office Spaces',
         bank: 'Banks',
         government: 'Government Offices',
-        
+
         // Residence categories
         market: 'Markets/Stores',
         hospital: 'Hospitals',
-        
+
         // Study categories
         university: 'Universities',
         library: 'Libraries',
@@ -1629,7 +1630,7 @@ const en = {
       categoryKeywords: {
         tourist: 'tourist',
         restaurant: 'restaurant',
-        cafe: 'cafe', 
+        cafe: 'cafe',
         culture: 'museum',
         transport: 'subway',
         hotel: 'hotel',
