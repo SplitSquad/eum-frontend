@@ -34,6 +34,7 @@ import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import LoyaltyIcon from '@mui/icons-material/Loyalty';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import { useTranslation } from '../../shared/i18n';
 import { widgetPaperBase, widgetGradients, widgetTabsBase, widgetCardBase, widgetChipBase } from './theme/dashboardWidgetTheme';
 import CommunityService, { Post } from '../../services/community/communityService';
 import WeatherService from '../../services/weather/weatherService';
@@ -51,12 +52,15 @@ const shuffleArray = <T,>(array: T[]): T[] => {
   return shuffled;
 };
 
-// 포스트 소스별 라벨 매핑 (DynamicFeedWidget과 동일)
-const sourceLabels: Record<string, string> = {
-  'community': '커뮤니티',
-  'discussion': '모임',
-  'debate': '토론',
-  'information': '정보'
+// 포스트 소스별 라벨 매핑 - i18n 적용
+const getSourceLabel = (source: string, t: (key: string) => string): string => {
+  const sourceLabels: Record<string, string> = {
+    'community': t('home.communityFeed.sourceLabels.community'),
+    'discussion': t('home.communityFeed.sourceLabels.discussion'),
+    'debate': t('home.communityFeed.sourceLabels.debate'),
+    'information': t('home.communityFeed.sourceLabels.information')
+  };
+  return sourceLabels[source] || source;
 };
 
 // 소스별 색상 매핑 (DynamicFeedWidget과 동일)
@@ -67,8 +71,8 @@ const sourceColors: Record<string, string> = {
   'information': '#4caf50'
 };
 
-// 시간 포맷팅 유틸리티 함수 (DynamicFeedWidget과 동일)
-const formatTimeAgo = (dateString: string): string => {
+// 시간 포맷팅 유틸리티 함수 - i18n 적용
+const formatTimeAgo = (dateString: string, t: (key: string) => string): string => {
   const date = new Date(dateString);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -78,13 +82,13 @@ const formatTimeAgo = (dateString: string): string => {
   const diffDay = Math.floor(diffHour / 24);
 
   if (diffDay > 0) {
-    return diffDay === 1 ? '1일 전' : `${diffDay}일 전`;
+    return diffDay === 1 ? t('home.communityFeed.timeAgo.oneDayAgo') : `${diffDay}${t('home.communityFeed.timeAgo.daysAgo')}`;
   } else if (diffHour > 0) {
-    return diffHour === 1 ? '1시간 전' : `${diffHour}시간 전`;
+    return diffHour === 1 ? t('home.communityFeed.timeAgo.oneHourAgo') : `${diffHour}${t('home.communityFeed.timeAgo.hoursAgo')}`;
   } else if (diffMin > 0) {
-    return diffMin === 1 ? '1분 전' : `${diffMin}분 전`;
+    return diffMin === 1 ? t('home.communityFeed.timeAgo.oneMinuteAgo') : `${diffMin}${t('home.communityFeed.timeAgo.minutesAgo')}`;
   } else {
-    return '방금 전';
+    return t('home.communityFeed.timeAgo.justNow');
   }
 };
 
@@ -163,7 +167,7 @@ interface CommunityPreferenceData {
 }
 
 // PostItem 컴포넌트 (DynamicFeedWidget과 동일)
-const PostItem = memo(({ post, onClick }: { post: Post, onClick?: () => void }) => {
+const PostItem = memo(({ post, onClick, t }: { post: Post, onClick?: () => void, t: (key: string) => string }) => {
   // 소스에 따라 다른 스타일 적용
   const sourceColor = sourceColors[post.source] || '#757575';
   
@@ -242,10 +246,10 @@ const PostItem = memo(({ post, onClick }: { post: Post, onClick?: () => void }) 
             variant="caption" 
             sx={{ color: sourceColor, fontWeight: 600, mr: 1 }}
           >
-            {sourceLabels[post.source]}
+            {getSourceLabel(post.source, t)}
           </Typography>
           <Typography variant="caption" color="text.secondary">
-            {formatTimeAgo(post.createdAt)}
+            {formatTimeAgo(post.createdAt, t)}
           </Typography>
         </Box>
         
@@ -362,17 +366,72 @@ const PostItem = memo(({ post, onClick }: { post: Post, onClick?: () => void }) 
   );
 });
 
+// 커뮤니티 태그 번역 함수
+const translateCommunityTag = (tag: string, t: (key: string) => string): string => {
+  // 커뮤니티 태그 매핑
+  const tagMap: Record<string, string> = {
+    // 여행 태그
+    '관광/체험': 'interestTags.tourism',
+    '식도락/맛집': 'interestTags.food_tour', 
+    '교통/이동': 'interestTags.transportation',
+    '숙소/지역정보': 'interestTags.accommodation',
+    '대사관/응급': 'interestTags.embassy',
+    
+    // 생활 태그
+    '부동산/계약': 'interestTags.realestate',
+    '생활환경/편의': 'interestTags.living_env',
+    '문화/생활': 'interestTags.cultural_living', 
+    '주거지 관리/유지': 'interestTags.housing_mgmt',
+    
+    // 유학 태그
+    '학사/캠퍼스': 'interestTags.academic',
+    '학업지원/시설': 'interestTags.study_support',
+    '행정/비자/서류': 'interestTags.admin_visa',
+    '기숙사/주거': 'interestTags.dormitory',
+    
+    // 취업 태그
+    '이력/채용준비': 'interestTags.resume',
+    '비자/법률/노동': 'interestTags.visa_law', 
+    '잡페어/네트워킹': 'interestTags.job_networking',
+    '알바/파트타임': 'interestTags.part_time',
+    
+    // 카테고리 태그
+    '여행': 'mainCategories.travel',
+    '주거': 'mainCategories.living',
+    '유학': 'mainCategories.study',
+    '취업': 'mainCategories.job',
+  };
+  
+  return tagMap[tag] ? t(tagMap[tag]) : tag;
+};
+
+// 커뮤니티 카테고리 번역 함수
+const translateCommunityCategory = (category: string, t: (key: string) => string): string => {
+  const categoryMap: Record<string, string> = {
+    '여행': 'mainCategories.travel',
+    '주거': 'mainCategories.living', 
+    '유학': 'mainCategories.study',
+    '취업': 'mainCategories.job',
+    '자유': 'community.postTypes.free',
+    '모임': 'community.postTypes.meeting',
+  };
+  
+  return categoryMap[category] ? t(categoryMap[category]) : category;
+};
+
 // 커뮤니티 취향 분석 모달 컴포넌트 (UserPreferenceWidget 스타일)
 interface CommunityPreferenceModalProps {
   open: boolean;
   onClose: () => void;
   preference: CommunityPreferenceData;
+  t: (key: string) => string;
 }
 
 const CommunityPreferenceModal: React.FC<CommunityPreferenceModalProps> = ({ 
   open, 
   onClose, 
-  preference 
+  preference,
+  t
 }) => {
   return (
     <Modal
@@ -425,10 +484,10 @@ const CommunityPreferenceModal: React.FC<CommunityPreferenceModalProps> = ({
               <PeopleIcon sx={{ color: 'white', mr: 1.5, fontSize: 22 }} />
               <Box>
                 <Typography variant="h6" fontWeight={600}>
-                  커뮤니티 취향 분석
+                  {t('home.communityFeed.modal.title')}
                 </Typography>
                 <Typography variant="caption" sx={{ opacity: 0.9 }}>
-                  최근 활동을 기반으로 한 관심사 분석
+                  {t('home.communityFeed.modal.subtitle')}
                 </Typography>
               </Box>
             </Box>
@@ -444,7 +503,7 @@ const CommunityPreferenceModal: React.FC<CommunityPreferenceModalProps> = ({
                 sx={{ mb: 1.5, display: 'flex', alignItems: 'center' }}
               >
                 <LoyaltyIcon sx={{ fontSize: 16, mr: 1, color: 'primary.main' }} />
-                관심 키워드
+                {t('home.communityFeed.modal.sections.keywords')}
               </Typography>
 
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.8 }}>
@@ -454,7 +513,7 @@ const CommunityPreferenceModal: React.FC<CommunityPreferenceModalProps> = ({
                   return (
                     <Chip
                       key={keyword.id}
-                      label={keyword.name}
+                      label={translateCommunityTag(keyword.name, t)}
                       size="small"
                       sx={{
                         height: 'auto',
@@ -481,7 +540,7 @@ const CommunityPreferenceModal: React.FC<CommunityPreferenceModalProps> = ({
                 sx={{ mb: 1.5, display: 'flex', alignItems: 'center' }}
               >
                 <LocalOfferIcon sx={{ fontSize: 16, mr: 1, color: 'text.secondary' }} />
-                관심분야 TOP 5
+                {t('home.communityFeed.modal.sections.topCategories')}
               </Typography>
 
               {preference.categoryData.slice(0, 5).map((category, index) => (
@@ -505,7 +564,7 @@ const CommunityPreferenceModal: React.FC<CommunityPreferenceModalProps> = ({
                         }}
                       />
                       <Typography variant="body2" fontWeight={500}>
-                        #{index + 1} {category.name}
+                        #{index + 1} {translateCommunityCategory(category.name, t)}
                       </Typography>
                     </Box>
                     <Typography variant="body2" fontWeight={600} color={category.color}>
@@ -546,6 +605,7 @@ const CommunityFeedWidget: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [preference, setPreference] = useState<CommunityPreferenceData | null>(null);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // 유저 위치 정보 가져오기 (DynamicFeedWidget과 동일)
   const getUserLocation = useCallback(async (): Promise<string> => {
@@ -731,13 +791,15 @@ const CommunityFeedWidget: React.FC = () => {
           startIcon={<RefreshIcon />}
           onClick={loadData}
         >
-          다시 시도
+          {t('home.communityFeed.actions.retry')}
         </Button>
       }
     >
-      {error}
+      {error === '데이터를 불러오는 중 오류가 발생했습니다.' 
+        ? t('home.communityFeed.messages.error')
+        : error}
     </Alert>
-  ), [error, loadData]);
+  ), [error, loadData, t]);
 
   // 데이터 없음 컴포넌트
   const renderEmpty = useCallback((message: string) => (
@@ -771,12 +833,12 @@ const CommunityFeedWidget: React.FC = () => {
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
         <Tabs value={communitySubTab} onChange={(_, v) => setCommunitySubTab(v)} sx={{ ...widgetTabsBase, flex: 1 }}>
-          <Tab label="자유" value="자유" />
-          <Tab label="모임" value="모임" />
+          <Tab label={t('home.communityFeed.tabs.free')} value="자유" />
+          <Tab label={t('home.communityFeed.tabs.meeting')} value="모임" />
         </Tabs>
       </Box>
     );
-  }, [communitySubTab]);
+  }, [communitySubTab, t]);
 
   // 현재 탭에 따른 컨텐츠 렌더링
   const renderTabContent = useMemo(() => {
@@ -786,6 +848,9 @@ const CommunityFeedWidget: React.FC = () => {
     
     // 커뮤니티 하위 탭 컨텐츠
     const posts = communitySubTab === '자유' ? jaYuPosts : moimPosts;
+    const emptyMessage = communitySubTab === '자유' 
+      ? t('home.communityFeed.messages.noFreePosts')
+      : t('home.communityFeed.messages.noMeetingPosts');
     
     return posts.length > 0 
       ? posts.map(post => (
@@ -793,9 +858,10 @@ const CommunityFeedWidget: React.FC = () => {
             key={post.id} 
             post={post} 
             onClick={() => navigate(`/community/post/${post.id}`)}
+            t={t}
           />
         ))
-      : renderEmpty(`${communitySubTab} 게시글이 없습니다`);
+      : renderEmpty(emptyMessage);
   }, [
     isLoading, 
     error, 
@@ -805,7 +871,8 @@ const CommunityFeedWidget: React.FC = () => {
     renderLoading, 
     renderError, 
     renderEmpty,
-    navigate
+    navigate,
+    t
   ]);
 
   // 모달 핸들러
@@ -837,7 +904,7 @@ const CommunityFeedWidget: React.FC = () => {
         {/* 헤더 영역 */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
           <Typography variant="h6" fontWeight={600}>
-            커뮤니티 피드
+            {t('home.communityFeed.title')}
           </Typography>
           <Box>
             <IconButton 
@@ -884,7 +951,9 @@ const CommunityFeedWidget: React.FC = () => {
             sx={{ borderRadius: 2, textTransform: 'none', px: 3 }}
             onClick={() => navigate('/community')}
           >
-            {communitySubTab} 더 보기
+            {communitySubTab === '자유' 
+              ? t('home.communityFeed.actions.seeMoreFree') 
+              : t('home.communityFeed.actions.seeMoreMeeting')}
           </Button>
         </Box>
       </Paper>
@@ -895,6 +964,7 @@ const CommunityFeedWidget: React.FC = () => {
           open={modalOpen}
           onClose={handleCloseModal}
           preference={preference}
+          t={t}
         />
       )}
     </>
