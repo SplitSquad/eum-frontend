@@ -116,6 +116,12 @@ type Post = {
   writer?: User; // 작성자 정보 객체 추가
 };
 
+// 원본 게시글 타입
+type fetchedOriginPost = {
+  title?: string;
+  content?: string;
+};
+
 // 스타일 컴포넌트
 const StyledChip = styled(Chip)(({ theme }) => ({
   backgroundColor: 'rgba(202, 202, 202, 0.2)',
@@ -224,6 +230,9 @@ const PostDetailPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [originTitle, setOriginTitle] = useState<string | null>(null);
+  const [originContent, setOriginContent] = useState<string | null>(null);
+  const [showOriginal, setShowOriginal] = useState(false);
 
   // 신고 기능 관련 상태 추가
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
@@ -307,8 +316,10 @@ const PostDetailPage: React.FC = () => {
           }
         }
 
+
         // 2단계: 게시글 데이터 가져오기 - 조회수 증가는 ViewTracker에서 결정
         const fetchedPost = await api.getPostById(numericPostId, signal);
+
 
         // 요청이 중단되었다면 처리 중단
         if (signal.aborted) {
@@ -370,7 +381,15 @@ const PostDetailPage: React.FC = () => {
           shouldIncreaseViewCount,
           viewCount: mappedPost.viewCount,
         });
-
+        const fetchedOriginPost = (await api.getPostOriginal(numericPostId)) as fetchedOriginPost;
+        if (fetchedOriginPost && typeof fetchedOriginPost === 'object') {
+          setOriginTitle(fetchedOriginPost.title || '[제목 없음]');
+          setOriginContent(fetchedOriginPost.content || '');
+          console.log('[DEBUG] 원문 게시글 로드 성공:', {
+            title: fetchedOriginPost.title,
+            content: fetchedOriginPost.content,
+          });
+        }
         // 상태 업데이트 (React 18 자동 배칭 활용)
         setPost(mappedPost);
         setLoading(false);
@@ -692,6 +711,9 @@ const PostDetailPage: React.FC = () => {
       </Container>
     );
   }
+  const toggleOriginalView = () => {
+    setShowOriginal(prev => !prev);
+  };
 
   return (
     <Container maxWidth="md" sx={{ py: 4, minHeight: 'calc(100vh - 70px)' }}>
@@ -817,6 +839,13 @@ const PostDetailPage: React.FC = () => {
                 })}
               </Box>
             )}
+            <Button
+              variant={showOriginal ? 'contained' : 'outlined'}
+              size="small"
+              onClick={toggleOriginalView}
+            >
+              {showOriginal ? '원문 숨기기' : '원문 보기'}
+            </Button>
           </Box>
 
           {/* 게시글 내용 */}
@@ -837,7 +866,7 @@ const PostDetailPage: React.FC = () => {
                 minHeight: '150px',
               }}
             >
-              {post.content}
+              {showOriginal && originContent !== null ? originContent : post.content}
             </Typography>
 
             {/* 첨부파일 표시 (있는 경우) */}

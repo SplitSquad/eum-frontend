@@ -34,6 +34,7 @@
     "@tiptap/starter-kit": "^2.12.0",
     "@types/styled-components": "^5.1.34",
     "axios": "^1.8.4",
+    "cld3-asm": "^4.0.0",
     "date-fns": "^4.1.0",
     "event-source-polyfill": "^1.0.31",
     "express": "^5.1.0",

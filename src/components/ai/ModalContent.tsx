@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useRef, useEffect } from 'react';
 import { callAgentic } from '@/shared/utils/Agentic';
+import { useModalStore } from '@/shared/store/ModalStore';
 // import { callJobAgent, processCoverLetterResponse } from '@/shared/utils/JobAgent';
 // import { CoverLetterState } from '@/types/CoverLetterTypes';
 
@@ -21,7 +22,13 @@ type Message = {
   post?: string;
 };
 
-export default function ModalContent() {
+// 타입 추가
+interface ModalContentProps {
+  adjustKey?: number;
+  btnRect?: DOMRect;
+}
+
+export default function ModalContent({ adjustKey, btnRect }: ModalContentProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: Date.now(),
@@ -31,7 +38,10 @@ export default function ModalContent() {
   ]);
   const [loading, setLoading] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
   const [input, setInput] = useState('');
+  const { openModal, content } = useModalStore();
+
   const downloadImage = url => {
     fetch(url)
       .then(response => response.blob())
@@ -55,6 +65,21 @@ export default function ModalContent() {
       listRef.current.scrollTop = listRef.current.scrollHeight;
     }
   }, [messages, loading]);
+
+  // 모달 위치 보정: 모달의 오른쪽 아래가 btnRect의 왼쪽 위와 겹치도록
+  useEffect(() => {
+    if (modalRef.current && btnRect) {
+      const modalWidth = modalRef.current.offsetWidth;
+      const modalHeight = modalRef.current.offsetHeight;
+      const x = btnRect.left - modalWidth;
+      const y = btnRect.top - modalHeight;
+      const w: any = window;
+      if (w.__lastModalPos?.x === x && w.__lastModalPos?.y === y) return;
+      w.__lastModalPos = { x, y };
+      openModal(content, { x, y });
+    }
+    // eslint-disable-next-line
+  }, [btnRect]);
 
   const sendMessage = async (msgText?: string) => {
     const text = (msgText ?? input).trim();
@@ -124,7 +149,7 @@ export default function ModalContent() {
   };
 
   return (
-    <div className="flex flex-col h-[400px] w-[350px] bg-white rounded-lg shadow-lg">
+    <div ref={modalRef} className="flex flex-col h-[400px] w-[350px] bg-white rounded-lg shadow-lg">
       {/* 메시지 리스트 */}
       <div ref={listRef} className="flex-1 overflow-auto p-3 space-y-2 bg-gray-50">
         {messages.map(m => (

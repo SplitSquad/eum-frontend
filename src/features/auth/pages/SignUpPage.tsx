@@ -118,7 +118,10 @@ const SignUpInputs = ({
         label={t('signup.email')}
         variant="outlined"
         value={id}
-        onChange={e => setId(e.target.value)}
+        onChange={e => {
+          setId(e.target.value);
+          if (errors.id) errors.id = '';
+        }}
         fullWidth
         autoComplete="username"
         sx={{ background: 'rgba(255,255,255,0.7)' }}
@@ -131,7 +134,10 @@ const SignUpInputs = ({
         variant="outlined"
         type="password"
         value={password}
-        onChange={e => setPassword(e.target.value)}
+        onChange={e => {
+          setPassword(e.target.value);
+          if (errors.password) errors.password = '';
+        }}
         fullWidth
         placeholder={t('signup.passwordPlaceholder')}
         autoComplete="new-password"
@@ -146,7 +152,10 @@ const SignUpInputs = ({
           variant="outlined"
           type="password"
           value={confirmPassword}
-          onChange={e => setConfirmPassword(e.target.value)}
+          onChange={e => {
+            setConfirmPassword(e.target.value);
+            if (errors.confirmPassword) errors.confirmPassword = '';
+          }}
           fullWidth
           placeholder={t('signup.passwordPlaceholder') || '비밀번호를 한 번 더 입력하세요'}
           autoComplete="new-password"
@@ -176,7 +185,10 @@ const SignUpInputs = ({
         label={t('signup.name')}
         variant="outlined"
         value={name}
-        onChange={e => setName(e.target.value)}
+        onChange={e => {
+          setName(e.target.value);
+          if (errors.name) errors.name = '';
+        }}
         fullWidth
         autoComplete="name"
         sx={{ background: 'rgba(255,255,255,0.7)' }}
@@ -188,7 +200,10 @@ const SignUpInputs = ({
         label={t('signup.birthday')}
         variant="outlined"
         value={birthday}
-        onChange={e => setBirthday(e.target.value)}
+        onChange={e => {
+          setBirthday(e.target.value);
+          if (errors.birthday) errors.birthday = '';
+        }}
         fullWidth
         autoComplete="birthday"
         sx={{ background: 'rgba(255,255,255,0.7)' }}
@@ -201,7 +216,10 @@ const SignUpInputs = ({
         label={t('signup.phone')}
         variant="outlined"
         value={phone}
-        onChange={e => setPhone(e.target.value)}
+        onChange={e => {
+          setPhone(e.target.value);
+          if (errors.phone) errors.phone = '';
+        }}
         fullWidth
         autoComplete="phone"
         sx={{ background: 'rgba(255,255,255,0.7)' }}
