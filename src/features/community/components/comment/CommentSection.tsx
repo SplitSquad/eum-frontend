@@ -1319,7 +1319,11 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                                       display: 'block',
                                     }}
                                   >
-                                    <FlagDisplay nation={reply.writer.nation} size="small" showName={false} />
+                                    <FlagDisplay
+                                      nation={reply.writer.nation}
+                                      size="small"
+                                      showName={false}
+                                    />
                                   </Typography>
                                 )}
                                 <Typography variant="caption" color="text.secondary">
@@ -1524,7 +1528,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
             },
           }}
         >
-          인기순
+          {t('community.filters.popular')}
         </Button>
         <Button
           variant={sortBy === 'oldest' ? 'contained' : 'outlined'}

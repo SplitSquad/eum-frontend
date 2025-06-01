@@ -1262,6 +1262,10 @@ const de = {
       'Klicke zuerst auf "Abstimmen", um deine Stimme abzugeben; dein Eintrag erscheint dann im Kommentarbereich.',
     name: 'Debatte',
     comment: {
+      placeholder: 'Kommentar eingeben',
+      pro: 'Zustimmen',
+      con: 'Ablehnen',
+      none: 'Keine Meinung',
       empty: 'Noch keine Kommentare. Sei der Erste und hinterlasse einen Kommentar!',
       add: 'Kommentar hinzufügen',
       newest: 'Neueste',
@@ -1272,6 +1276,10 @@ const de = {
       cancel: 'Abbrechen',
     },
     reply: {
+      hide: 'Antworten ausblenden',
+      pro: 'Zustimmen',
+      con: 'Ablehnen',
+      none: 'Keine Meinung',
       placeholder: 'Antwort eingeben',
       add: 'Antwort hinzufügen',
       edit: 'Antwort bearbeiten',

@@ -1226,6 +1226,10 @@ const zh = {
     commentGuide: '请先点击"投票"按钮提交您的选择；您的发言将显示在评论区。',
     name: '辩论',
     comment: {
+      placeholder: '请输入评论内容',
+      pro: '支持',
+      con: '反对',
+      none: '无',
       empty: '暂无评论，欢迎发表第一个评论！',
       add: '添加评论',
       newest: '最新',
@@ -1236,6 +1240,10 @@ const zh = {
       cancel: '取消',
     },
     reply: {
+      hide: '隐藏回复',
+      pro: '支持',
+      con: '反对',
+      none: '无',
       placeholder: '请输入回复',
       add: '添加回复',
       edit: '编辑回复',

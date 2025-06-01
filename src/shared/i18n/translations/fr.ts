@@ -1265,6 +1265,10 @@ const fr = {
       "Cliquez d'abord sur le bouton ' Voter ' pour enregistrer votre choix ; votre contribution apparaîtra ensuite dans les commentaires.",
     name: 'Débat',
     comment: {
+      placeholder: 'Entrez votre commentaire',
+      pro: 'Pour',
+      con: 'Contre',
+      none: 'Aucun',
       empty: 'Pas de commentaires pour le moment. Soyez le premier à commenter !',
       add: 'Ajouter un commentaire',
       newest: 'Les plus récents',
@@ -1275,6 +1279,10 @@ const fr = {
       cancel: 'Annuler',
     },
     reply: {
+      hide: 'Masquer les réponses',
+      pro: 'Pour',
+      con: 'Contre',
+      none: 'Aucun',
       placeholder: 'Entrez votre réponse',
       add: 'Ajouter une réponse',
       edit: 'Modifier la réponse',

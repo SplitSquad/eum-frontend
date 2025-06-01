@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import CommentApi from '../../api/commentApi';
+import { useTranslation } from '@/shared/i18n';
 
 interface CommentFormProps {
   debateId: number;
@@ -12,6 +13,7 @@ const CommentForm: React.FC<CommentFormProps> = ({ debateId, onSuccess }) => {
   const [error, setError] = useState('');
   const [userName, setUserName] = useState('');
   const [stance, setStance] = useState<'pro' | 'con' | null>(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const storedStance = localStorage.getItem(`stance`);
@@ -108,12 +110,13 @@ const CommentForm: React.FC<CommentFormProps> = ({ debateId, onSuccess }) => {
   return (
     <div className="bg-gray-50 p-4 rounded-lg">
       <div className="mb-3">
-        <h3 className="text-lg font-medium mb-2">의견 작성</h3>
-        {/* 찬반 선택 */}/{/* 댓글 입력 영역 */}
+        <h3 className="text-lg font-medium mb-2">{t('debate.comment.add')}</h3>
+        {/* 찬반 선택 */}
+        {/* 댓글 입력 영역 */}
         <textarea
           value={content}
           onChange={e => setContent(e.target.value)}
-          placeholder="토론 주제에 대한 의견을 작성해주세요."
+          placeholder={t('debate.comment.placeholder')}
           className={`
             w-full p-3 border rounded-lg 
             focus:outline-none focus:ring-2 focus:ring-primary 
@@ -128,20 +131,12 @@ const CommentForm: React.FC<CommentFormProps> = ({ debateId, onSuccess }) => {
           }}
         />
         <div className="flex justify-between items-center mt-1">
-          <div className="text-xs text-gray-500">{content.length}/1000자</div>
+          <div className="text-xs text-gray-500">{content.length}/1000</div>
           {error && <p className="text-sm text-red-500">{error}</p>}
         </div>
       </div>
 
       <div className="flex justify-end gap-2">
-        <button
-          type="button"
-          onClick={handleCancel}
-          className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition"
-          disabled={isSubmitting}
-        >
-          취소
-        </button>
         <button
           type="button"
           onClick={handleSubmit}
@@ -155,10 +150,10 @@ const CommentForm: React.FC<CommentFormProps> = ({ debateId, onSuccess }) => {
           {isSubmitting ? (
             <>
               <span className="inline-block animate-spin mr-2">⏳</span>
-              저장 중...
+              {t('common.saving')}
             </>
           ) : (
-            '댓글 작성'
+            t('debate.comment.add')
           )}
         </button>
       </div>

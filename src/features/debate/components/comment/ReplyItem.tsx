@@ -28,12 +28,14 @@ import ReportDialog, {
   ReportTargetType,
   ServiceType,
 } from '../../../common/components/ReportDialog';
+import { useTranslation } from '@/shared/i18n';
 
 interface ReplyItemProps {
   reply: DebateReply;
   onUpdate: () => void;
 }
 
+const { t } = useTranslation();
 // 스타일 컴포넌트
 const StyledCard = styled(Card)(({ theme }) => ({
   borderRadius: 12,
@@ -270,10 +272,10 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
                 <StanceChip
                   label={
                     extractedStance === 'con'
-                      ? '반대'
+                      ? t('debate.reply.con')
                       : extractedStance === 'pro'
-                        ? '찬성'
-                        : '미투표'
+                        ? t('debate.reply.pro')
+                        : t('debate.reply.none')
                   }
                   stance={extractedStance || undefined}
                   size="small"

@@ -3,15 +3,7 @@ import { useDebateStore } from '../../store';
 import CommentItem from './CommentItem';
 import CommentForm from './CommentForm';
 import Pagination from '../shared/Pagination';
-import {
-  Box,
-  Typography,
-  Button,
-  CircularProgress,
-  Divider,
-  Paper,
-  Stack,
-} from '@mui/material';
+import { Box, Typography, Button, CircularProgress, Divider, Paper, Stack } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import AddCommentIcon from '@mui/icons-material/AddComment';
 import { DebateComment } from '../../types';
@@ -66,15 +58,15 @@ const CommentListContainer = styled(Stack)(({ theme }) => ({
 }));
 
 const CommentSection: React.FC<CommentSectionProps> = ({ debateId }) => {
-  const { 
-    comments, 
-    totalComments, 
-    commentPages, 
-    currentCommentPage, 
-    isLoading, 
+  const {
+    comments,
+    totalComments,
+    commentPages,
+    currentCommentPage,
+    isLoading,
     getComments,
     commentSortBy,
-    setCommentSortBy
+    setCommentSortBy,
   } = useDebateStore();
   const { t } = useTranslation();
   const [showCommentForm, setShowCommentForm] = useState(false);
@@ -159,7 +151,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ debateId }) => {
                 },
               }}
             >
-              기본순
+              {t('community.filters.latest')}
             </Button>
             <Button
               variant={commentSortBy === 'popular' ? 'contained' : 'outlined'}
@@ -173,7 +165,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ debateId }) => {
                 },
               }}
             >
-              인기순
+              {t('community.filters.popular')}
             </Button>
             <Button
               variant={commentSortBy === 'oldest' ? 'contained' : 'outlined'}
@@ -187,7 +179,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ debateId }) => {
                 },
               }}
             >
-              오래된순
+              {t('debate.comment.oldest')}
             </Button>
           </Box>
 

@@ -1,7 +1,7 @@
 import { StudyProfile } from '@/features/onboarding';
 import { duration } from '@mui/material';
 import { profile } from 'console';
-import { de } from 'date-fns/locale';
+import { de, pl } from 'date-fns/locale';
 import { title } from 'process';
 
 const ko = {
@@ -1659,6 +1659,10 @@ const ko = {
     commentGuide: '투표 버튼을 클릭하여 먼저 입장을 선택하면 댓글에 입장이 표시됩니다.',
     name: '토론',
     comment: {
+      placeholder: '댓글을 입력하세요',
+      pro: '찬성',
+      con: '반대',
+      none: '미투표',
       empty: '댓글이 없습니다. 첫 댓글을 남겨주세요!',
       add: '댓글 추가',
       newest: '최신순',
@@ -1669,13 +1673,17 @@ const ko = {
       cancel: '취소',
     },
     reply: {
+      pro: '찬성',
+      con: '반대',
+      none: '미투표',
       replyLoading: '답글을 불러오는 중...',
       placeholder: '답글을 입력하세요',
-      add: '답글 추가',
+      add: '답글 작성',
       edit: '답글 수정',
       delete: '답글 삭제',
       deleteConfirm: '이 답글을 삭제하시겠습니까?',
       noReplies: '답글이 없습니다. 첫 답글을 남겨주세요!',
+      hide: '답글 숨기기',
       cancel: '취소',
     },
     specialIssue: '특별 이슈',

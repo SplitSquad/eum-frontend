@@ -48,6 +48,7 @@ import ReportDialog, {
 } from '../../../common/components/ReportDialog';
 import FlagDisplay from '../../../../shared/components/FlagDisplay';
 import FlagIconSvg from '@/shared/components/FlagIconSvg';
+import { useTranslation } from '@/shared/i18n';
 //import 'flag-icons/css/flag-icons.min.css';
 
 interface CommentItemProps {
@@ -93,6 +94,8 @@ const DateText = styled(Typography)(({ theme }) => ({
   color: grey[600],
   fontSize: '0.8rem',
 }));
+
+const { t } = useTranslation();
 
 const StanceChip = styled(Chip, {
   shouldForwardProp: prop => prop !== 'stance',
@@ -503,7 +506,11 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
             {/* 입장 표시 - 댓글 내용에서 추출한 stance 사용 */}
             <StanceChip
               label={
-                extractedStance === 'con' ? '반대' : extractedStance === 'pro' ? '찬성' : '미투표'
+                extractedStance === 'con'
+                  ? t('debate.comment.con')
+                  : extractedStance === 'pro'
+                    ? t('debate.comment.pro')
+                    : t('debate.comment.none')
               }
               stance={extractedStance || undefined}
               size="small"
@@ -551,7 +558,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
                   setIsEditing(true);
                 }}
               >
-                수정
+                {t('common.edit')}
               </MenuItem>
               <MenuItem
                 onClick={e => {
@@ -560,7 +567,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
                   handleDelete();
                 }}
               >
-                삭제
+                {t('common.delete')}
               </MenuItem>
             </Menu>
           </Box>
@@ -647,7 +654,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
             color={showReplyForm ? 'secondary' : 'primary'}
             type="button"
           >
-            {showReplyForm ? '취소' : '답글 작성'}
+            {showReplyForm ? t('common.cancel') : t('debate.reply.add')}
           </ActionButton>
 
           {replyCount > 0 && (
@@ -659,7 +666,9 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
               sx={{ pointerEvents: 'auto' }}
               type="button"
             >
-              {showReplies ? '답글 숨기기' : `답글 ${replyCount}개`}
+              {showReplies
+                ? t('debate.reply.hide')
+                : `${t('community.comments.replyComment')} ${replyCount}`}
             </ActionButton>
           )}
         </Box>
@@ -734,7 +743,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
           ) : (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 2 }}>
               <Typography variant="body2" color="text.secondary">
-                등록된 답글이 없습니다
+                {t('debate.reply.noReplies')}
               </Typography>
             </Box>
           )}

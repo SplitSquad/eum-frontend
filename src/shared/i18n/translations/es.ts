@@ -1271,6 +1271,10 @@ const es = {
       'Haz clic en el botón Votar para emitir tu voto; tu entrada aparecerá luego en los comentarios.',
     name: 'debate',
     comment: {
+      placeholder: 'Escribe tu comentario aquí',
+      pro: 'A favor',
+      con: 'En contra',
+      none: 'Sin opinión',
       empty: 'Aún no hay comentarios. ¡Sé el primero en comentar!',
       add: 'Agregar comentario',
       newest: 'Más recientes',
@@ -1281,6 +1285,10 @@ const es = {
       cancel: 'Cancelar',
     },
     reply: {
+      hide: 'Ocultar respuestas',
+      pro: 'A favor',
+      con: 'En contra',
+      none: 'Sin opinión',
       placeholder: 'Escribe tu respuesta',
       add: 'Agregar respuesta',
       edit: 'Editar respuesta',

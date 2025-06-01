@@ -1588,6 +1588,10 @@ const en = {
       'Click the Vote button to select your entry first, and your entry will appear in the comments.',
     name: 'debate',
     comment: {
+      placeholder: 'Enter your comment',
+      pro: 'Agree',
+      con: 'Disagree',
+      none: 'No Opinion',
       empty: 'No comments yet. Be the first to comment!',
       add: 'Add Comment',
       newest: 'Newest',
@@ -1598,8 +1602,12 @@ const en = {
       cancel: 'Cancel',
     },
     reply: {
+      pro: 'Agree',
+      con: 'Disagree',
+      none: 'No Opinion',
       placeholder: 'Enter your reply',
       add: 'Add Reply',
+      hide: 'Hide Replies',
       edit: 'Edit Reply',
       delete: 'Delete Reply',
       deleteConfirm: 'Are you sure you want to delete this reply?',
