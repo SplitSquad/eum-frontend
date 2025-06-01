@@ -270,7 +270,7 @@ const DebateItem = memo(({ debate, onClick, t }: { debate: DebatePost, onClick?:
         {/* 카테고리 표시 */}
         {debate.category && (
           <Chip
-            label={debate.category}
+            label={translateDebateCategory(debate.category, t)}
             size="small"
             sx={{
               fontSize: '0.65rem',
