@@ -544,6 +544,7 @@ const ko = {
     },
     // 여행 온보딩
     travel: {
+      finish: '완료',
       interestedCities: {
         title: '관심 도시 설정',
         description:

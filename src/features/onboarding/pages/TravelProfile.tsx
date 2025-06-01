@@ -42,7 +42,6 @@ import { useTranslation } from '@/shared/i18n/';
 
 import CountrySelector from '@/shared/components/CountrySelector';
 
-
 // 아이콘 임포트
 import PersonIcon from '@mui/icons-material/Person';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
@@ -509,7 +508,6 @@ const TravelProfile: React.FC = () => {
                 mb: 2,
               }}
             >
-
               <Box>
                 <FormControl component="fieldset" fullWidth>
                   <FormLabel
@@ -578,7 +576,6 @@ const TravelProfile: React.FC = () => {
                 color="primary"
                 type="number"
               />
-
             </Box>
 
             <Box
@@ -591,7 +588,7 @@ const TravelProfile: React.FC = () => {
               <CountrySelector
                 label={t('onboarding.travel.country')}
                 value={formData.nationality}
-                onChange={(value) => setFormData(prev => ({ ...prev, nationality: value }))}
+                onChange={value => setFormData(prev => ({ ...prev, nationality: value }))}
                 fullWidth
               />
 
@@ -618,7 +615,6 @@ const TravelProfile: React.FC = () => {
                   </MenuItem>
                 ))}
               </StyledTextField>
-
             </Box>
           </StyledPaper>
         );
@@ -640,7 +636,6 @@ const TravelProfile: React.FC = () => {
               </Avatar>
               <Typography variant="h5" sx={{ fontWeight: 600, color: 'text.primary' }}>
                 {t('onboarding.travel.scheduleTitle')}
-
               </Typography>
             </Box>
 
@@ -713,9 +708,7 @@ const TravelProfile: React.FC = () => {
               </Box>
             </Box>
 
-
             <Box sx={{ mt: 3 }}>
-
               <StyledTextField
                 select
                 label={t('onboarding.travel.visaTypeLabel')}
@@ -738,7 +731,6 @@ const TravelProfile: React.FC = () => {
                   </MenuItem>
                 ))}
               </StyledTextField>
-
             </Box>
           </StyledPaper>
         );
@@ -1355,7 +1347,7 @@ const TravelProfile: React.FC = () => {
                 <HealthAndSafetyIcon />
               </Avatar>
               <Typography variant="h5" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                {t('onboarding.emergency.title')}
+                {t('onboarding.emergency.title')} {'1234124124'}
               </Typography>
             </Box>
 
