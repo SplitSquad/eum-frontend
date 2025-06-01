@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDebateStore } from '../store';
 import { Debate } from '../types';
@@ -27,6 +27,7 @@ import DebateLayout from '../components/common/DebateLayout';
 import { formatDate } from '../utils/dateUtils';
 
 import { useTranslation } from '@/shared/i18n';
+import { useLanguageStore } from '@/features/theme/store/languageStore';
 
 // 스타일 컴포넌트
 const CategoryItem = styled(ListItemButton)(({ theme }) => ({
@@ -386,29 +387,39 @@ const CategorySidebar: React.FC<{
 };
 
 const MainIssuesPage: React.FC = () => {
-  const { t } = useTranslation();
   const navigate = useNavigate();
   const {
     debates,
-    isLoading: storeLoading,
-    error: storeError,
-    getDebates,
+    totalPages,
+    currentPage,
+    isLoading: loading,
+    error,
+    getDebates: fetchDebates,
+    setCategory,
+    // 특별 이슈 관련 상태
     todayIssues,
     hotIssue,
     balancedIssue,
     loadingTodayIssues,
     loadingHotIssue,
     loadingBalancedIssue,
-    todayIssuesError,
-    hotIssueError,
-    balancedIssueError,
     fetchSpecialIssues,
     fetchTodayIssues,
     fetchHotIssue,
     fetchBalancedIssue,
+    isLanguageChanging,
+    setLanguageChanging,
   } = useDebateStore();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { t } = useTranslation();
+  const { language } = useLanguageStore();
+
+  // 언어 변경 추적을 위한 ref
+  const previousLanguageRef = useRef(language);
+  const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 카테고리 매핑
   const categoryMappings = {
     all: {
       code: '',
@@ -440,15 +451,62 @@ const MainIssuesPage: React.FC = () => {
     },
   };
 
-  // special label 상태 추가
+  // location.state에서 초기 특별 라벨 및 카테고리 가져오기
   const [selectedSpecialLabel, setSelectedSpecialLabel] = useState<
     'special' | 'today' | 'hot' | 'balanced'
   >('special');
-  // selectedCategory는 항상 key값('all', 'politics', ...)으로 관리
-  const [selectedCategory, setSelectedCategory] = useState<
-    'all' | 'politics' | 'economy' | 'culture' | 'technology' | 'sports' | 'entertainment'
-  >('all');
-  const { isLoading: loading, error, getDebates: fetchDebates } = useDebateStore();
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+
+  // 데이터 새로고침 함수를 useCallback으로 메모화
+  const refreshSpecialIssues = useCallback(async () => {
+    console.log('[INFO] 메인 이슈 페이지 - 특별 이슈 데이터 새로고침 시작');
+    setLanguageChanging(true);
+    
+    try {
+      await fetchSpecialIssues();
+      
+      // 현재 선택된 카테고리가 있으면 해당 카테고리의 토론 목록도 새로고침
+      if (selectedCategory !== 'all') {
+        const apiCategory = categoryMappings[selectedCategory]?.code || '';
+        await fetchDebates(1, 5, apiCategory);
+      }
+    } finally {
+      setLanguageChanging(false);
+      console.log('[INFO] 메인 이슈 페이지 - 데이터 새로고침 완료');
+    }
+  }, [fetchSpecialIssues, fetchDebates, selectedCategory, setLanguageChanging, categoryMappings]);
+
+  // 초기 데이터 로드
+  useEffect(() => {
+    console.log('MainIssuesPage 초기 데이터 로드');
+    fetchSpecialIssues();
+  }, []); // fetchSpecialIssues 의존성 제거
+
+  // 언어 변경 감지 및 데이터 새로고침 (최적화됨)
+  useEffect(() => {
+    // 초기 로드가 아닌 경우에만 새로고침
+    if (previousLanguageRef.current !== language) {
+      console.log(`[INFO] 언어 변경 감지: ${previousLanguageRef.current} → ${language}`);
+      
+      // 기존 타이머 취소
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
+      }
+      
+      // 디바운스된 새로고침 (200ms 지연)
+      refreshTimeoutRef.current = setTimeout(refreshSpecialIssues, 200);
+    }
+    
+    // 현재 언어를 이전 언어로 업데이트
+    previousLanguageRef.current = language;
+    
+    // 컴포넌트 언마운트 시 타이머 정리
+    return () => {
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
+      }
+    };
+  }, [language, refreshSpecialIssues]);
 
   // 카테고리 목록 (API 호출용)
   const categories: Record<string, string> = Object.values(categoryMappings).reduce(
@@ -486,14 +544,6 @@ const MainIssuesPage: React.FC = () => {
     엔터테인먼트: t('debate.categories.entertainment'),
     기타: t('debate.categories.etc'),
   };
-
-  useEffect(() => {
-    // 일반 토론 목록 가져오기 (기본 목록 페이지일 경우)
-    getDebates();
-
-    // 모든 특별 이슈를 한 번의 API 호출로 가져오기
-    fetchSpecialIssues();
-  }, [getDebates, fetchSpecialIssues]);
 
   const handleDebateClick = (id: number) => {
     navigate(`/debate/${id}`);
@@ -715,17 +765,6 @@ const MainIssuesPage: React.FC = () => {
           <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
             <CircularProgress size={30} />
           </Box>
-        ) : todayIssuesError ? (
-          <Paper
-            sx={{
-              p: 3,
-              textAlign: 'center',
-              backgroundColor: 'rgba(255, 255, 255, 0.5)',
-              backdropFilter: 'blur(4px)',
-            }}
-          >
-            <Typography color="error">{todayIssuesError}</Typography>
-          </Paper>
         ) : todayIssues.length > 0 ? (
           todayIssues.map(debate => renderDebateCard(debate as EnhancedDebate, specialLabels[1]))
         ) : (
@@ -760,17 +799,6 @@ const MainIssuesPage: React.FC = () => {
           <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
             <CircularProgress size={30} />
           </Box>
-        ) : hotIssueError ? (
-          <Paper
-            sx={{
-              p: 3,
-              textAlign: 'center',
-              backgroundColor: 'rgba(255, 255, 255, 0.5)',
-              backdropFilter: 'blur(4px)',
-            }}
-          >
-            <Typography color="error">{hotIssueError}</Typography>
-          </Paper>
         ) : hotIssue ? (
           renderDebateCard(hotIssue as EnhancedDebate, specialLabels[2])
         ) : (
@@ -805,17 +833,6 @@ const MainIssuesPage: React.FC = () => {
           <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
             <CircularProgress size={30} />
           </Box>
-        ) : balancedIssueError ? (
-          <Paper
-            sx={{
-              p: 3,
-              textAlign: 'center',
-              backgroundColor: 'rgba(255, 255, 255, 0.5)',
-              backdropFilter: 'blur(4px)',
-            }}
-          >
-            <Typography color="error">{balancedIssueError}</Typography>
-          </Paper>
         ) : balancedIssue ? (
           renderDebateCard(balancedIssue as EnhancedDebate, specialLabels[3])
         ) : (
@@ -930,6 +947,25 @@ const MainIssuesPage: React.FC = () => {
                 : undefined
       }
     >
+      {isLanguageChanging && (
+        <Box 
+          sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 1, 
+            mb: 2, 
+            p: 2, 
+            borderRadius: 1, 
+            bgcolor: 'rgba(255, 255, 255, 0.8)',
+            backdropFilter: 'blur(4px)'
+          }}
+        >
+          <CircularProgress size={20} />
+          <Typography variant="body2" color="text.secondary">
+            {t('common.translating')}...
+          </Typography>
+        </Box>
+      )}
       {renderContent()}
     </DebateLayout>
   );

@@ -1624,8 +1624,12 @@ const fr = {
       write: 'Écrire',
       viewAll: 'Voir tout',
       bookmark: 'Marque-page',
+      bookmarked: 'Enregistré',
       share: 'Partager',
+      shareAction: 'Partager',
       print: 'Imprimer',
+      printAction: 'Imprimer',
+      scrollToTop: 'Haut',
     },
     content: {
       allInfo: 'Toutes les informations',

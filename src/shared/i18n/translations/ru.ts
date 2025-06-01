@@ -1542,8 +1542,12 @@ const ru = {
       write: 'Написать',
       viewAll: 'Посмотреть все',
       bookmark: 'Закладка',
+      bookmarked: 'Сохранено',
       share: 'Поделиться',
+      shareAction: 'Поделиться',
       print: 'Печать',
+      printAction: 'Печать',
+      scrollToTop: 'Наверх',
     },
     content: {
       allInfo: 'Вся информация',

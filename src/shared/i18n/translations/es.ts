@@ -1728,8 +1728,12 @@ const es = {
       write: 'Escribir',
       viewAll: 'Ver todo',
       bookmark: 'Marcador',
+      bookmarked: 'Guardado',
       share: 'Compartir',
+      shareAction: 'Compartir',
       print: 'Imprimir',
+      printAction: 'Imprimir',
+      scrollToTop: 'Ir arriba',
     },
     content: {
       allInfo: 'Toda la info',

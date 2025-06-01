@@ -1959,8 +1959,12 @@ const ko = {
       write: '글쓰기',
       viewAll: '전체보기',
       bookmark: '북마크',
+      bookmarked: '저장됨',
       share: '공유',
+      shareAction: '공유하기',
       print: '인쇄',
+      printAction: '인쇄하기',
+      scrollToTop: '맨 위로',
     },
     content: {
       allInfo: '전체 정보',

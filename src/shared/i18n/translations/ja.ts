@@ -1535,8 +1535,12 @@ const ja = {
       write: '投稿する',
       viewAll: 'すべて見る',
       bookmark: 'ブックマーク',
+      bookmarked: '保存済み',
       share: '共有',
+      shareAction: '共有する',
       print: '印刷',
+      printAction: '印刷する',
+      scrollToTop: '最上部へ',
     },
     content: {
       allInfo: '全情報',

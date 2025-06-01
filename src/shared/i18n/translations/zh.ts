@@ -1545,8 +1545,12 @@ const zh = {
       write: '写文章',
       viewAll: '查看全部',
       bookmark: '收藏',
+      bookmarked: '已收藏',
       share: '分享',
+      shareAction: '分享',
       print: '打印',
+      printAction: '打印',
+      scrollToTop: '回到顶部',
     },
     content: {
       allInfo: '全部信息',

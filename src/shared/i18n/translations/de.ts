@@ -1581,8 +1581,12 @@ const de = {
       write: 'Schreiben',
       viewAll: 'Alle anzeigen',
       bookmark: 'Lesezeichen',
+      bookmarked: 'Gespeichert',
       share: 'Teilen',
+      shareAction: 'Teilen',
       print: 'Drucken',
+      printAction: 'Drucken',
+      scrollToTop: 'Nach oben',
     },
     content: {
       allInfo: 'Alle Informationen',

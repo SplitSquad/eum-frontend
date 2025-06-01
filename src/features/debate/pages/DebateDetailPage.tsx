@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useDebateStore } from '../store';
 import { Debate, mapIsVotedStateToVoteType, ReactionType, mapIsStateToEmotionType } from '../types';
 import {
@@ -25,19 +25,19 @@ import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAlt
 import SentimentVeryDissatisfiedIcon from '@mui/icons-material/SentimentVeryDissatisfied';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { styled } from '@mui/material/styles';
-import { useLocation } from 'react-router-dom';
-import { formatDate, formatRelativeTime } from '../utils/dateUtils';
+import { useTranslation } from '@/shared/i18n';
+import { useLanguageStore } from '@/features/theme/store/languageStore';
 import DebateLayout from '../components/common/DebateLayout';
 import CommentSection from '../components/comment/CommentSection';
 import DebateApi, { getVotesByDebateId } from '../api/debateApi';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { formatDate, formatRelativeTime } from '../utils/dateUtils';
 
 import FlagDisplay from '../../../shared/components/FlagDisplay';
 
 // Import the recharts library for pie charts
 // The recharts package should be installed with: npm install recharts
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
-import { useTranslation } from '@/shared/i18n';
 
 /**-----------------------------------웹로그 관련------------------------------------ **/
 // userId 꺼내오는 헬퍼
@@ -379,6 +379,7 @@ type EmotionType = 'like' | 'dislike' | 'sad' | 'angry' | 'confused';
 const DebateDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { t } = useTranslation();
+  const { language } = useLanguageStore();
   const navigate = useNavigate();
   const {
     currentDebate: debate,
@@ -390,20 +391,32 @@ const DebateDetailPage: React.FC = () => {
     voteOnDebate,
     createComment: submitComment,
     addReaction,
+    isLanguageChanging,
+    setLanguageChanging,
   } = useDebateStore();
   const [userVote, setUserVote] = useState<VoteType | null>(null);
   const [userEmotion, setUserEmotion] = useState<EmotionType | null>(null);
   const [comment, setComment] = useState<string>('');
   const [stance, setStance] = useState<VoteType | null>(null);
+  
+  // 언어 변경 추적을 위한 ref
+  const previousLanguageRef = useRef(language);
+  const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // stance 상태가 바뀔 때마다 로컬스토리지에 저장
-  useEffect(() => {
-    if (stance !== null) {
-      localStorage.setItem('stance', stance);
-    } else {
-      localStorage.removeItem('stance'); // null이면 삭제
+  // 데이터 새로고침 함수들을 useCallback으로 메모화
+  const refreshDebateData = useCallback(async () => {
+    if (!id) return;
+    
+    console.log('[INFO] 토론 상세 페이지 - 데이터 새로고침 시작');
+    setLanguageChanging(true);
+    
+    try {
+      await fetchDebateById(parseInt(id));
+    } finally {
+      setLanguageChanging(false);
+      console.log('[INFO] 토론 상세 페이지 - 데이터 새로고침 완료');
     }
-  }, [stance]);
+  }, [id, fetchDebateById, setLanguageChanging]);
 
   // 직접 API 접근을 위한 함수들
   const directVoteOnDebate = async (debateId: number, stance: 'pro' | 'con'): Promise<any> => {
@@ -418,13 +431,55 @@ const DebateDetailPage: React.FC = () => {
     return await DebateApi.addReaction({ targetId, targetType, reactionType });
   };
 
+  // stance 상태가 바뀔 때마다 로컬스토리지에 저장
   useEffect(() => {
-    if (id) {
+    if (stance !== null) {
+      localStorage.setItem('stance', stance);
+    } else {
+      localStorage.removeItem('stance'); // null이면 삭제
+    }
+  }, [stance]);
+
+  // 초기 데이터 로드 - 중복 방지 개선
+  const hasInitialLoadedRef = useRef(false);
+  
+  useEffect(() => {
+    if (id && !hasInitialLoadedRef.current) {
+      hasInitialLoadedRef.current = true;
       fetchDebateById(parseInt(id));
     }
   }, [id, fetchDebateById]);
 
-  // 토론 상세 불러온 후 댓글도 불러오기
+  // 언어 변경 감지 및 데이터 새로고침 (최적화됨) - 깜빡임 방지
+  useEffect(() => {
+    // 초기 로드가 완료된 후에만 언어 변경에 반응
+    if (hasInitialLoadedRef.current && previousLanguageRef.current !== language && id && debate) {
+      console.log(`[INFO] 언어 변경 감지: ${previousLanguageRef.current} → ${language}`);
+      
+      // 기존 타이머 취소
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
+      }
+      
+      // 디바운스된 새로고침 (500ms 지연으로 증가하여 깜빡임 최소화)
+      refreshTimeoutRef.current = setTimeout(() => {
+        // 언어 변경 중임을 표시하지 않고 백그라운드에서 새로고침
+        fetchDebateById(parseInt(id));
+      }, 500);
+    }
+    
+    // 현재 언어를 이전 언어로 업데이트
+    previousLanguageRef.current = language;
+    
+    // 컴포넌트 언마운트 시 타이머 정리
+    return () => {
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
+      }
+    };
+  }, [language, id, debate, fetchDebateById]);
+
+  // 토론 상세 불러온 후 댓글도 불러오기 - 깜빡임 방지 개선
   useEffect(() => {
     if (debate) {
       // 상태 초기화
@@ -438,20 +493,24 @@ const DebateDetailPage: React.FC = () => {
         setUserVote(null);
         setStance(null);
       }
-      const userId = getUserId() ?? 0;
-      const chatLogPayload = {
-        UID: userId,
-        ClickPath: location.pathname,
-        TAG: debate.category,
-        CurrentPath: location.pathname,
-        Event: 'click',
-        Content: null,
-        Timestamp: new Date().toISOString(),
-      };
-      sendWebLog({ userId, content: JSON.stringify(chatLogPayload) });
+      
+      // 웹로그 전송 - 최초 1회만
+      if (!hasInitialLoadedRef.current) {
+        const userId = getUserId() ?? 0;
+        const chatLogPayload = {
+          UID: userId,
+          ClickPath: location.pathname,
+          TAG: debate.category,
+          CurrentPath: location.pathname,
+          Event: 'click',
+          Content: null,
+          Timestamp: new Date().toISOString(),
+        };
+        sendWebLog({ userId, content: JSON.stringify(chatLogPayload) });
+      }
 
-      // 코멘트 로드
-      if (id) {
+      // 코멘트 로드 - 중복 방지
+      if (id && (!debate.comments || debate.comments.length === 0)) {
         fetchComments(parseInt(id));
       }
 
@@ -513,15 +572,6 @@ const DebateDetailPage: React.FC = () => {
       }
     }
   }, [debate, id, fetchComments]);
-
-  // 언어 변경 감지를 위한 useEffect 추가
-  useEffect(() => {
-    // 토론 데이터가 있을 때만 리렌더링
-    if (debate && id) {
-      // 강제 리렌더링을 위한 상태 업데이트
-      setUserVote(prev => prev);
-    }
-  }, [t, debate, id]); // t가 변경되면 (언어가 변경되면) 리렌더링
 
   const handleVote = (voteType: VoteType) => {
     if (!id || !debate) return;

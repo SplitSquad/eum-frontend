@@ -1912,8 +1912,12 @@ const en = {
       write: 'Write',
       viewAll: 'View All',
       bookmark: 'Bookmark',
+      bookmarked: 'Saved',
       share: 'Share',
+      shareAction: 'Share',
       print: 'Print',
+      printAction: 'Print',
+      scrollToTop: 'Top',
     },
     content: {
       allInfo: 'All Info',
