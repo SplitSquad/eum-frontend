@@ -34,7 +34,6 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 import FlagDisplay from '../../../shared/components/FlagDisplay';
 
-
 // Import the recharts library for pie charts
 // The recharts package should be installed with: npm install recharts
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
@@ -403,6 +402,15 @@ const DebateDetailPage: React.FC = () => {
   const [userEmotion, setUserEmotion] = useState<EmotionType | null>(null);
   const [comment, setComment] = useState<string>('');
   const [stance, setStance] = useState<VoteType | null>(null);
+
+  // stance 상태가 바뀔 때마다 로컬스토리지에 저장
+  useEffect(() => {
+    if (stance !== null) {
+      localStorage.setItem('stance', stance);
+    } else {
+      localStorage.removeItem('stance'); // null이면 삭제
+    }
+  }, [stance]);
 
   // 직접 API 접근을 위한 함수들
   const directVoteOnDebate = async (debateId: number, stance: 'pro' | 'con'): Promise<any> => {
@@ -1322,13 +1330,7 @@ const DebateDetailPage: React.FC = () => {
             return (
               <CountryStatItem key={index}>
                 <CountryFlag>
-
-                  <FlagDisplay 
-                    nation={stat.countryCode} 
-                    size="small"
-                    showName={true}
-                  />
-
+                  <FlagDisplay nation={stat.countryCode} size="small" showName={true} />
                 </CountryFlag>
                 <Box sx={{ flex: 1, ml: 1, mr: 1 }}>
                   <Box

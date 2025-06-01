@@ -96,7 +96,7 @@ const DateText = styled(Typography)(({ theme }) => ({
 
 const StanceChip = styled(Chip, {
   shouldForwardProp: prop => prop !== 'stance',
-})<{ stance?: 'pro' | 'con' }>(({ theme, stance }) => ({
+})<{ stance?: 'pro' | 'con' | null }>(({ theme, stance }) => ({
   borderRadius: 16,
   height: 26,
   fontSize: '0.75rem',
@@ -113,11 +113,17 @@ const StanceChip = styled(Chip, {
         color: '#2e7d32',
         border: '1px solid rgba(76, 175, 80, 0.5)',
       }
-    : {
-        backgroundColor: 'rgba(244, 67, 54, 0.15)',
-        color: '#d32f2f',
-        border: '1px solid rgba(244, 67, 54, 0.5)',
-      }),
+    : stance === 'con'
+      ? {
+          backgroundColor: 'rgba(244, 67, 54, 0.15)',
+          color: '#d32f2f',
+          border: '1px solid rgba(244, 67, 54, 0.5)',
+        }
+      : {
+          backgroundColor: 'rgba(158, 158, 158, 0.15)',
+          color: '#616161',
+          border: '1px solid rgba(158, 158, 158, 0.5)',
+        }),
 }));
 
 const CountryChip = styled(Chip)(({ theme }) => ({
@@ -173,17 +179,18 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
   } = comment || {};
 
   // content에서 stance 정보 추출
-  let extractedStance: 'pro' | 'con' = stance || 'pro';
+  let extractedStance: 'pro' | 'con' | null =
+    stance === 'pro' ? 'pro' : stance === 'con' ? 'con' : null;
   let displayContent = content || '';
 
   // 댓글 내용에서 stance 프리픽스 확인 및 추출
-  if (displayContent.startsWith('【반대】')) {
-    extractedStance = 'con';
-    displayContent = displayContent.replace('【반대】 ', '');
-  } else if (displayContent.startsWith('【찬성】')) {
-    extractedStance = 'pro';
-    displayContent = displayContent.replace('【찬성】 ', '');
-  }
+  // if (displayContent.startsWith('【반대】')) {
+  //   extractedStance = 'con';
+  //   displayContent = displayContent.replace('【반대】 ', '');
+  // } else if (displayContent.startsWith('【찬성】')) {
+  //   extractedStance = 'pro';
+  //   displayContent = displayContent.replace('【찬성】 ', '');
+  // }
 
   // localContent는 이미 초기값으로 설정되었으므로 추가 작업 필요 없음
 
@@ -489,25 +496,19 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, alignItems: 'center' }}>
             <Typography variant="subtitle2">{userName || '익명'}</Typography>
 
-            
             {/* 국가/국기 표시 */}
             {nation && (
-              <FlagDisplay 
-                nation={nation} 
-                size="small"
-                showName={false}
-                sx={{ mr: 0.5 }}
-              />
+              <FlagDisplay nation={nation} size="small" showName={false} sx={{ mr: 0.5 }} />
             )}
-            
-
 
             {/* 입장 표시 - 댓글 내용에서 추출한 stance 사용 */}
-            {/*<StanceChip
-              label={extractedStance === 'con' ? '반대' : '찬성'}
-              stance={extractedStance}
+            <StanceChip
+              label={
+                extractedStance === 'con' ? '반대' : extractedStance === 'pro' ? '찬성' : '미투표'
+              }
+              stance={extractedStance || undefined}
               size="small"
-            />*/}
+            />
           </Box>
         }
         subheader={
