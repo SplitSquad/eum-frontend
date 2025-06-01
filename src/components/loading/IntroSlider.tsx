@@ -31,7 +31,7 @@ function IntroSlider({ currentIndex, children }: Props) {
   return (
     <div className="w-auto h-auto relative overflow-hidden">
       {/* style={{ minHeight: viewportHeight }}>style={{ minHeight: viewportHeight }}*/}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         <motion.div
           key={currentIndex}
           initial={isFirst ? { opacity: 0 } : { opacity: 0, x: 100 }}

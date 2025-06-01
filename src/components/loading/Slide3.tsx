@@ -16,17 +16,26 @@ const Slide3 = () => {
       transition={{ duration: 0.6 }}
     >
       <motion.h2
-        className="text-4xl font-bold bg-gradient-to-r from-purple-300 to-purple-500 bg-clip-text text-transparent"
+        className="text-4xl font-bold bg-clip-text text-transparent"
+        style={{
+          background: 'linear-gradient(90deg, #ECE9E6 0%, #B3B3B3 100%)',
+          WebkitBackgroundClip: 'text',
+          color: 'transparent',
+        }}
         animate={{ scale: [1, 1.05, 1] }}
         transition={{ duration: 2, repeat: Infinity }}
       >
-        환영합니다!
+        Welcome!
       </motion.h2>
-      <p className="text-lg text-gray-600 leading-relaxed max-w-lg">
-        이음이와 함께하는 여정이 곧 시작됩니다.
+      <p className="text-lg leading-relaxed max-w-lg" style={{ color: '#222', fontWeight: 500 }}>
+        Your journey with EUM is about to begin.
         <br />
-        새로운 경험을 위한 준비가 완료되었어요.
+        Everything is ready for your new experience.
       </p>
+      <div
+        className="w-24 h-1 rounded-full mt-4"
+        style={{ background: 'linear-gradient(90deg, #ECE9E6 0%, #B3B3B3 100%)' }}
+      />
     </motion.div>
   );
 };
