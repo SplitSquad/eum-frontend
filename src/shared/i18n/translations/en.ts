@@ -1140,7 +1140,8 @@ const en = {
     },
     auth: {
       googleLoginRequired: 'Google Login Required',
-      googleLoginDescription: 'Calendar features are only available to users logged in with a Google account.',
+      googleLoginDescription:
+        'Calendar features are only available to users logged in with a Google account.',
       feature1: '• Manage schedules by syncing with Google Calendar',
       feature2: '• Real-time sync allows you to check schedules on all devices',
       feature3: '• Never miss important events with notification settings',
@@ -1342,6 +1343,8 @@ const en = {
       authorSearch: 'Author Search',
     },
     posts: {
+      showOriginal: 'Show Original',
+      returnOriginal: 'Go back',
       title: 'Post Title',
       content: 'Post Content',
       author: 'Author',
@@ -1592,7 +1595,7 @@ const en = {
       title: 'Nearby Exploration',
       purposeLabels: {
         travel: 'Travel',
-        work: 'Work', 
+        work: 'Work',
         residence: 'Residence',
         study: 'Study',
       },
@@ -1609,16 +1612,16 @@ const en = {
         culture: 'Cultural Facilities',
         transport: 'Transportation',
         hotel: 'Accommodation',
-        
-        // Work categories  
+
+        // Work categories
         business: 'Office Spaces',
         bank: 'Banks',
         government: 'Government Offices',
-        
+
         // Residence categories
         market: 'Markets/Stores',
         hospital: 'Hospitals',
-        
+
         // Study categories
         university: 'Universities',
         library: 'Libraries',
@@ -1627,7 +1630,7 @@ const en = {
       categoryKeywords: {
         tourist: 'tourist',
         restaurant: 'restaurant',
-        cafe: 'cafe', 
+        cafe: 'cafe',
         culture: 'museum',
         transport: 'subway',
         hotel: 'hotel',
@@ -1812,6 +1815,7 @@ const en = {
     next: 'Next',
   },
   debate: {
+    noDebates: 'No debates available',
     title: 'Hot Issue Debate',
     description:
       "Join the discussion on today's hottest social issues and share your diverse opinions.",
@@ -1854,6 +1858,10 @@ const en = {
     proOpinion: 'Supporting Opinion',
     conOpinion: 'Opposing Opinion',
     comment: {
+      placeholder: 'Enter your comment',
+      pro: 'Agree',
+      con: 'Disagree',
+      none: 'No Opinion',
       empty: 'No comments yet. Be the first to comment!',
       add: 'Add Comment',
       newest: 'Newest',
@@ -1864,8 +1872,12 @@ const en = {
       cancel: 'Cancel',
     },
     reply: {
+      pro: 'Agree',
+      con: 'Disagree',
+      none: 'No Opinion',
       placeholder: 'Enter your reply',
       add: 'Add Reply',
+      hide: 'Hide Replies',
       edit: 'Edit Reply',
       delete: 'Delete Reply',
       deleteConfirm: 'Are you sure you want to delete this reply?',

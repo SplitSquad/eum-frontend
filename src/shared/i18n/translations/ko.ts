@@ -1,7 +1,7 @@
 import { StudyProfile } from '@/features/onboarding';
 import { duration } from '@mui/material';
 import { profile } from 'console';
-import { de } from 'date-fns/locale';
+import { de, pl } from 'date-fns/locale';
 import { title } from 'process';
 
 const ko = {
@@ -544,6 +544,7 @@ const ko = {
     },
     // 여행 온보딩
     travel: {
+      finish: '완료',
       interestedCities: {
         title: '관심 도시 설정',
         description:
@@ -1381,6 +1382,8 @@ const ko = {
       authorSearch: '작성자 검색',
     },
     posts: {
+      showOriginal: '원본 보기',
+      returnOriginal: '돌아가기',
       title: '게시글 제목',
       content: '게시글 내용',
       author: '작성자',
@@ -1631,7 +1634,7 @@ const ko = {
       title: '주변 탐색',
       purposeLabels: {
         travel: '여행',
-        work: '취업', 
+        work: '취업',
         residence: '거주',
         study: '유학',
       },
@@ -1648,16 +1651,16 @@ const ko = {
         culture: '문화시설',
         transport: '교통',
         hotel: '숙박',
-        
-        // 취업 카테고리  
+
+        // 취업 카테고리
         business: '사무공간',
         bank: '은행',
         government: '관공서',
-        
+
         // 거주 카테고리
         market: '마트/시장',
         hospital: '병원',
-        
+
         // 유학 카테고리
         university: '대학교',
         library: '도서관',
@@ -1666,7 +1669,7 @@ const ko = {
       categoryKeywords: {
         tourist: '관광',
         restaurant: '맛집',
-        cafe: '카페', 
+        cafe: '카페',
         culture: '박물관',
         transport: '지하철역',
         hotel: '호텔',
@@ -1860,6 +1863,7 @@ const ko = {
     next: '다음',
   },
   debate: {
+    noDebates: '등록된 토론이 없습니다.',
     title: '핫 이슈 토론',
     description: '지금 가장 뜨거운 사회 이슈에 대해 자유롭게 토론하고 다양한 의견을 나눠보세요.',
     categories: {
@@ -1900,6 +1904,10 @@ const ko = {
     proOpinion: '찬성측 의견',
     conOpinion: '반대측 의견',
     comment: {
+      placeholder: '댓글을 입력하세요',
+      pro: '찬성',
+      con: '반대',
+      none: '미투표',
       empty: '댓글이 없습니다. 첫 댓글을 남겨주세요!',
       add: '댓글 추가',
       newest: '최신순',
@@ -1910,12 +1918,17 @@ const ko = {
       cancel: '취소',
     },
     reply: {
+      pro: '찬성',
+      con: '반대',
+      none: '미투표',
+      replyLoading: '답글을 불러오는 중...',
       placeholder: '답글을 입력하세요',
-      add: '답글 추가',
+      add: '답글 작성',
       edit: '답글 수정',
       delete: '답글 삭제',
       deleteConfirm: '이 답글을 삭제하시겠습니까?',
       noReplies: '답글이 없습니다. 첫 답글을 남겨주세요!',
+      hide: '답글 숨기기',
       cancel: '취소',
     },
     specialIssue: '특별 이슈',

@@ -48,6 +48,7 @@ import ReportDialog, {
 } from '../../../common/components/ReportDialog';
 import FlagDisplay from '../../../../shared/components/FlagDisplay';
 import FlagIconSvg from '@/shared/components/FlagIconSvg';
+import { useTranslation } from '@/shared/i18n';
 //import 'flag-icons/css/flag-icons.min.css';
 
 interface CommentItemProps {
@@ -94,9 +95,11 @@ const DateText = styled(Typography)(({ theme }) => ({
   fontSize: '0.8rem',
 }));
 
+const { t } = useTranslation();
+
 const StanceChip = styled(Chip, {
   shouldForwardProp: prop => prop !== 'stance',
-})<{ stance?: 'pro' | 'con' }>(({ theme, stance }) => ({
+})<{ stance?: 'pro' | 'con' | null }>(({ theme, stance }) => ({
   borderRadius: 16,
   height: 26,
   fontSize: '0.75rem',
@@ -113,11 +116,17 @@ const StanceChip = styled(Chip, {
         color: '#2e7d32',
         border: '1px solid rgba(76, 175, 80, 0.5)',
       }
-    : {
-        backgroundColor: 'rgba(244, 67, 54, 0.15)',
-        color: '#d32f2f',
-        border: '1px solid rgba(244, 67, 54, 0.5)',
-      }),
+    : stance === 'con'
+      ? {
+          backgroundColor: 'rgba(244, 67, 54, 0.15)',
+          color: '#d32f2f',
+          border: '1px solid rgba(244, 67, 54, 0.5)',
+        }
+      : {
+          backgroundColor: 'rgba(158, 158, 158, 0.15)',
+          color: '#616161',
+          border: '1px solid rgba(158, 158, 158, 0.5)',
+        }),
 }));
 
 const CountryChip = styled(Chip)(({ theme }) => ({
@@ -173,24 +182,25 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
   } = comment || {};
 
   // content에서 stance 정보 추출
-  let extractedStance: 'pro' | 'con' = stance || 'pro';
+  let extractedStance: 'pro' | 'con' | null =
+    stance === 'pro' ? 'pro' : stance === 'con' ? 'con' : null;
   let displayContent = content || '';
 
-  // 댓글 내용에서 stance 프리픽스 확인 및 제거 - 기존 접두사가 있다면 제거만 하고 새로 추가하지 않음
-  if (displayContent.startsWith('【반대】')) {
-    extractedStance = 'con';
-    displayContent = displayContent.replace('【반대】 ', '');
-  } else if (displayContent.startsWith('【찬성】')) {
-    extractedStance = 'pro';
-    displayContent = displayContent.replace('【찬성】 ', '');
-  }
+  // 댓글 내용에서 stance 프리픽스 확인 및 추출
+  // if (displayContent.startsWith('【반대】')) {
+  //   extractedStance = 'con';
+  //   displayContent = displayContent.replace('【반대】 ', '');
+  // } else if (displayContent.startsWith('【찬성】')) {
+  //   extractedStance = 'pro';
+  //   displayContent = displayContent.replace('【찬성】 ', '');
+  // }
 
   // localContent는 이미 초기값으로 설정되었으므로 추가 작업 필요 없음
 
   // 추가 디버그 로그
-  console.log(
-    `[DEBUG] 토론 댓글 ID: ${id}, 작성자 ID: ${userId}, 작성자 이름: ${userName}, 찬반 입장: ${extractedStance}, 원본: ${content}, 표시: ${displayContent}, 국가 코드: ${nation}, `
-  );
+  // console.log(
+  //   `[DEBUG] 토론 댓글 ID: ${id}, 작성자 ID: ${userId}, 작성자 이름: ${userName}, 찬반 입장: ${extractedStance}, 원본: ${content}, 표시: ${displayContent}, 국가 코드: ${nation}, `
+  // );
 
   // Store access
   const {
@@ -488,25 +498,23 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, alignItems: 'center' }}>
             <Typography variant="subtitle2">{userName || '익명'}</Typography>
 
-            
             {/* 국가/국기 표시 */}
             {nation && (
-              <FlagDisplay 
-                nation={nation} 
-                size="small"
-                showName={false}
-                sx={{ mr: 0.5 }}
-              />
+              <FlagDisplay nation={nation} size="small" showName={false} sx={{ mr: 0.5 }} />
             )}
-            
-
 
             {/* 입장 표시 - 댓글 내용에서 추출한 stance 사용 */}
-            {/*<StanceChip
-              label={extractedStance === 'con' ? '반대' : '찬성'}
-              stance={extractedStance}
+            <StanceChip
+              label={
+                extractedStance === 'con'
+                  ? t('debate.comment.con')
+                  : extractedStance === 'pro'
+                    ? t('debate.comment.pro')
+                    : t('debate.comment.none')
+              }
+              stance={extractedStance || undefined}
               size="small"
-            />*/}
+            />
           </Box>
         }
         subheader={
@@ -550,7 +558,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
                   setIsEditing(true);
                 }}
               >
-                수정
+                {t('common.edit')}
               </MenuItem>
               <MenuItem
                 onClick={e => {
@@ -559,7 +567,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
                   handleDelete();
                 }}
               >
-                삭제
+                {t('common.delete')}
               </MenuItem>
             </Menu>
           </Box>
@@ -646,7 +654,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
             color={showReplyForm ? 'secondary' : 'primary'}
             type="button"
           >
-            {showReplyForm ? '취소' : '답글 작성'}
+            {showReplyForm ? t('common.cancel') : t('debate.reply.add')}
           </ActionButton>
 
           {replyCount > 0 && (
@@ -658,7 +666,9 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
               sx={{ pointerEvents: 'auto' }}
               type="button"
             >
-              {showReplies ? '답글 숨기기' : `답글 ${replyCount}개`}
+              {showReplies
+                ? t('debate.reply.hide')
+                : `${t('community.comments.replyComment')} ${replyCount}`}
             </ActionButton>
           )}
         </Box>
@@ -733,7 +743,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
           ) : (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 2 }}>
               <Typography variant="body2" color="text.secondary">
-                등록된 답글이 없습니다
+                {t('debate.reply.noReplies')}
               </Typography>
             </Box>
           )}

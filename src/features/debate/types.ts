@@ -76,7 +76,7 @@ export interface DebateComment {
   };
 
   // 사용자의 찬반 의견
-  stance: 'pro' | 'con';
+  stance: 'pro' | 'con' | null;
 
   // 대댓글 수
   replyCount: number;
@@ -100,6 +100,7 @@ export interface DebateReply {
   content: string;
   createdAt: string;
   updatedAt?: string;
+  voteState?: '찬성' | '반대' | null; // 입장 여부
 
   // 감정표현
   reactions: {
@@ -110,6 +111,8 @@ export interface DebateReply {
     sad: number;
     unsure: number;
   };
+
+  stance?: 'pro' | 'con' | null; // 입장 여부
 
   // 국가 정보
   nation?: string; // 국가 정보 추가
@@ -231,7 +234,8 @@ export interface CommentResDto {
   userName: string;
   userId?: number; // 백엔드에서 userId를 제공할 수 있음
   createdAt: string;
-  stance?: 'pro' | 'con';
+  stance?: 'pro' | 'con' | null;
+  voteState?: '찬성' | '반대'; // '찬성' 또는 '반대'
   nation?: string; // 국가 정보 추가
   countryCode?: string; // 국가 코드 추가
   countryName?: string; // 국가명 추가
@@ -245,6 +249,8 @@ export interface ReplyResDto {
   content: string;
   userName: string;
   userId?: number; // 백엔드에서 userId를 제공할 수 있음
+  stance?: 'pro' | 'con' | null;
+  voteState?: '찬성' | '반대' | null; // 입장 여부
   createdAt: string;
   nation?: string; // 국가 정보 추가
   countryCode?: string; // 국가 코드 추가
@@ -304,23 +310,21 @@ export function mapCommentResToFrontend(dto: CommentResDto, debateId: number): D
     `[DEBUG] 국가 정보 확인 - nation: ${dto.nation}, countryCode: ${dto.countryCode}, countryName: ${dto.countryName}`
   );
 
-  // 댓글 내용으로부터 stance 접두사 제거 (기존 접두사가 있다면 제거만 하고 새로 추가하지 않음)
-  let extractedStance: 'pro' | 'con' = 'pro'; // 기본값은 pro
+  // 댓글 내용으로부터 stance 값 추출
+  // let extractedStance: 'pro' | 'con' = 'null'; // 기본값은 pro
   let content = dto.content || '';
 
-  // 댓글 내용에서 stance 접두사 확인 및 제거
-  if (content.startsWith('【반대】')) {
-    extractedStance = 'con';
-    content = content.replace('【반대】 ', ''); // 접두사 제거
-    console.log(`[DEBUG] 댓글 ID ${dto.commentId}에서 반대 의견 접두사 제거`);
-  } else if (content.startsWith('【찬성】')) {
-    extractedStance = 'pro';
-    content = content.replace('【찬성】 ', ''); // 접두사 제거
-    console.log(`[DEBUG] 댓글 ID ${dto.commentId}에서 찬성 의견 접두사 제거`);
-  }
+  // // 댓글 내용에서 stance 정보 확인
+  // if (content.startsWith('【반대】')) {
+  //   extractedStance = 'con';
+  //   console.log(`[DEBUG] 댓글 ID ${dto.commentId}에서 반대 의견 접두사 발견`);
+  // } else if (content.startsWith('【찬성】')) {
+  //   extractedStance = 'pro';
+  //   console.log(`[DEBUG] 댓글 ID ${dto.commentId}에서 찬성 의견 접두사 발견`);
+  // }
 
   // stance 값 디버깅 출력
-  console.log(`[DEBUG] 댓글 ID: ${dto.commentId}의 최종 stance 값:`, extractedStance);
+  // console.log(`[DEBUG] 댓글 ID: ${dto.commentId}의 최종 stance 값:`, extractedStance);
 
   return {
     id: dto.commentId,
@@ -337,7 +341,7 @@ export function mapCommentResToFrontend(dto: CommentResDto, debateId: number): D
       sad: 0,
       unsure: 0,
     },
-    stance: dto.stance || extractedStance, // 1순위: 백엔드 응답의 stance, 2순위: 내용에서 추출한 값, 3순위: 기본값 'pro'
+    stance: dto.stance === 'pro' || dto.stance === 'con' ? dto.stance : null, // 1순위: 백엔드 응답의 stance, 2순위: 기본값 'pro'
     replyCount: dto.reply || 0,
     isState: dto.isState,
     nation: dto.nation,
@@ -369,6 +373,7 @@ export function mapReplyResToFrontend(dto: ReplyResDto, commentId: number): Deba
       unsure: 0, // 백엔드에 없음
     },
     isState: dto.isState,
+    stance: dto.stance === 'pro' || dto.stance === 'con' ? dto.stance : null, // 1순위: 백엔드 응답의 stance, 2순위: 기본값 'pro'
     nation: dto.nation,
     countryCode: dto.countryCode,
     countryName: dto.countryName,

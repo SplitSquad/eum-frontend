@@ -316,10 +316,8 @@ const PostDetailPage: React.FC = () => {
           }
         }
 
-
         // 2단계: 게시글 데이터 가져오기 - 조회수 증가는 ViewTracker에서 결정
         const fetchedPost = await api.getPostById(numericPostId, signal);
-
 
         // 요청이 중단되었다면 처리 중단
         if (signal.aborted) {
@@ -844,7 +842,9 @@ const PostDetailPage: React.FC = () => {
               size="small"
               onClick={toggleOriginalView}
             >
-              {showOriginal ? '원문 숨기기' : '원문 보기'}
+              {showOriginal
+                ? t('community.posts.returnOriginal')
+                : t('community.posts.showOriginal')}
             </Button>
           </Box>
 

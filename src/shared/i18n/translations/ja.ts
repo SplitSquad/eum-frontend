@@ -779,7 +779,8 @@ const ja = {
     },
     auth: {
       googleLoginRequired: 'Googleログインが必要',
-      googleLoginDescription: 'カレンダー機能はGoogleアカウントでログインしたユーザーのみ利用できます。',
+      googleLoginDescription:
+        'カレンダー機能はGoogleアカウントでログインしたユーザーのみ利用できます。',
       feature1: '• Googleカレンダーと連携してスケジュールを管理できます',
       feature2: '• リアルタイム同期により全てのデバイスでスケジュールを確認できます',
       feature3: '• 通知設定で重要なイベントを見逃しません',
@@ -975,6 +976,8 @@ const ja = {
       authorSearch: '作成者検索',
     },
     posts: {
+      showOriginal: '元の投稿を表示',
+      returnOriginal: '元の投稿に戻る',
       title: '投稿タイトル',
       content: '投稿内容',
       author: '作成者',
@@ -1220,7 +1223,7 @@ const ja = {
       title: '周辺探索',
       purposeLabels: {
         travel: '旅行',
-        work: '就職', 
+        work: '就職',
         residence: '居住',
         study: '留学',
       },
@@ -1237,16 +1240,16 @@ const ja = {
         culture: '文化施設',
         transport: '交通',
         hotel: '宿泊',
-        
-        // 就職カテゴリ  
+
+        // 就職カテゴリ
         business: 'オフィス空間',
         bank: '銀行',
         government: '官公庁',
-        
+
         // 居住カテゴリ
         market: 'マート/市場',
         hospital: '病院',
-        
+
         // 留学カテゴリ
         university: '大学',
         library: '図書館',
@@ -1255,7 +1258,7 @@ const ja = {
       categoryKeywords: {
         tourist: '観光',
         restaurant: 'レストラン',
-        cafe: 'カフェ', 
+        cafe: 'カフェ',
         culture: '博物館',
         transport: '地下鉄駅',
         hotel: 'ホテル',
@@ -1437,8 +1440,10 @@ const ja = {
     next: '次へ',
   },
   debate: {
-    title: 'ホットイシュー討論',
-    description: '今最も注目されている社会問題について自由に討論し、多様な意見を交わしましょう。',
+    noDebates: '現在のところディベートはありません',
+    title: 'ホットイシューディベート',
+    description:
+      '今最も注目されている社会的な話題について自由に議論し、多様な意見を交換しましょう。',
     categories: {
       title: 'カテゴリ',
       all: '全て',
@@ -1477,16 +1482,24 @@ const ja = {
     proOpinion: '賛成意見',
     conOpinion: '反対意見',
     comment: {
-      empty: 'コメントがありません。最初のコメントを残してください！',
-      add: 'コメント追加',
-      newest: '最新順',
-      oldest: '古い順',
-      mostLiked: '人気順',
-      reply: 'コメント',
-      order: '並び替え',
-      cancel: 'キャンセル',
+      placeholder: 'コメントを入力してください',
+      pro: '賛成',
+      con: '反対',
+      none: 'なし',
+      empty: '暂无评论，欢迎发表第一个评论！',
+      add: '添加评论',
+      newest: '最新',
+      oldest: '最早',
+      mostLiked: '最受欢迎',
+      reply: '回复',
+      order: '排序',
+      cancel: '取消',
     },
     reply: {
+      hide: '非表示',
+      pro: '賛成',
+      con: '反対',
+      none: 'なし',
       placeholder: '返信を入力してください',
       add: '返信追加',
       edit: '返信編集',

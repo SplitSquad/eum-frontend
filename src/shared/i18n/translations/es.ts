@@ -951,7 +951,8 @@ const es = {
     },
     auth: {
       googleLoginRequired: 'Inicio de sesión con Google requerido',
-      googleLoginDescription: 'La función de calendario está disponible solo para usuarios que han iniciado sesión con una cuenta de Google.',
+      googleLoginDescription:
+        'La función de calendario está disponible solo para usuarios que han iniciado sesión con una cuenta de Google.',
       feature1: '• Gestión de horarios sincronizando con Google Calendar',
       feature2: '• Sincronización en tiempo real permite ver horarios en todos los dispositivos',
       feature3: '• Configuración de notificaciones para no perderse eventos importantes',
@@ -1162,6 +1163,8 @@ const es = {
       authorSearch: 'Búsqueda de autor',
     },
     posts: {
+      showOriginal: 'Ver publicación original',
+      returnOriginal: 'Volver a la publicación original',
       title: 'Título de publicación',
       content: 'Contenido de publicación',
       author: 'Autor',
@@ -1406,7 +1409,7 @@ const es = {
       title: 'Exploración de alrededores',
       purposeLabels: {
         travel: 'Viaje',
-        work: 'Trabajo', 
+        work: 'Trabajo',
         residence: 'Residencia',
         study: 'Estudio',
       },
@@ -1423,16 +1426,16 @@ const es = {
         culture: 'Instalaciones culturales',
         transport: 'Transporte',
         hotel: 'Alojamiento',
-        
-        // Categorías de trabajo  
+
+        // Categorías de trabajo
         business: 'Espacios de oficina',
         bank: 'Bancos',
         government: 'Oficinas gubernamentales',
-        
+
         // Categorías de residencia
         market: 'Mercados/Tiendas',
         hospital: 'Hospitales',
-        
+
         // Categorías de estudio
         university: 'Universidades',
         library: 'Bibliotecas',
@@ -1441,7 +1444,7 @@ const es = {
       categoryKeywords: {
         tourist: 'turístico',
         restaurant: 'restaurante',
-        cafe: 'café', 
+        cafe: 'café',
         culture: 'museo',
         transport: 'metro',
         hotel: 'hotel',
@@ -1627,8 +1630,12 @@ const es = {
     next: 'Siguiente',
   },
   debate: {
-    title: 'Debate de Temas Candentes',
-    description: 'Únete a la discusión sobre los temas sociales más candentes de hoy y comparte tus diversas opiniones.',
+    showOriginal: 'prospecto',
+    returnOriginal: 'vuelta',
+    noDebates: 'No hay debates activos en este momento.',
+    title: 'Debate de temas candentes',
+    description:
+      'Participa en el debate sobre los temas sociales más candentes del momento y comparte tus opiniones diversas.',
     categories: {
       title: 'Categoría',
       all: 'Todos',
@@ -1661,12 +1668,17 @@ const es = {
     noParticipationData: 'No hay datos de participación disponibles',
     commentSection: 'Por favor respeta las diversas opiniones de las personas.',
     currentVote: 'Posición seleccionada',
-    commentGuide: 'Haz clic en el botón Votar para seleccionar tu posición primero, y tu posición aparecerá en los comentarios.',
+    commentGuide:
+      'Haz clic en el botón Votar para seleccionar tu posición primero, y tu posición aparecerá en los comentarios.',
     name: 'debate',
     topicTitle: 'Tema de Debate',
     proOpinion: 'Opinión a Favor',
     conOpinion: 'Opinión en Contra',
     comment: {
+      placeholder: 'Escribe tu comentario aquí',
+      pro: 'A favor',
+      con: 'En contra',
+      none: 'Sin opinión',
       empty: 'Aún no hay comentarios. ¡Sé el primero en comentar!',
       add: 'Agregar Comentario',
       newest: 'Más Recientes',
@@ -1677,11 +1689,15 @@ const es = {
       cancel: 'Cancelar',
     },
     reply: {
-      placeholder: 'Ingresa tu respuesta',
-      add: 'Agregar Respuesta',
-      edit: 'Editar Respuesta',
-      delete: 'Eliminar Respuesta',
-      deleteConfirm: '¿Estás seguro de que quieres eliminar esta respuesta?',
+      hide: 'Ocultar respuestas',
+      pro: 'A favor',
+      con: 'En contra',
+      none: 'Sin opinión',
+      placeholder: 'Escribe tu respuesta',
+      add: 'Agregar respuesta',
+      edit: 'Editar respuesta',
+      delete: 'Eliminar respuesta',
+      deleteConfirm: '¿Estás seguro de que deseas eliminar esta respuesta?',
       noReplies: 'Aún no hay respuestas. ¡Sé el primero en responder!',
       cancel: 'Cancelar',
     },

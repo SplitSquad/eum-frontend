@@ -703,7 +703,7 @@ const fr = {
           },
           indoorStay: {
             title: 'Activité Intérieure',
-            description: 'Restez en sécurité à l\'intérieur',
+            description: "Restez en sécurité à l'intérieur",
           },
           onlineActivity: {
             title: 'Activité en Ligne',
@@ -723,7 +723,7 @@ const fr = {
         sunny: {
           1: "Beau temps aujourd'hui ! Parfait pour une promenade.",
           2: 'Beau soleil. Excellent temps pour les activités extérieures.',
-          3: 'Ouvrez les fenêtres et respirez l\'air frais.',
+          3: "Ouvrez les fenêtres et respirez l'air frais.",
         },
         cloudy: {
           1: 'Nuageux mais encore bon temps pour les activités extérieures.',
@@ -736,7 +736,7 @@ const fr = {
           3: "Attention aux niveaux d'humidité car cela affecte le confort.",
         },
         rain: {
-          1: 'Il pleut. N\'oubliez pas votre parapluie !',
+          1: "Il pleut. N'oubliez pas votre parapluie !",
           2: "Que diriez-vous de profiter d'une tasse de thé à l'intérieur aujourd'hui ?",
           3: 'Regarder des films un jour de pluie sonne bien aussi.',
         },
@@ -746,14 +746,14 @@ const fr = {
           3: 'Réchauffez-vous avec des boissons chaudes.',
         },
         fog: {
-          1: 'Temps brumeux aujourd\'hui. Conduisez prudemment avec une visibilité réduite.',
-          2: 'Restez en sécurité à l\'intérieur quand la visibilité est mauvaise.',
+          1: "Temps brumeux aujourd'hui. Conduisez prudemment avec une visibilité réduite.",
+          2: "Restez en sécurité à l'intérieur quand la visibilité est mauvaise.",
           3: 'Temps parfait pour profiter du contenu en ligne à la maison.',
         },
       },
       apiErrors: {
         geolocationNotSupported: 'Geolocation is not supported by this browser.',
-        apiCallFailed: 'Échec de l\'appel API Administration Météorologique Coréenne',
+        apiCallFailed: "Échec de l'appel API Administration Météorologique Coréenne",
         invalidApiResponse: 'Invalid API response format',
         weatherInfoFailed: 'Échec de récupération des informations météo',
         locationFailed: 'Échec du chargement des informations de localisation/météo',
@@ -780,9 +780,11 @@ const fr = {
       },
       auth: {
         googleLoginRequired: 'Connexion Google requise',
-        googleLoginDescription: 'La fonction calendrier est disponible uniquement pour les utilisateurs connectés avec un compte Google.',
+        googleLoginDescription:
+          'La fonction calendrier est disponible uniquement pour les utilisateurs connectés avec un compte Google.',
         feature1: '• Gestion des horaires en synchronisation avec Google Agenda',
-        feature2: '• Synchronisation en temps réel permettant de consulter les horaires sur tous les appareils',
+        feature2:
+          '• Synchronisation en temps réel permettant de consulter les horaires sur tous les appareils',
         feature3: '• Paramètres de notification pour ne pas manquer les événements importants',
       },
       events: {
@@ -832,7 +834,7 @@ const fr = {
       nearbyPlaces: 'Lieux Proches',
     },
     infoFeed: {
-      title: 'Flux d\'Informations',
+      title: "Flux d'Informations",
       subtitle: 'Information',
       difficultyLabels: {
         beginner: 'Débutant',
@@ -846,7 +848,7 @@ const fr = {
         tutorial: 'Tutoriel',
       },
       timeAgo: {
-        justNow: 'À l\'instant',
+        justNow: "À l'instant",
         minuteAgo: 'il y a 1 minute',
         minutesAgo: 'il y a {{count}} minutes',
         hourAgo: 'il y a 1 heure',
@@ -856,8 +858,8 @@ const fr = {
       },
       actions: {
         refresh: 'Actualiser',
-        openAnalysis: 'Voir l\'analyse des préférences',
-        viewMore: 'Voir plus d\'informations',
+        openAnalysis: "Voir l'analyse des préférences",
+        viewMore: "Voir plus d'informations",
         retry: 'Réessayer',
       },
       messages: {
@@ -868,12 +870,12 @@ const fr = {
         noContent: 'Aucun contenu disponible',
       },
       modal: {
-        title: 'Analyse des Préférences d\'Information',
+        title: "Analyse des Préférences d'Information",
         subtitle: 'Analyse des intérêts informationnels basée sur les activités récentes',
         close: 'Fermer',
         sections: {
-          keywords: 'Mots-clés d\'Intérêt',
-          topCategories: 'Top 5 Domaines d\'Intérêt',
+          keywords: "Mots-clés d'Intérêt",
+          topCategories: "Top 5 Domaines d'Intérêt",
         },
       },
     },
@@ -1052,6 +1054,8 @@ const fr = {
       authorSearch: "Recherche d'auteur",
     },
     posts: {
+      showOriginal: 'Afficher la publication originale',
+      returnOriginal: 'Retour à la publication originale',
       title: 'Titre de publication',
       content: 'Contenu de publication',
       author: 'Auteur',
@@ -1306,7 +1310,7 @@ const fr = {
       title: 'Exploration des environs',
       purposeLabels: {
         travel: 'Voyage',
-        work: 'Travail', 
+        work: 'Travail',
         residence: 'Résidence',
         study: 'Études',
       },
@@ -1323,16 +1327,16 @@ const fr = {
         culture: 'Installations culturelles',
         transport: 'Transport',
         hotel: 'Hébergement',
-        
-        // Catégories de travail  
+
+        // Catégories de travail
         business: 'Espaces de bureau',
         bank: 'Banques',
         government: 'Bureaux gouvernementaux',
-        
+
         // Catégories de résidence
         market: 'Marchés/Magasins',
         hospital: 'Hôpitaux',
-        
+
         // Catégories d\'études
         university: 'Universités',
         library: 'Bibliothèques',
@@ -1341,7 +1345,7 @@ const fr = {
       categoryKeywords: {
         tourist: 'touristique',
         restaurant: 'restaurant',
-        cafe: 'café', 
+        cafe: 'café',
         culture: 'musée',
         transport: 'station de métro',
         hotel: 'hôtel',
@@ -1376,7 +1380,7 @@ const fr = {
         distance: 'Distance',
         duration: 'Durée',
         error: 'Itinéraire non trouvé',
-        calculating: 'Calcul de l\'itinéraire...',
+        calculating: "Calcul de l'itinéraire...",
       },
       modal: {
         mapView: 'Vue de la carte',
@@ -1396,13 +1400,13 @@ const fr = {
         searchingPlaces: 'Recherche de lieux...',
         pleaseWait: 'Veuillez patienter',
         error: 'Échec du chargement de la carte',
-        locationError: 'Impossible d\'obtenir la position',
+        locationError: "Impossible d'obtenir la position",
         noResults: 'Aucun résultat de recherche',
-        noResultsSubtext: 'Essayez de sélectionner d\'autres catégories',
+        noResultsSubtext: "Essayez de sélectionner d'autres catégories",
         mapNotInitialized: 'Carte non entièrement initialisée',
         containerNotFound: 'Conteneur de carte non trouvé',
-        styleApplyFailed: 'Échec de l\'application du style de carte',
-        enhancedStyleApplyFailed: 'Échec de l\'application du style de carte amélioré',
+        styleApplyFailed: "Échec de l'application du style de carte",
+        enhancedStyleApplyFailed: "Échec de l'application du style de carte amélioré",
       },
       mapTypes: {
         roadmap: 'Plan',
@@ -1412,7 +1416,7 @@ const fr = {
         nearbyPlaces: 'Voir les lieux à proximité',
         myLocation: 'Aller à ma position',
         expandMap: 'Agrandir la carte',
-        directions: 'Obtenir l\'itinéraire',
+        directions: "Obtenir l'itinéraire",
       },
       infoWindow: {
         directions: 'Itinéraire',
@@ -1522,8 +1526,12 @@ const fr = {
     next: 'Suivant',
   },
   debate: {
-    title: 'Débat sur les Sujets Brûlants',
-    description: 'Rejoignez la discussion sur les sujets sociaux les plus brûlants d\'aujourd\'hui et partagez vos diverses opinions.',
+    showOriginal: "Voir l'original",
+    returnOriginal: "Retour à l'original",
+    noDebates: 'Aucun débat en cours pour le moment. Soyez le premier à lancer un sujet !',
+    title: 'Débat sur les sujets brûlants',
+    description:
+      'Participez à la discussion sur les sujets de société les plus brûlants du moment et partagez vos opinions variées.',
     categories: {
       title: 'Catégorie',
       all: 'Tous',
@@ -1534,7 +1542,7 @@ const fr = {
       sports: 'Sports',
       entertainment: 'Divertissement',
     },
-    todayIssue: 'Sujet d\'Aujourd\'hui',
+    todayIssue: "Sujet d'Aujourd'hui",
     mostHotIssue: 'Sujet le Plus Populaire',
     halfAndHalfIssue: 'Sujet Divisé',
     moreIssue: 'Voir Plus de Sujets',
@@ -1544,8 +1552,8 @@ const fr = {
     no: 'Contre',
     voteDescription: 'Pour et contre, quelle est votre opinion ?',
     emotionDescription: 'Veuillez exprimer vos sentiments sur cette discussion.',
-    like: 'J\'aime',
-    dislike: 'Je n\'aime pas',
+    like: "J'aime",
+    dislike: "Je n'aime pas",
     angry: 'En colère',
     sad: 'Triste',
     unsure: 'Incertain',
@@ -1556,22 +1564,31 @@ const fr = {
     noParticipationData: 'Aucune donnée de participation disponible',
     commentSection: 'Veuillez respecter les diverses opinions des gens.',
     currentVote: 'Position sélectionnée',
-    commentGuide: 'Cliquez sur le bouton Voter pour sélectionner votre position d\'abord, et votre position apparaîtra dans les commentaires.',
+    commentGuide:
+      "Cliquez sur le bouton Voter pour sélectionner votre position d'abord, et votre position apparaîtra dans les commentaires.",
     name: 'débat',
     topicTitle: 'Sujet de Débat',
     proOpinion: 'Opinion Pour',
     conOpinion: 'Opinion Contre',
     comment: {
-      empty: 'Pas encore de commentaires. Soyez le premier à commenter !',
-      add: 'Ajouter un Commentaire',
-      newest: 'Plus Récents',
-      oldest: 'Plus Anciens',
-      mostLiked: 'Plus Aimés',
+      placeholder: 'Entrez votre commentaire',
+      pro: 'Pour',
+      con: 'Contre',
+      none: 'Aucun',
+      empty: 'Pas de commentaires pour le moment. Soyez le premier à commenter !',
+      add: 'Ajouter un commentaire',
+      newest: 'Les plus récents',
+      oldest: 'Les plus anciens',
+      mostLiked: 'Les plus appréciés',
       reply: 'Répondre',
       order: 'Trier',
       cancel: 'Annuler',
     },
     reply: {
+      hide: 'Masquer les réponses',
+      pro: 'Pour',
+      con: 'Contre',
+      none: 'Aucun',
       placeholder: 'Entrez votre réponse',
       add: 'Ajouter une Réponse',
       edit: 'Modifier la Réponse',
@@ -1790,7 +1807,7 @@ const fr = {
         information: 'Information',
       },
       timeAgo: {
-        justNow: 'À l\'instant',
+        justNow: "À l'instant",
         minutesAgo: 'minutes',
         oneMinuteAgo: 'il y a 1 minute',
         hoursAgo: 'heures',
@@ -1803,12 +1820,12 @@ const fr = {
         refresh: 'Actualiser',
         seeMoreFree: 'Voir plus de posts libres',
         seeMoreMeeting: 'Voir plus de réunions',
-        openAnalysis: 'Voir l\'analyse des préférences',
+        openAnalysis: "Voir l'analyse des préférences",
       },
       messages: {
         loading: 'Chargement...',
-        error: 'Une erreur s\'est produite lors du chargement des données.',
-        locationError: 'Échec de l\'obtention des informations de localisation',
+        error: "Une erreur s'est produite lors du chargement des données.",
+        locationError: "Échec de l'obtention des informations de localisation",
         noFreePosts: 'Aucun post libre disponible',
         noMeetingPosts: 'Aucun post de réunion disponible',
       },
@@ -1816,8 +1833,8 @@ const fr = {
         title: 'Analyse des Préférences Communautaires',
         subtitle: 'Analyse des intérêts basée sur les activités récentes',
         sections: {
-          keywords: 'Mots-clés d\'intérêt',
-          topCategories: 'Top 5 des Domaines d\'Intérêt',
+          keywords: "Mots-clés d'intérêt",
+          topCategories: "Top 5 des Domaines d'Intérêt",
         },
         close: 'Fermer',
       },
@@ -1831,14 +1848,14 @@ const fr = {
         pending: 'En attente',
       },
       voteLabels: {
-        agree: 'D\'accord',
-        disagree: 'Pas d\'accord',
-        agreePercent: 'D\'accord {{percent}}%',
-        disagreePercent: 'Pas d\'accord {{percent}}%',
+        agree: "D'accord",
+        disagree: "Pas d'accord",
+        agreePercent: "D'accord {{percent}}%",
+        disagreePercent: "Pas d'accord {{percent}}%",
         totalVotes: 'Total {{count}} participants',
       },
       timeAgo: {
-        justNow: 'À l\'instant',
+        justNow: "À l'instant",
         minuteAgo: 'il y a 1 minute',
         minutesAgo: 'il y a {{count}} minutes',
         hourAgo: 'il y a 1 heure',
@@ -1848,7 +1865,7 @@ const fr = {
       },
       actions: {
         refresh: 'Actualiser',
-        openAnalysis: 'Voir l\'analyse des préférences',
+        openAnalysis: "Voir l'analyse des préférences",
         viewMore: 'Voir plus de débats',
         retry: 'Réessayer',
       },
@@ -1863,13 +1880,13 @@ const fr = {
         subtitle: 'Analyse des tendances de débat basée sur les activités récentes',
         close: 'Fermer',
         sections: {
-          keywords: 'Mots-clés d\'intérêt',
-          topCategories: 'Top 5 des Domaines d\'Intérêt',
+          keywords: "Mots-clés d'intérêt",
+          topCategories: "Top 5 des Domaines d'Intérêt",
         },
       },
     },
     infoFeed: {
-      title: 'Flux d\'Informations',
+      title: "Flux d'Informations",
       subtitle: 'Information',
       difficultyLabels: {
         beginner: 'Débutant',
@@ -1883,7 +1900,7 @@ const fr = {
         tutorial: 'Tutoriel',
       },
       timeAgo: {
-        justNow: 'À l\'instant',
+        justNow: "À l'instant",
         minuteAgo: 'il y a 1 minute',
         minutesAgo: 'il y a {{count}} minutes',
         hourAgo: 'il y a 1 heure',
@@ -1893,8 +1910,8 @@ const fr = {
       },
       actions: {
         refresh: 'Actualiser',
-        openAnalysis: 'Voir l\'analyse des préférences',
-        viewMore: 'Voir plus d\'informations',
+        openAnalysis: "Voir l'analyse des préférences",
+        viewMore: "Voir plus d'informations",
         retry: 'Réessayer',
       },
       messages: {
@@ -1905,12 +1922,12 @@ const fr = {
         noContent: 'Aucun contenu disponible',
       },
       modal: {
-        title: 'Analyse des Préférences d\'Information',
+        title: "Analyse des Préférences d'Information",
         subtitle: 'Analyse des intérêts informationnels basée sur les activités récentes',
         close: 'Fermer',
         sections: {
-          keywords: 'Mots-clés d\'Intérêt',
-          topCategories: 'Top 5 Domaines d\'Intérêt',
+          keywords: "Mots-clés d'Intérêt",
+          topCategories: "Top 5 Domaines d'Intérêt",
         },
       },
     },

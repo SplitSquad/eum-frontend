@@ -788,9 +788,11 @@ const de = {
       },
       auth: {
         googleLoginRequired: 'Google-Anmeldung erforderlich',
-        googleLoginDescription: 'Die Kalenderfunktion steht nur Benutzern zur Verfügung, die mit einem Google-Konto angemeldet sind.',
+        googleLoginDescription:
+          'Die Kalenderfunktion steht nur Benutzern zur Verfügung, die mit einem Google-Konto angemeldet sind.',
         feature1: '• Terminverwaltung durch Synchronisation mit Google Kalender',
-        feature2: '• Echtzeit-Synchronisation ermöglicht das Anzeigen von Terminen auf allen Geräten',
+        feature2:
+          '• Echtzeit-Synchronisation ermöglicht das Anzeigen von Terminen auf allen Geräten',
         feature3: '• Benachrichtigungseinstellungen, um wichtige Termine nicht zu verpassen',
       },
       events: {
@@ -1021,6 +1023,8 @@ const de = {
       authorSearch: 'Autorensuche',
     },
     posts: {
+      showOriginal: 'Original anzeigen',
+      returnOriginal: 'Zurück zum Original',
       title: 'Beitragstitel',
       content: 'Beitragsinhalt',
       author: 'Autor',
@@ -1267,7 +1271,7 @@ const de = {
       title: 'Umgebung erkunden',
       purposeLabels: {
         travel: 'Reisen',
-        work: 'Arbeit', 
+        work: 'Arbeit',
         residence: 'Wohnen',
         study: 'Studium',
       },
@@ -1284,16 +1288,16 @@ const de = {
         culture: 'Kulturelle Einrichtungen',
         transport: 'Transport',
         hotel: 'Unterkunft',
-        
-        // Arbeitskategorien  
+
+        // Arbeitskategorien
         business: 'Büroräume',
         bank: 'Banken',
         government: 'Regierungsbüros',
-        
+
         // Wohnkategorien
         market: 'Märkte/Geschäfte',
         hospital: 'Krankenhäuser',
-        
+
         // Studienkategorien
         university: 'Universitäten',
         library: 'Bibliotheken',
@@ -1302,7 +1306,7 @@ const de = {
       categoryKeywords: {
         tourist: 'touristisch',
         restaurant: 'restaurant',
-        cafe: 'café', 
+        cafe: 'café',
         culture: 'museum',
         transport: 'u-bahn',
         hotel: 'hotel',
@@ -1481,8 +1485,10 @@ const de = {
     next: 'Weiter',
   },
   debate: {
-    title: 'Debatte über Heiße Themen',
-    description: 'Nehmen Sie an der Diskussion über die heißesten gesellschaftlichen Themen von heute teil und teilen Sie Ihre vielfältigen Meinungen.',
+    noDebates: 'Keine Debatten verfügbar',
+    title: 'Heiße Debatte',
+    description:
+      'Diskutieren Sie frei über die aktuell heißesten gesellschaftlichen Themen und teilen Sie Ihre vielfältigen Meinungen.',
     categories: {
       title: 'Kategorie',
       all: 'Alle',
@@ -1515,14 +1521,19 @@ const de = {
     noParticipationData: 'Keine Teilnahmedaten verfügbar',
     commentSection: 'Bitte respektieren Sie die vielfältigen Meinungen der Menschen.',
     currentVote: 'Gewählte Position',
-    commentGuide: 'Klicken Sie zuerst auf den Abstimmen-Button, um Ihre Position auszuwählen, und Ihre Position wird in den Kommentaren angezeigt.',
+    commentGuide:
+      'Klicken Sie zuerst auf den Abstimmen-Button, um Ihre Position auszuwählen, und Ihre Position wird in den Kommentaren angezeigt.',
     name: 'Debatte',
     topicTitle: 'Debattenthema',
     proOpinion: 'Befürwortende Meinung',
     conOpinion: 'Ablehnende Meinung',
     comment: {
-      empty: 'Noch keine Kommentare. Seien Sie der Erste, der kommentiert!',
-      add: 'Kommentar Hinzufügen',
+      placeholder: 'Kommentar eingeben',
+      pro: 'Zustimmen',
+      con: 'Ablehnen',
+      none: 'Keine Meinung',
+      empty: 'Noch keine Kommentare. Sei der Erste und hinterlasse einen Kommentar!',
+      add: 'Kommentar hinzufügen',
       newest: 'Neueste',
       oldest: 'Älteste',
       mostLiked: 'Beliebteste',
@@ -1531,12 +1542,16 @@ const de = {
       cancel: 'Abbrechen',
     },
     reply: {
-      placeholder: 'Geben Sie Ihre Antwort ein',
-      add: 'Antwort Hinzufügen',
-      edit: 'Antwort Bearbeiten',
-      delete: 'Antwort Löschen',
-      deleteConfirm: 'Sind Sie sicher, dass Sie diese Antwort löschen möchten?',
-      noReplies: 'Noch keine Antworten. Seien Sie der Erste, der antwortet!',
+      hide: 'Antworten ausblenden',
+      pro: 'Zustimmen',
+      con: 'Ablehnen',
+      none: 'Keine Meinung',
+      placeholder: 'Antwort eingeben',
+      add: 'Antwort hinzufügen',
+      edit: 'Antwort bearbeiten',
+      delete: 'Antwort löschen',
+      deleteConfirm: 'Möchten Sie diese Antwort wirklich löschen?',
+      noReplies: 'Noch keine Antworten. Sei der Erste und antworte!',
       cancel: 'Abbrechen',
     },
     specialIssues: 'Alle Themen Anzeigen',

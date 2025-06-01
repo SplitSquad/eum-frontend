@@ -433,7 +433,8 @@ const DebateListPage: React.FC = () => {
     <DebateListContainer>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
         <Typography variant="h6" fontWeight={600}>
-          {categoryMappings[selectedCategory]?.display || t('debate.categories.all')} {t('debate.name')}
+          {categoryMappings[selectedCategory]?.display || t('debate.categories.all')}{' '}
+          {t('debate.name')}
         </Typography>
       </Box>
 
@@ -456,8 +457,8 @@ const DebateListPage: React.FC = () => {
         >
           <Typography sx={{ fontWeight: 'bold', color: '#888' }}>
             {selectedCategory === 'all'
-              ? '등록된 토론이 없습니다.'
-              : `${categoryMappings[selectedCategory]?.display} 카테고리에 등록된 토론이 없습니다.`}
+              ? t('debate.noDebates')
+              : `${categoryMappings[selectedCategory]?.display} ${t('debate.noDebates')}`}
           </Typography>
         </Paper>
       ) : (

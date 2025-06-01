@@ -27,7 +27,6 @@ import DebateLayout from '../components/common/DebateLayout';
 import { formatDate } from '../utils/dateUtils';
 
 import { useTranslation } from '@/shared/i18n';
-import { useLanguageStore } from '@/features/theme/store/languageStore';
 
 // 스타일 컴포넌트
 const CategoryItem = styled(ListItemButton)(({ theme }) => ({
@@ -369,11 +368,11 @@ const CategorySidebar: React.FC<{
               if (key === 'all') {
                 navigate('/debate/list');
               } else {
-                navigate('/debate/list', { 
-                  state: { 
+                navigate('/debate/list', {
+                  state: {
                     category: key,
-                    apiCategory: apiCategory 
-                  } 
+                    apiCategory: apiCategory,
+                  },
                 });
               }
             }}
@@ -389,7 +388,6 @@ const CategorySidebar: React.FC<{
 const MainIssuesPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const language = useLanguageStore(state => state.language);
   const {
     debates,
     isLoading: storeLoading,
@@ -489,8 +487,6 @@ const MainIssuesPage: React.FC = () => {
     기타: t('debate.categories.etc'),
   };
 
-  const [forceUpdate, setForceUpdate] = useState(0);
-
   useEffect(() => {
     // 일반 토론 목록 가져오기 (기본 목록 페이지일 경우)
     getDebates();
@@ -498,11 +494,6 @@ const MainIssuesPage: React.FC = () => {
     // 모든 특별 이슈를 한 번의 API 호출로 가져오기
     fetchSpecialIssues();
   }, [getDebates, fetchSpecialIssues]);
-
-  // 언어 변경 감지
-  useEffect(() => {
-    setForceUpdate(prev => prev + 1);
-  }, [language]);
 
   const handleDebateClick = (id: number) => {
     navigate(`/debate/${id}`);
@@ -549,7 +540,7 @@ const MainIssuesPage: React.FC = () => {
         t={t}
         navigate={navigate}
       />
-      {/*<CategorySidebar
+      <CategorySidebar
         selectedCategory={selectedCategory}
         setSelectedCategory={setSelectedCategory}
         selectedSpecialLabel={selectedSpecialLabel}
@@ -558,175 +549,157 @@ const MainIssuesPage: React.FC = () => {
         t={t}
         navigate={navigate}
         fetchDebates={fetchDebates}
-      />*/}
+      />
     </SidebarContainer>
   );
 
   // 토론 카드 렌더링
-  const renderDebateCard = React.useCallback(
-    (debate: EnhancedDebate, specialLabel: { text: string; color: string } | null = null) => {
-      if (!debate) return null;
-      const category = debate.category || '';
-      const categoryKeyMap: Record<string, keyof typeof categoryColors> = {
-        '정치/사회': 'POLITICS',
-        경제: 'ECONOMY',
-        '생활/문화': 'CULTURE',
-        '과학/기술': 'TECHNOLOGY',
-        스포츠: 'SPORTS',
-        엔터테인먼트: 'ENTERTAINMENT',
-      };
-      const categoryKey = categoryKeyMap[category] || undefined;
-      const categoryColor = (categoryKey && categoryColors[categoryKey]) || '#bdbdbd';
-      const voteRatio = calculateVoteRatio(debate.proCount, debate.conCount);
-      const description = debate.description || debate.content || '';
+  const renderDebateCard = (
+    debate: EnhancedDebate,
+    specialLabel: { text: string; color: string } | null = null
+  ) => {
+    if (!debate) return null;
+    const category = debate.category || '';
+    // 카테고리 색상 매핑 (한글 → 영문)
+    const categoryKeyMap: Record<string, keyof typeof categoryColors> = {
+      '정치/사회': 'POLITICS',
+      경제: 'ECONOMY',
+      '생활/문화': 'CULTURE',
+      '과학/기술': 'TECHNOLOGY',
+      스포츠: 'SPORTS',
+      엔터테인먼트: 'ENTERTAINMENT',
+    };
+    const categoryKey = categoryKeyMap[category] || undefined;
+    const categoryColor = (categoryKey && categoryColors[categoryKey]) || '#bdbdbd';
+    const voteRatio = calculateVoteRatio(debate.proCount, debate.conCount);
+    const description = debate.description || debate.content || '';
 
-      const pieData = [
-        {
-          title: '찬성',
-          value: voteRatio.agree,
-          color: '#81C784',
-        },
-        {
-          title: '반대',
-          value: voteRatio.disagree,
-          color: '#E57373',
-        },
-      ];
+    // Pie chart 데이터
+    const pieData = [
+      {
+        title: '찬성',
+        value: voteRatio.agree,
+        color: '#81C784', // 한 단계 더 진한 연한 초록
+      },
+      {
+        title: '반대',
+        value: voteRatio.disagree,
+        color: '#E57373', // 한 단계 더 진한 연한 빨강
+      },
+    ];
 
-      const pieLineWidth = 18;
-      const pieGap = 14;
+    // Pie chart 스타일: 찬/반 사이에 여백
+    const pieLineWidth = 18;
+    const pieGap = 14; // 각도 단위로 여백
 
-      let backgroundStyle = 'rgba(255, 255, 255, 0.5)';
-      const agreePercent = voteRatio.agree;
-      const disagreePercent = voteRatio.disagree;
-      const difference = Math.abs(agreePercent - disagreePercent);
-      if (difference <= 5) {
-        backgroundStyle =
-          'linear-gradient(to bottom right, rgba(240,240,240,0.4), rgba(255,255,255,0.8))';
-      } else if (agreePercent > disagreePercent) {
-        backgroundStyle =
-          'linear-gradient(to bottom right, rgba(220, 240, 220, 0.3), rgba(255,255,255,0.8))';
-      } else {
-        backgroundStyle =
-          'linear-gradient(to bottom right, rgba(240, 220, 220, 0.3), rgba(255,255,255,0.8))';
-      }
+    let backgroundStyle = 'rgba(255, 255, 255, 0.5)';
+    const agreePercent = voteRatio.agree;
+    const disagreePercent = voteRatio.disagree;
+    const difference = Math.abs(agreePercent - disagreePercent);
+    if (difference <= 5) {
+      backgroundStyle =
+        'linear-gradient(to bottom right, rgba(240,240,240,0.4), rgba(255,255,255,0.8))';
+    } else if (agreePercent > disagreePercent) {
+      backgroundStyle =
+        'linear-gradient(to bottom right, rgba(220, 240, 220, 0.3), rgba(255,255,255,0.8))';
+    } else {
+      backgroundStyle =
+        'linear-gradient(to bottom right, rgba(240, 220, 220, 0.3), rgba(255,255,255,0.8))';
+    }
 
-      return (
-        <Box key={`${debate.id}-${language}-${forceUpdate}`}>
-          <DebateCard
-            onClick={() => handleDebateClick(debate.id)}
-            sx={{ background: backgroundStyle }}
-          >
-            <CardActionArea>
-              <DebateItemWrapper>
-                <CategoryIndicator color={categoryColor} />
-                <DebateCardContent
+    return (
+      <DebateCard
+        key={debate.id}
+        onClick={() => handleDebateClick(debate.id)}
+        sx={{ background: backgroundStyle }}
+      >
+        <CardActionArea>
+          <DebateItemWrapper>
+            <CategoryIndicator color={categoryColor} />
+            <DebateCardContent
+              sx={{
+                width: '100%',
+                pl: 3,
+                pr: 0,
+                display: 'flex',
+                alignItems: 'flex-start',
+                justifyContent: 'space-between',
+              }}
+            >
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                {specialLabel && (
+                  <CategoryBadge color={specialLabel.color}>{specialLabel.text}</CategoryBadge>
+                )}
+                <Typography
+                  variant="body2"
+                  color={categoryColor}
+                  sx={{ mb: 0.5, display: 'flex', alignItems: 'center', gap: 0.5 }}
+                  component="div"
+                >
+                  {categoryNameMap[category] || category || t('debate.categories.etc')}
+                  <FlagWrapper>
+                    <FlagIcon fontSize="small" />
+                    {t('debate.korea')}
+                  </FlagWrapper>
+                </Typography>
+                <Typography variant="h6" component="div" fontWeight={600} gutterBottom>
+                  {debate.title}
+                </Typography>
+                <Typography variant="body2" color="#888" sx={{ mb: 1 }}>
+                  {formatDate(debate.createdAt)}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  {description.length > 100 ? `${description.substring(0, 100)}...` : description}
+                </Typography>
+              </Box>
+              <Box
+                sx={{
+                  minWidth: 120,
+                  ml: 2,
+                  pr: 2,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  position: 'relative',
+                }}
+              >
+                <PieChart
+                  data={pieData}
+                  lineWidth={pieLineWidth}
+                  paddingAngle={pieGap}
+                  rounded
+                  style={{ height: 120, width: 120 }}
+                  label={() => ''}
+                  startAngle={-90}
+                />
+                <Box
                   sx={{
-                    width: '100%',
-                    pl: 3,
-                    pr: 0,
                     display: 'flex',
-                    alignItems: 'flex-start',
-                    justifyContent: 'space-between',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 1.5,
+                    mt: 1,
                   }}
                 >
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    {specialLabel && (
-                      <CategoryBadge color={specialLabel.color}>
-                        {t(specialLabel.text)}
-                      </CategoryBadge>
-                    )}
-                    <Typography
-                      variant="body2"
-                      color={categoryColor}
-                      sx={{ mb: 0.5, display: 'flex', alignItems: 'center', gap: 0.5 }}
-                      component="div"
-                    >
-                      {categoryNameMap[category] || category || t('debate.categories.etc')}
-                      <FlagWrapper>
-                        <FlagIcon fontSize="small" />
-                        {t('debate.korea')}
-                      </FlagWrapper>
-                    </Typography>
-                    <Typography
-                      variant="h6"
-                      component="div"
-                      fontWeight={600}
-                      gutterBottom
-                      key={`title-${language}-${forceUpdate}`}
-                    >
-                      {debate.title}
-                    </Typography>
-                    <Typography variant="body2" color="#888" sx={{ mb: 1 }}>
-                      {formatDate(debate.createdAt)}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                      {description.length > 100
-                        ? `${description.substring(0, 100)}...`
-                        : description}
-                    </Typography>
-                  </Box>
-                  <Box
-                    sx={{
-                      minWidth: 120,
-                      ml: 2,
-                      pr: 2,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      position: 'relative',
-                    }}
+                  <Typography
+                    sx={{ color: '#81C784', fontWeight: 700, fontSize: '0.75rem', lineHeight: 1 }}
                   >
-                    <PieChart
-                      data={pieData}
-                      lineWidth={pieLineWidth}
-                      paddingAngle={pieGap}
-                      rounded
-                      style={{ height: 120, width: 120 }}
-                      label={() => ''}
-                      startAngle={-90}
-                    />
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        gap: 1.5,
-                        mt: 1,
-                      }}
-                    >
-                      <Typography
-                        sx={{
-                          color: '#81C784',
-                          fontWeight: 700,
-                          fontSize: '0.75rem',
-                          lineHeight: 1,
-                        }}
-                      >
-                        {t('debate.yes')} {voteRatio.agree}%
-                      </Typography>
-                      <Typography
-                        sx={{
-                          color: '#E57373',
-                          fontWeight: 700,
-                          fontSize: '0.75rem',
-                          lineHeight: 1,
-                        }}
-                      >
-                        {t('debate.no')} {voteRatio.disagree}%
-                      </Typography>
-                    </Box>
-                  </Box>
-                </DebateCardContent>
-              </DebateItemWrapper>
-            </CardActionArea>
-          </DebateCard>
-        </Box>
-      );
-    },
-    [t, categoryNameMap, handleDebateClick, language, forceUpdate]
-  );
+                    {t('debate.yes')} {voteRatio.agree}%
+                  </Typography>
+                  <Typography
+                    sx={{ color: '#E57373', fontWeight: 700, fontSize: '0.75rem', lineHeight: 1 }}
+                  >
+                    {t('debate.no')} {voteRatio.disagree}%
+                  </Typography>
+                </Box>
+              </Box>
+            </DebateCardContent>
+          </DebateItemWrapper>
+        </CardActionArea>
+      </DebateCard>
+    );
+  };
 
   // 오늘의 이슈 섹션
   const renderTodayIssues = () => {
@@ -767,7 +740,7 @@ const MainIssuesPage: React.FC = () => {
             }}
           >
             <Typography sx={{ fontWeight: 'bold', color: '#888' }}>
-              등록된 토론이 없습니다.
+              {t('debate.noDebates')}
             </Typography>
           </Paper>
         )}
@@ -812,7 +785,7 @@ const MainIssuesPage: React.FC = () => {
             }}
           >
             <Typography sx={{ fontWeight: 'bold', color: '#888' }}>
-              등록된 토론이 없습니다.
+              {t('debate.noDebates')}
             </Typography>
           </Paper>
         )}
@@ -857,7 +830,7 @@ const MainIssuesPage: React.FC = () => {
             }}
           >
             <Typography sx={{ fontWeight: 'bold', color: '#888' }}>
-              등록된 토론이 없습니다.
+              {t('debate.noDebates')}
             </Typography>
           </Paper>
         )}

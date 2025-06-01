@@ -986,6 +986,8 @@ const zh = {
       authorSearch: '作者搜索',
     },
     posts: {
+      showOriginal: '原帖',
+      returnOriginal: '返回原帖',
       title: '帖子标题',
       content: '帖子内容',
       author: '作者',
@@ -1231,7 +1233,7 @@ const zh = {
       title: '周边探索',
       purposeLabels: {
         travel: '旅游',
-        work: '就业', 
+        work: '就业',
         residence: '居住',
         study: '留学',
       },
@@ -1247,14 +1249,14 @@ const zh = {
         culture: '文化设施',
         transport: '交通',
         hotel: '住宿',
-        
+
         business: '办公空间',
         bank: '银行',
         government: '政府机关',
-        
+
         market: '市场/商店',
         hospital: '医院',
-        
+
         university: '大学',
         library: '图书馆',
         language: '语言学校',
@@ -1262,7 +1264,7 @@ const zh = {
       categoryKeywords: {
         tourist: '旅游',
         restaurant: '餐厅',
-        cafe: '咖啡厅', 
+        cafe: '咖啡厅',
         culture: '博物馆',
         transport: '地铁站',
         hotel: '酒店',
@@ -1447,8 +1449,11 @@ const zh = {
     next: '下一页',
   },
   debate: {
-    title: '热门议题讨论',
-    description: '参与当今最热门的社会议题讨论，分享您的多元观点。',
+    showOriginal: '查看原文',
+    returnOriginal: '返回',
+    noDebates: '暂无辩论议题',
+    title: '热点议题辩论',
+    description: '就当前最热门的社会议题自由讨论，分享你的多元观点。',
     categories: {
       title: '类别',
       all: '全部',
@@ -1487,7 +1492,11 @@ const zh = {
     proOpinion: '赞成意见',
     conOpinion: '反对意见',
     comment: {
-      empty: '暂无评论。成为第一个评论的人！',
+      placeholder: '请输入评论内容',
+      pro: '支持',
+      con: '反对',
+      none: '无',
+      empty: '暂无评论，欢迎发表第一个评论！',
       add: '添加评论',
       newest: '最新',
       oldest: '最早',
@@ -1497,7 +1506,11 @@ const zh = {
       cancel: '取消',
     },
     reply: {
-      placeholder: '输入您的回复',
+      hide: '隐藏回复',
+      pro: '支持',
+      con: '反对',
+      none: '无',
+      placeholder: '请输入回复',
       add: '添加回复',
       edit: '编辑回复',
       delete: '删除回复',
@@ -1693,8 +1706,7 @@ const zh = {
     logout: '退出登录',
     adminpage: '管理员页面',
   },
-  editModeFileWarning:
-    '选择新文件会删除所有现有附件\n请慎重选择',
+  editModeFileWarning: '选择新文件会删除所有现有附件\n请慎重选择',
   // 主屏幕小部件
   home: {
     communityFeed: {

@@ -4,6 +4,8 @@ export interface AlarmDetail {
   alarmId: number;
   content: string;
   language: string;
+  serviceType: string;
+  postId: number;
   timestamp?: string;
 }
 

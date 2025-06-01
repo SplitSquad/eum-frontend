@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from '@/shared/i18n';
 
 interface InfoSearchBarProps {
   inputValue: string;
@@ -7,7 +8,7 @@ interface InfoSearchBarProps {
   sortOrder: 'latest' | 'views';
   onSortChange: (order: 'latest' | 'views') => void;
 }
-
+const { t } = useTranslation();
 const InfoSearchBar: React.FC<InfoSearchBarProps> = ({
   inputValue,
   onInputChange,
@@ -20,7 +21,7 @@ const InfoSearchBar: React.FC<InfoSearchBarProps> = ({
       <div className="flex flex-1 border border-gray-300 rounded-lg overflow-hidden">
         <input
           type="text"
-          placeholder="제목을 검색하세요."
+          placeholder={t('community.posts.enterTitle')}
           value={inputValue}
           onChange={e => onInputChange(e.target.value)}
           className="flex-1 h-10 px-4 focus:outline-none"
@@ -51,7 +52,7 @@ const InfoSearchBar: React.FC<InfoSearchBarProps> = ({
               : 'bg-white text-gray-600 hover:bg-gray-100'
           }`}
         >
-          최신순
+          {t('community.filters.latest')}
         </button>
         <button
           onClick={() => onSortChange('views')}
@@ -61,7 +62,7 @@ const InfoSearchBar: React.FC<InfoSearchBarProps> = ({
               : 'bg-white text-gray-600 hover:bg-gray-100'
           }`}
         >
-          인기순
+          {t('community.filters.popular')}
         </button>
       </div>
     </div>

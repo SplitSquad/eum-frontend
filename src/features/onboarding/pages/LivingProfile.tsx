@@ -544,7 +544,6 @@ const LivingProfile: React.FC = () => {
                 mb: 2,
               }}
             >
-
               <FormControl component="fieldset" fullWidth>
                 <FormLabel
                   id="gender-label"
@@ -581,7 +580,6 @@ const LivingProfile: React.FC = () => {
                 </RadioGroup>
               </FormControl>
 
-
               <StyledTextField
                 label={t('onboarding.living.form.age')}
                 name="age"
@@ -590,7 +588,6 @@ const LivingProfile: React.FC = () => {
                 fullWidth
                 type="number"
               />
-
             </Box>
 
             <Box
@@ -600,7 +597,6 @@ const LivingProfile: React.FC = () => {
                 gap: 3,
               }}
             >
-
               <StyledTextField
                 label={t('onboarding.living.form.nationality')}
                 name="nationality"
@@ -608,8 +604,6 @@ const LivingProfile: React.FC = () => {
                 onChange={handleInputChange}
                 fullWidth
               />
-
-
 
               <StyledTextField
                 select
@@ -1429,8 +1423,8 @@ const LivingProfile: React.FC = () => {
           >
             {currentStep === totalSteps
               ? isSubmitting
-                ? 'onboarding.travel.saving'
-                : 'onboarding.travel.finish'
+                ? t('onboarding.travel.saving')
+                : t('onboarding.travel.finish')
               : t('onboarding.travel.next')}
           </Button>
         </Box>
