@@ -2,6 +2,8 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import styled from '@emotion/styled';
 import { keyframes } from '@emotion/react';
+import { useTranslation } from '@/shared/i18n';
+
 
 // Animations
 const fadeIn = keyframes`
@@ -161,6 +163,7 @@ const SettingsIcon = () => (
  * 프로필, 활동내역, 설정 페이지로 이동하는 링크를 포함합니다.
  */
 const SidebarMenu: React.FC = () => {
+  const { t } = useTranslation();
   return (
     <Nav aria-label="마이페이지 메뉴">
       <MenuList>
@@ -169,7 +172,7 @@ const SidebarMenu: React.FC = () => {
             <IconWrapper>
               <ProfileIcon />
             </IconWrapper>
-            프로필
+            {t('mypage.sidebar.profile')}
           </StyledNavLink>
         </MenuItem>
         <MenuItem>
@@ -177,7 +180,7 @@ const SidebarMenu: React.FC = () => {
             <IconWrapper>
               <ActivityIcon />
             </IconWrapper>
-            활동내역
+            {t('mypage.sidebar.Activity')}
           </StyledNavLink>
         </MenuItem>
         <MenuItem>
@@ -185,7 +188,7 @@ const SidebarMenu: React.FC = () => {
             <IconWrapper>
               <SettingsIcon />
             </IconWrapper>
-            설정
+            {t('mypage.sidebar.settings')}
           </StyledNavLink>
         </MenuItem>
       </MenuList>
