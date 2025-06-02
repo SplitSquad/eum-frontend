@@ -70,7 +70,17 @@ interface LoginButtonProps {
 const LoginButton: React.FC<LoginButtonProps> = ({ buttonText = '일반 계정으로 로그인' }) => {
   const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
-  const colors = seasonalColors.professional;
+  const baseColors = seasonalColors.professional;
+  const colors = {
+    buttonBg: baseColors.primary || '#636363',
+    buttonText: baseColors.text || '#fff',
+    buttonShadow: 'rgba(60,60,60,0.12)',
+    buttonBorder: baseColors.primary || '#636363',
+    buttonHoverBg: baseColors.secondary || '#222',
+    buttonShadowHover: 'rgba(60,60,60,0.18)',
+    buttonBeforeBg: baseColors.gradient || undefined,
+    gradient: baseColors.gradient || '#636363',
+  };
 
   const handleLogin = async () => {
     navigate('/login');

@@ -1522,7 +1522,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
             },
           }}
         >
-          기본순
+          {t('community.filters.latest')}
         </Button>
         <Button
           variant={sortBy === 'popular' ? 'contained' : 'outlined'}
@@ -1536,7 +1536,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
             },
           }}
         >
-          인기순
+          {t('community.filters.popular')}
         </Button>
         <Button
           variant={sortBy === 'oldest' ? 'contained' : 'outlined'}
@@ -1550,7 +1550,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
             },
           }}
         >
-          오래된순
+          {t('debate.comment.oldest')}
         </Button>
       </Box>
 

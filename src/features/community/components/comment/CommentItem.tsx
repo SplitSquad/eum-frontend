@@ -372,7 +372,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
               mr: 1,
             }}
           >
-            답글 작성 {comment.replies?.length ? `(${comment.replies.length})` : ''}
+            {t('debate.reply.add')} {comment.replies?.length ? `(${comment.replies.length})` : ''}
           </ActionButton>
 
           {/* 신고 버튼 - 작성자가 아니고 관리자가 아닌 경우에만 표시 */}

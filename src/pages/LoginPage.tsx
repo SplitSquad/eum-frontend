@@ -16,7 +16,6 @@ import useAuthStore from '../features/auth/store/authStore';
 import LoginButton from '../features/auth/components/LoginButton';
 import { useSnackbar } from 'notistack';
 import { useTranslation } from '@/shared/i18n';
-import { seasonalColors } from '@/components/layout/springTheme';
 
 const TransparentSnackbar = styled('div')<{ color: string }>(({ color }) => ({
   borderRadius: 10,
@@ -32,12 +31,12 @@ const TransparentSnackbar = styled('div')<{ color: string }>(({ color }) => ({
 }));
 
 // 로그인 카드 스타일
-const LoginCard = styled(Paper)<{ colors: typeof seasonalColors.spring }>`
+const LoginCard = styled(Paper)`
   padding: 2.5rem 2rem;
   border-radius: 18px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
-  background: ${({ colors }) => colors.background};
-  border: 1.5px solid ${({ colors }) => colors.primary};
+  background: #fafbfc;
+  border: 1.5px solid #e0e0e0;
   max-width: 450px;
   width: 100%;
   margin: 0 auto;
@@ -53,15 +52,15 @@ const LogoContainer = styled(Box)`
 `;
 
 // 페이지 제목 스타일
-const PageTitle = styled(Typography)<{ color: string }>`
-  color: ${({ color }) => color};
+const PageTitle = styled(Typography)`
+  color: #636363;
   margin-bottom: 0.5rem;
   font-weight: 700;
 `;
 
 // 부제목 스타일
-const Subtitle = styled(Typography)<{ color: string }>`
-  color: ${({ color }) => color};
+const Subtitle = styled(Typography)`
+  color: #888;
   margin-bottom: 2rem;
 `;
 
@@ -78,7 +77,6 @@ const LoginPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [qs] = useSearchParams();
   const { enqueueSnackbar } = useSnackbar();
-  const colors = seasonalColors.professional;
 
   // 이미 로그인되어 있으면 메인 페이지로 리디렉션
   useEffect(() => {
@@ -94,13 +92,13 @@ const LoginPage: React.FC = () => {
         variant: 'warning',
         autoHideDuration: 1500,
         content: (key, message) => (
-          <TransparentSnackbar id={key as string} color={colors.primary}>
+          <TransparentSnackbar id={key as string} color="#fafbfc">
             {message}
           </TransparentSnackbar>
         ),
       });
     }
-  }, [qs, enqueueSnackbar, colors.primary, t]);
+  }, [qs, enqueueSnackbar, t]);
 
   const handleLoginSuccess = (response: any) => {
     try {
@@ -136,25 +134,21 @@ const LoginPage: React.FC = () => {
         }}
       >
         <Fade in={true} timeout={1000}>
-          <LoginCard elevation={3} colors={colors}>
+          <LoginCard elevation={3}>
             <LogoContainer>
               <Typography
                 variant="h4"
                 sx={{
                   fontWeight: 700,
-                  color: colors.primary,
+                  color: '#636363',
                   fontFamily: 'Roboto, Noto Sans KR, sans-serif',
                 }}
               ></Typography>
             </LogoContainer>
 
-            <PageTitle variant={isMobile ? 'h5' : 'h4'} color={colors.primary}>
-              {t('auth.welcome')}
-            </PageTitle>
+            <PageTitle variant={isMobile ? 'h5' : 'h4'}>{t('auth.welcome')}</PageTitle>
 
-            <Subtitle variant="body1" color={colors.text}>
-              {t('auth.loginDescription')}
-            </Subtitle>
+            <Subtitle variant="body1">{t('auth.loginDescription')}</Subtitle>
 
             {error && (
               <Box mb={3}>
@@ -172,7 +166,7 @@ const LoginPage: React.FC = () => {
                 '&:hover': {
                   transform: 'scale(1.02)',
                 },
-                background: colors.hover,
+                background: '#fafbfc',
                 borderRadius: 3,
                 p: 3,
                 display: 'flex',
@@ -189,7 +183,7 @@ const LoginPage: React.FC = () => {
             </Box>
 
             <Box mt={4}>
-              <Typography variant="caption" color={colors.secondary}>
+              <Typography variant="caption" sx={{ color: '#bdbdbd' }}>
                 {t('auth.termsAgreement')}
               </Typography>
             </Box>

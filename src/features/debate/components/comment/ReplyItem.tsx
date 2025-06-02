@@ -28,12 +28,14 @@ import ReportDialog, {
   ReportTargetType,
   ServiceType,
 } from '../../../common/components/ReportDialog';
+import { useTranslation } from '@/shared/i18n';
 
 interface ReplyItemProps {
   reply: DebateReply;
   onUpdate: () => void;
 }
 
+const { t } = useTranslation();
 // 스타일 컴포넌트
 const StyledCard = styled(Card)(({ theme }) => ({
   borderRadius: 12,
@@ -63,6 +65,7 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
     reactions,
     countryCode,
     countryName,
+    stance,
     nation,
   } = reply;
 
@@ -77,6 +80,10 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
 
+  // content에서 stance 정보 추출
+  let extractedStance: 'pro' | 'con' | null =
+    stance === 'pro' ? 'pro' : stance === 'con' ? 'con' : null;
+
   // 내가 작성한 답글인지 확인
   const isMyReply = userId && ((user as any)?.id ?? (user as any)?.userId) === userId;
 
@@ -85,6 +92,38 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
 
   // 수정/삭제 권한 확인 (본인 또는 관리자)
   const canEditOrDelete = isMyReply || isAdmin;
+
+  const StanceChip = styled(Chip, {
+    shouldForwardProp: prop => prop !== 'stance',
+  })<{ stance?: 'pro' | 'con' | null }>(({ theme, stance }) => ({
+    borderRadius: 16,
+    height: 26,
+    fontSize: '0.75rem',
+    fontWeight: 700,
+    boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+    transition: 'all 0.3s ease',
+    '&:hover': {
+      transform: 'translateY(-2px)',
+      boxShadow: '0 3px 8px rgba(0,0,0,0.15)',
+    },
+    ...(stance === 'pro'
+      ? {
+          backgroundColor: 'rgba(76, 175, 80, 0.15)',
+          color: '#2e7d32',
+          border: '1px solid rgba(76, 175, 80, 0.5)',
+        }
+      : stance === 'con'
+        ? {
+            backgroundColor: 'rgba(244, 67, 54, 0.15)',
+            color: '#d32f2f',
+            border: '1px solid rgba(244, 67, 54, 0.5)',
+          }
+        : {
+            backgroundColor: 'rgba(158, 158, 158, 0.15)',
+            color: '#616161',
+            border: '1px solid rgba(158, 158, 158, 0.5)',
+          }),
+  }));
 
   // 메뉴 관련 핸들러
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -228,6 +267,19 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
                 {nation && (
                   <FlagDisplay nation={nation} size="small" showName={false} sx={{ mr: 0.5 }} />
                 )}
+
+                {/* 입장 표시 - 댓글 내용에서 추출한 stance 사용 */}
+                <StanceChip
+                  label={
+                    extractedStance === 'con'
+                      ? t('debate.reply.con')
+                      : extractedStance === 'pro'
+                        ? t('debate.reply.pro')
+                        : t('debate.reply.none')
+                  }
+                  stance={extractedStance || undefined}
+                  size="small"
+                />
 
                 <Typography variant="caption" color="text.secondary" sx={{ ml: 0.5 }}>
                   {formatDateTime(createdAt)}

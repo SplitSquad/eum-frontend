@@ -1193,7 +1193,7 @@ const JobProfile: React.FC = () => {
         position: 'relative',
         py: 4,
         px: 2,
-        background: 'linear-gradient(135deg, #e0e0e0 0%, #fafbfc 100%)',
+        background: 'transparent',
       }}
     >
       {/* 배경 애니메이션 */}

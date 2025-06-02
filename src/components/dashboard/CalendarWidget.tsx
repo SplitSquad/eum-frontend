@@ -475,7 +475,7 @@ const CalendarWidget: React.FC = () => {
           <EventIcon sx={{ fontSize: 24, color: 'primary.main', mr: 1.5 }} />
           <Box>
             <Typography variant="h6" fontWeight={600} lineHeight={1.2}>
-              {isCollapsed ? '캘린더' : `${currentYear} ${currentMonth}`}
+              {isCollapsed ? t('calendar.title') : `${currentYear} ${currentMonth}`}
             </Typography>
             {!isCollapsed && (
               <Typography variant="body2" color="text.secondary">
@@ -605,20 +605,20 @@ const CalendarWidget: React.FC = () => {
               >
                 <AlertTitle sx={{ fontSize: '1.1rem', fontWeight: 600 }}>
                   <LockIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-                  구글 로그인 필요
+                  {t('calendar.auth.googleLoginRequired')}
                 </AlertTitle>
                 <Typography variant="body2" sx={{ mb: 2 }}>
-                  캘린더 기능은 구글 계정으로 로그인한 사용자만 이용하실 수 있습니다.
+                  {t('calendar.auth.googleLoginDescription')}
                 </Typography>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <Typography variant="body2" color="text.secondary">
-                    • 구글 캘린더와 연동하여 일정을 관리할 수 있습니다
+                    {t('calendar.auth.feature1')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    • 실시간 동기화로 모든 기기에서 일정을 확인할 수 있습니다
+                    {t('calendar.auth.feature2')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    • 알림 설정으로 중요한 일정을 놓치지 마세요
+                    {t('calendar.auth.feature3')}
                   </Typography>
                 </Box>
               </Alert>

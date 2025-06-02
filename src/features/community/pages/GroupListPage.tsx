@@ -54,6 +54,7 @@ import { PostApi } from '../api/postApi';
 import { PostType } from '../types-folder';
 import { useRegionStore } from '../store/regionStore';
 import PageHeaderText from '@/components/layout/PageHeaderText';
+import { useTranslation } from '@/shared/i18n';
 
 /**
  * 게시글 목록 페이지 컴포넌트
@@ -117,6 +118,8 @@ const GroupListPage: React.FC = () => {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [searchType, setSearchType] = useState<string>('제목_내용');
   const [isSearchMode, setIsSearchMode] = useState<boolean>(false);
+
+  const { t } = useTranslation();
 
   // 카테고리별 태그 매핑
   const categoryTags = {
@@ -604,8 +607,8 @@ const GroupListPage: React.FC = () => {
               },
             }}
           >
-            <ToggleButton value="groups">📱 소모임</ToggleButton>
-            <ToggleButton value="board">💬 자유게시판</ToggleButton>
+            <ToggleButton value="groups">📱 {t('community.groups.title')}</ToggleButton>
+            <ToggleButton value="board">💬 {t('community.board.title')}</ToggleButton>
           </ToggleButtonGroup>
         </Paper>
       </Box>

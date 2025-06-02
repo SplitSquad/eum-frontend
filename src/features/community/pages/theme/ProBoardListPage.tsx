@@ -938,26 +938,45 @@ const ProBoardListPage: React.FC = () => {
         >
           {/* 메인 컨텐츠 */}
           <div style={{ flex: 1, paddingRight: 32 }}>
-            {/* 카테고리/아이콘 영역 */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24 }}>
-              <img
-                src={squareImg}
-                alt="logo"
-                style={{ height: 24, width: 24, objectFit: 'contain' }}
-              />
-              <h2
+            {/* 카테고리/아이콘 영역과 커뮤니티 타입 전환 버튼 통합 */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
+              {/* 왼쪽: 카테고리 아이콘과 텍스트 */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <img
+                  src={squareImg}
+                  alt="logo"
+                  style={{ height: 24, width: 24, objectFit: 'contain' }}
+                />
+                <h2
+                  style={{
+                    fontSize: 22,
+                    fontWeight: 700,
+                    color: '#111',
+                    fontFamily: proCard.fontFamily,
+                    margin: 0,
+                  }}
+                >
+                  {selectedCategory === '전체'
+                    ? t('infoPage.content.allInfo')
+                    : t(`community.categories.${selectedCategory}`) || selectedCategory}
+                </h2>
+              </div>
+
+              {/* 중앙: 커뮤니티 타입 전환 버튼 */}
+              <div
                 style={{
-                  fontSize: 22,
-                  fontWeight: 700,
-                  color: '#111',
-                  fontFamily: proCard.fontFamily,
-                  margin: 0,
+                  display: 'flex',
+                  border: '1.5px solid #222',
+                  borderRadius: '25px',
+                  overflow: 'hidden',
+                  backgroundColor: '#fff',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
                 }}
               >
                 {selectedCategory === '전체'
                   ? t('infoPage.content.allInfo')
                   : t(`community.categories.${selectedCategory}`) || selectedCategory}
-              </h2>
+              </div>
               <div
                 style={{
                   display: 'flex',

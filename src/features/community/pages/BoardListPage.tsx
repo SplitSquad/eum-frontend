@@ -119,7 +119,7 @@ const BoardListPage: React.FC = () => {
   const [isSearchMode, setIsSearchMode] = useState<boolean>(false);
 
   // 카테고리별 태그 매핑 - useState로 관리하여 언어 변경 시 자동 업데이트
-  const [categoryTags, setCategoryTags] = useState<{[key: string]: string[]}>({
+  const [categoryTags, setCategoryTags] = useState<{ [key: string]: string[] }>({
     travel: [],
     living: [],
     study: [],
@@ -186,9 +186,9 @@ const BoardListPage: React.FC = () => {
       console.log('[DEBUG] 선택된 태그 언어 업데이트:', {
         기존태그: selectedTags,
         새태그목록: newTags,
-        카테고리: selectedCategory
+        카테고리: selectedCategory,
       });
-      
+
       // 기존 선택을 유지하되 새로운 언어의 첫 번째 태그로 업데이트 (임시 방안)
       if (newTags.length > 0 && selectedTags[0]) {
         setSelectedTags([newTags[0]]);
@@ -223,7 +223,7 @@ const BoardListPage: React.FC = () => {
     const newPostCreated = localStorage.getItem('newPostCreated');
     const newPostType = localStorage.getItem('newPostType');
     const isNewPostForThisPage = newPostCreated && newPostType === '자유';
-    
+
     if (isNewPostForThisPage) {
       console.log('새 자유 게시글이 생성됨 - 강제 새로고침 실행');
       // 플래그 제거
@@ -256,7 +256,7 @@ const BoardListPage: React.FC = () => {
     // 게시글 목록 조회 - 항상 최신 데이터 가져오기 (캐시 무시)
     fetchPosts({
       ...initialFilter,
-      _forceRefresh: Date.now() // 매번 새로운 타임스탬프로 캐시 무효화
+      _forceRefresh: Date.now(), // 매번 새로운 타임스탬프로 캐시 무효화
     });
     // 인기 게시글 로드
     fetchTopPosts(5);
@@ -271,7 +271,7 @@ const BoardListPage: React.FC = () => {
         setTimeout(() => {
           fetchPosts({
             ...filter,
-            _forceRefresh: Date.now()
+            _forceRefresh: Date.now(),
           });
         }, 100);
       }
@@ -297,7 +297,7 @@ const BoardListPage: React.FC = () => {
         setTimeout(() => {
           fetchPosts({
             ...filter,
-            _forceRefresh: Date.now()
+            _forceRefresh: Date.now(),
           });
         }, 100);
       }
@@ -409,13 +409,13 @@ const BoardListPage: React.FC = () => {
 
     console.log('[DEBUG] 필터 적용 시 카테고리 변환:', {
       원본카테고리: newFilter.category,
-      변환된카테고리: updatedFilter.category
+      변환된카테고리: updatedFilter.category,
     });
 
     if (isSearchMode && searchTerm) {
       // 검색 중이면 필터와 함께 검색 재실행
       setFilter(updatedFilter);
-      
+
       // 검색 옵션을 제대로 구성하여 전달
       const searchOptions = {
         page: updatedFilter.page !== undefined ? updatedFilter.page : 0,
@@ -625,7 +625,7 @@ const BoardListPage: React.FC = () => {
     if (displayValue === t('community.categories.living')) return CATEGORY_INTERNAL_VALUES.LIVING;
     if (displayValue === t('community.categories.study')) return CATEGORY_INTERNAL_VALUES.STUDY;
     if (displayValue === t('community.categories.job')) return CATEGORY_INTERNAL_VALUES.JOB;
-    
+
     return displayValue; // 기본값
   };
 
@@ -795,12 +795,8 @@ const BoardListPage: React.FC = () => {
               },
             }}
           >
-            <ToggleButton value="groups">
-              📱 소모임
-            </ToggleButton>
-            <ToggleButton value="board">
-              💬 자유게시판
-            </ToggleButton>
+            <ToggleButton value="groups">📱 {t('community.groups.title')}</ToggleButton>
+            <ToggleButton value="board">💬 {t('community.board.title')}</ToggleButton>
           </ToggleButtonGroup>
         </Paper>
       </Box>

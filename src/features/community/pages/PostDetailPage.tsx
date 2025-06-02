@@ -316,10 +316,8 @@ const PostDetailPage: React.FC = () => {
           }
         }
 
-
         // 2단계: 게시글 데이터 가져오기 - 조회수 증가는 ViewTracker에서 결정
         const fetchedPost = await api.getPostById(numericPostId, signal);
-
 
         // 요청이 중단되었다면 처리 중단
         if (signal.aborted) {
@@ -857,25 +855,9 @@ const PostDetailPage: React.FC = () => {
               borderRadius: 2,
             }}
           >
-            <Typography
-              variant="body1"
-              component="div"
-              sx={{
-                whiteSpace: 'pre-wrap',
-                overflowWrap: 'break-word',
-                minHeight: '150px',
-              }}
-            >
-              {showOriginal && originContent !== null ? originContent : post.content}
-            </Typography>
-
             {/* 첨부파일 표시 (있는 경우) */}
             {post.files && post.files.length > 0 && (
               <Box mt={3}>
-                <Typography variant="subtitle2" fontWeight="bold" gutterBottom sx={{ mb: 2 }}>
-                  {t('community.posts.attachFiles')}
-                </Typography>
-
                 {/* 이미지 파일과 일반 파일 분리 */}
                 {(() => {
                   const imageFiles = post.files.filter((file: any) => {
@@ -901,9 +883,6 @@ const PostDetailPage: React.FC = () => {
                       {/* 이미지 갤러리 */}
                       {imageFiles.length > 0 && (
                         <Box mb={nonImageFiles.length > 0 ? 3 : 0}>
-                          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-                            이미지 ({imageFiles.length}개)
-                          </Typography>
                           <Box
                             sx={{
                               display: 'grid',
@@ -1034,9 +1013,6 @@ const PostDetailPage: React.FC = () => {
                       {/* 일반 파일 목록 */}
                       {nonImageFiles.length > 0 && (
                         <Box>
-                          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-                            첨부파일 ({nonImageFiles.length}개)
-                          </Typography>
                           <List dense sx={{ bgcolor: '#f9f9f9', borderRadius: 2, p: 1 }}>
                             {nonImageFiles.map((file: any, index: number) => (
                               <ListItem
@@ -1095,6 +1071,17 @@ const PostDetailPage: React.FC = () => {
                 })()}
               </Box>
             )}
+            <Typography
+              variant="body1"
+              component="div"
+              sx={{
+                whiteSpace: 'pre-wrap',
+                overflowWrap: 'break-word',
+                minHeight: '150px',
+              }}
+            >
+              {showOriginal && originContent !== null ? originContent : post.content}
+            </Typography>
           </Box>
 
           {/* 게시글 평가 버튼 - disabled 속성 추가 */}

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from '@/shared/i18n';
 
 interface InfoSearchBarProps {
   inputValue: string;
@@ -7,7 +8,7 @@ interface InfoSearchBarProps {
   sortOrder: 'latest' | 'views';
   onSortChange: (order: 'latest' | 'views') => void;
 }
-
+const { t } = useTranslation();
 const InfoSearchBar: React.FC<InfoSearchBarProps> = ({
   inputValue,
   onInputChange,
@@ -50,7 +51,7 @@ const InfoSearchBar: React.FC<InfoSearchBarProps> = ({
               : 'bg-white text-gray-600 hover:bg-gray-100'
           }`}
         >
-          최신순
+          {t('community.filters.latest')}
         </button>
         <button
           onClick={() => onSortChange('views')}
@@ -60,7 +61,7 @@ const InfoSearchBar: React.FC<InfoSearchBarProps> = ({
               : 'bg-white text-gray-600 hover:bg-gray-100'
           }`}
         >
-          인기순
+          {t('community.filters.popular')}
         </button>
       </div>
     </div>

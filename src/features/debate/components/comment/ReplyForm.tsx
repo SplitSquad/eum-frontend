@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useDebateStore } from '../../store';
 import { Box, TextField, Button, Typography, Paper } from '@mui/material';
 import { useTranslation } from '@/shared/i18n';
@@ -16,9 +16,7 @@ const ReplyForm: React.FC<ReplyFormProps> = ({ commentId, onSuccess }) => {
   const textFieldRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
 
-  // 대댓글 제출 함수 - Promise 반환 및 비동기 처리 개선
   const submitReply = async (e?: React.MouseEvent | React.KeyboardEvent): Promise<void> => {
-    // 이벤트 차단 강화 - 리다이렉션 방지
     if (e) {
       e.preventDefault();
       e.stopPropagation();
@@ -28,7 +26,6 @@ const ReplyForm: React.FC<ReplyFormProps> = ({ commentId, onSuccess }) => {
       }
     }
 
-    // 유효성 검사
     if (!content.trim()) {
       setError('답글 내용을 입력해주세요.');
       return;
@@ -43,18 +40,24 @@ const ReplyForm: React.FC<ReplyFormProps> = ({ commentId, onSuccess }) => {
     setError('');
 
     try {
-      // 비동기 요청 실행 및 await로 완료 대기
       const result = await createReply(commentId, content);
-      console.log('답글 작성 결과:', result);
 
-      // 성공 시 입력창 초기화
-      setContent('');
+      if (result) {
+        const storedStance = localStorage.getItem('stance');
+        if (storedStance === 'pro' || storedStance === 'con') {
+          result.stance = storedStance;
+        } else {
+          result.stance = null;
+        }
 
-      // 성공 콜백 호출
-      if (onSuccess) {
-        console.log('ReplyForm: 성공 콜백 호출 전');
-        onSuccess(result);
-        console.log('ReplyForm: 성공 콜백 호출 후');
+        console.log('답글 작성 결과:', result);
+        setContent('');
+
+        if (onSuccess) {
+          onSuccess(result);
+        }
+      } else {
+        setError('답글 작성에 실패했습니다.');
       }
     } catch (err) {
       console.error('답글 작성 실패:', err);
@@ -64,7 +67,6 @@ const ReplyForm: React.FC<ReplyFormProps> = ({ commentId, onSuccess }) => {
     }
   };
 
-  // 취소 핸들러
   const handleCancel = (e: React.MouseEvent): void => {
     e.preventDefault();
     e.stopPropagation();
@@ -79,7 +81,6 @@ const ReplyForm: React.FC<ReplyFormProps> = ({ commentId, onSuccess }) => {
     if (onSuccess) onSuccess();
   };
 
-  // Ctrl+Enter로 제출
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>): void => {
     if (e.key === 'Enter' && e.ctrlKey) {
       e.preventDefault();
@@ -88,12 +89,10 @@ const ReplyForm: React.FC<ReplyFormProps> = ({ commentId, onSuccess }) => {
         e.nativeEvent.preventDefault();
         e.nativeEvent.stopImmediatePropagation();
       }
-
       submitReply(e);
     }
   };
 
-  // 클릭 이벤트 핸들러 - 버블링 방지
   const handleClick = (e: React.MouseEvent): void => {
     e.preventDefault();
     e.stopPropagation();
@@ -149,16 +148,6 @@ const ReplyForm: React.FC<ReplyFormProps> = ({ commentId, onSuccess }) => {
           </Typography>
 
           <Box sx={{ display: 'flex', gap: 1 }} onClick={handleClick}>
-            <Button
-              variant="outlined"
-              color="inherit"
-              size="small"
-              onClick={handleCancel}
-              disabled={isSubmitting}
-              type="button"
-            >
-              {t('debate.comment.cancel')}
-            </Button>
             <Button
               variant="contained"
               color="primary"

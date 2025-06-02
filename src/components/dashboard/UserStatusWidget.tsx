@@ -27,6 +27,7 @@ import HowToVoteIcon from '@mui/icons-material/HowToVote';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import ErrorIcon from '@mui/icons-material/Error';
+import LocalActivityIcon from '@mui/icons-material/LocalActivity';
 
 import UserService, {
   UserProfile,
@@ -139,12 +140,26 @@ const UserStatusWidget: React.FC = () => {
 
   // 날씨 정보 상태 추가
   const [weatherInfo, setWeatherInfo] = useState<WeatherInfo>({
-    current: '맑음',
+    current: 'sunny',
     temperature: 24,
-    location: '서울시 강남구',
+    location: t('dashboard.userStatus.locationError'),
     forecast: [
-      { day: '내일', icon: '⛅', temp: 26, minTemp: 20, maxTemp: 30, precipitationProbability: 20 },
-      { day: '모레', icon: '🌧️', temp: 22, minTemp: 18, maxTemp: 26, precipitationProbability: 70 },
+      {
+        day: 'tomorrow',
+        icon: '⛅',
+        temp: 26,
+        minTemp: 20,
+        maxTemp: 30,
+        precipitationProbability: 20,
+      },
+      {
+        day: 'dayAfterTomorrow',
+        icon: '🌧️',
+        temp: 22,
+        minTemp: 18,
+        maxTemp: 26,
+        precipitationProbability: 70,
+      },
     ],
   });
 
@@ -156,7 +171,7 @@ const UserStatusWidget: React.FC = () => {
   }>({
     latitude: 37.5665,
     longitude: 126.978,
-    address: '서울시 강남구',
+    address: t('dashboard.userStatus.locationError'),
   });
   const [isMapScriptLoaded, setIsMapScriptLoaded] = useState(false);
 
@@ -174,16 +189,16 @@ const UserStatusWidget: React.FC = () => {
   // 레벨별 칭호 시스템
   const getUserTitle = (level: number): { title: string; color: string; icon: string } => {
     const titles = {
-      1: { title: '새싹 이웃', color: '#4caf50', icon: '🌱' },
-      2: { title: '친근한 메이트', color: '#8bc34a', icon: '🤝' },
-      3: { title: '활발한 프렌드', color: '#cddc39', icon: '💪' },
-      4: { title: '열정 파트너', color: '#ffeb3b', icon: '🔥' },
-      5: { title: '커뮤니티 멤버', color: '#ffc107', icon: '🌏' },
-      6: { title: '한국생활 베테랑', color: '#ff9800', icon: '🏠' },
-      7: { title: '글로벌 인플루언서', color: '#ff5722', icon: '✨' },
-      8: { title: '다문화 리더', color: '#e91e63', icon: '🌈' },
-      9: { title: '커뮤니티 엑스퍼트', color: '#9c27b0', icon: '🎯' },
-      10: { title: '레전드 멤버', color: '#673ab7', icon: '👑' },
+      1: { title: t('dashboard.userStatus.titles.1'), color: '#4caf50', icon: '🌱' },
+      2: { title: t('dashboard.userStatus.titles.2'), color: '#8bc34a', icon: '🤝' },
+      3: { title: t('dashboard.userStatus.titles.3'), color: '#cddc39', icon: '💪' },
+      4: { title: t('dashboard.userStatus.titles.4'), color: '#ffeb3b', icon: '🔥' },
+      5: { title: t('dashboard.userStatus.titles.5'), color: '#ffc107', icon: '🌏' },
+      6: { title: t('dashboard.userStatus.titles.6'), color: '#ff9800', icon: '🏠' },
+      7: { title: t('dashboard.userStatus.titles.7'), color: '#ff5722', icon: '✨' },
+      8: { title: t('dashboard.userStatus.titles.8'), color: '#e91e63', icon: '🌈' },
+      9: { title: t('dashboard.userStatus.titles.9'), color: '#9c27b0', icon: '🎯' },
+      10: { title: t('dashboard.userStatus.titles.10'), color: '#673ab7', icon: '👑' },
     };
     return titles[level as keyof typeof titles] || titles[1];
   };
@@ -236,9 +251,9 @@ const UserStatusWidget: React.FC = () => {
 
   // 시간대별 인사말
   const getGreeting = () => {
-    if (hours < 12) return t('dashboard.greeting.morning');
-    if (hours < 17) return t('dashboard.greeting.afternoon');
-    return t('dashboard.greeting.evening');
+    if (hours < 12) return t('dashboard.userStatus.greeting.morning');
+    if (hours < 17) return t('dashboard.userStatus.greeting.afternoon');
+    return t('dashboard.userStatus.greeting.evening');
   };
 
   // 사용자 뱃지 생성 함수 (마이페이지와 동일한 로직)
@@ -254,9 +269,9 @@ const UserStatusWidget: React.FC = () => {
     if (postsCount > 0) {
       badges.push({
         id: 1,
-        name: '첫 게시글',
+        name: t('dashboard.userStatus.badgeTypes.firstPost'),
         icon: '📝',
-        description: '첫 번째 게시글을 작성했습니다!',
+        description: t('dashboard.userStatus.badgeTypes.firstPostDesc'),
         unlocked: true,
       });
     }
@@ -264,9 +279,9 @@ const UserStatusWidget: React.FC = () => {
     if (commentsCount >= 10) {
       badges.push({
         id: 2,
-        name: '소통왕',
+        name: t('dashboard.userStatus.badgeTypes.communicator'),
         icon: '💬',
-        description: '10개 이상의 댓글을 작성했습니다!',
+        description: t('dashboard.userStatus.badgeTypes.communicatorDesc'),
         unlocked: true,
       });
     }
@@ -274,9 +289,9 @@ const UserStatusWidget: React.FC = () => {
     if (debatesCount > 0) {
       badges.push({
         id: 3,
-        name: '토론 참여자',
+        name: t('dashboard.userStatus.badgeTypes.debater'),
         icon: '🗳️',
-        description: '토론에 참여하여 의견을 표현했습니다!',
+        description: t('dashboard.userStatus.badgeTypes.debaterDesc'),
         unlocked: true,
       });
     }
@@ -284,9 +299,9 @@ const UserStatusWidget: React.FC = () => {
     if (bookmarksCount > 0) {
       badges.push({
         id: 4,
-        name: '정보 수집가',
+        name: t('dashboard.userStatus.badgeTypes.collector'),
         icon: '🔖',
-        description: '유용한 정보를 북마크했습니다!',
+        description: t('dashboard.userStatus.badgeTypes.collectorDesc'),
         unlocked: true,
       });
     }
@@ -294,9 +309,9 @@ const UserStatusWidget: React.FC = () => {
     if (totalActivities >= 50) {
       badges.push({
         id: 5,
-        name: '활발한 유저',
+        name: t('dashboard.userStatus.badgeTypes.activeUser'),
         icon: '⭐',
-        description: '50개 이상의 활동을 완료했습니다!',
+        description: t('dashboard.userStatus.badgeTypes.activeUserDesc'),
         unlocked: true,
       });
     }
@@ -304,9 +319,9 @@ const UserStatusWidget: React.FC = () => {
     if (totalActivities >= 100) {
       badges.push({
         id: 6,
-        name: '커뮤니티 전문가',
+        name: t('dashboard.userStatus.badgeTypes.expert'),
         icon: '🏆',
-        description: '100개 이상의 활동을 완료했습니다!',
+        description: t('dashboard.userStatus.badgeTypes.expertDesc'),
         unlocked: true,
       });
     }
@@ -323,7 +338,7 @@ const UserStatusWidget: React.FC = () => {
       const postActivities = posts.content.map(post => ({
         id: post.id || 0,
         type: 'post' as const,
-        title: '게시글 작성',
+        title: t('dashboard.userStatus.activityTypes.post'),
         description: post.title || '',
         date: post.createdAt || '',
         icon: <ForumIcon sx={{ fontSize: 16, color: '#2196f3' }} />,
@@ -336,7 +351,7 @@ const UserStatusWidget: React.FC = () => {
       const commentActivities = comments.content.map(comment => ({
         id: comment.postId || 0,
         type: 'comment' as const,
-        title: '댓글 작성',
+        title: t('dashboard.userStatus.activityTypes.comment'),
         description: `${comment.postTitle || ''}: ${(comment.content || '').substring(0, 30)}...`,
         date: comment.createdAt || '',
         icon: <ChatBubbleOutlineIcon sx={{ fontSize: 16, color: '#4caf50' }} />,
@@ -349,7 +364,7 @@ const UserStatusWidget: React.FC = () => {
       const debateActivities = debates.content.map(debate => ({
         id: debate.id || 0,
         type: 'debate' as const,
-        title: '토론 참여',
+        title: t('dashboard.userStatus.activityTypes.debate'),
         description: debate.title || '',
         date: debate.createdAt || '',
         icon: <HowToVoteIcon sx={{ fontSize: 16, color: '#9c27b0' }} />,
@@ -362,7 +377,7 @@ const UserStatusWidget: React.FC = () => {
       const bookmarkActivities = bookmarks.content.map(bookmark => ({
         id: bookmark.id || 0,
         type: 'bookmark' as const,
-        title: '북마크 추가',
+        title: t('dashboard.userStatus.activityTypes.bookmark'),
         description: bookmark.title || '',
         date: bookmark.createdAt || '',
         icon: <BookmarkIcon sx={{ fontSize: 16, color: '#ff9800' }} />,
@@ -500,7 +515,7 @@ const UserStatusWidget: React.FC = () => {
                       formattedAddress = `${city} ${district} ${dong}`;
                     }
                   } else {
-                    formattedAddress = `${city} ${district}`;
+                    resolve(t('dashboard.userStatus.locationError'));
                   }
 
                   resolve(formattedAddress);
@@ -529,7 +544,7 @@ const UserStatusWidget: React.FC = () => {
             address: detailedAddress,
           });
         } catch (error) {
-          console.log('위치/날씨 정보 로딩 실패:', error);
+          console.log(t('dashboard.userStatus.apiErrors.locationFailed'), error);
           // 기본값 유지
         }
 
@@ -543,8 +558,8 @@ const UserStatusWidget: React.FC = () => {
           ]);
         }
       } catch (error) {
-        console.error('사용자 데이터 로딩 실패:', error);
-        setError('사용자 정보를 불러오는 중 오류가 발생했습니다.');
+        console.error(t('dashboard.userStatus.apiErrors.userDataFailed'), error);
+        setError(t('dashboard.userStatus.error'));
       } finally {
         setIsLoading(false);
       }
@@ -600,7 +615,7 @@ const UserStatusWidget: React.FC = () => {
       >
         <CircularProgress size={40} />
         <Typography variant="body2" sx={{ mt: 2, color: 'text.secondary' }}>
-          사용자 정보를 불러오는 중입니다...
+          {t('dashboard.userStatus.loading')}
         </Typography>
       </Paper>
     );
@@ -667,7 +682,7 @@ const UserStatusWidget: React.FC = () => {
           <Box sx={{ position: 'relative' }}>
             <Avatar
               src={profile?.profileImage || userProfile?.profileImagePath || ''}
-              alt={profile?.name || userProfile?.name || '사용자'}
+              alt={profile?.name || userProfile?.name || t('dashboard.userStatus.user')}
               sx={{
                 width: 48,
                 height: 48,
@@ -703,11 +718,11 @@ const UserStatusWidget: React.FC = () => {
             >
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <Typography variant="h6" sx={{ fontWeight: 700, mr: 1, fontSize: '1rem' }}>
-                  {profile?.name || userProfile?.name || '사용자'}
+                  {profile?.name || userProfile?.name || t('dashboard.userStatus.user')}
                 </Typography>
                 <Chip
                   size="small"
-                  label={`${userTitle.icon} Lv.${userLevel}`}
+                  label={`${userTitle.icon} ${t('dashboard.userStatus.level')}${userLevel}`}
                   sx={{
                     bgcolor: userTitle.color,
                     color: 'white',
@@ -769,7 +784,8 @@ const UserStatusWidget: React.FC = () => {
                 />
               </Box>
               <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
-                {userExp}%
+                {userExp}
+                {t('dashboard.userStatus.progress')}
               </Typography>
             </Box>
 
@@ -779,9 +795,11 @@ const UserStatusWidget: React.FC = () => {
                 variant="caption"
                 sx={{ fontSize: '0.65rem', color: 'text.secondary', mt: 0.3, display: 'block' }}
               >
-                다음 칭호: {getUserTitle(nextLevel).icon} {getUserTitle(nextLevel).title}
+                {t('dashboard.userStatus.nextTitle')}: {getUserTitle(nextLevel).icon}{' '}
+                {getUserTitle(nextLevel).title}
                 <span style={{ color: getUserTitle(nextLevel).color, fontWeight: 600 }}>
-                  ({5 - (totalActivities % 5)}개 활동 남음)
+                  ({5 - (totalActivities % 5)}
+                  {t('dashboard.userStatus.activitiesRemaining')})
                 </span>
               </Typography>
             )}
@@ -829,10 +847,11 @@ const UserStatusWidget: React.FC = () => {
                   fontWeight={700}
                   sx={{ fontSize: '0.9rem', lineHeight: 1 }}
                 >
-                  {activityStreak}일
+                  {activityStreak}
+                  {t('dashboard.userStatus.streakDays')}
                 </Typography>
                 <Typography variant="caption" sx={{ fontSize: '0.6rem', opacity: 0.9 }}>
-                  연속활동
+                  {t('dashboard.userStatus.consecutiveActivity')}
                 </Typography>
               </Box>
 
@@ -867,10 +886,11 @@ const UserStatusWidget: React.FC = () => {
                   fontWeight={700}
                   sx={{ fontSize: '0.9rem', lineHeight: 1 }}
                 >
-                  {userBadges.filter(b => b.unlocked).length}개
+                  {userBadges.filter(b => b.unlocked).length}
+                  {t('dashboard.userStatus.badgeCount')}
                 </Typography>
                 <Typography variant="caption" sx={{ fontSize: '0.6rem', opacity: 0.9 }}>
-                  뱃지
+                  {t('dashboard.userStatus.badges')}
                 </Typography>
               </Box>
             </Box>
@@ -888,7 +908,7 @@ const UserStatusWidget: React.FC = () => {
                 }}
               >
                 <EmojiEventsIcon sx={{ fontSize: 12, mr: 0.5 }} />
-                달성 뱃지
+                {t('dashboard.userStatus.achievedBadges')}
               </Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.6 }}>
                 {userBadges.length > 0 ? (
@@ -909,7 +929,7 @@ const UserStatusWidget: React.FC = () => {
                   ))
                 ) : (
                   <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
-                    활동을 시작해 뱃지를 획득하세요!
+                    {t('dashboard.userStatus.startActivity')}
                   </Typography>
                 )}
               </Box>
@@ -928,7 +948,7 @@ const UserStatusWidget: React.FC = () => {
                 }}
               >
                 <NotificationsActiveIcon sx={{ fontSize: 12, mr: 0.5 }} />
-                최근 활동
+                {t('dashboard.userStatus.recentActivity')}
               </Typography>
               <Box sx={{ maxHeight: 160, overflowY: 'auto', overflowX: 'hidden' }}>
                 {recentActivities.length > 0 ? (
@@ -975,7 +995,7 @@ const UserStatusWidget: React.FC = () => {
                     textAlign="center"
                     sx={{ py: 1.5, fontSize: '0.75rem' }}
                   >
-                    아직 활동이 없습니다.
+                    {t('dashboard.userStatus.noActivity')}
                   </Typography>
                 )}
               </Box>
@@ -997,7 +1017,7 @@ const UserStatusWidget: React.FC = () => {
                 }}
               >
                 <WbSunnyIcon sx={{ fontSize: 12, mr: 0.5 }} />
-                날씨 정보
+                {t('dashboard.userStatus.weatherInfo')}
               </Typography>
               <Box
                 sx={{
@@ -1015,14 +1035,16 @@ const UserStatusWidget: React.FC = () => {
                   {weatherInfo.temperature}°C
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                  {weatherInfo.current}
+                  {t(`dashboard.userStatus.weatherStatus.${weatherInfo.current}`)}
                 </Typography>
                 <Box
                   sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mt: 0.3 }}
                 >
                   <LocationOnIcon sx={{ fontSize: 10, mr: 0.3 }} />
                   <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
-                    {weatherInfo.location}
+                    {weatherInfo.location === 'unknown'
+                      ? t('dashboard.userStatus.unknownLocation')
+                      : weatherInfo.location}
                   </Typography>
                 </Box>
               </Box>
@@ -1041,7 +1063,7 @@ const UserStatusWidget: React.FC = () => {
                     }}
                   >
                     <Typography variant="caption" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
-                      {day.day}
+                      {t(`dashboard.userStatus.${day.day}`)}
                     </Typography>
                     <Typography sx={{ fontSize: '1rem', my: 0.3 }}>{day.icon}</Typography>
 
@@ -1074,12 +1096,18 @@ const UserStatusWidget: React.FC = () => {
                     )}
 
                     {/* 강수확률 표시 */}
-                    {day.precipitationProbability && day.precipitationProbability > 0 && (
+                    {day.precipitationProbability && (
                       <Typography
                         variant="caption"
-                        sx={{ fontSize: '0.6rem', color: 'info.main', display: 'block', mt: 0.2 }}
+                        sx={{
+                          fontSize: '0.6rem',
+                          color: 'text.secondary',
+                          display: 'block',
+                          mt: 0.2,
+                        }}
                       >
-                        💧{day.precipitationProbability}%
+                        {day.precipitationProbability}
+                        {t('dashboard.userStatus.precipitationProbability')}
                       </Typography>
                     )}
                   </Box>
@@ -1093,14 +1121,14 @@ const UserStatusWidget: React.FC = () => {
                 variant="subtitle2"
                 sx={{
                   fontWeight: 700,
-                  mb: 1,
+                  mb: 0.8,
                   display: 'flex',
                   alignItems: 'center',
                   fontSize: '0.8rem',
                 }}
               >
-                <StarIcon sx={{ fontSize: 12, mr: 0.5 }} />
-                오늘의 추천
+                <LocalActivityIcon sx={{ fontSize: 12, mr: 0.5 }} />
+                {t('dashboard.userStatus.todaysRecommendations')}
               </Typography>
               <Box
                 sx={{
@@ -1172,20 +1200,20 @@ const UserStatusWidget: React.FC = () => {
   );
 };
 
-// 날씨 아이콘 매핑
+// 날씨 아이콘 매핑 - 영어 키 사용
 const getWeatherIcon = (status: string): string => {
   const iconMap: { [key: string]: string } = {
-    맑음: '☀️',
-    구름: '⛅',
-    흐림: '☁️',
-    비: '🌧️',
-    눈: '🌨️',
-    안개: '🌫️',
+    sunny: '☀️',
+    cloudy: '⛅',
+    overcast: '☁️',
+    rain: '🌧️',
+    snow: '🌨️',
+    fog: '🌫️',
   };
   return iconMap[status] || '☀️';
 };
 
-// 날씨 기반 추천 활동
+// 날씨 기반 추천 활동 - 번역 키 사용
 const getWeatherBasedRecommendations = (
   weatherStatus: string,
   t: (key: string) => string
@@ -1196,130 +1224,130 @@ const getWeatherBasedRecommendations = (
   bgColor: string;
 }> => {
   const recommendations = {
-    맑음: [
+    sunny: [
       {
         icon: '🌳',
-        title: '공원 산책',
-        description: '좋은 날씨에 야외 활동을 즐겨보세요',
+        title: t('dashboard.userStatus.recommendations.sunny.parkWalk.title'),
+        description: t('dashboard.userStatus.recommendations.sunny.parkWalk.description'),
         bgColor: 'rgba(76, 175, 80, 0.1)',
       },
       {
         icon: '📸',
-        title: '사진 촬영',
-        description: '맑은 하늘과 함께 인생샷을 남겨보세요',
+        title: t('dashboard.userStatus.recommendations.sunny.photography.title'),
+        description: t('dashboard.userStatus.recommendations.sunny.photography.description'),
         bgColor: 'rgba(33, 150, 243, 0.1)',
       },
       {
         icon: '🚴',
-        title: '자전거 라이딩',
-        description: '시원한 바람과 함께 라이딩을 즐겨보세요',
+        title: t('dashboard.userStatus.recommendations.sunny.cycling.title'),
+        description: t('dashboard.userStatus.recommendations.sunny.cycling.description'),
         bgColor: 'rgba(255, 152, 0, 0.1)',
       },
     ],
-    구름: [
+    cloudy: [
       {
         icon: '☕',
-        title: '카페 탐방',
-        description: '분위기 좋은 카페에서 여유를 즐겨보세요',
+        title: t('dashboard.userStatus.recommendations.cloudy.cafe.title'),
+        description: t('dashboard.userStatus.recommendations.cloudy.cafe.description'),
         bgColor: 'rgba(121, 85, 72, 0.1)',
       },
       {
         icon: '🛍️',
-        title: '쇼핑',
-        description: '실내에서 편안하게 쇼핑을 즐겨보세요',
+        title: t('dashboard.userStatus.recommendations.cloudy.shopping.title'),
+        description: t('dashboard.userStatus.recommendations.cloudy.shopping.description'),
         bgColor: 'rgba(233, 30, 99, 0.1)',
       },
       {
         icon: '🎨',
-        title: '전시 관람',
-        description: '박물관이나 갤러리를 방문해보세요',
+        title: t('dashboard.userStatus.recommendations.cloudy.exhibition.title'),
+        description: t('dashboard.userStatus.recommendations.cloudy.exhibition.description'),
         bgColor: 'rgba(156, 39, 176, 0.1)',
       },
     ],
-    흐림: [
+    overcast: [
       {
         icon: '📚',
-        title: '독서',
-        description: '조용한 분위기에서 책을 읽어보세요',
+        title: t('dashboard.userStatus.recommendations.overcast.reading.title'),
+        description: t('dashboard.userStatus.recommendations.overcast.reading.description'),
         bgColor: 'rgba(96, 125, 139, 0.1)',
       },
       {
         icon: '🍲',
-        title: '요리',
-        description: '집에서 새로운 요리에 도전해보세요',
+        title: t('dashboard.userStatus.recommendations.overcast.cooking.title'),
+        description: t('dashboard.userStatus.recommendations.overcast.cooking.description'),
         bgColor: 'rgba(255, 87, 34, 0.1)',
       },
       {
         icon: '🎬',
-        title: '영화 감상',
-        description: '집에서 편안하게 영화를 즐겨보세요',
+        title: t('dashboard.userStatus.recommendations.overcast.movie.title'),
+        description: t('dashboard.userStatus.recommendations.overcast.movie.description'),
         bgColor: 'rgba(63, 81, 181, 0.1)',
       },
     ],
-    비: [
+    rain: [
       {
         icon: '☕',
-        title: '실내 카페',
-        description: '빗소리와 함께 따뜻한 음료를 즐겨보세요',
+        title: t('dashboard.userStatus.recommendations.rain.indoorCafe.title'),
+        description: t('dashboard.userStatus.recommendations.rain.indoorCafe.description'),
         bgColor: 'rgba(121, 85, 72, 0.1)',
       },
       {
         icon: '📖',
-        title: '실내 독서',
-        description: '비 오는 날엔 책과 함께 시간을 보내보세요',
+        title: t('dashboard.userStatus.recommendations.rain.indoorReading.title'),
+        description: t('dashboard.userStatus.recommendations.rain.indoorReading.description'),
         bgColor: 'rgba(96, 125, 139, 0.1)',
       },
       {
         icon: '🛋️',
-        title: '휴식',
-        description: '집에서 편안하게 휴식을 취해보세요',
+        title: t('dashboard.userStatus.recommendations.rain.rest.title'),
+        description: t('dashboard.userStatus.recommendations.rain.rest.description'),
         bgColor: 'rgba(158, 158, 158, 0.1)',
       },
     ],
-    눈: [
+    snow: [
       {
         icon: '⛄',
-        title: '눈 구경',
-        description: '아름다운 설경을 감상해보세요',
+        title: t('dashboard.userStatus.recommendations.snow.snowViewing.title'),
+        description: t('dashboard.userStatus.recommendations.snow.snowViewing.description'),
         bgColor: 'rgba(0, 188, 212, 0.1)',
       },
       {
         icon: '🏠',
-        title: '실내 활동',
-        description: '따뜻한 실내에서 시간을 보내세요',
+        title: t('dashboard.userStatus.recommendations.snow.indoorActivity.title'),
+        description: t('dashboard.userStatus.recommendations.snow.indoorActivity.description'),
         bgColor: 'rgba(255, 152, 0, 0.1)',
       },
       {
         icon: '🍫',
-        title: '따뜻한 음료',
-        description: '핫초콜릿으로 몸을 따뜻하게 하세요',
+        title: t('dashboard.userStatus.recommendations.snow.hotDrink.title'),
+        description: t('dashboard.userStatus.recommendations.snow.hotDrink.description'),
         bgColor: 'rgba(121, 85, 72, 0.1)',
       },
     ],
-    안개: [
+    fog: [
       {
         icon: '🚗',
-        title: '안전 운전',
-        description: '시야가 흐릴 때는 조심히 이동하세요',
+        title: t('dashboard.userStatus.recommendations.fog.safeDriving.title'),
+        description: t('dashboard.userStatus.recommendations.fog.safeDriving.description'),
         bgColor: 'rgba(158, 158, 158, 0.1)',
       },
       {
         icon: '🏠',
-        title: '실내 활동',
-        description: '실내에서 안전하게 시간을 보내세요',
+        title: t('dashboard.userStatus.recommendations.fog.indoorStay.title'),
+        description: t('dashboard.userStatus.recommendations.fog.indoorStay.description'),
         bgColor: 'rgba(255, 152, 0, 0.1)',
       },
       {
         icon: '📱',
-        title: '온라인 활동',
-        description: '집에서 온라인 콘텐츠를 즐겨보세요',
+        title: t('dashboard.userStatus.recommendations.fog.onlineActivity.title'),
+        description: t('dashboard.userStatus.recommendations.fog.onlineActivity.description'),
         bgColor: 'rgba(33, 150, 243, 0.1)',
       },
     ],
   };
 
   const weatherRecs =
-    recommendations[weatherStatus as keyof typeof recommendations] || recommendations['맑음'];
+    recommendations[weatherStatus as keyof typeof recommendations] || recommendations['sunny'];
 
   // 랜덤하게 섞어서 반환
   return [...weatherRecs].sort(() => Math.random() - 0.5);

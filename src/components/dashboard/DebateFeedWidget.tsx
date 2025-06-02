@@ -38,6 +38,7 @@ import BarChartIcon from '@mui/icons-material/BarChart';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import HowToVoteIcon from '@mui/icons-material/HowToVote';
+import ForumIcon from '@mui/icons-material/Forum';
 import {
   widgetPaperBase,
   widgetGradients,
@@ -47,6 +48,7 @@ import {
 import DebateApi from '../../features/debate/api/debateApi';
 import { Debate } from '../../features/debate/types';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from '../../shared/i18n';
 
 // 토론 포스트 타입 정의 (API에서 받아오는 데이터 구조에 맞춤)
 interface DebatePost {
@@ -87,7 +89,7 @@ const categoryColors: Record<string, string> = {
 };
 
 // 시간 포맷팅 함수
-const formatTimeAgo = (dateString: string): string => {
+const formatTimeAgo = (dateString: string, t: any): string => {
   const date = new Date(dateString);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -97,13 +99,19 @@ const formatTimeAgo = (dateString: string): string => {
   const diffDay = Math.floor(diffHour / 24);
 
   if (diffDay > 0) {
-    return diffDay === 1 ? '1일 전' : `${diffDay}일 전`;
+    return diffDay === 1
+      ? t('home.debateFeed.timeAgo.dayAgo')
+      : t('home.debateFeed.timeAgo.daysAgo', { count: diffDay });
   } else if (diffHour > 0) {
-    return diffHour === 1 ? '1시간 전' : `${diffHour}시간 전`;
+    return diffHour === 1
+      ? t('home.debateFeed.timeAgo.hourAgo')
+      : t('home.debateFeed.timeAgo.hoursAgo', { count: diffHour });
   } else if (diffMin > 0) {
-    return diffMin === 1 ? '1분 전' : `${diffMin}분 전`;
+    return diffMin === 1
+      ? t('home.debateFeed.timeAgo.minuteAgo')
+      : t('home.debateFeed.timeAgo.minutesAgo', { count: diffMin });
   } else {
-    return '방금 전';
+    return t('home.debateFeed.timeAgo.justNow');
   }
 };
 
@@ -121,211 +129,257 @@ const calculateVotePercentage = (
 };
 
 // 토론 아이템 컴포넌트
-const DebateItem = memo(({ debate, onClick }: { debate: DebatePost; onClick?: () => void }) => {
-  return (
-    <Box
-      onClick={onClick}
-      sx={{
-        p: 2,
-        borderRadius: 2,
-        background:
-          'linear-gradient(135deg, rgba(255,247,240,0.9) 0%, rgba(252,248,243,0.95) 100%)',
-        border: '1px solid rgba(255, 204, 128, 0.3)',
-        backdropFilter: 'blur(10px)',
-        cursor: onClick ? 'pointer' : 'default',
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        '&:hover': onClick
-          ? {
-              transform: 'translateY(-4px) scale(1.02)',
-              boxShadow: '0 20px 40px rgba(255, 152, 0, 0.15), 0 8px 20px rgba(255, 152, 0, 0.1)',
-              border: '1px solid rgba(255, 152, 0, 0.4)',
-              background:
-                'linear-gradient(135deg, rgba(255,247,240,0.95) 0%, rgba(252,248,243,1) 100%)',
-            }
-          : {},
-        mb: 2,
-        position: 'relative',
-        overflow: 'hidden',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '3px',
-          background:
-            'linear-gradient(90deg, rgba(255, 152, 0, 0.4), rgba(255, 152, 0, 0.8), rgba(255, 152, 0, 0.4))',
-          borderRadius: '2px 2px 0 0',
-        },
-      }}
-    >
-      {/* 헤더 */}
+const DebateItem = memo(
+  ({ debate, onClick, t }: { debate: DebatePost; onClick?: () => void; t: any }) => {
+    return (
       <Box
-        sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}
+        onClick={onClick}
+        sx={{
+          p: 2,
+          borderRadius: 2,
+          background:
+            'linear-gradient(135deg, rgba(255,247,240,0.9) 0%, rgba(252,248,243,0.95) 100%)',
+          border: '1px solid rgba(255, 204, 128, 0.3)',
+          backdropFilter: 'blur(10px)',
+          cursor: onClick ? 'pointer' : 'default',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          '&:hover': onClick
+            ? {
+                transform: 'translateY(-4px) scale(1.02)',
+                boxShadow: '0 20px 40px rgba(255, 152, 0, 0.15), 0 8px 20px rgba(255, 152, 0, 0.1)',
+                border: '1px solid rgba(255, 152, 0, 0.4)',
+                background:
+                  'linear-gradient(135deg, rgba(255,247,240,0.95) 0%, rgba(252,248,243,1) 100%)',
+              }
+            : {},
+          mb: 2,
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '3px',
+            background:
+              'linear-gradient(90deg, rgba(255, 152, 0, 0.4), rgba(255, 152, 0, 0.8), rgba(255, 152, 0, 0.4))',
+            borderRadius: '2px 2px 0 0',
+          },
+        }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, mr: 1 }}>
-          <HowToVoteIcon sx={{ fontSize: 14, mr: 0.5, color: '#3f51b5' }} />
-          <Typography variant="caption" sx={{ color: '#3f51b5', fontWeight: 600, mr: 1 }}>
-            토론
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            {formatTimeAgo(debate.createdAt)}
-          </Typography>
-        </Box>
+        {/* 헤더 */}
+        <Box
+          sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, mr: 1 }}>
+            <HowToVoteIcon sx={{ fontSize: 14, mr: 0.5, color: '#3f51b5' }} />
+            <Typography variant="caption" sx={{ color: '#3f51b5', fontWeight: 600, mr: 1 }}>
+              {t('home.debateFeed.subtitle')}
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              {formatTimeAgo(debate.createdAt, t)}
+            </Typography>
+          </Box>
 
-        <Box sx={{ display: 'flex', gap: 0.5 }}>
-          {/* 매치 점수 배지 */}
-          {debate.matchScore && debate.matchScore > 0 && (
+          <Box sx={{ display: 'flex', gap: 0.5 }}>
+            {/* 매치 점수 배지 */}
+            {debate.matchScore && debate.matchScore > 0 && (
+              <Chip
+                label={`${debate.matchScore}%`}
+                size="small"
+                sx={{
+                  fontSize: '0.7rem',
+                  height: 22,
+                  bgcolor:
+                    debate.matchScore > 90
+                      ? 'rgba(76, 175, 80, 0.1)'
+                      : debate.matchScore > 80
+                        ? 'rgba(33, 150, 243, 0.1)'
+                        : 'rgba(255, 152, 0, 0.1)',
+                  color:
+                    debate.matchScore > 90
+                      ? '#4caf50'
+                      : debate.matchScore > 80
+                        ? '#2196f3'
+                        : '#ff9800',
+                }}
+              />
+            )}
+
             <Chip
-              label={`${debate.matchScore}%`}
+              label={t(`home.debateFeed.statusLabels.${debate.status}`)}
               size="small"
               sx={{
                 fontSize: '0.7rem',
                 height: 22,
                 bgcolor:
-                  debate.matchScore > 90
-                    ? 'rgba(76, 175, 80, 0.1)'
-                    : debate.matchScore > 80
-                      ? 'rgba(33, 150, 243, 0.1)'
-                      : 'rgba(255, 152, 0, 0.1)',
-                color:
-                  debate.matchScore > 90
-                    ? '#4caf50'
-                    : debate.matchScore > 80
-                      ? '#2196f3'
-                      : '#ff9800',
+                  debate.status === 'active' ? 'rgba(76, 175, 80, 0.1)' : 'rgba(156, 39, 176, 0.1)',
+                color: debate.status === 'active' ? '#4caf50' : '#9c27b0',
+              }}
+            />
+          </Box>
+        </Box>
+
+        {/* 제목 */}
+        <Typography
+          variant="subtitle2"
+          fontWeight={600}
+          sx={{
+            mb: 1,
+            lineHeight: 1.3,
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+          }}
+        >
+          {debate.title}
+        </Typography>
+
+        {/* 작성자 정보 */}
+        {debate.authorName && (
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+            <Avatar src={debate.authorProfileImage || ''} sx={{ width: 20, height: 20, mr: 1 }}>
+              {!debate.authorProfileImage && debate.authorName ? (
+                debate.authorName.charAt(0)
+              ) : (
+                <PersonIcon sx={{ fontSize: 12 }} />
+              )}
+            </Avatar>
+            <Typography variant="caption" color="text.secondary">
+              {debate.authorName}
+            </Typography>
+          </Box>
+        )}
+
+        {/* 투표 진행률 바 */}
+        <Box sx={{ mb: 1.5 }}>
+          <Box
+            sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <ThumbUpIcon sx={{ fontSize: 12, color: '#4caf50', mr: 0.5 }} />
+              <Typography variant="caption" color="text.secondary">
+                {t('home.debateFeed.voteLabels.agreePercent', { percent: debate.agreePercent })}
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <ThumbDownIcon sx={{ fontSize: 12, color: '#f44336', mr: 0.5 }} />
+              <Typography variant="caption" color="text.secondary">
+                {t('home.debateFeed.voteLabels.disagreePercent', {
+                  percent: debate.disagreePercent,
+                })}
+              </Typography>
+            </Box>
+          </Box>
+
+          <Box sx={{ position: 'relative', height: 6, borderRadius: 3, bgcolor: 'action.hover' }}>
+            <Box
+              sx={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                height: '100%',
+                width: `${debate.agreePercent}%`,
+                bgcolor: '#4caf50',
+                borderRadius: '3px 0 0 3px',
+              }}
+            />
+            <Box
+              sx={{
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                height: '100%',
+                width: `${debate.disagreePercent}%`,
+                bgcolor: '#f44336',
+                borderRadius: '0 3px 3px 0',
+              }}
+            />
+          </Box>
+        </Box>
+
+        {/* 하단 정보 */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="caption" color="text.secondary">
+            {t('home.debateFeed.voteLabels.totalVotes', { count: debate.voteCount })}
+          </Typography>
+
+          {/* 카테고리 표시 */}
+          {debate.category && (
+            <Chip
+              label={translateDebateCategory(debate.category, t)}
+              size="small"
+              sx={{
+                fontSize: '0.65rem',
+                height: 18,
+                bgcolor: '#e3f2fd',
+                color: '#1976d2',
               }}
             />
           )}
-
-          <Chip
-            label={
-              debate.status === 'active' ? '진행중' : debate.status === 'closed' ? '종료' : '대기중'
-            }
-            size="small"
-            sx={{
-              fontSize: '0.7rem',
-              height: 22,
-              bgcolor:
-                debate.status === 'active' ? 'rgba(76, 175, 80, 0.1)' : 'rgba(156, 39, 176, 0.1)',
-              color: debate.status === 'active' ? '#4caf50' : '#9c27b0',
-            }}
-          />
         </Box>
       </Box>
+    );
+  }
+);
 
-      {/* 제목 */}
-      <Typography
-        variant="subtitle2"
-        fontWeight={600}
-        sx={{
-          mb: 1,
-          lineHeight: 1.3,
-          display: '-webkit-box',
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: 'vertical',
-          overflow: 'hidden',
-        }}
-      >
-        {debate.title}
-      </Typography>
+// 토론 태그/카테고리 번역 함수
+const translateDebateTag = (tag: string, t: any): string => {
+  const tagMap: Record<string, string> = {
+    // 토론 카테고리
+    '정치/사회': 'debate.categories.politics',
+    경제: 'debate.categories.economy',
+    '생활/문화': 'debate.categories.culture',
+    '과학/기술': 'debate.categories.technology',
+    스포츠: 'debate.categories.sports',
+    엔터테인먼트: 'debate.categories.entertainment',
+    기타: 'debate.categories.all',
 
-      {/* 작성자 정보 */}
-      {debate.authorName && (
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-          <Avatar src={debate.authorProfileImage || ''} sx={{ width: 20, height: 20, mr: 1 }}>
-            {!debate.authorProfileImage && debate.authorName ? (
-              debate.authorName.charAt(0)
-            ) : (
-              <PersonIcon sx={{ fontSize: 12 }} />
-            )}
-          </Avatar>
-          <Typography variant="caption" color="text.secondary">
-            {debate.authorName}
-          </Typography>
-        </Box>
-      )}
+    // 일반 관심 태그 - 중복 키 제거하고 고유한 키로 수정
+    정치: 'interestTags.politics',
+    사회이슈: 'interestTags.politics', // 사회는 사회이슈로 변경
+    경제정보: 'interestTags.economy', // 경제는 경제정보로 변경
+    문화: 'interestTags.life_culture',
+    생활정보: 'interestTags.life_culture', // 생활은 생활정보로 변경
+    기술: 'interestTags.science_tech',
+    과학: 'interestTags.science_tech',
+    스포츠뉴스: 'interestTags.sports_news', // 스포츠는 스포츠뉴스로 변경
+    연예뉴스: 'interestTags.entertainment_news', // 엔터테인먼트는 연예뉴스로 변경
+  };
 
-      {/* 투표 진행률 바 */}
-      <Box sx={{ mb: 1.5 }}>
-        <Box
-          sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <ThumbUpIcon sx={{ fontSize: 12, color: '#4caf50', mr: 0.5 }} />
-            <Typography variant="caption" color="text.secondary">
-              찬성 {debate.agreePercent}%
-            </Typography>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <ThumbDownIcon sx={{ fontSize: 12, color: '#f44336', mr: 0.5 }} />
-            <Typography variant="caption" color="text.secondary">
-              반대 {debate.disagreePercent}%
-            </Typography>
-          </Box>
-        </Box>
+  return tagMap[tag] ? t(tagMap[tag]) : tag;
+};
 
-        <Box sx={{ position: 'relative', height: 6, borderRadius: 3, bgcolor: 'action.hover' }}>
-          <Box
-            sx={{
-              position: 'absolute',
-              left: 0,
-              top: 0,
-              height: '100%',
-              width: `${debate.agreePercent}%`,
-              bgcolor: '#4caf50',
-              borderRadius: '3px 0 0 3px',
-            }}
-          />
-          <Box
-            sx={{
-              position: 'absolute',
-              right: 0,
-              top: 0,
-              height: '100%',
-              width: `${debate.disagreePercent}%`,
-              bgcolor: '#f44336',
-              borderRadius: '0 3px 3px 0',
-            }}
-          />
-        </Box>
-      </Box>
+// 토론 카테고리 번역 함수
+const translateDebateCategory = (category: string, t: any): string => {
+  const categoryMap: Record<string, string> = {
+    '정치/사회': 'debate.categories.politics',
+    경제: 'debate.categories.economy',
+    '생활/문화': 'debate.categories.culture',
+    '과학/기술': 'debate.categories.technology',
+    스포츠: 'debate.categories.sports',
+    엔터테인먼트: 'debate.categories.entertainment',
+    기타: 'debate.categories.all',
+  };
 
-      {/* 하단 정보 */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="caption" color="text.secondary">
-          총 {debate.voteCount}명 참여
-        </Typography>
-
-        {/* 카테고리 표시 */}
-        {debate.category && (
-          <Chip
-            label={debate.category}
-            size="small"
-            sx={{
-              fontSize: '0.65rem',
-              height: 18,
-              bgcolor: '#e3f2fd',
-              color: '#1976d2',
-            }}
-          />
-        )}
-      </Box>
-    </Box>
-  );
-});
+  return categoryMap[category] ? t(categoryMap[category]) : category;
+};
 
 // 토론 취향 분석 모달 컴포넌트
 interface DebatePreferenceModalProps {
   open: boolean;
   onClose: () => void;
   preference: DebatePreferenceData;
+  t: any;
 }
 
 const DebatePreferenceModal: React.FC<DebatePreferenceModalProps> = ({
   open,
   onClose,
   preference,
+  t,
 }) => {
   return (
     <Modal
@@ -379,13 +433,13 @@ const DebatePreferenceModal: React.FC<DebatePreferenceModalProps> = ({
             </IconButton>
 
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <RecordVoiceOverIcon sx={{ color: 'white', mr: 1.5, fontSize: 22 }} />
+              <ForumIcon sx={{ color: 'white', mr: 1.5, fontSize: 22 }} />
               <Box>
                 <Typography variant="h6" fontWeight={600}>
-                  토론 취향 분석
+                  {t('home.debateFeed.modal.title')}
                 </Typography>
                 <Typography variant="caption" sx={{ opacity: 0.9 }}>
-                  최근 활동을 기반으로 한 토론 성향 분석
+                  {t('home.debateFeed.modal.subtitle')}
                 </Typography>
               </Box>
             </Box>
@@ -401,7 +455,7 @@ const DebatePreferenceModal: React.FC<DebatePreferenceModalProps> = ({
                 sx={{ mb: 1.5, display: 'flex', alignItems: 'center' }}
               >
                 <LoyaltyIcon sx={{ fontSize: 16, mr: 1, color: 'primary.main' }} />
-                관심 키워드
+                {t('home.debateFeed.modal.sections.keywords')}
               </Typography>
 
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.8 }}>
@@ -411,7 +465,7 @@ const DebatePreferenceModal: React.FC<DebatePreferenceModalProps> = ({
                   return (
                     <Chip
                       key={keyword.id}
-                      label={keyword.name}
+                      label={translateDebateTag(keyword.name, t)}
                       size="small"
                       sx={{
                         height: 'auto',
@@ -439,7 +493,7 @@ const DebatePreferenceModal: React.FC<DebatePreferenceModalProps> = ({
                 sx={{ mb: 1.5, display: 'flex', alignItems: 'center' }}
               >
                 <LocalOfferIcon sx={{ fontSize: 16, mr: 1, color: 'text.secondary' }} />
-                관심분야 TOP 5
+                {t('home.debateFeed.modal.sections.topCategories')}
               </Typography>
 
               {preference.categoryData.slice(0, 5).map((category, index) => (
@@ -463,7 +517,7 @@ const DebatePreferenceModal: React.FC<DebatePreferenceModalProps> = ({
                         }}
                       />
                       <Typography variant="body2" fontWeight={500}>
-                        #{index + 1} {category.name}
+                        #{index + 1} {translateDebateCategory(category.name, t)}
                       </Typography>
                     </Box>
                     <Typography variant="body2" fontWeight={600} color={category.color}>
@@ -500,6 +554,7 @@ const DebateFeedWidget: React.FC = () => {
   const [preference, setPreference] = useState<DebatePreferenceData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // 토론 추천 데이터 가져오기
   const fetchDebateData = useCallback(async () => {
@@ -525,7 +580,7 @@ const DebateFeedWidget: React.FC = () => {
           return {
             id: String(debate.id),
             title: debate.title || '',
-            content: debate.content || '내용이 없습니다.',
+            content: debate.content || '',
             category: debate.category || '기타',
             proCount: debate.proCount || 0,
             conCount: debate.conCount || 0,
@@ -606,11 +661,11 @@ const DebateFeedWidget: React.FC = () => {
       }
     } catch (error) {
       console.error('토론 데이터 가져오기 실패:', error);
-      setError('데이터를 불러오는데 실패했습니다.');
+      setError('FETCH_ERROR'); // 번역 키를 위한 임시 값
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, []); // t 의존성 제거하여 무한 루프 방지
 
   // 데이터 로딩
   useEffect(() => {
@@ -666,7 +721,7 @@ const DebateFeedWidget: React.FC = () => {
         }}
       >
         <Typography variant="body2" color="error" sx={{ mb: 2 }}>
-          {error}
+          {error === 'FETCH_ERROR' ? t('home.debateFeed.messages.error') : error}
         </Typography>
         <Button
           variant="outlined"
@@ -675,7 +730,7 @@ const DebateFeedWidget: React.FC = () => {
           startIcon={<RefreshIcon />}
           sx={{ borderRadius: 2 }}
         >
-          다시 시도
+          {t('home.debateFeed.actions.retry')}
         </Button>
       </Paper>
     );
@@ -713,7 +768,7 @@ const DebateFeedWidget: React.FC = () => {
               <RecordVoiceOverIcon />
             </Avatar>
             <Typography variant="h6" fontWeight={600}>
-              토론 피드
+              {t('home.debateFeed.title')}
             </Typography>
           </Box>
           <Box>
@@ -753,7 +808,11 @@ const DebateFeedWidget: React.FC = () => {
             <List disablePadding>
               {debates.map((debate, index) => (
                 <React.Fragment key={debate.id}>
-                  <DebateItem debate={debate} onClick={() => navigate(`/debate/${debate.id}`)} />
+                  <DebateItem
+                    debate={debate}
+                    onClick={() => navigate(`/debate/${debate.id}`)}
+                    t={t}
+                  />
                   {index < debates.length - 1 && <Divider sx={{ my: 0.5 }} />}
                 </React.Fragment>
               ))}
@@ -772,7 +831,7 @@ const DebateFeedWidget: React.FC = () => {
             >
               <RecordVoiceOverIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
               <Typography variant="body2" color="text.secondary">
-                추천할 토론이 없습니다
+                {t('home.debateFeed.messages.noDebates')}
               </Typography>
             </Box>
           )}
@@ -787,7 +846,7 @@ const DebateFeedWidget: React.FC = () => {
               textAlign="center"
               sx={{ mb: 1, display: 'block' }}
             >
-              {debates.length}개의 추천 토론
+              {t('home.debateFeed.messages.debateCount', { count: debates.length.toString() })}
             </Typography>
             <Button
               variant="outlined"
@@ -795,7 +854,7 @@ const DebateFeedWidget: React.FC = () => {
               sx={{ borderRadius: 2, textTransform: 'none', px: 3, width: '100%' }}
               onClick={() => navigate('/debate')}
             >
-              토론 더 보기
+              {t('home.debateFeed.actions.viewMore')}
             </Button>
           </Box>
         )}
@@ -807,6 +866,7 @@ const DebateFeedWidget: React.FC = () => {
           open={modalOpen}
           onClose={handleCloseModal}
           preference={preference}
+          t={t}
         />
       )}
     </>

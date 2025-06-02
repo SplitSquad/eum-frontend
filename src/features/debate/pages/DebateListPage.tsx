@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDebateStore } from '../store';
@@ -26,10 +26,8 @@ import DebateLayout from '../components/common/DebateLayout';
 import { formatDate } from '../utils/dateUtils';
 import { send } from 'process';
 import { useTranslation } from '@/shared/i18n';
+import { useLanguageStore } from '@/features/theme/store/languageStore';
 import { set } from 'date-fns';
-import { setupDebateLanguageChangeListener } from '@/features/debate/store/debateStore';
-import bottomImg from '@/assets/icons/common/bottom.png';
-import bagImg from '@/assets/icons/common/보따리.png';
 // 스타일 컴포넌트
 const CategoryItem = styled(ListItemButton)(({ theme }) => ({
   padding: '12px 16px',
@@ -268,10 +266,17 @@ const DebateListPage: React.FC = () => {
     error,
     getDebates: fetchDebates,
     setCategory,
+    isLanguageChanging,
+    setLanguageChanging,
   } = useDebateStore();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { t } = useTranslation();
+  const { language } = useLanguageStore();
+
+  // 언어 변경 추적을 위한 ref
+  const previousLanguageRef = useRef(language);
+  const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // 카테고리 매핑 (MainIssuesPage와 동일하게)
   const categoryMappings = {
@@ -346,11 +351,51 @@ const DebateListPage: React.FC = () => {
     기타: t('debate.categories.etc'),
   };
 
+  // 데이터 새로고침 함수를 useCallback으로 메모화
+  const refreshDebateList = useCallback(async () => {
+    console.log('[INFO] 토론 리스트 페이지 - 데이터 새로고침 시작');
+    setLanguageChanging(true);
+
+    try {
+      const apiCategory = categoryMappings[selectedCategory]?.code || '';
+      await fetchDebates(currentPage, 5, apiCategory);
+    } finally {
+      setLanguageChanging(false);
+      console.log('[INFO] 토론 리스트 페이지 - 데이터 새로고침 완료');
+    }
+  }, [selectedCategory, currentPage, fetchDebates, setLanguageChanging, categoryMappings]);
+
   useEffect(() => {
     // 초기 로드 시 선택된 카테고리에 맞는 데이터 가져오기
     const apiCategory = categoryMappings[selectedCategory]?.code || '';
     fetchDebates(1, 5, apiCategory);
-  }, [fetchDebates, selectedCategory]);
+  }, [selectedCategory]); // fetchDebates 의존성 제거
+
+  // 언어 변경 감지 및 토론 목록 새로고침 (최적화됨)
+  useEffect(() => {
+    // 초기 로드가 아닌 경우에만 새로고침
+    if (previousLanguageRef.current !== language) {
+      console.log(`[INFO] 언어 변경 감지: ${previousLanguageRef.current} → ${language}`);
+
+      // 기존 타이머 취소
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
+      }
+
+      // 디바운스된 새로고침 (200ms 지연)
+      refreshTimeoutRef.current = setTimeout(refreshDebateList, 200);
+    }
+
+    // 현재 언어를 이전 언어로 업데이트
+    previousLanguageRef.current = language;
+
+    // 컴포넌트 언마운트 시 타이머 정리
+    return () => {
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
+      }
+    };
+  }, [language, refreshDebateList]);
 
   const handleDebateClick = (id: number) => {
     navigate(`/debate/${id}`);
@@ -437,6 +482,14 @@ const DebateListPage: React.FC = () => {
           {categoryMappings[selectedCategory]?.display || t('debate.categories.all')}{' '}
           {t('debate.name')}
         </Typography>
+        {isLanguageChanging && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, opacity: 0.7 }}>
+            <CircularProgress size={16} />
+            <Typography variant="body2" color="text.secondary">
+              {t('common.translating')}
+            </Typography>
+          </Box>
+        )}
       </Box>
 
       {loading ? (
@@ -458,8 +511,8 @@ const DebateListPage: React.FC = () => {
         >
           <Typography sx={{ fontWeight: 'bold', color: '#888' }}>
             {selectedCategory === 'all'
-              ? '등록된 토론이 없습니다.'
-              : `${categoryMappings[selectedCategory]?.display} 카테고리에 등록된 토론이 없습니다.`}
+              ? t('debate.noDebates')
+              : `${categoryMappings[selectedCategory]?.display} ${t('debate.noDebates')}`}
           </Typography>
         </Paper>
       ) : (

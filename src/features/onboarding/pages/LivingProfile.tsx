@@ -1422,8 +1422,8 @@ const LivingProfile: React.FC = () => {
           >
             {currentStep === totalSteps
               ? isSubmitting
-                ? 'onboarding.travel.saving'
-                : 'onboarding.travel.finish'
+                ? t('onboarding.travel.saving')
+                : t('onboarding.travel.finish')
               : t('onboarding.travel.next')}
           </Button>
         </Box>

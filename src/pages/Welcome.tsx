@@ -13,14 +13,11 @@ const WelcomeCard = styled(Paper)`
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: rgba(250, 251, 252, 0.15);
+  background: #fafbfc;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
   border-radius: 18px;
   border: 1px solid #e0e0e0;
-  backdrop-filter: blur(4px);
-  @media (max-width: 600px) {
-    padding: 2rem 0.5rem;
-  }
+  backdrop-filter: blur(10px);
 `;
 
 const EumiImg = styled('img')`
@@ -66,68 +63,23 @@ const Welcome: React.FC = () => {
   return (
     <Container
       maxWidth="sm"
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '70vh',
-      }}
+      sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}
     >
       <WelcomeCard elevation={3}>
         <EumiImg src={eum2Image} alt={t('welcome.characterAlt') || '이음이 캐릭터'} />
-        <Title variant="h3">{t('welcome.title')}</Title>
-        <Box sx={{ mt: 2, width: '100%' }}>
-          <Typography
-            variant="h6"
-            component="p"
-            sx={{
-              textAlign: 'center',
-              fontWeight: 400,
-              fontSize: { xs: '1.05rem', sm: '1.15rem' },
-              lineHeight: 1.8,
-              mb: 1.2,
-              wordBreak: 'break-word',
-              whiteSpace: 'pre-line',
-              overflowWrap: 'break-word',
-              maxWidth: '100%',
-            }}
-          >
-            {t('welcome.description').split('\n')[0]}
-          </Typography>
-          <Typography
-            variant="h6"
-            component="p"
-            sx={{
-              textAlign: 'center',
-              fontWeight: 400,
-              fontSize: { xs: '1.05rem', sm: '1.15rem' },
-              lineHeight: 1.8,
-              mb: 1.2,
-              wordBreak: 'break-word',
-              whiteSpace: 'pre-line',
-              overflowWrap: 'break-word',
-              maxWidth: '100%',
-            }}
-          >
-            {t('welcome.description').split('\n')[1]}
-          </Typography>
-          <Typography
-            variant="h6"
-            component="p"
-            sx={{
-              textAlign: 'center',
-              fontWeight: 400,
-              fontSize: { xs: '1.05rem', sm: '1.15rem' },
-              lineHeight: 1.8,
-              wordBreak: 'break-word',
-              whiteSpace: 'pre-line',
-              overflowWrap: 'break-word',
-              maxWidth: '100%',
-            }}
-          >
-            {t('welcome.description').split('\n')[2]}
-          </Typography>
-        </Box>
+        <Typography variant="h3" fontWeight={800} style={{ color: '#222' }} gutterBottom>
+          {t('welcome.title')}
+        </Typography>
+        <Typography variant="h6" sx={{ mb: 3, color: '#555' }}>
+          {t('welcome.description')
+            .split('\n')
+            .map((line, idx) => (
+              <React.Fragment key={idx}>
+                {line}
+                <br />
+              </React.Fragment>
+            ))}
+        </Typography>
       </WelcomeCard>
     </Container>
   );

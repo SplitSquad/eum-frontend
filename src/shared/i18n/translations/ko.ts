@@ -1,7 +1,7 @@
 import { StudyProfile } from '@/features/onboarding';
 import { duration } from '@mui/material';
 import { profile } from 'console';
-import { de } from 'date-fns/locale';
+import { de, pl } from 'date-fns/locale';
 import { title } from 'process';
 
 const ko = {
@@ -544,6 +544,7 @@ const ko = {
     },
     // 여행 온보딩
     travel: {
+      finish: '완료',
       interestedCities: {
         title: '관심 도시 설정',
         description:
@@ -907,77 +908,247 @@ const ko = {
     goHome: '홈으로 돌아가기',
   },
   dashboard: {
-    greeting: {
-      morning: '좋은 아침이에요',
-      afternoon: '즐거운 오후예요',
-      evening: '편안한 저녁이에요',
-    },
-    categories: {
-      travel: '여행',
-      food: '맛집',
-      activity: '활동',
-      event: '행사',
-    },
-    achievements: {
-      explorer: '탐험가',
-      explorerDescription: '10개 이상의 새로운 장소 방문',
-      today: '오늘',
-    },
-    weather: {
-      current: '현재 날씨',
-      forecast: '날씨 예보',
-      clear: '맑음',
-      cloudy: '흐림',
-      rainy: '비',
-      snowy: '눈',
-    },
-    recommendations: {
-      title: 'AI 추천',
-      aiRecommendations: 'AI 맞춤 추천',
-      match: '매칭도',
-    },
     userStatus: {
-      level: '레벨',
-      experience: '경험치',
-      nextLevel: '다음 레벨까지',
-      recentAchievement: '최근 달성',
-      recentActivity: '최근 활동',
-      continuousDays: '일 연속',
-      activeStatus: '활동 중',
-      noActivity: '최근 활동 내역이 없습니다',
-      newBadgeEarned: '새로운 뱃지 획득',
-      weatherBasedRecommendations: '오늘 같은 날씨에 어울리는 활동',
-      moreRecommendations: '더 많은 추천 보기',
-      notificationSettings: '알림 설정',
-      notificationDescription: '중요 이벤트와 알림을 받아보세요',
-      settings: '설정',
-      aiRecommendations: 'AI 맞춤 추천',
-      weatherBasedTitle: '날씨 기반 맞춤 추천(오전 8시)',
-      humidity: '습도',
-      precipitationProbability: '강수확률',
-      activities: {
-        readingDay: '독서하기 좋은 날',
-        readingDescription: '최근 인기 도서 추천',
-        movieWatching: '영화 감상',
-        movieDescription: 'OTT 인기 콘텐츠 추천',
-        cooking: '요리 도전하기',
-        cookingDescription: '비 오는 날 어울리는 레시피',
-        exhibition: '전시회 관람',
-        exhibitionDescription: '현재 진행중인 전시회 정보',
-        cafeTour: '카페 투어',
-        cafeDescription: '주변 인기 카페 탐방하기',
-        shopping: '쇼핑하기',
-        shoppingDescription: '시즌 오프 세일 정보',
-        hanriverPicnic: '한강공원 피크닉',
-        picnicDescription: '좋은 날씨, 공원에서 소풍 어때요?',
-        bikeRiding: '자전거 라이딩',
-        bikeDescription: '한강변 자전거 코스 추천',
-        photography: '야외 사진 촬영',
-        photoDescription: '좋은 빛으로 인생샷을 남겨보세요',
+      loading: '사용자 정보를 불러오는 중입니다...',
+      user: '사용자',
+      greeting: {
+        morning: '좋은 아침이에요',
+        afternoon: '즐거운 오후예요',
+        evening: '편안한 저녁이에요',
       },
+      nextTitle: '다음 칭호',
+      activitiesRemaining: '개 활동 남음',
+      level: 'Lv.',
+      progress: '%',
+      // 레벨별 칭호
+      titles: {
+        1: '새싹 이웃',
+        2: '친근한 메이트',
+        3: '활발한 프렌드',
+        4: '열정 파트너',
+        5: '커뮤니티 멤버',
+        6: '한국생활 베테랑',
+        7: '글로벌 인플루언서',
+        8: '다문화 리더',
+        9: '커뮤니티 엑스퍼트',
+        10: '레전드 멤버',
+      },
+      // 연속활동과 뱃지
+      streakDays: '일',
+      consecutiveActivity: '연속활동',
+      badges: '뱃지',
+      badgeCount: '개',
+      // 뱃지 종류
+      badgeTypes: {
+        firstPost: '첫 게시글',
+        firstPostDesc: '첫 번째 게시글을 작성했습니다!',
+        communicator: '소통왕',
+        communicatorDesc: '10개 이상의 댓글을 작성했습니다!',
+        debater: '토론 참여자',
+        debaterDesc: '토론에 참여하여 의견을 표현했습니다!',
+        collector: '정보 수집가',
+        collectorDesc: '유용한 정보를 북마크했습니다!',
+        activeUser: '활발한 유저',
+        activeUserDesc: '50개 이상의 활동을 완료했습니다!',
+        expert: '커뮤니티 전문가',
+        expertDesc: '100개 이상의 활동을 완료했습니다!',
+      },
+      // 달성 뱃지 섹션
+      achievedBadges: '달성 뱃지',
+      startActivity: '활동을 시작해 뱃지를 획득하세요!',
+      // 최근 활동 섹션
+      recentActivity: '최근 활동',
+      noActivity: '아직 활동이 없습니다.',
+      activityTypes: {
+        post: '게시글 작성',
+        comment: '댓글 작성',
+        debate: '토론 참여',
+        bookmark: '북마크 추가',
+      },
+      // 날씨 정보 섹션
+      weatherInfo: '날씨 정보',
+      weatherStatus: {
+        sunny: '맑음',
+        cloudy: '구름많음',
+        overcast: '흐림',
+        rain: '비',
+        snow: '눈',
+        fog: '안개',
+      },
+      precipitationProbability: '%',
+      today: '오늘',
+      tomorrow: '내일',
+      dayAfterTomorrow: '모레',
+      // 오늘의 추천 섹션
+      todaysRecommendations: '오늘의 추천',
+      recommendations: {
+        sunny: {
+          parkWalk: {
+            title: '공원 산책',
+            description: '좋은 날씨에 야외 활동을 즐겨보세요',
+          },
+          photography: {
+            title: '사진 촬영',
+            description: '맑은 하늘과 함께 인생샷을 남겨보세요',
+          },
+          cycling: {
+            title: '자전거 라이딩',
+            description: '시원한 바람과 함께 라이딩을 즐겨보세요',
+          },
+        },
+        cloudy: {
+          cafe: {
+            title: '카페 탐방',
+            description: '분위기 좋은 카페에서 여유를 즐겨보세요',
+          },
+          shopping: {
+            title: '쇼핑',
+            description: '실내에서 편안하게 쇼핑을 즐겨보세요',
+          },
+          exhibition: {
+            title: '전시 관람',
+            description: '박물관이나 갤러리를 방문해보세요',
+          },
+        },
+        overcast: {
+          reading: {
+            title: '독서',
+            description: '조용한 분위기에서 책을 읽어보세요',
+          },
+          cooking: {
+            title: '요리',
+            description: '집에서 새로운 요리에 도전해보세요',
+          },
+          movie: {
+            title: '영화 감상',
+            description: '집에서 편안하게 영화를 즐겨보세요',
+          },
+        },
+        rain: {
+          indoorCafe: {
+            title: '실내 카페',
+            description: '빗소리와 함께 따뜻한 음료를 즐겨보세요',
+          },
+          indoorReading: {
+            title: '실내 독서',
+            description: '비 오는 날엔 책과 함께 시간을 보내보세요',
+          },
+          rest: {
+            title: '휴식',
+            description: '집에서 편안하게 휴식을 취해보세요',
+          },
+        },
+        snow: {
+          snowViewing: {
+            title: '눈 구경',
+            description: '아름다운 설경을 감상해보세요',
+          },
+          indoorActivity: {
+            title: '실내 활동',
+            description: '따뜻한 실내에서 시간을 보내세요',
+          },
+          hotDrink: {
+            title: '따뜻한 음료',
+            description: '핫초콜릿으로 몸을 따뜻하게 하세요',
+          },
+        },
+        fog: {
+          safeDriving: {
+            title: '안전 운전',
+            description: '시야가 흐릴 때는 조심히 이동하세요',
+          },
+          indoorStay: {
+            title: '실내 활동',
+            description: '실내에서 안전하게 시간을 보내세요',
+          },
+          onlineActivity: {
+            title: '온라인 활동',
+            description: '집에서 온라인 콘텐츠를 즐겨보세요',
+          },
+        },
+      },
+      // 에러 메시지
+      error: '사용자 정보를 불러오는 중 오류가 발생했습니다.',
+      locationError: '현재 위치',
+      unknownLocation: '알 수 없음',
+      // WeatherService 관련
+      timeBasedGreeting: {
+        morning: '좋은 아침이에요',
+        afternoon: '즐거운 오후예요',
+        evening: '편안한 저녁이에요',
+      },
+      weatherActivities: {
+        sunny: {
+          1: '오늘은 날씨가 좋네요! 산책하기 좋은 날이에요.',
+          2: '햇살이 좋아요. 야외 활동하기 좋은 날씨네요.',
+          3: '창문을 열어 상쾌한 공기를 마셔보세요.',
+        },
+        cloudy: {
+          1: '구름이 많지만 야외 활동하기에 괜찮은 날씨네요.',
+          2: '선크림은 잊지 마세요. 구름 사이로 UV는 여전히 강해요.',
+          3: '약간 흐리지만 기분 좋은 하루가 될 거예요.',
+        },
+        overcast: {
+          1: '오늘은 흐린 날씨네요. 실내 활동은 어떨까요?',
+          2: '흐린 날은 집에서 책 읽기 좋은 날이에요.',
+          3: '습도가 높을 수 있으니 체감온도에 주의하세요.',
+        },
+        rain: {
+          1: '비가 오고 있어요. 우산 잊지 마세요!',
+          2: '오늘은 실내에서 차 한잔의 여유를 즐겨보는 건 어떨까요?',
+          3: '비 오는 날의 영화 감상도 좋겠네요.',
+        },
+        snow: {
+          1: '눈이 내리고 있어요! 따뜻하게 입고 나가세요.',
+          2: '미끄러운 길 조심하세요.',
+          3: '따뜻한 음료로 몸을 녹여보세요.',
+        },
+      },
+      // API 관련 에러 메시지 (번역하지 않음)
+      apiErrors: {
+        geolocationNotSupported: 'Geolocation is not supported by this browser.',
+        apiCallFailed: '기상청 API 호출 실패',
+        invalidApiResponse: 'Invalid API response format',
+        weatherInfoFailed: '날씨 정보 조회 실패',
+        locationFailed: '위치/날씨 정보 로딩 실패',
+        userDataFailed: '사용자 데이터 로딩 실패',
+      },
+    },
+    calendar: {
+      title: '캘린더',
+      today: '오늘',
+      events: '일정',
+      noEvents: '예정된 일정이 없습니다',
+    },
+    community: {
+      title: '커뮤니티 피드',
+      noPost: '게시글이 없습니다',
+      viewMore: '더보기',
+    },
+    debate: {
+      title: '토론 피드',
+      noDebate: '토론이 없습니다',
+      viewMore: '더보기',
+    },
+    info: {
+      title: '정보 피드',
+      noInfo: '정보가 없습니다',
+      viewMore: '더보기',
+    },
+    gallery: {
+      photos: '사진 갤러리',
+      videos: '동영상 갤러리',
+      loading: '로딩 중...',
+      error: '불러오기 실패',
+    },
+    map: {
+      title: '지도',
+      currentLocation: '현재 위치',
+      nearbyPlaces: '주변 장소',
     },
   },
   calendar: {
+    title: '캘린더',
     weekdays: {
       sunday: '일',
       monday: '월',
@@ -994,40 +1165,30 @@ const ko = {
       daysLater: '{{days}}일 후',
       daysAgo: '{{days}}일 전',
     },
+    auth: {
+      googleLoginRequired: '구글 로그인 필요',
+      googleLoginDescription: '캘린더 기능은 구글 계정으로 로그인한 사용자만 이용하실 수 있습니다.',
+      feature1: '• 구글 캘린더와 연동하여 일정을 관리할 수 있습니다',
+      feature2: '• 실시간 동기화로 모든 기기에서 일정을 확인할 수 있습니다',
+      feature3: '• 알림 설정으로 중요한 일정을 놓치지 마세요',
+    },
     events: {
-      addEvent: '일정 추가',
-      editEvent: '일정 수정',
-      deleteEvent: '일정 삭제',
+      calendarAndSchedule: '캘린더 & 일정 관리',
+      goToToday: '오늘로 이동',
+      upcomingEvents: '다가오는 일정',
+      noScheduledEvents: '예정된 일정이 없습니다',
+      newScheduleAdd: '새 일정 추가',
+      timeInfoNotAvailable: '시간 정보 없음',
+      dateInfoNotAvailable: '날짜 정보 없음',
+      eventEditTitle: '일정 수정',
+      newEventTitle: '새 일정 추가',
       eventTitle: '일정 제목',
       location: '장소',
       description: '설명',
       startTime: '시작 시간',
       endTime: '종료 시간',
-      save: '저장',
       cancel: '취소',
-      delete: '삭제',
-      upcomingEvents: '다가오는 일정',
-      noEvents: '일정이 없습니다',
-      googleSync: '구글 캘린더 동기화',
-      syncSuccess: '동기화 완료',
-      syncFailed: '동기화 실패',
-      calendarAndSchedule: '일정 및 캘린더',
-      goToToday: '오늘로 이동',
-      googleCalendarSync: '구글 캘린더와 동기화',
-      googleCalendarSynced: '구글 캘린더 동기화됨',
-      newScheduleAdd: '새 일정 추가',
-      noScheduledEvents: '예정된 일정이 없습니다',
-      allEventsNotificationSet: '모든 일정에 대한 알림이 설정되어 있습니다',
-      eventEditTitle: '일정 수정',
-      newEventTitle: '새 일정 추가',
-      deleteConfirm: '이 이벤트를 삭제하시겠습니까?',
-      timeInfoNotAvailable: '시간 정보 없음',
-      dateInfoNotAvailable: '날짜 정보 없음',
-    },
-    navigation: {
-      previousMonth: '이전 달',
-      nextMonth: '다음 달',
-      goToToday: '오늘로 이동',
+      save: '저장',
     },
   },
   userPreference: {
@@ -1231,6 +1392,8 @@ const ko = {
       authorSearch: '작성자 검색',
     },
     posts: {
+      showOriginal: '원본 보기',
+      returnOriginal: '돌아가기',
       title: '게시글 제목',
       content: '게시글 내용',
       author: '작성자',
@@ -1479,28 +1642,72 @@ const ko = {
     },
     kakaoMap: {
       title: '주변 탐색',
+      purposeLabels: {
+        travel: '여행',
+        work: '취업',
+        residence: '거주',
+        study: '유학',
+      },
+      purposeBasedTitle: '{{purpose}} 맞춤 장소',
       search: {
         placeholder: '장소 검색',
         button: '검색',
       },
       categories: {
-        cafe: '카페',
+        // 여행 카테고리
+        tourist: '관광명소',
         restaurant: '맛집',
-        culture: '문화',
+        cafe: '카페',
+        culture: '문화시설',
+        transport: '교통',
+        hotel: '숙박',
+
+        // 취업 카테고리
+        business: '사무공간',
+        bank: '은행',
+        government: '관공서',
+
+        // 거주 카테고리
+        market: '마트/시장',
+        hospital: '병원',
+
+        // 유학 카테고리
+        university: '대학교',
+        library: '도서관',
+        language: '학원',
+      },
+      categoryKeywords: {
         tourist: '관광',
+        restaurant: '맛집',
+        cafe: '카페',
+        culture: '박물관',
+        transport: '지하철역',
+        hotel: '호텔',
+        business: '사무실',
+        bank: '은행',
+        government: '구청',
+        market: '마트',
+        hospital: '병원',
+        university: '대학교',
+        library: '도서관',
+        language: '어학원',
       },
       actions: {
         myLocation: '내 위치',
+        nearbyPlaces: '주변 장소 보기',
         fullscreen: '전체화면',
         directions: '길찾기',
+        findDirections: '길찾기',
         details: '자세히 보기',
         close: '닫기',
         back: '뒤로',
+        refresh: '새로고침',
       },
       location: {
         myLocation: '내 위치',
         distance: '거리',
         rating: '평점',
+        currentLocation: '현재 위치',
       },
       route: {
         walking: '도보',
@@ -1510,11 +1717,48 @@ const ko = {
         error: '경로를 찾을 수 없습니다',
         calculating: '경로 계산 중...',
       },
+      modal: {
+        mapView: '지도 보기',
+        nearbyPlaces: '주변 장소',
+        nearbyPlacesWithCount: '주변 장소 ({{count}})',
+        recommendedPlaces: '추천 장소',
+        recommendPlaces: '추천 장소',
+        currentCategory: '{{category}}',
+      },
+      legend: {
+        myLocation: '내 위치',
+        places: '장소',
+      },
       messages: {
         loading: '지도를 불러오는 중...',
+        preparing: '준비 중...',
+        mapLoading: '지도 로딩 중...',
+        searchingPlaces: '장소를 검색중입니다...',
+        searching: '장소를 검색중입니다...',
+        pleaseWait: '잠시만 기다려주세요',
         error: '지도를 불러오는데 실패했습니다',
         locationError: '위치 정보를 가져올 수 없습니다',
         noResults: '검색 결과가 없습니다',
+        noResultsSubtext: '다른 카테고리를 선택해보세요',
+        tryOtherCategories: '다른 카테고리를 선택해보세요',
+        mapNotInitialized: '지도가 완전히 초기화되지 않았습니다',
+        containerNotFound: '지도 컨테이너를 찾을 수 없습니다',
+        styleApplyFailed: '지도 스타일 적용 실패',
+        enhancedStyleApplyFailed: '향상된 지도 스타일 적용 실패',
+      },
+      mapTypes: {
+        roadmap: '지도',
+        skyview: '스카이뷰',
+      },
+      tooltips: {
+        nearbyPlaces: '주변 장소 보기',
+        myLocation: '내 위치로 이동',
+        expandMap: '지도 확대',
+        directions: '길찾기',
+      },
+      infoWindow: {
+        directions: '길찾기',
+        details: '자세히 보기',
       },
     },
     imageGallery: {
@@ -1629,6 +1873,7 @@ const ko = {
     next: '다음',
   },
   debate: {
+    noDebates: '등록된 토론이 없습니다.',
     title: '핫 이슈 토론',
     description: '지금 가장 뜨거운 사회 이슈에 대해 자유롭게 토론하고 다양한 의견을 나눠보세요.',
     categories: {
@@ -1665,7 +1910,14 @@ const ko = {
     currentVote: '선택한 입장',
     commentGuide: '투표 버튼을 클릭하여 먼저 입장을 선택하면 댓글에 입장이 표시됩니다.',
     name: '토론',
+    topicTitle: '토론 주제',
+    proOpinion: '찬성측 의견',
+    conOpinion: '반대측 의견',
     comment: {
+      placeholder: '댓글을 입력하세요',
+      pro: '찬성',
+      con: '반대',
+      none: '미투표',
       empty: '댓글이 없습니다. 첫 댓글을 남겨주세요!',
       add: '댓글 추가',
       newest: '최신순',
@@ -1676,12 +1928,17 @@ const ko = {
       cancel: '취소',
     },
     reply: {
+      pro: '찬성',
+      con: '반대',
+      none: '미투표',
+      replyLoading: '답글을 불러오는 중...',
       placeholder: '답글을 입력하세요',
-      add: '답글 추가',
+      add: '답글 작성',
       edit: '답글 수정',
       delete: '답글 삭제',
       deleteConfirm: '이 답글을 삭제하시겠습니까?',
       noReplies: '답글이 없습니다. 첫 답글을 남겨주세요!',
+      hide: '답글 숨기기',
       cancel: '취소',
     },
     specialIssue: '특별 이슈',
@@ -1713,8 +1970,12 @@ const ko = {
       write: '글쓰기',
       viewAll: '전체보기',
       bookmark: '북마크',
+      bookmarked: '저장됨',
       share: '공유',
+      shareAction: '공유하기',
       print: '인쇄',
+      printAction: '인쇄하기',
+      scrollToTop: '맨 위로',
     },
     content: {
       allInfo: '전체 정보',
@@ -1850,6 +2111,146 @@ const ko = {
       title: '환영합니다!',
       desc1: 'EUM과 함께하는 여정이 곧 시작됩니다.',
       desc2: '새로운 경험을 위한 모든 준비가 완료되었습니다.',
+    },
+  },
+  // 홈 화면 위젯들
+  home: {
+    communityFeed: {
+      title: '커뮤니티 피드',
+      tabs: {
+        free: '자유',
+        meeting: '모임',
+      },
+      sourceLabels: {
+        community: '커뮤니티',
+        discussion: '모임',
+        debate: '토론',
+        information: '정보',
+      },
+      timeAgo: {
+        justNow: '방금 전',
+        minutesAgo: '분 전',
+        oneMinuteAgo: '1분 전',
+        hoursAgo: '시간 전',
+        oneHourAgo: '1시간 전',
+        daysAgo: '일 전',
+        oneDayAgo: '1일 전',
+      },
+      actions: {
+        retry: '다시 시도',
+        refresh: '새로고침',
+        seeMoreFree: '자유 더 보기',
+        seeMoreMeeting: '모임 더 보기',
+        openAnalysis: '취향 분석 보기',
+      },
+      messages: {
+        loading: '로딩 중...',
+        error: '데이터를 불러오는 중 오류가 발생했습니다.',
+        locationError: '위치 정보 가져오기 실패',
+        noFreePosts: '자유 게시글이 없습니다',
+        noMeetingPosts: '모임 게시글이 없습니다',
+      },
+      modal: {
+        title: '커뮤니티 취향 분석',
+        subtitle: '최근 활동을 기반으로 한 관심사 분석',
+        sections: {
+          keywords: '관심 키워드',
+          topCategories: '관심분야 TOP 5',
+        },
+        close: '닫기',
+      },
+    },
+    debateFeed: {
+      title: '토론 피드',
+      subtitle: '토론',
+      statusLabels: {
+        active: '진행중',
+        closed: '종료',
+        pending: '대기중',
+      },
+      voteLabels: {
+        agree: '찬성',
+        disagree: '반대',
+        agreePercent: '찬성 {{percent}}%',
+        disagreePercent: '반대 {{percent}}%',
+        totalVotes: '총 {{count}}명 참여',
+      },
+      timeAgo: {
+        justNow: '방금 전',
+        minuteAgo: '1분 전',
+        minutesAgo: '{{count}}분 전',
+        hourAgo: '1시간 전',
+        hoursAgo: '{{count}}시간 전',
+        dayAgo: '1일 전',
+        daysAgo: '{{count}}일 전',
+      },
+      actions: {
+        refresh: '새로고침',
+        openAnalysis: '취향 분석 보기',
+        viewMore: '토론 더 보기',
+        retry: '다시 시도',
+      },
+      messages: {
+        loading: '로딩 중...',
+        error: '데이터를 불러오는데 실패했습니다.',
+        noDebates: '추천할 토론이 없습니다',
+        debateCount: '{{count}}개의 추천 토론',
+      },
+      modal: {
+        title: '토론 취향 분석',
+        subtitle: '최근 활동을 기반으로 한 토론 성향 분석',
+        close: '닫기',
+        sections: {
+          keywords: '관심 키워드',
+          topCategories: '관심분야 TOP 5',
+        },
+      },
+    },
+    infoFeed: {
+      title: '정보 피드',
+      subtitle: '정보',
+      difficultyLabels: {
+        beginner: '초급',
+        intermediate: '중급',
+        advanced: '고급',
+      },
+      contentTypeLabels: {
+        guide: '가이드',
+        tip: '팁',
+        news: '뉴스',
+        tutorial: '튜토리얼',
+      },
+      timeAgo: {
+        justNow: '방금 전',
+        minuteAgo: '1분 전',
+        minutesAgo: '{{count}}분 전',
+        hourAgo: '1시간 전',
+        hoursAgo: '{{count}}시간 전',
+        dayAgo: '1일 전',
+        daysAgo: '{{count}}일 전',
+      },
+      actions: {
+        refresh: '새로고침',
+        openAnalysis: '취향 분석 보기',
+        viewMore: '정보 더 보기',
+        retry: '다시 시도',
+      },
+      messages: {
+        loading: '로딩 중...',
+        error: '데이터를 불러오는데 실패했습니다.',
+        noInfos: '추천할 정보가 없습니다',
+        infoCount: '{{count}}개의 추천 정보',
+        noContent: '내용이 없습니다',
+      },
+      modal: {
+        title: '정보 취향 분석',
+        subtitle: '최근 활동을 기반으로 한 정보 관심사 분석',
+        close: '닫기',
+        sections: {
+          keywords: '관심 키워드',
+          topCategories: '관심분야 TOP 5',
+        },
+      },
     },
   },
 };

@@ -30,7 +30,7 @@ const BlossomWrapper = styled.div<{ season: string }>`
 `;
 
 const ThemedButton = styled(Button)<{ colors: any }>(({ colors }) => ({
-  backgroundColor: colors.buttonBg,
+  backgroundColor: colors.gradient,
   color: colors.buttonText,
   padding: '10px 20px',
   borderRadius: '12px',
@@ -75,7 +75,17 @@ const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
   buttonText = '구글로 계속하기',
 }) => {
   const [loading, setLoading] = useState<boolean>(false);
-  const colors = seasonalColors.prrofessional;
+  const baseColors = seasonalColors.professional;
+  const colors = {
+    buttonBg: baseColors.primary || '#636363',
+    buttonText: baseColors.text || '#fff',
+    buttonShadow: 'rgba(60,60,60,0.12)',
+    buttonBorder: baseColors.primary || '#636363',
+    buttonHoverBg: baseColors.secondary || '#222',
+    buttonShadowHover: 'rgba(60,60,60,0.18)',
+    buttonBeforeBg: baseColors.gradient || undefined,
+    gradient: baseColors.gradient || '#636363',
+  };
 
   // 실제 구글 로그인 처리 함수
   const handleGoogleLogin = async () => {

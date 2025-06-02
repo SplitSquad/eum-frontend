@@ -34,11 +34,14 @@ export default function AppLayout() {
       closeModal();
     } else if (btnRef.current) {
       const rect = btnRef.current.getBoundingClientRect();
-      const offset = 16; // 대각선 오프셋
-      // 문서 전체 기준 좌표로 변환
-      let x = rect.left;
-      let y = rect.top;
-      openModal(<ModalContent btnRect={rect} />, { x: 0, y: 0 });
+      const scrollX = window.scrollX;
+      const scrollY = window.scrollY;
+      const offset = 8;
+      const MODAL_WIDTH = 350;
+      let x = rect.left - offset - MODAL_WIDTH + scrollX;
+      const y = rect.top + scrollY - 400;
+      if (x < 0) x = rect.right + offset + scrollX;
+      openModal(<ModalContent />, { x, y });
     }
   };
 
