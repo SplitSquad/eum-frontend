@@ -1,3 +1,4 @@
+import { log } from 'console';
 import { getAgenticState, setAgenticState, resetAgenticState } from './Agentic_state';
 import { getUserLocation } from './Agentic_state'; // 📌 위치 정보 가져오기
 import { logout } from '@/features/auth';
@@ -30,11 +31,17 @@ export async function callAgentic(
 
   const state = getAgenticState(); // 현재 상태 가져오기
   const location = getUserLocation(); // 📌 현재 위치 정보 가져오기
+
+  console.log('[location] ', location);
+  console.log('[location] ', location?.latitude);
+  console.log('[location] ', location?.longitude);
+
   const body: any = {
     query,
     uid,
     state,
   };
+
   // 📍 위치 정보가 있을 경우에만 추가
   if (location) {
     body.location = {
@@ -43,7 +50,9 @@ export async function callAgentic(
     };
   }
 
-  const res = await fetch('https://api.eum-friends.com/api/v1/agentic', {
+  console.log('[body] ', body);
+
+  const res = await fetch('http://localhost:8000/api/v1/agentic', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
