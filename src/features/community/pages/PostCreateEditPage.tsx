@@ -43,7 +43,7 @@ import { Post } from '../types';
 import RegionSelector from '../components/shared/RegionSelector';
 import { useRegionStore } from '../store/regionStore';
 import { debugLog } from '../../../shared/utils/debug';
-import { detectLanguage } from '../utils/languageUtils';
+import { detectLanguage, detectPostLanguage } from '../utils/languageUtils';
 import { useTranslation } from '../../../shared/i18n';
 import { useLanguageContext } from '../../../features/theme/components/LanguageProvider';
 import { usePostStore } from '../store/postStore';
@@ -529,19 +529,19 @@ const PostCreateEditPage: React.FC = () => {
     try {
       setIsSaving(true);
 
-      // 언어 감지 - 제목과 내용을 결합하여 감지
-      const combinedText = formData.title + ' ' + formData.content;
-      const detectedLanguage = await detectLanguage(combinedText);
+      // 언어 감지 - 제목과 본문을 분리하여 더 정확한 언어 감지
+      const detectedLanguage = await detectPostLanguage(formData.title, formData.content);
 
-      console.log('언어 감지 상세 결과:', {
+      console.log('🌍 개선된 언어 감지 결과:', {
         currentUILanguage: currentLanguage,
-        title: formData.title.substring(0, 50) + '...',
-        content: formData.content.substring(0, 50) + '...',
-        combinedText: combinedText.substring(0, 100) + '...',
+        title: formData.title.substring(0, 50) + (formData.title.length > 50 ? '...' : ''),
+        content: formData.content.substring(0, 50) + (formData.content.length > 50 ? '...' : ''),
         detectedLanguage,
         detectedLanguageUpperCase: detectedLanguage.toUpperCase(),
-        combinedTextLength: combinedText.length,
+        titleLength: formData.title.length,
+        contentLength: formData.content.length,
         isUILanguageSameAsDetected: currentLanguage === detectedLanguage,
+        note: '⚡ 백엔드에서 제목과 내용을 각각 분리하여 번역합니다'
       });
 
       // 폼 데이터 준비 - API 형식에 맞게 변환
