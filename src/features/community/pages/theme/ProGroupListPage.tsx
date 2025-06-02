@@ -1001,31 +1001,9 @@ const ProGroupListPage: React.FC = () => {
               paddingRight: 32,
             }}
           >
-            {/* 카테고리/아이콘 영역과 커뮤니티 타입 전환 버튼 통합 */}
+            {/* 카테고리/아이콘 영역과 커뮤니티 타입 전환 버튼 통합*/}
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
-              {/* 왼쪽: 카테고리 아이콘과 텍스트 */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <img
-                  src={flowerImg}
-                  alt="logo"
-                  style={{ height: 22, width: 22, objectFit: 'contain', verticalAlign: 'middle' }}
-                />
-                <h2
-                  style={{
-                    fontSize: 22,
-                    fontWeight: 700,
-                    color: '#111',
-                    fontFamily: proCard.fontFamily,
-                    margin: 0,
-                  }}
-                >
-                  {selectedCategory === '전체'
-                    ? t('infoPage.content.allInfo')
-                    : t(`community.categories.${selectedCategory}`) || selectedCategory}
-                </h2>
-              </div>
 
-              {/* 중앙: 커뮤니티 타입 전환 버튼 - 더 예쁘게 */}
               <div
                 style={{
                   display: 'flex',
@@ -1261,7 +1239,6 @@ const ProGroupListPage: React.FC = () => {
           </div>
         </div>
       </div>
-      {/* 상단 필터링 및 검색 영역 */}
 
       {/* 로딩 상태 표시 */}
       {postLoading ? (

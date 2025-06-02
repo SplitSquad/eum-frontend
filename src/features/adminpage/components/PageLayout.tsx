@@ -249,7 +249,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({ children, title }) => {
   const closeMobileSidebar = () => {
     setIsMobileSidebarOpen(false);
   };
-
+  console.log('title-모바일 확인', isMobileSidebarOpen);
   return (
     <AppRoot>
       {/* 고정된 배경 레이어 - 항상 유지됨 */}

@@ -1976,6 +1976,12 @@ const fr = {
       },
     },
   },
+  ai: {
+    modal: {
+      askHelp: 'Comment puis-je vous aider ? (ex : créer un planning, rédiger un post, etc.)',
+      loadingAnswer: 'Réponse en cours...',
+    },
+  },
 };
 
 export default fr;
