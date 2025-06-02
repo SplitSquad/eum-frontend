@@ -170,16 +170,16 @@ interface LivingProfileData {
   interests: string[];
 }
 
-// UI 언어 옵션
-const uiLanguageOptions = [
-  { code: 'ko', name: '한국어' },
-  { code: 'en', name: 'English' },
-  { code: 'ja', name: '日本語' },
-  { code: 'zh-CN', name: '简体中文' },
-  { code: 'zh-TW', name: '繁體中文' },
-  { code: 'vi', name: 'Tiếng Việt' },
-  { code: 'th', name: 'ภาษาไทย' },
-  { code: 'id', name: 'Bahasa Indonesia' },
+// 지원하는 언어 목록
+export const SUPPORTED_LANGUAGES = [
+  { code: 'ko', name: '한국어', flag: '🇰🇷' },
+  { code: 'en', name: 'English', flag: '🇺🇸' },
+  { code: 'ja', name: '日本語', flag: '🇯🇵' },
+  { code: 'zh', name: '中文', flag: '🇨🇳' },
+  { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+  { code: 'fr', name: 'Français', flag: '🇫🇷' },
+  { code: 'es', name: 'Español', flag: '🇪🇸' },
+  { code: 'ru', name: 'Русский', flag: '🇷🇺' },
 ];
 
 // 거주 목적 옵션
@@ -620,7 +620,7 @@ const LivingProfile: React.FC = () => {
                   ),
                 }}
               >
-                {uiLanguageOptions.map(option => (
+                {SUPPORTED_LANGUAGES.map(option => (
                   <MenuItem key={option.code} value={option.code}>
                     {option.name}
                   </MenuItem>

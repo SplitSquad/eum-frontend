@@ -962,21 +962,6 @@ const ProBoardListPage: React.FC = () => {
                 </h2>
               </div>
 
-              {/* 중앙: 커뮤니티 타입 전환 버튼 */}
-              <div
-                style={{
-                  display: 'flex',
-                  border: '1.5px solid #222',
-                  borderRadius: '25px',
-                  overflow: 'hidden',
-                  backgroundColor: '#fff',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                }}
-              >
-                {selectedCategory === '전체'
-                  ? t('infoPage.content.allInfo')
-                  : t(`community.categories.${selectedCategory}`) || selectedCategory}
-              </div>
               <div
                 style={{
                   display: 'flex',

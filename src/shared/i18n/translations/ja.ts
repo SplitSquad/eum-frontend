@@ -1887,6 +1887,12 @@ const ja = {
       },
     },
   },
+  ai: {
+    modal: {
+      askHelp: 'どのようにお手伝いできますか？（例：スケジュール作成、投稿作成など）',
+      loadingAnswer: '回答中...',
+    },
+  },
 };
 
 export default ja;

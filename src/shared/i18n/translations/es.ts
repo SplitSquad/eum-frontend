@@ -1940,6 +1940,13 @@ const es = {
       desc2: 'Todo está listo para tu nueva experiencia.',
     },
   },
+  ai: {
+    modal: {
+      askHelp:
+        '¿En qué puedo ayudarte? (por ejemplo: crear un horario, escribir una publicación, etc.)',
+      loadingAnswer: 'Respondiendo...',
+    },
+  },
 };
 
 export default es;
