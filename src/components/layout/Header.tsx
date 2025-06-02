@@ -20,7 +20,6 @@ import {
   Divider,
 } from '@mui/material';
 import styled from '@emotion/styled';
-import { useThemeStore } from '@/features/theme/store/themeStore';
 import { useLanguageStore } from '@/features/theme/store/languageStore';
 import useAuthStore from '@/features/auth/store/authStore';
 import { useTranslation } from '@/shared/i18n';
@@ -515,7 +514,6 @@ const ProfileDropdownItem = styled(Box)<{ season: string }>`
 function Header({ isVisible = true, notifications }: HeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { season } = useThemeStore();
   const { language } = useLanguageStore();
   const { currentLanguage, changeLanguage } = useLanguageContext();
   const { t } = useTranslation();
@@ -547,7 +545,7 @@ function Header({ isVisible = true, notifications }: HeaderProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
-
+  const season = 'professional';
   const isactive = (path: string) =>
     location.pathname === path || location.pathname.startsWith(path + '/');
 

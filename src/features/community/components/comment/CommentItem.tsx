@@ -202,7 +202,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
   };
 
   const formattedDate = comment.createdAt
-    ? format(new Date(comment.createdAt), 'yyyy년 MM월 dd일 HH:mm', { locale: ko })
+    ? format(new Date(comment.createdAt), 'yyyy-MM-dd HH:mm', { locale: ko })
     : '날짜 없음';
 
   const CommentContainer = isReply ? ReplyBox : CommentBox;
@@ -239,7 +239,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
                 <IconButton
                   size="small"
                   onClick={handleOpenReportDialog}
-                  sx={{ 
+                  sx={{
                     color: '#888',
                     '&:hover': {
                       color: '#f57c00',
@@ -372,7 +372,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
               mr: 1,
             }}
           >
-            답글 작성 {comment.replies?.length ? `(${comment.replies.length})` : ''}
+            {t('debate.reply.add')} {comment.replies?.length ? `(${comment.replies.length})` : ''}
           </ActionButton>
 
           {/* 신고 버튼 - 작성자가 아니고 관리자가 아닌 경우에만 표시 */}

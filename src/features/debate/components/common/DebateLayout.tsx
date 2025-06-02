@@ -12,6 +12,7 @@ import Toast from './Toast';
 import PageHeaderText from '@/components/layout/PageHeaderText';
 import { useTranslation } from '@/shared/i18n';
 import { useDebateStore } from '@/features/debate/store/debateStore';
+import bottomImg from '@/assets/icons/common/방석.png';
 
 const LayoutContent = styled(Box)({
   display: 'flex',
@@ -149,6 +150,9 @@ const DebateLayout: React.FC<DebateLayoutProps> = ({
         >
           <h2
             style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
               fontSize: 22,
               fontWeight: 700,
               color: '#111',
@@ -156,6 +160,11 @@ const DebateLayout: React.FC<DebateLayoutProps> = ({
               margin: 0,
             }}
           >
+            <img
+              src={bottomImg}
+              alt="logo"
+              style={{ height: 22, width: 22, objectFit: 'contain', verticalAlign: 'middle' }}
+            />
             {specialLabelText}
           </h2>
           <div style={{ flex: 1 }}></div>

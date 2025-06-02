@@ -18,7 +18,7 @@ const ProfessionalContainer = styled(Box, {
   shouldForwardProp: prop => prop !== 'noPadding',
 })<ProfessionalBackgroundProps>`
   width: 100%;
-  min-height: 100vh;
+  min-height: 80vh;
   background: linear-gradient(to bottom, #fff 0%, #f5f5f5 100%);
   padding: ${p => (p.noPadding ? '0' : '0')};
   padding-bottom: ${p => (p.noPadding ? '0' : '0')};
@@ -34,14 +34,18 @@ const ProfessionalContainer = styled(Box, {
 `;
 
 const BackgroundImage = styled('img')`
-  position: fixed; /* absolute → fixed */
-  top: 0; /* 화면 최상단에 고정 */
-  left: 0; /* 화면 최좌측에 고정 */
-  width: 90vw; /* 뷰포트 너비 전체 */
-  height: 90vh; /* 뷰포트 높이 전체 */
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 90vw;
+  height: 90vh;
+  min-width: 240px;
+  min-height: 180px;
+  max-width: 100vw;
+  max-height: 100vh;
   opacity: 0.5;
   pointer-events: none;
-  z-index: 1; /* 컨텐츠 뒤로 보내기 */
+  z-index: 1;
   user-select: none;
 `;
 

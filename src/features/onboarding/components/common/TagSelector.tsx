@@ -11,7 +11,6 @@ import {
 } from '@mui/material';
 import styled from '@emotion/styled';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { useThemeStore } from '../../../theme/store/themeStore';
 import { useTranslation } from '@/shared/i18n';
 
 const { t } = useTranslation();
@@ -94,7 +93,6 @@ const OnboardingTagSelector: React.FC<OnboardingTagSelectorProps> = ({
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const { season } = useThemeStore();
   const [expanded, setExpanded] = useState<string | false>(
     categories.length > 0 ? categories[0].id : false
   );

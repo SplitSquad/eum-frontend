@@ -15,7 +15,7 @@ export const useOptimizedHandlers = (
   const handleCategoryChange = useCallback(
     (category: string) => {
       debugLog('카테고리 변경', { 이전: filter.category, 새로운: category });
-      
+
       if (category === filter.category) return;
 
       const newFilter = {
@@ -90,13 +90,37 @@ export const useOptimizedHandlers = (
   );
 
   // 메모이제이션된 카테고리별 태그 매핑
-  const categoryTags = useMemo(() => ({
-    travel: [t('community.tags.tourism'), t('community.tags.food'), t('community.tags.transport'), t('community.tags.accommodation'), t('community.tags.embassy')],
-    living: [t('community.tags.realEstate'), t('community.tags.livingEnvironment'), t('community.tags.culture'), t('community.tags.housing')],
-    study: [t('community.tags.academic'), t('community.tags.studySupport'), t('community.tags.visa'), t('community.tags.dormitory')],
-    job: [t('community.tags.career'), t('community.tags.labor'), t('community.tags.jobFair'), t('community.tags.partTime')],
-    [t('community.filters.all')]: [],
-  }), [t]);
+  const categoryTags = useMemo(
+    () => ({
+      travel: [
+        t('community.tags.tourism'),
+        t('community.tags.food'),
+        t('community.tags.transport'),
+        t('community.tags.accommodation'),
+        t('community.tags.embassy'),
+      ],
+      living: [
+        t('community.tags.realEstate'),
+        t('community.tags.livingEnvironment'),
+        t('community.tags.culture'),
+        t('community.tags.housing'),
+      ],
+      study: [
+        t('community.tags.academic'),
+        t('community.tags.studySupport'),
+        t('community.tags.visa'),
+        t('community.tags.dormitory'),
+      ],
+      job: [
+        t('community.tags.career'),
+        t('community.tags.labor'),
+        t('community.tags.jobFair'),
+        t('community.tags.partTime'),
+      ],
+      [t('community.filters.all')]: [],
+    }),
+    [t]
+  );
 
   return {
     handleCategoryChange,

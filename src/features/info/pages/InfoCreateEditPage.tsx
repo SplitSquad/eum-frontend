@@ -24,7 +24,6 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { seasonalColors } from '@/components/layout/springTheme';
-import { useThemeStore } from '@/features/theme/store/themeStore';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
@@ -74,8 +73,7 @@ export default function InfoCreatePage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id?: string }>();
   const isEdit = Boolean(id);
-  const season = useThemeStore(state => state.season);
-
+  const season = 'professional';
   const { title, setTitle, category, setCategory, content, setContent } = useInfoFormStore();
 
   // ADMIN 권한 체크

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Box, TextField, Button } from '@mui/material';
+import { useEffect } from 'react';
 import useCommunityStore from '../store/communityStore';
 
 interface ReplyFormProps {
@@ -33,7 +34,6 @@ const ReplyForm: React.FC<ReplyFormProps> = ({ postId, commentId, onClose }) => 
       <TextField
         fullWidth
         size="small"
-        placeholder="답글을 입력하세요..."
         value={content}
         onChange={e => setContent(e.target.value)}
         multiline

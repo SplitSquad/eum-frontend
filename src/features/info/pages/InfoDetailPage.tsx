@@ -521,7 +521,7 @@ export default function InfoDetailPage() {
                 d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
               />
             </svg>
-            <span>{isBookmarked ? '저장됨' : '북마크'}</span>
+            <span>{isBookmarked ? t('infoPage.actions.bookmarked') : t('infoPage.actions.bookmark')}</span>
           </button>
 
           {/* 공유 버튼 */}
@@ -550,7 +550,7 @@ export default function InfoDetailPage() {
                 d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
               />
             </svg>
-            <span>공유하기</span>
+            <span>{t('infoPage.actions.shareAction')}</span>
           </button>
 
           {/* 인쇄 버튼 */}
@@ -600,7 +600,7 @@ export default function InfoDetailPage() {
                 d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z"
               />
             </svg>
-            <span>인쇄하기</span>
+            <span>{t('infoPage.actions.printAction')}</span>
           </button>
 
           {/* 맨 위로 버튼 */}
@@ -616,7 +616,7 @@ export default function InfoDetailPage() {
                 d="M5 10l7-7m0 0l7 7m-7-7v18"
               />
             </svg>
-            <span>맨 위로</span>
+            <span>{t('infoPage.actions.scrollToTop')}</span>
           </button>
         </div>
       </div>

@@ -16,7 +16,6 @@ import DebateApi, {
 } from '../api/debateApi';
 import CommentApi from '../api/commentApi';
 import { handleApiError } from '../utils/errorHandler';
-import { useLanguageStore } from '@/features/theme/store/languageStore'; // 실제 경로에 맞게 조정 필요
 
 interface DebateState {
   // 목록 관련 상태
@@ -26,6 +25,9 @@ interface DebateState {
   currentPage: number;
   isLoading: boolean;
   error: string | null;
+  
+  // 언어 변경 관련 상태 추가
+  isLanguageChanging: boolean;
 
   // 필터 및 정렬 상태
   sortBy: DebateSortOption;
@@ -92,37 +94,15 @@ interface DebateState {
   resetDebateState: () => void;
   setCommentSortBy: (sortBy: string) => void;
 
+  // 언어 변경 관련 액션 추가
+  setLanguageChanging: (isChanging: boolean) => void;
+
   // 특별 이슈 관련 액션
   fetchSpecialIssues: () => Promise<void>;
   fetchTodayIssues: () => Promise<void>;
   fetchHotIssue: () => Promise<void>;
   fetchBalancedIssue: () => Promise<void>;
 }
-
-// 언어 변경 시 토론 목록 자동 새로고침 리스너
-export const setupDebateLanguageChangeListener = () => {
-  let previousLanguage = useLanguageStore.getState().language;
-  console.log(`[INFO] 초기 언어 설정: ${previousLanguage}`);
-
-  useLanguageStore.subscribe(state => {
-    const currentLanguage = state.language;
-    if (currentLanguage !== previousLanguage) {
-      console.log(
-        `[INFO] 언어가 변경됨: ${previousLanguage} → ${currentLanguage}, 토론 목록 새로고침`
-      );
-      previousLanguage = currentLanguage;
-
-      const debateState = useDebateStore.getState();
-      const { currentPage, category } = debateState;
-
-      // 모든 데이터 새로고침
-      debateState.getDebates(currentPage, 20, category);
-      debateState.fetchTodayIssues();
-      debateState.fetchHotIssue();
-      debateState.fetchBalancedIssue();
-    }
-  });
-};
 
 export const useDebateStore = create<DebateState>()(
   devtools(
@@ -135,6 +115,7 @@ export const useDebateStore = create<DebateState>()(
         currentPage: 1,
         isLoading: false,
         error: null,
+        isLanguageChanging: false, // 언어 변경 상태 추가
         sortBy: 'latest',
         filter: 'all',
         category: '',
@@ -245,6 +226,13 @@ export const useDebateStore = create<DebateState>()(
 
         getDebateById: async id => {
           try {
+            // 중복 로딩 방지 - 같은 ID로 이미 로딩 중이면 중단
+            const currentState = get();
+            if (currentState.isLoading && currentState.currentDebate?.id === id) {
+              console.log('[DEBUG] 같은 토론 ID로 이미 로딩 중, 중복 요청 방지');
+              return;
+            }
+
             set({ isLoading: true, error: null });
 
             // includeComments=true로 댓글과 대댓글까지 함께 가져옴
@@ -940,6 +928,11 @@ export const useDebateStore = create<DebateState>()(
           set({ commentSortBy: sortBy });
         },
 
+        // 언어 변경 상태 관리 액션 추가
+        setLanguageChanging: (isChanging: boolean) => {
+          set({ isLanguageChanging: isChanging });
+        },
+
         // 특별 이슈 관련 액션 구현
         fetchSpecialIssues: async () => {
           try {
@@ -1042,5 +1035,3 @@ export const useDebateStore = create<DebateState>()(
     )
   )
 );
-
-setupDebateLanguageChangeListener();

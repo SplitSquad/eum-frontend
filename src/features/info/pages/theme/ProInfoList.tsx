@@ -107,6 +107,8 @@ const proCard = {
   marginBottom: 24,
   padding: 24,
   fontFamily: 'Inter, Pretendard, Arial, sans-serif',
+
+  backdropFilter: 'blur(10px)',
 };
 const proButton = {
   background: 'rgba(255,255,255,1)',
@@ -519,6 +521,7 @@ export default function InfoListPage() {
                             borderRadius: 2.5,
                             boxShadow: '0 2px 8px 0 rgba(0,0,0,0.03)',
                             background: 'rgba(255,255,255,0.5)',
+                            backdropFilter: 'blur(4px)',
                             p: '20px 16px',
                             mb: 2,
                             cursor: 'pointer',
@@ -546,14 +549,16 @@ export default function InfoListPage() {
                               borderRadius: '50%',
                               width: 36,
                               height: 36,
-                              display: 'flex',
+                              display: 'inline-flex',
                               alignItems: 'center',
                               justifyContent: 'center',
+                              aspectRatio: '1 / 1',
                               boxShadow: 'none',
                               outline: 'none',
                               cursor: 'pointer',
                               transition: 'background 0.15s, border 0.15s',
                               zIndex: 2,
+                              padding: 0,
                             }}
                             onFocus={e => {
                               e.currentTarget.style.outline = 'none';

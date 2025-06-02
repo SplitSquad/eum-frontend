@@ -95,8 +95,8 @@ const FloatingNavigator = ({ isHeaderVisible }: FloatingNavigatorProps) => {
       setShow(scrollY > threshold);
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    //document.body.addEventListener('scroll', handleScroll, { passive: true });
+    //window.addEventListener('scroll', handleScroll, { passive: true });
+    document.body.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll();
     return () => {
       window.removeEventListener('scroll', handleScroll);

@@ -125,7 +125,7 @@ const PexelsGalleryWidget: React.FC = () => {
       }
 
       const data = await response.json();
-      
+
       const formattedImages: ImageItem[] = data.photos.map((photo: any) => ({
         id: photo.id.toString(),
         src: photo.src.medium,
@@ -133,7 +133,11 @@ const PexelsGalleryWidget: React.FC = () => {
         photographer: photo.photographer,
         photographer_url: photo.photographer_url,
         liked: false,
-        tags: query.split(',').map(tag => tag.trim()).filter(Boolean).slice(0, 2),
+        tags: query
+          .split(',')
+          .map(tag => tag.trim())
+          .filter(Boolean)
+          .slice(0, 2),
       }));
 
       setImages(formattedImages);
@@ -166,9 +170,7 @@ const PexelsGalleryWidget: React.FC = () => {
   // 좋아요 토글
   const handleLikeToggle = (id: string) => {
     setImages(prevImages =>
-      prevImages.map(image =>
-        image.id === id ? { ...image, liked: !image.liked } : image
-      )
+      prevImages.map(image => (image.id === id ? { ...image, liked: !image.liked } : image))
     );
   };
 
@@ -305,7 +307,10 @@ const PexelsGalleryWidget: React.FC = () => {
                     >
                       By {image.photographer}
                     </Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5, fontSize: '0.8rem' }}>
+                    <Typography
+                      variant="body2"
+                      sx={{ fontWeight: 500, mb: 0.5, fontSize: '0.8rem' }}
+                    >
                       {image.alt}
                     </Typography>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>

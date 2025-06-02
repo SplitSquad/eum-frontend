@@ -38,7 +38,8 @@ function formatDateTime(date: Date) {
 export default function AiAssistant() {
   const { t } = useTranslation();
   const { language } = useLanguageStore();
-  const { selectedCategory, setSelectedCategory, forceRefresh } = useAiAssistantStore();
+  const { selectedCategory, setSelectedCategory, forceRefresh, messages, loading } =
+    useAiAssistantStore();
 
   // 번역된 카테고리 목록 생성
   const categories = getCategoriesWithTranslation(t);
@@ -46,159 +47,128 @@ export default function AiAssistant() {
   // 선택된 key에 해당하는 카테고리 객체를 찾도록 구현
   const selected = categories.find(c => c.key === selectedCategory)!;
 
+  // '전문가 매칭 중' 메시지는 loading이 true이고, 마지막 메시지가 user일 때만 표시
+  const lastMsg = messages[messages.length - 1];
+  const isMatching = loading && lastMsg?.sender === 'user';
+
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      {/* 한지 질감 배경 */}
-      <div
-        className="absolute inset-0 opacity-95"
-        style={{
-          background: `
-            radial-gradient(circle at 20% 30%, rgba(245, 240, 225, 0.8) 0%, transparent 50%),
-            radial-gradient(circle at 80% 70%, rgba(240, 235, 210, 0.6) 0%, transparent 50%),
-            radial-gradient(circle at 40% 80%, rgba(250, 245, 230, 0.7) 0%, transparent 50%),
-            linear-gradient(135deg, #faf7f0 0%, #f5f2e8 25%, #f0ede0 50%, #ebe8db 75%, #e6e3d6 100%)
-          `,
-          backgroundSize: '400px 400px, 300px 300px, 500px 500px, 100% 100%',
-          backgroundPosition: '0 0, 100% 100%, 50% 50%, 0 0',
-        }}
-      />
-
-      {/* 한지 텍스처 오버레이 */}
-      <div
-        className="absolute inset-0 opacity-30"
-        style={{
-          backgroundImage: `
-            radial-gradient(circle at 1px 1px, rgba(139, 69, 19, 0.15) 1px, transparent 0),
-            radial-gradient(circle at 3px 3px, rgba(160, 82, 45, 0.1) 1px, transparent 0)
-          `,
-          backgroundSize: '20px 20px, 40px 40px',
-        }}
-      />
-
-      {/* 메인 컨테이너 */}
-      <div className="relative z-10 min-h-screen">
-        {/* 상단 헤더 - 조선시대 현판 스타일 */}
-        <div className="relative mb-8">
-          {/* 현판 배경 */}
-          <div
-            className="mx-auto max-w-4xl relative"
-            style={{
-              background: 'linear-gradient(145deg, #8B4513 0%, #A0522D 50%, #8B4513 100%)',
-              borderRadius: '12px 12px 4px 4px',
-              padding: '2px',
-              boxShadow:
-                '0 8px 32px rgba(139, 69, 19, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+    <Box sx={{ minHeight: '80vh', background: 'transparent', backdropFilter: 'blur(8px)' }}>
+      <Container maxWidth="lg" sx={{ pt: 6, pb: 8 }}>
+        {/* 상단 헤더 */}
+        <Box sx={{ mb: 6 }}>
+          <Typography
+            variant="h4"
+            fontWeight={700}
+            sx={{ color: '#222', fontFamily: 'Inter, Pretendard, Arial, sans-serif', mb: 1 }}
+          >
+            {t('aiAssistant.title')}
+          </Typography>
+          <Typography
+            variant="subtitle1"
+            sx={{ color: '#666', fontFamily: 'Inter, Pretendard, Arial, sans-serif' }}
+          >
+            {t('aiAssistant.subtitle')}
+          </Typography>
+        </Box>
+        {/* 분야별 안내 - 가로 정렬, 채팅창 위 */}
+        <Box sx={{ mb: 4, display: 'flex', flexDirection: 'row', gap: 2, pb: 1 }}>
+          <CategorySidebar categories={categories} selectedKey={selectedCategory} horizontal />
+        </Box>
+        {/* 날짜, 인사, 자동선택 안내 - 카테고리와 채팅방 사이 */}
+        <Box
+          sx={{
+            mb: 4,
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            alignItems: { xs: 'stretch', sm: 'center' },
+            justifyContent: 'space-between',
+            background: 'linear-gradient(135deg, #f7f7fa 0%, #e9e9ee 100%)',
+            borderRadius: 4,
+            boxShadow: '0 2px 12px 0 rgba(80,80,90,0.07)',
+            px: { xs: 2, sm: 4 },
+            py: { xs: 1.5, sm: 2.5 },
+            gap: { xs: 1.5, sm: 3 },
+            border: '1.5px solid #e0e0e7',
+          }}
+        >
+          {/* 왼쪽: 날짜 + 인사 (반응형, flex-wrap) */}
+          <Box
+            sx={{
+              display: 'flex',
+              flex: 1,
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              gap: { xs: 1, sm: 2 },
             }}
           >
-            <div
-              className="relative px-8 py-6 text-center"
-              style={{
-                background: 'linear-gradient(145deg, #2C1810 0%, #3D2317 50%, #2C1810 100%)',
-                borderRadius: '10px 10px 2px 2px',
-                border: '1px solid rgba(139, 69, 19, 0.3)',
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                background: '#ededf3',
+                px: 2,
+                py: 0.5,
+                borderRadius: 2,
+                fontWeight: 600,
+                fontSize: 15,
+                color: '#666',
+                letterSpacing: '0.01em',
+                boxShadow: '0 1px 2px 0 rgba(120,120,130,0.04)',
+                flexShrink: 0,
+                fontFamily: 'Inter, Pretendard, Arial, sans-serif',
               }}
             >
-              {/* 장식 모서리 */}
-              <div className="absolute top-2 left-2 w-4 h-4 border-l-2 border-t-2 border-yellow-600 opacity-60"></div>
-              <div className="absolute top-2 right-2 w-4 h-4 border-r-2 border-t-2 border-yellow-600 opacity-60"></div>
-              <div className="absolute bottom-2 left-2 w-4 h-4 border-l-2 border-b-2 border-yellow-600 opacity-60"></div>
-              <div className="absolute bottom-2 right-2 w-4 h-4 border-r-2 border-b-2 border-yellow-600 opacity-60"></div>
-
-              <h1
-                className="text-4xl font-bold mb-2"
-                style={{
-                  color: '#D4AF37',
-                  fontFamily: '"Noto Serif KR", serif',
-                  textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5), 0 0 10px rgba(212, 175, 55, 0.3)',
-                  letterSpacing: '0.1em',
-                }}
-              >
-                {t('aiAssistant.title')}
-              </h1>
-              <p
-                className="text-lg opacity-90"
-                style={{
-                  color: '#F5DEB3',
-                  fontFamily: '"Noto Serif KR", serif',
-                  letterSpacing: '0.05em',
-                }}
-              >
-                {t('aiAssistant.subtitle')}
-              </p>
-            </div>
-          </div>
-
-          {/* 현재 시간과 인사말 */}
-          <div className="text-center mt-6 space-y-2">
-            <div
-              className="inline-block px-6 py-2 rounded-full"
-              style={{
-                background: 'rgba(255, 255, 255, 0.8)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(139, 69, 19, 0.2)',
-                boxShadow: '0 4px 16px rgba(139, 69, 19, 0.1)',
+              {formatDateTime(new Date())}
+            </Box>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                background: isMatching ? '#e0e0e7' : '#f3f3f7',
+                px: 2.5,
+                py: 0.5,
+                borderRadius: 2,
+                fontWeight: 700,
+                fontSize: 17,
+                color: isMatching ? '#888' : '#333',
+                letterSpacing: '0.01em',
+                boxShadow: '0 1px 2px 0 rgba(120,120,130,0.04)',
+                flexShrink: 1,
+                minWidth: 0,
+                transition: 'background 0.2s',
+                fontFamily: 'Inter, Pretendard, Arial, sans-serif',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: { xs: 'normal', sm: 'nowrap' },
               }}
             >
-              <span
-                className="text-sm font-medium"
-                style={{ color: '#8B4513', fontFamily: '"Noto Sans KR", sans-serif' }}
-              >
-                {/* {new Intl.DateTimeFormat('ko-KR', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                }).format(new Date())} */}
-                {formatDateTime(new Date())}
-              </span>
-            </div>
-            <p
-              className="text-lg"
-              style={{
-                color: '#5D4037',
-                fontFamily: '"Noto Sans KR", sans-serif',
-                fontWeight: '500',
-              }}
-            >
-              {t('aiAssistant.greeting', { category: selected.label })}
-            </p>
-          </div>
-        </div>
-
-        {/* 메인 콘텐츠 영역 */}
-        <div className="flex gap-8 max-w-7xl mx-auto px-6 pb-8">
-          {/* 왼쪽 사이드바 - 카테고리 */}
-          <div className="w-80">
-            <CategorySidebar categories={categories} selectedKey={selectedCategory} />
-          </div>
-
-          {/* 오른쪽 채팅 영역 */}
-          <div className="flex-1">
+              {isMatching ? (
+                <span style={{ color: '#888', fontWeight: 600, fontSize: 16 }}>
+                  {t('aiAssistant.matchingMessage')}
+                </span>
+              ) : (
+                <>
+                  <span style={{ color: '#6c63ff', fontWeight: 700, fontSize: 17, marginRight: 6 }}>
+                    {selected.label}
+                  </span>
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {t('aiAssistant.greeting', { category: selected.label })}
+                  </span>
+                </>
+              )}
+            </Box>
+          </Box>
+          {/* 오른쪽: 자동선택 안내 */}
+        </Box>
+        {/* 메인 콘텐츠 영역 - 채팅창만 */}
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
             <ChatContent categoryLabel={selected.label} onCategoryChange={setSelectedCategory} />
-          </div>
-        </div>
-      </div>
-
-      {/* 추가 장식 요소들 */}
-      <div className="fixed top-20 left-10 opacity-20 pointer-events-none">
-        <div
-          className="w-16 h-16 rounded-full"
-          style={{
-            background: 'radial-gradient(circle, rgba(139, 69, 19, 0.3) 0%, transparent 70%)',
-            filter: 'blur(8px)',
-          }}
-        />
-      </div>
-      <div className="fixed bottom-20 right-10 opacity-20 pointer-events-none">
-        <div
-          className="w-20 h-20 rounded-full"
-          style={{
-            background: 'radial-gradient(circle, rgba(212, 175, 55, 0.3) 0%, transparent 70%)',
-            filter: 'blur(10px)',
-          }}
-        />
-      </div>
-    </div>
+          </Box>
+        </Box>
+      </Container>
+    </Box>
   );
 }

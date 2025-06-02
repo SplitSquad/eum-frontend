@@ -62,7 +62,6 @@ export function useSseWithPolling(
     };
 
     es.onerror = () => {
-      console.error('SSE 에러 발생, 폴링 모드로 전환');
       es.close();
       // 전체 알람 조회
       fetchUnreadAlarms(userId).then(onFullList);

@@ -1,6 +1,5 @@
 import React from 'react';
 import { Box, Button, useTheme, useMediaQuery } from '@mui/material';
-import { useThemeStore } from '../../../theme/store/themeStore';
 import { useTranslation } from '../../../../shared/i18n';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';

@@ -10,7 +10,6 @@ import {
   useTheme,
   useMediaQuery,
 } from '@mui/material';
-import { useThemeStore } from '../../../theme/store/themeStore';
 import { languageLevels } from '../../components/common/CommonTags';
 import styled from '@emotion/styled';
 

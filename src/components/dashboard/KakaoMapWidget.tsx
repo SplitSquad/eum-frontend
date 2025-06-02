@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import {
   Paper,
   Box,
@@ -59,6 +59,8 @@ import { env } from '../../config/env';
 import { widgetPaperBase, widgetGradients } from './theme/dashboardWidgetTheme';
 import { setUserLocation as saveUserLocation } from '@/shared/utils/Agentic_state';
 import { useMypageStore } from '../../features/mypage/store/mypageStore';
+import { useTranslation } from '../../shared/i18n';
+import { setUserLocation as saveUserLocation } from '@/shared/utils/Agentic_state';
 
 declare global {
   interface Window {
@@ -290,6 +292,221 @@ const mapVisitPurposeToUserPurpose = (visitPurpose?: string): UserPurpose => {
 };
 
 const KakaoMapWidget: React.FC = () => {
+  const { t } = useTranslation();
+
+  // 목적별 카테고리 정의 - useMemo로 번역 키 사용
+  const PURPOSE_CATEGORIES = useMemo(
+    () => ({
+      travel: [
+        {
+          id: 'tourist',
+          name: t('widgets.kakaoMap.categories.tourist'),
+          icon: <TravelExploreIcon fontSize="small" />,
+          keyword: '관광',
+          color: '#2196F3',
+        },
+        {
+          id: 'restaurant',
+          name: t('widgets.kakaoMap.categories.restaurant'),
+          icon: <RestaurantIcon fontSize="small" />,
+          keyword: '맛집',
+          color: '#FF5722',
+        },
+        {
+          id: 'cafe',
+          name: t('widgets.kakaoMap.categories.cafe'),
+          icon: <LocalCafeIcon fontSize="small" />,
+          keyword: '카페',
+          color: '#795548',
+        },
+        {
+          id: 'culture',
+          name: t('widgets.kakaoMap.categories.culture'),
+          icon: <TheaterComedyIcon fontSize="small" />,
+          keyword: '문화시설',
+          color: '#9C27B0',
+        },
+        {
+          id: 'transport',
+          name: t('widgets.kakaoMap.categories.transport'),
+          icon: <TransportIcon fontSize="small" />,
+          keyword: '지하철역',
+          color: '#4CAF50',
+        },
+        {
+          id: 'hotel',
+          name: t('widgets.kakaoMap.categories.hotel'),
+          icon: <HotelIcon fontSize="small" />,
+          keyword: '호텔',
+          color: '#FF9800',
+        },
+      ],
+      work: [
+        {
+          id: 'business',
+          name: t('widgets.kakaoMap.categories.business'),
+          icon: <BusinessIcon fontSize="small" />,
+          keyword: '사무실',
+          color: '#3F51B5',
+        },
+        {
+          id: 'bank',
+          name: t('widgets.kakaoMap.categories.bank'),
+          icon: <AccountBalanceIcon fontSize="small" />,
+          keyword: '은행',
+          color: '#607D8B',
+        },
+        {
+          id: 'restaurant',
+          name: t('widgets.kakaoMap.categories.restaurant'),
+          icon: <RestaurantIcon fontSize="small" />,
+          keyword: '맛집',
+          color: '#FF5722',
+        },
+        {
+          id: 'cafe',
+          name: t('widgets.kakaoMap.categories.cafe'),
+          icon: <LocalCafeIcon fontSize="small" />,
+          keyword: '카페',
+          color: '#795548',
+        },
+        {
+          id: 'transport',
+          name: t('widgets.kakaoMap.categories.transport'),
+          icon: <TransportIcon fontSize="small" />,
+          keyword: '지하철역',
+          color: '#4CAF50',
+        },
+        {
+          id: 'government',
+          name: t('widgets.kakaoMap.categories.government'),
+          icon: <AccountBalanceIcon fontSize="small" />,
+          keyword: '구청',
+          color: '#009688',
+        },
+      ],
+      residence: [
+        {
+          id: 'market',
+          name: t('widgets.kakaoMap.categories.market'),
+          icon: <BusinessIcon fontSize="small" />,
+          keyword: '마트',
+          color: '#4CAF50',
+        },
+        {
+          id: 'hospital',
+          name: t('widgets.kakaoMap.categories.hospital'),
+          icon: <LocalHospitalIcon fontSize="small" />,
+          keyword: '병원',
+          color: '#F44336',
+        },
+        {
+          id: 'bank',
+          name: t('widgets.kakaoMap.categories.bank'),
+          icon: <AccountBalanceIcon fontSize="small" />,
+          keyword: '은행',
+          color: '#607D8B',
+        },
+        {
+          id: 'restaurant',
+          name: t('widgets.kakaoMap.categories.restaurant'),
+          icon: <RestaurantIcon fontSize="small" />,
+          keyword: '맛집',
+          color: '#FF5722',
+        },
+        {
+          id: 'transport',
+          name: t('widgets.kakaoMap.categories.transport'),
+          icon: <TransportIcon fontSize="small" />,
+          keyword: '지하철역',
+          color: '#4CAF50',
+        },
+        {
+          id: 'government',
+          name: t('widgets.kakaoMap.categories.government'),
+          icon: <AccountBalanceIcon fontSize="small" />,
+          keyword: '구청',
+          color: '#009688',
+        },
+      ],
+      study: [
+        {
+          id: 'university',
+          name: t('widgets.kakaoMap.categories.university'),
+          icon: <SchoolIcon fontSize="small" />,
+          keyword: '대학교',
+          color: '#673AB7',
+        },
+        {
+          id: 'library',
+          name: t('widgets.kakaoMap.categories.library'),
+          icon: <SchoolIcon fontSize="small" />,
+          keyword: '도서관',
+          color: '#009688',
+        },
+        {
+          id: 'cafe',
+          name: t('widgets.kakaoMap.categories.cafe'),
+          icon: <LocalCafeIcon fontSize="small" />,
+          keyword: '카페',
+          color: '#795548',
+        },
+        {
+          id: 'restaurant',
+          name: t('widgets.kakaoMap.categories.restaurant'),
+          icon: <RestaurantIcon fontSize="small" />,
+          keyword: '맛집',
+          color: '#FF5722',
+        },
+        {
+          id: 'transport',
+          name: t('widgets.kakaoMap.categories.transport'),
+          icon: <TransportIcon fontSize="small" />,
+          keyword: '지하철역',
+          color: '#4CAF50',
+        },
+        {
+          id: 'language',
+          name: t('widgets.kakaoMap.categories.language'),
+          icon: <SchoolIcon fontSize="small" />,
+          keyword: '어학원',
+          color: '#FF9800',
+        },
+      ],
+    }),
+    [t]
+  );
+
+  const PURPOSE_INFO = useMemo(
+    () => ({
+      travel: {
+        icon: <TravelExploreIcon />,
+        color: '#2196F3',
+        label: t('widgets.kakaoMap.purposeLabels.travel'),
+        defaultSearch: '관광',
+      },
+      work: {
+        icon: <WorkIcon />,
+        color: '#FF9800',
+        label: t('widgets.kakaoMap.purposeLabels.work'),
+        defaultSearch: '사무실',
+      },
+      residence: {
+        icon: <HomeIcon />,
+        color: '#4CAF50',
+        label: t('widgets.kakaoMap.purposeLabels.residence'),
+        defaultSearch: '마트',
+      },
+      study: {
+        icon: <SchoolIcon />,
+        color: '#9C27B0',
+        label: t('widgets.kakaoMap.purposeLabels.study'),
+        defaultSearch: '대학교',
+      },
+    }),
+    [t]
+  );
+
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const fullMapContainerRef = useRef<HTMLDivElement>(null);
   const [searchKeyword, setSearchKeyword] = useState<string>('');
@@ -342,6 +559,9 @@ const KakaoMapWidget: React.FC = () => {
     : PURPOSE_CATEGORIES.travel;
   const purposeInfo = userPurpose ? PURPOSE_INFO[userPurpose] : PURPOSE_INFO.travel;
 
+  // 지도 타입 상태 추가 (전체화면 지도용)
+  const [mapType, setMapType] = useState<'ROADMAP' | 'SKYVIEW'>('ROADMAP');
+
   // 지도 초기화 상태 추가
   const [initState, setInitState] = useState<'pending' | 'loading' | 'success' | 'error'>(
     'pending'
@@ -385,6 +605,8 @@ const KakaoMapWidget: React.FC = () => {
       setTimeout(() => {
         map.setCenter(userLatLng);
         map.setLevel(5);
+        // 한 번 더 사용자 마커 재생성 (확실한 표시)
+        createUserMarker(map, window.kakao.maps, userLocation.latitude, userLocation.longitude);
       }, 500);
     }
   }, [map, userLocation]);
@@ -626,10 +848,11 @@ const KakaoMapWidget: React.FC = () => {
           createPlaceMarkersForFullMap(mapInstance, window.kakao.maps, places);
         }
 
-        // 컨트롤 추가
+        // 컨트롤 추가 (기본 MapTypeControl 제거하고 ZoomControl만 추가)
         if (window.kakao && window.kakao.maps) {
-          const mapTypeControl = new window.kakao.maps.MapTypeControl();
-          mapInstance.addControl(mapTypeControl, window.kakao.maps.ControlPosition.TOPRIGHT);
+          // 기본 MapTypeControl은 한국어로 고정되어 있어서 제거
+          // const mapTypeControl = new window.kakao.maps.MapTypeControl();
+          // mapInstance.addControl(mapTypeControl, window.kakao.maps.ControlPosition.TOPRIGHT);
 
           const zoomControl = new window.kakao.maps.ZoomControl();
           mapInstance.addControl(zoomControl, window.kakao.maps.ControlPosition.RIGHT);
@@ -642,7 +865,7 @@ const KakaoMapWidget: React.FC = () => {
 
           // 직접 길찾기 페이지로 이동
           const url = getKakaoMapDirectionsUrl(
-            '내 위치',
+            t('widgets.kakaoMap.location.myLocation'),
             userLocation.latitude,
             userLocation.longitude,
             place.name,
@@ -743,6 +966,8 @@ const KakaoMapWidget: React.FC = () => {
         async position => {
           const { latitude, longitude } = position.coords;
           console.log('사용자 위치 확인됨:', latitude, longitude);
+          // 🧠 상태 저장
+          saveUserLocation({ latitude, longitude });
 
           // 🧠 상태 저장
           saveUserLocation({ latitude, longitude });
@@ -791,23 +1016,14 @@ const KakaoMapWidget: React.FC = () => {
         },
         error => {
           console.error('위치 정보 가져오기 실패:', error.code, error.message);
-          setError(`위치 정보를 가져오는데 실패했습니다 (코드: ${error.code})`);
-
-          // 위치 정보를 가져올 수 없는 경우 서울 중심으로 설정
-          setUserLocation({ latitude: 37.5665, longitude: 126.978 });
-          setTimeout(() => {
-            searchNearbyPlaces(mapInstance, kakaoMaps, 37.5665, 126.978, '');
-          }, 1000);
-        },
-        {
-          enableHighAccuracy: false,
-          timeout: 10000,
-          maximumAge: 0,
+          setError(
+            `${t('widgets.kakaoMap.messages.locationError')} (${t('common.error')}: ${error.code})`
+          );
         }
       );
     } else {
       console.error('브라우저가 위치 정보를 지원하지 않습니다');
-      setError('브라우저가 위치 정보를 지원하지 않습니다');
+      setError(t('widgets.kakaoMap.messages.locationError'));
 
       // 기본 위치 설정
       setUserLocation({ latitude: 37.5665, longitude: 126.978 });
@@ -869,8 +1085,7 @@ const KakaoMapWidget: React.FC = () => {
         // 사용자 위치 인포윈도우 표시
         try {
           const infowindow = new kakaoMaps.InfoWindow({
-            content:
-              '<div style="padding:5px;font-size:12px;color:#0078ff;font-weight:bold;">내 위치</div>',
+            content: `<div style="padding:5px;font-size:12px;color:#0078ff;font-weight:bold;">${t('widgets.kakaoMap.location.myLocation')}</div>`,
             zIndex: 11,
           });
           infowindow.open(mapInstance, userMarkerInstance);
@@ -1031,6 +1246,11 @@ const KakaoMapWidget: React.FC = () => {
         });
 
         setPlaces(newPlaces);
+
+        // 장소 검색 후 사용자 마커 재생성 (사용자 마커가 지워지는 것을 방지)
+        if (userLocation && mapInstance && kakaoMaps) {
+          createUserMarker(mapInstance, kakaoMaps, userLocation.latitude, userLocation.longitude);
+        }
       } else {
         console.error('장소 검색 실패:', status, '재시도 횟수:', retryCount);
 
@@ -1046,7 +1266,7 @@ const KakaoMapWidget: React.FC = () => {
           return;
         }
 
-        setError(`주변 장소를 검색하는데 실패했습니다 (상태: ${status})`);
+        setError(`${t('widgets.kakaoMap.messages.error')} (${t('common.error')}: ${status})`);
         setPlaces([]);
       }
     };
@@ -1054,7 +1274,7 @@ const KakaoMapWidget: React.FC = () => {
     // 검색 실행
     if (keyword) {
       // 키워드 검색
-      setCurrentSearchCategory(`"${keyword}" 검색 결과`);
+      setCurrentSearchCategory(`"${keyword}" ${t('widgets.kakaoMap.messages.searchResults')}`);
       placesService.keywordSearch(keyword, placesSearchCB, {
         location: new kakaoMaps.LatLng(lat, lng),
         radius: 5000,
@@ -1232,6 +1452,11 @@ const KakaoMapWidget: React.FC = () => {
           });
 
           setPlaces(newPlaces);
+
+          // 카테고리 검색 후 사용자 마커 재생성 (사용자 마커가 지워지는 것을 방지)
+          if (userLocation && map && kakaoMaps) {
+            createUserMarker(map, kakaoMaps, userLocation.latitude, userLocation.longitude);
+          }
         } else {
           console.error('카테고리 검색 실패:', status, '재시도 횟수:', retryCount);
 
@@ -1387,11 +1612,11 @@ const KakaoMapWidget: React.FC = () => {
               <div style="display:flex;gap:4px;">
                 <a href="javascript:void(0);" onclick="window.kakaoMapDirections('${place.id}');" 
                    style="display:flex;align-items:center;justify-content:center;padding:4px 6px;background:#1976d2;color:#fff;border-radius:4px;text-decoration:none;font-size:11px;">
-                  <span style="margin-right:2px;">길찾기</span>
+                  <span style="margin-right:2px;">${t('widgets.kakaoMap.infoWindow.directions')}</span>
                 </a>
                 <a href="${place.place_url}" target="_blank" 
                    style="display:flex;align-items:center;justify-content:center;padding:4px 6px;background:#f5f5f5;color:#333;border-radius:4px;text-decoration:none;font-size:11px;">
-                  <span>자세히 보기</span>
+                  <span>${t('widgets.kakaoMap.infoWindow.details')}</span>
                 </a>
               </div>
             </div>
@@ -1418,7 +1643,7 @@ const KakaoMapWidget: React.FC = () => {
   const handleDirections = (place: Place) => {
     if (userLocation && place.latitude && place.longitude) {
       const url = getKakaoMapDirectionsUrl(
-        '내 위치',
+        t('widgets.kakaoMap.location.myLocation'),
         userLocation.latitude,
         userLocation.longitude,
         place.name,
@@ -1426,6 +1651,17 @@ const KakaoMapWidget: React.FC = () => {
         place.longitude
       );
       window.open(url, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  // 지도 타입 변경 함수 (전체화면 지도용)
+  const handleMapTypeToggle = (newMapType: 'ROADMAP' | 'SKYVIEW') => {
+    if (!fullMap || !window.kakao || !window.kakao.maps) return;
+
+    if (newMapType === 'SKYVIEW') {
+      fullMap.setMapTypeId(window.kakao.maps.MapTypeId.HYBRID);
+    } else {
+      fullMap.setMapTypeId(window.kakao.maps.MapTypeId.ROADMAP);
     }
   };
 
@@ -1457,7 +1693,7 @@ const KakaoMapWidget: React.FC = () => {
             {purposeInfo.icon}
           </Avatar>
           <Typography variant="subtitle1" fontWeight={600}>
-            {purposeInfo.label} 맞춤 장소
+            {t('widgets.kakaoMap.purposeBasedTitle', { purpose: purposeInfo.label })}
           </Typography>
         </Box>
 
@@ -1471,7 +1707,7 @@ const KakaoMapWidget: React.FC = () => {
               '&:hover': { bgcolor: '#e0e0e0' },
               position: 'relative',
             }}
-            title="주변 장소 보기"
+            title={t('widgets.kakaoMap.tooltips.nearbyPlaces')}
           >
             <CategoryIcon fontSize="small" color="primary" />
             {places.length > 0 && (
@@ -1501,6 +1737,7 @@ const KakaoMapWidget: React.FC = () => {
               size="small"
               onClick={handleMoveToMyLocation}
               sx={{ bgcolor: '#f0f0f0', '&:hover': { bgcolor: '#e0e0e0' } }}
+              title={t('widgets.kakaoMap.tooltips.myLocation')}
             >
               <MyLocationIcon fontSize="small" color="primary" />
             </IconButton>
@@ -1512,7 +1749,7 @@ const KakaoMapWidget: React.FC = () => {
       <Box sx={{ mb: 2 }}>
         {/* 검색 입력란 */}
         <TextField
-          placeholder="장소 검색"
+          placeholder={t('widgets.kakaoMap.search.placeholder')}
           variant="outlined"
           size="small"
           fullWidth
@@ -1597,7 +1834,7 @@ const KakaoMapWidget: React.FC = () => {
                 }}
               />
               <Typography variant="caption" color="text.secondary">
-                내 위치
+                {t('widgets.kakaoMap.location.myLocation')}
               </Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -1611,7 +1848,7 @@ const KakaoMapWidget: React.FC = () => {
                 }}
               />
               <Typography variant="caption" color="text.secondary">
-                장소
+                {t('widgets.kakaoMap.legend.places')}
               </Typography>
             </Box>
           </Box>
@@ -1656,10 +1893,10 @@ const KakaoMapWidget: React.FC = () => {
               <CircularProgress size={36} />
               <Typography variant="body2" sx={{ mt: 1 }}>
                 {initState === 'pending'
-                  ? '준비 중...'
+                  ? t('widgets.kakaoMap.messages.preparing')
                   : initState === 'loading'
-                    ? '지도를 불러오는 중...'
-                    : '지도 로딩 중...'}
+                    ? t('widgets.kakaoMap.messages.loading')
+                    : t('widgets.kakaoMap.messages.mapLoading')}
               </Typography>
             </Box>
           )}
@@ -1691,7 +1928,7 @@ const KakaoMapWidget: React.FC = () => {
                 startIcon={<RefreshIcon />}
                 sx={{ mt: 1 }}
               >
-                새로고침
+                {t('widgets.kakaoMap.actions.refresh')}
               </Button>
             </Box>
           )}
@@ -1707,6 +1944,7 @@ const KakaoMapWidget: React.FC = () => {
               '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' },
             }}
             onClick={openMapModal}
+            title={t('widgets.kakaoMap.tooltips.expandMap')}
           >
             <LaunchIcon fontSize="small" />
           </IconButton>
@@ -1742,7 +1980,7 @@ const KakaoMapWidget: React.FC = () => {
           <Box
             sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}
           >
-            <Typography variant="h6">지도 보기</Typography>
+            <Typography variant="h6">{t('widgets.kakaoMap.modal.mapView')}</Typography>
             <IconButton onClick={closeMapModal}>
               <CloseIcon />
             </IconButton>
@@ -1768,7 +2006,7 @@ const KakaoMapWidget: React.FC = () => {
                         selectedPlace.longitude
                       ) {
                         const url = getKakaoMapDirectionsUrl(
-                          '내 위치',
+                          t('widgets.kakaoMap.location.myLocation'),
                           userLocation.latitude,
                           userLocation.longitude,
                           selectedPlace.name,
@@ -1779,7 +2017,7 @@ const KakaoMapWidget: React.FC = () => {
                       }
                     }}
                   >
-                    길찾기
+                    {t('widgets.kakaoMap.actions.findDirections')}
                   </Button>
                 )
               }
@@ -1795,8 +2033,58 @@ const KakaoMapWidget: React.FC = () => {
               width: '100%',
               borderRadius: 1,
               overflow: 'hidden',
+              position: 'relative',
             }}
-          />
+          >
+            {/* 커스텀 지도 타입 토글 버튼 */}
+            <Box
+              sx={{
+                position: 'absolute',
+                top: 10,
+                right: 10,
+                zIndex: 1000,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 0.5,
+              }}
+            >
+              <ToggleButtonGroup
+                value={mapType}
+                exclusive
+                onChange={(event, newMapType) => {
+                  if (newMapType !== null) {
+                    setMapType(newMapType);
+                    handleMapTypeToggle(newMapType);
+                  }
+                }}
+                size="small"
+                sx={{
+                  bgcolor: 'rgba(255, 255, 255, 0.9)',
+                  '& .MuiToggleButton-root': {
+                    fontSize: '0.75rem',
+                    px: 1.5,
+                    py: 0.5,
+                    minWidth: 'auto',
+                    border: '1px solid rgba(0, 0, 0, 0.12)',
+                    '&.Mui-selected': {
+                      bgcolor: 'primary.main',
+                      color: 'white',
+                      '&:hover': {
+                        bgcolor: 'primary.dark',
+                      },
+                    },
+                  },
+                }}
+              >
+                <ToggleButton value="ROADMAP">
+                  {t('widgets.kakaoMap.mapTypes.roadmap')}
+                </ToggleButton>
+                <ToggleButton value="SKYVIEW">
+                  {t('widgets.kakaoMap.mapTypes.skyview')}
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </Box>
+          </Box>
         </Box>
       </Modal>
 
@@ -1837,7 +2125,11 @@ const KakaoMapWidget: React.FC = () => {
             >
               <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
                 <CategoryIcon sx={{ mr: 1 }} />
-                {places.length > 0 ? `주변 장소 (${places.length})` : '추천 장소'}
+                {places.length > 0
+                  ? t('widgets.kakaoMap.modal.nearbyPlacesWithCount', {
+                      count: places.length.toString(),
+                    })
+                  : t('widgets.kakaoMap.modal.recommendPlaces')}
               </Typography>
               <IconButton onClick={() => setIsPlacesModalOpen(false)}>
                 <CloseIcon />
@@ -1957,7 +2249,7 @@ const KakaoMapWidget: React.FC = () => {
                           color: 'white',
                           '&:hover': { bgcolor: 'primary.dark' },
                         }}
-                        title="길찾기"
+                        title={t('widgets.kakaoMap.actions.findDirections')}
                       >
                         <DirectionsIcon />
                       </IconButton>
@@ -1977,10 +2269,14 @@ const KakaoMapWidget: React.FC = () => {
                 >
                   <SearchIcon sx={{ fontSize: '3rem', color: 'text.disabled', mb: 2 }} />
                   <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
-                    {loading ? '장소를 검색중입니다...' : '검색 결과가 없습니다'}
+                    {loading
+                      ? t('widgets.kakaoMap.messages.searching')
+                      : t('widgets.kakaoMap.messages.noResults')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    {loading ? '잠시만 기다려주세요' : '다른 카테고리를 선택해보세요'}
+                    {loading
+                      ? t('widgets.kakaoMap.messages.pleaseWait')
+                      : t('widgets.kakaoMap.messages.tryOtherCategories')}
                   </Typography>
                 </Box>
               )}
@@ -2024,6 +2320,8 @@ const getCategoryBgColor = (category: string): string => {
 };
 
 const getCategoryName = (category: string): string => {
+  // 번역 함수를 사용하기 위해 컴포넌트 내부로 이동해야 하지만,
+  // 임시로 기본 매핑을 유지하고 나중에 리팩토링
   switch (category) {
     case 'cafe':
       return '카페';

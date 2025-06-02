@@ -1,5 +1,16 @@
 const vi = {
   infoPage: {
+    actions: {
+      write: 'Viết',
+      viewAll: 'Xem tất cả',
+      bookmark: 'Đánh dấu',
+      bookmarked: 'Đã lưu',
+      share: 'Chia sẻ',
+      shareAction: 'Chia sẻ',
+      print: 'In',
+      printAction: 'In',
+      scrollToTop: 'Lên đầu',
+    },
     createTitle: 'Tạo thông tin',
     editTitle: 'Chỉnh sửa thông tin',
     form: {

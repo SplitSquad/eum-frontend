@@ -1,44 +1,35 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { Box, Container, Typography, Button, Paper } from '@mui/material';
+import { Container, Typography, Paper, Button, Box } from '@mui/material';
 import styled from '@emotion/styled';
 import LockIcon from '@mui/icons-material/Lock';
+import { useTranslation } from '@/shared/i18n';
+import { useNavigate } from 'react-router-dom';
 
-// 배경 스타일
-const GradientBackground = styled(Box)`
+const AccessDeniedCard = styled(Paper)`
+  padding: 4rem 2rem;
+  max-width: 640px;
   width: 100%;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, rgba(255, 245, 245, 1) 0%, rgba(255, 235, 235, 1) 100%);
-  padding: 2rem 0;
-`;
-
-// 카드 스타일
-const StyledPaper = styled(Paper)`
-  padding: 3rem;
+  margin: 0 auto;
   text-align: center;
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 235, 235, 0.8);
-  max-width: 500px;
-  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(250, 251, 252, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+  border-radius: 18px;
+  border: 1px solid #e0e0e0;
+  backdrop-filter: blur(4px);
 `;
 
-// 아이콘 컨테이너
 const IconContainer = styled(Box)`
   margin-bottom: 2rem;
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background-color: rgba(255, 153, 153, 0.1);
+  background-color: #f5f5f5;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 2rem;
 `;
 
 /**
@@ -46,55 +37,60 @@ const IconContainer = styled(Box)`
  * 권한이 없는 사용자가 보호된 리소스에 접근할 때 표시됨
  */
 const AccessDeniedPage: React.FC = () => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
   return (
-    <GradientBackground>
-      <Container maxWidth="md">
-        <StyledPaper elevation={3}>
-          <IconContainer>
-            <LockIcon sx={{ fontSize: 40, color: '#FF9999' }} />
-          </IconContainer>
-
-          <Typography variant="h4" component="h1" gutterBottom fontWeight={700}>
-            접근 권한이 없습니다
-          </Typography>
-
-          <Typography variant="body1" color="textSecondary" paragraph>
-            이 페이지에 접근할 수 있는 권한이 없습니다. 홈페이지로 돌아가거나 관리자에게 문의하세요.
-          </Typography>
-
-          <Box mt={4} display="flex" justifyContent="center" gap={2} flexWrap="wrap">
-            <Button
-              component={Link}
-              to="/"
-              variant="contained"
-              sx={{
-                bgcolor: '#FF9999',
-                '&:hover': { bgcolor: '#FF7777' },
-                borderRadius: '8px',
-                padding: '10px 24px',
-              }}
-            >
-              홈으로 이동
-            </Button>
-
-            <Button
-              component={Link}
-              to="/contact"
-              variant="outlined"
-              sx={{
-                color: '#555',
-                borderColor: '#ddd',
-                '&:hover': { borderColor: '#FF9999', bgcolor: 'rgba(255,153,153,0.05)' },
-                borderRadius: '8px',
-                padding: '10px 24px',
-              }}
-            >
-              고객센터
-            </Button>
-          </Box>
-        </StyledPaper>
-      </Container>
-    </GradientBackground>
+    <Container
+      maxWidth="sm"
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '70vh',
+      }}
+    >
+      <AccessDeniedCard elevation={3}>
+        <IconContainer>
+          <LockIcon sx={{ fontSize: 40, color: '#222' }} />
+        </IconContainer>
+        <Typography variant="h4" component="h1" gutterBottom fontWeight={700}>
+          {t('accessDenied.title')}
+        </Typography>
+        <Typography variant="h6" sx={{ mb: 3, color: '#555' }}>
+          {t('accessDenied.description')}
+        </Typography>
+        <Box mt={2} display="flex" justifyContent="center" gap={2} flexWrap="wrap">
+          <Button
+            variant="contained"
+            onClick={() => navigate('/')}
+            sx={{
+              bgcolor: '#222',
+              color: '#fff',
+              '&:hover': { bgcolor: '#444' },
+              borderRadius: 2,
+              px: 4,
+              fontWeight: 700,
+            }}
+          >
+            {t('accessDenied.goHome')}
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={() => navigate('/contact')}
+            sx={{
+              color: '#555',
+              borderColor: '#ddd',
+              '&:hover': { borderColor: '#222', bgcolor: '#f5f5f5' },
+              borderRadius: 2,
+              px: 4,
+              fontWeight: 700,
+            }}
+          >
+            {t('accessDenied.contact')}
+          </Button>
+        </Box>
+      </AccessDeniedCard>
+    </Container>
   );
 };
 
