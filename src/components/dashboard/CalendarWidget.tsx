@@ -45,6 +45,7 @@ import CalendarService, {
   GoogleCalendarEventRequest,
 } from '../../services/calendar/calendarService';
 import { useTranslation } from '../../shared/i18n';
+import { useLanguageStore } from '../../features/theme/store/languageStore';
 import useAuthStore from '../../features/auth/store/authStore';
 
 // ISO 문자열을 한국 시간대로 변환하는 유틸리티 함수
@@ -58,6 +59,7 @@ const formatToKoreanTimezone = (date: Date): string => {
 
 const CalendarWidget: React.FC = () => {
   const { t } = useTranslation();
+  const { language } = useLanguageStore();
   const { user } = useAuthStore(); // Auth 스토어에서 사용자 정보 가져오기
   
   const [hoveredDate, setHoveredDate] = useState<number | null>(null);
@@ -389,6 +391,38 @@ const CalendarWidget: React.FC = () => {
 
     setDaysInMonth(calendar);
   }, [currentDate]);
+
+  // 언어 변경 감지 및 월/년 표시 업데이트
+  useEffect(() => {
+    console.log('[DEBUG] CalendarWidget - 언어 변경 감지:', language);
+    
+    // 언어 변경 시 월/년 표시만 업데이트 (번역된 형식으로)
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+
+    // 언어별 월/년 표시 형식 설정
+    if (language === 'ko') {
+      setCurrentMonth(`${month + 1}월`);
+      setCurrentYear(`${year}년`);
+    } else if (language === 'en') {
+      const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'];
+      setCurrentMonth(monthNames[month]);
+      setCurrentYear(year.toString());
+    } else if (language === 'ja') {
+      setCurrentMonth(`${month + 1}月`);
+      setCurrentYear(`${year}年`);
+    } else if (language === 'zh') {
+      setCurrentMonth(`${month + 1}月`);
+      setCurrentYear(`${year}年`);
+    } else {
+      // 기타 언어는 영어 형식 사용
+      const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'];
+      setCurrentMonth(monthNames[month]);
+      setCurrentYear(year.toString());
+    }
+  }, [language, currentDate]);
 
   // 이전 달로 이동
   const goToPrevMonth = () => {

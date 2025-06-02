@@ -41,6 +41,7 @@ import WeatherService from '../../services/weather/weatherService';
 import { env } from '@/config/env';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../../config/axios';
+import { useLanguageStore } from '../../features/theme/store/languageStore';
 
 // 배열을 랜덤하게 섞는 유틸리티 함수 (DynamicFeedWidget과 동일)
 const shuffleArray = <T,>(array: T[]): T[] => {
@@ -349,7 +350,7 @@ const PostItem = memo(({ post, onClick, t }: { post: Post, onClick?: () => void,
             {post.tags.slice(0, 2).map((tag, index) => (
               <Chip
                 key={index}
-                label={tag}
+                label={translateCommunityTag(tag, t)}
                 size="small"
                 sx={{
                   fontSize: '0.65rem',
@@ -564,7 +565,7 @@ const CommunityPreferenceModal: React.FC<CommunityPreferenceModalProps> = ({
                         }}
                       />
                       <Typography variant="body2" fontWeight={500}>
-                        #{index + 1} {translateCommunityCategory(category.name, t)}
+                         #{index + 1} {translateCommunityTag(category.name, t)}
                       </Typography>
                     </Box>
                     <Typography variant="body2" fontWeight={600} color={category.color}>
@@ -606,6 +607,7 @@ const CommunityFeedWidget: React.FC = () => {
   const [preference, setPreference] = useState<CommunityPreferenceData | null>(null);
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { language } = useLanguageStore();
 
   // 유저 위치 정보 가져오기 (DynamicFeedWidget과 동일)
   const getUserLocation = useCallback(async (): Promise<string> => {
@@ -770,6 +772,12 @@ const CommunityFeedWidget: React.FC = () => {
       loadData();
     }
   }, [communitySubTab, isCommunitySubTabOpen, loadData]);
+
+  // 언어 변경 감지 및 데이터 새로고침
+  useEffect(() => {
+    console.log('[DEBUG] CommunityFeedWidget - 언어 변경 감지:', language);
+    loadData();
+  }, [language, loadData]);
 
   // 로딩 컴포넌트
   const renderLoading = useCallback(() => (

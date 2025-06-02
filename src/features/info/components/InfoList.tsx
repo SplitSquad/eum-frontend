@@ -122,13 +122,11 @@ const InfoList: React.FC<InfoListProps> = ({ posts, onClick, onBookmark, bookmar
                 flexDirection: 'column',
                 alignItems: 'flex-end',
                 justifyContent: 'flex-start',
-                minWidth: { xs: 100, sm: 140, md: 180 },
-                maxWidth: { xs: 120, sm: 170, md: 220 },
                 p: 1,
                 pl: 0,
               }}
             >
-              <Tooltip title={isBookmarked ? '북마크 해제' : '북마크'}>
+              <Box sx={{ mb: 1, display: 'flex', justifyContent: 'flex-end' }}>
                 <IconButton
                   onClick={() => onBookmark(item.informationId)}
                   disableFocusRipple
@@ -140,7 +138,7 @@ const InfoList: React.FC<InfoListProps> = ({ posts, onClick, onBookmark, bookmar
                     '&:active': { outline: 'none', boxShadow: 'none' },
                     '&.Mui-focusVisible': { outline: 'none', boxShadow: 'none' },
                     border: isBookmarked ? 'none' : '1.5px solid #bdbdbd',
-                    borderRadius: 2,
+                    borderRadius: '50%',
                     bgcolor: isBookmarked ? '#00C853' : 'transparent',
                     color: isBookmarked ? 'white' : '#bdbdbd',
                     transition: 'all 0.15s',
@@ -149,18 +147,24 @@ const InfoList: React.FC<InfoListProps> = ({ posts, onClick, onBookmark, bookmar
                       color: isBookmarked ? 'white' : '#00C853',
                       borderColor: '#00C853',
                     },
-                    width: 28,
-                    height: 28,
-                    mb: 1,
+                    width: 36,
+                    height: 36,
+                    aspectRatio: '1 / 1',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: 0,
+                    flexShrink: 0,
+                    flexGrow: 0,
                   }}
                 >
                   {isBookmarked ? (
-                    <BookmarkIcon fontSize="small" />
+                    <BookmarkIcon fontSize="medium" />
                   ) : (
-                    <BookmarkBorderIcon fontSize="small" />
+                    <BookmarkBorderIcon fontSize="medium" />
                   )}
                 </IconButton>
-              </Tooltip>
+              </Box>
               <CardMedia
                 component="img"
                 image={thumbnail}
@@ -171,6 +175,7 @@ const InfoList: React.FC<InfoListProps> = ({ posts, onClick, onBookmark, bookmar
                   borderRadius: 2,
                   objectFit: 'cover',
                   background: '#f5f5f5',
+                  backdropFilter: 'blur(10px)',
                 }}
               />
             </Box>

@@ -1,7 +1,7 @@
 import { StudyProfile } from '@/features/onboarding';
 import { duration } from '@mui/material';
 import { profile } from 'console';
-import { de } from 'date-fns/locale';
+import { de, pl } from 'date-fns/locale';
 import { title } from 'process';
 
 const ko = {
@@ -544,6 +544,7 @@ const ko = {
     },
     // 여행 온보딩
     travel: {
+      finish: '완료',
       interestedCities: {
         title: '관심 도시 설정',
         description:
@@ -1120,17 +1121,18 @@ const ko = {
       noEvents: '예정된 일정이 없습니다',
     },
     community: {
-      title: '커뮤니티 피드',
+      title: '이음이 소통터',
       noPost: '게시글이 없습니다',
       viewMore: '더보기',
     },
     debate: {
-      title: '토론 피드',
+      title: '이음이 담론장',
+      subtitle: '토론',
       noDebate: '토론이 없습니다',
       viewMore: '더보기',
     },
     info: {
-      title: '정보 피드',
+      title: '이음이 안내창',
       noInfo: '정보가 없습니다',
       viewMore: '더보기',
     },
@@ -1381,6 +1383,8 @@ const ko = {
       authorSearch: '작성자 검색',
     },
     posts: {
+      showOriginal: '원본 보기',
+      returnOriginal: '돌아가기',
       title: '게시글 제목',
       content: '게시글 내용',
       author: '작성자',
@@ -1631,7 +1635,7 @@ const ko = {
       title: '주변 탐색',
       purposeLabels: {
         travel: '여행',
-        work: '취업', 
+        work: '취업',
         residence: '거주',
         study: '유학',
       },
@@ -1648,16 +1652,16 @@ const ko = {
         culture: '문화시설',
         transport: '교통',
         hotel: '숙박',
-        
-        // 취업 카테고리  
+
+        // 취업 카테고리
         business: '사무공간',
         bank: '은행',
         government: '관공서',
-        
+
         // 거주 카테고리
         market: '마트/시장',
         hospital: '병원',
-        
+
         // 유학 카테고리
         university: '대학교',
         library: '도서관',
@@ -1666,7 +1670,7 @@ const ko = {
       categoryKeywords: {
         tourist: '관광',
         restaurant: '맛집',
-        cafe: '카페', 
+        cafe: '카페',
         culture: '박물관',
         transport: '지하철역',
         hotel: '호텔',
@@ -1749,7 +1753,7 @@ const ko = {
       },
     },
     imageGallery: {
-      title: '추천 이미지 갤러리',
+      title: '이음 갤러리',
       search: {
         placeholder: '이미지 검색 (예: 서울, 바다, 음식 등)',
         button: '검색',
@@ -1769,9 +1773,40 @@ const ko = {
         noResults: '검색 결과가 없습니다',
         apiKeyMissing: 'Pexels API 키가 설정되지 않았습니다. 샘플 이미지가 표시됩니다.',
       },
+      images: {
+        seoul_tower: '서울타워',
+        hanok_village: '한옥마을',
+        busan_haeundae: '부산 해운대 해변',
+        gyeongbokgung: '경복궁',
+        jeju_seongsan: '제주 성산일출봉',
+        hangang_night: '한강 야경',
+        korean_temple: '한국 전통 사찰',
+        korean_market: '한국 전통 시장',
+        korean_food: '한국 음식',
+        korean_cherry_blossom: '한국의 벚꽃',
+      },
+      tags: {
+        seoul: '서울',
+        landmark: '랜드마크',
+        traditional: '전통',
+        hanok: '한옥',
+        busan: '부산',
+        beach: '해변',
+        palace: '궁궐',
+        jeju: '제주',
+        nature: '자연',
+        night: '야경',
+        temple: '사찰',
+        market: '시장',
+        culture: '문화',
+        food: '음식',
+        korean_cuisine: '한국 요리',
+        spring: '봄',
+        cherry_blossom: '벚꽃',
+      },
     },
     youtubeGallery: {
-      title: '추천 영상 갤러리',
+      title: '이음 스튜디오',
       search: {
         placeholder: '영상 검색 (예: 여행, 음식, 음악 등)',
         button: '검색',
@@ -1792,6 +1827,24 @@ const ko = {
         searchError: '영상을 검색하는 중 오류가 발생했습니다',
         noResults: '검색 결과가 없습니다',
         apiKeyMissing: 'YouTube API 키가 설정되지 않았습니다',
+        sampleDataInfo: '한국 관련 추천 영상들이 표시되고 있습니다',
+      },
+      purposes: {
+        travel: '여행',
+        residence: '거주',
+        employment: '취업',
+        study: '유학',
+      },
+      tags: {
+        travel: '여행',
+        tourism: '관광',
+        residence: '거주',
+        living: '생활',
+        employment: '취업',
+        job: '직업',
+        study: '공부',
+        university: '대학',
+        korea: '한국',
       },
     },
   },
@@ -1860,6 +1913,7 @@ const ko = {
     next: '다음',
   },
   debate: {
+    noDebates: '등록된 토론이 없습니다.',
     title: '핫 이슈 토론',
     description: '지금 가장 뜨거운 사회 이슈에 대해 자유롭게 토론하고 다양한 의견을 나눠보세요.',
     categories: {
@@ -1900,6 +1954,10 @@ const ko = {
     proOpinion: '찬성측 의견',
     conOpinion: '반대측 의견',
     comment: {
+      placeholder: '댓글을 입력하세요',
+      pro: '찬성',
+      con: '반대',
+      none: '미투표',
       empty: '댓글이 없습니다. 첫 댓글을 남겨주세요!',
       add: '댓글 추가',
       newest: '최신순',
@@ -1910,12 +1968,17 @@ const ko = {
       cancel: '취소',
     },
     reply: {
+      pro: '찬성',
+      con: '반대',
+      none: '미투표',
+      replyLoading: '답글을 불러오는 중...',
       placeholder: '답글을 입력하세요',
-      add: '답글 추가',
+      add: '답글 작성',
       edit: '답글 수정',
       delete: '답글 삭제',
       deleteConfirm: '이 답글을 삭제하시겠습니까?',
       noReplies: '답글이 없습니다. 첫 답글을 남겨주세요!',
+      hide: '답글 숨기기',
       cancel: '취소',
     },
     specialIssue: '특별 이슈',
@@ -1946,8 +2009,12 @@ const ko = {
       write: '글쓰기',
       viewAll: '전체보기',
       bookmark: '북마크',
+      bookmarked: '저장됨',
       share: '공유',
+      shareAction: '공유하기',
       print: '인쇄',
+      printAction: '인쇄하기',
+      scrollToTop: '맨 위로',
     },
     content: {
       allInfo: '전체 정보',
@@ -2063,7 +2130,7 @@ const ko = {
   // 홈 화면 위젯들
   home: {
     communityFeed: {
-      title: '커뮤니티 피드',
+      title: '이음이 소통터',
       tabs: {
         free: '자유',
         meeting: '모임',
@@ -2108,7 +2175,7 @@ const ko = {
       },
     },
     debateFeed: {
-      title: '토론 피드',
+      title: '이음이 담론장',
       subtitle: '토론',
       statusLabels: {
         active: '진행중',
@@ -2154,7 +2221,7 @@ const ko = {
       },
     },
     infoFeed: {
-      title: '정보 피드',
+      title: '이음이 안내창',
       subtitle: '정보',
       difficultyLabels: {
         beginner: '초급',

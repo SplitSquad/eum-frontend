@@ -747,17 +747,17 @@ const zh = {
       noEvents: '没有预定日程',
     },
     community: {
-      title: '社区动态',
+      title: 'EUM社区中心',
       noPost: '没有帖子',
       viewMore: '查看更多',
     },
     debate: {
-      title: '讨论动态',
-      noDebate: '没有讨论',
+      title: 'EUM讨论广场',
+      noDebate: '没有辩论',
       viewMore: '查看更多',
     },
     info: {
-      title: '信息动态',
+      title: 'EUM信息中心',
       noInfo: '没有信息',
       viewMore: '查看更多',
     },
@@ -986,6 +986,8 @@ const zh = {
       authorSearch: '作者搜索',
     },
     posts: {
+      showOriginal: '原帖',
+      returnOriginal: '返回原帖',
       title: '帖子标题',
       content: '帖子内容',
       author: '作者',
@@ -1231,7 +1233,7 @@ const zh = {
       title: '周边探索',
       purposeLabels: {
         travel: '旅游',
-        work: '就业', 
+        work: '就业',
         residence: '居住',
         study: '留学',
       },
@@ -1247,14 +1249,14 @@ const zh = {
         culture: '文化设施',
         transport: '交通',
         hotel: '住宿',
-        
+
         business: '办公空间',
         bank: '银行',
         government: '政府机关',
-        
+
         market: '市场/商店',
         hospital: '医院',
-        
+
         university: '大学',
         library: '图书馆',
         language: '语言学校',
@@ -1262,7 +1264,7 @@ const zh = {
       categoryKeywords: {
         tourist: '旅游',
         restaurant: '餐厅',
-        cafe: '咖啡厅', 
+        cafe: '咖啡厅',
         culture: '博物馆',
         transport: '地铁站',
         hotel: '酒店',
@@ -1346,9 +1348,9 @@ const zh = {
       },
     },
     imageGallery: {
-      title: '推荐图片画廊',
+      title: 'EUM画廊',
       search: {
-        placeholder: '搜索图片（例：首尔、海洋、美食等）',
+        placeholder: '搜索图片（如：首尔、海洋、美食）',
         button: '搜索',
       },
       actions: {
@@ -1361,16 +1363,47 @@ const zh = {
         poweredBy: '由Pexels API提供',
       },
       messages: {
-        loading: '图片加载中...',
+        loading: '正在加载图片...',
         error: '图片加载失败',
         noResults: '没有搜索结果',
-        apiKeyMissing: '未配置Pexels API密钥。显示示例图片。',
+        apiKeyMissing: '未配置Pexels API密钥，将显示示例图片。',
+      },
+      images: {
+        seoul_tower: '首尔塔',
+        hanok_village: '韩屋村',
+        busan_haeundae: '釜山海云台海滩',
+        gyeongbokgung: '景福宫',
+        jeju_seongsan: '济州城山日出峰',
+        hangang_night: '汉江夜景',
+        korean_temple: '韩国传统寺庙',
+        korean_market: '韩国传统市场',
+        korean_food: '韩国料理',
+        korean_cherry_blossom: '韩国樱花',
+      },
+      tags: {
+        seoul: '首尔',
+        landmark: '地标',
+        traditional: '传统',
+        hanok: '韩屋',
+        busan: '釜山',
+        beach: '海滩',
+        palace: '宫殿',
+        jeju: '济州',
+        nature: '自然',
+        night: '夜景',
+        temple: '寺庙',
+        market: '市场',
+        culture: '文化',
+        food: '美食',
+        korean_cuisine: '韩式料理',
+        spring: '春天',
+        cherry_blossom: '樱花',
       },
     },
     youtubeGallery: {
-      title: '推荐视频画廊',
+      title: 'EUM工作室',
       search: {
-        placeholder: '搜索视频（例：旅行、美食、音乐等）',
+        placeholder: '搜索视频（如：旅行、美食、音乐）',
         button: '搜索',
       },
       actions: {
@@ -1379,16 +1412,34 @@ const zh = {
         close: '关闭',
       },
       info: {
-        views: '次观看',
+        views: '观看次数',
         channel: '频道',
         poweredBy: '由YouTube Data API提供',
       },
       messages: {
-        loading: '视频加载中...',
+        loading: '正在加载视频...',
         error: '视频加载失败',
-        searchError: '视频搜索时发生错误',
+        searchError: '搜索视频时发生错误',
         noResults: '没有搜索结果',
         apiKeyMissing: '未配置YouTube API密钥',
+        sampleDataInfo: '正在显示韩国相关推荐视频',
+      },
+      purposes: {
+        travel: '旅行',
+        residence: '居住',
+        employment: '就业',
+        study: '留学',
+      },
+      tags: {
+        travel: '旅行',
+        tourism: '观光',
+        residence: '居住',
+        living: '生活',
+        employment: '就业',
+        job: '工作',
+        study: '学习',
+        university: '大学',
+        korea: '韩国',
       },
     },
   },
@@ -1447,8 +1498,11 @@ const zh = {
     next: '下一页',
   },
   debate: {
-    title: '热门议题讨论',
-    description: '参与当今最热门的社会议题讨论，分享您的多元观点。',
+    showOriginal: '查看原文',
+    returnOriginal: '返回',
+    noDebates: '暂无辩论议题',
+    title: '热点议题辩论',
+    description: '就当前最热门的社会议题自由讨论，分享你的多元观点。',
     categories: {
       title: '类别',
       all: '全部',
@@ -1487,7 +1541,11 @@ const zh = {
     proOpinion: '赞成意见',
     conOpinion: '反对意见',
     comment: {
-      empty: '暂无评论。成为第一个评论的人！',
+      placeholder: '请输入评论内容',
+      pro: '支持',
+      con: '反对',
+      none: '无',
+      empty: '暂无评论，欢迎发表第一个评论！',
       add: '添加评论',
       newest: '最新',
       oldest: '最早',
@@ -1497,7 +1555,11 @@ const zh = {
       cancel: '取消',
     },
     reply: {
-      placeholder: '输入您的回复',
+      hide: '隐藏回复',
+      pro: '支持',
+      con: '反对',
+      none: '无',
+      placeholder: '请输入回复',
       add: '添加回复',
       edit: '编辑回复',
       delete: '删除回复',
@@ -1532,8 +1594,12 @@ const zh = {
       write: '写文章',
       viewAll: '查看全部',
       bookmark: '收藏',
+      bookmarked: '已收藏',
       share: '分享',
+      shareAction: '分享',
       print: '打印',
+      printAction: '打印',
+      scrollToTop: '回到顶部',
     },
     content: {
       allInfo: '全部信息',
@@ -1693,8 +1759,7 @@ const zh = {
     logout: '退出登录',
     adminpage: '管理员页面',
   },
-  editModeFileWarning:
-    '选择新文件会删除所有现有附件\n请慎重选择',
+  editModeFileWarning: '选择新文件会删除所有现有附件\n请慎重选择',
   // 主屏幕小部件
   home: {
     communityFeed: {

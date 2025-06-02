@@ -7,6 +7,7 @@ import remarkGfm from 'remark-gfm';
 import { useTranslation } from '../../../shared/i18n';
 import { useLanguageStore } from '@/features/theme/store/languageStore';
 import { useAiAssistantStore } from '@/features/assistant/store/aiAssistantStore';
+import EeumProfile from '@/assets/images/characters/이음이.png';
 
 // 스크롤바 스타일 CSS
 const scrollbarStyles = `
@@ -212,21 +213,13 @@ export default function ChatContent({
   // 메시지 추가 시 스크롤 하단으로 부드럽게 이동 - 개선된 버전
   useEffect(() => {
     if (listRef.current) {
-      // 즉시 스크롤과 지연 스크롤 둘 다 적용
-      listRef.current.scrollTop = listRef.current.scrollHeight;
-      
-      const timer = setTimeout(() => {
+      setTimeout(() => {
         if (listRef.current) {
-          listRef.current.scrollTo({
-            top: listRef.current.scrollHeight,
-            behavior: 'smooth'
-          });
+          listRef.current.scrollTop = listRef.current.scrollHeight;
         }
-      }, 50);
-      
-      return () => clearTimeout(timer);
+      }, 0);
     }
-  }, [messages, loading]);
+  }, [messages.length]);
 
   // 스크롤 위치 감지하여 버튼 표시 여부 결정
   useEffect(() => {
@@ -250,7 +243,7 @@ export default function ChatContent({
     if (listRef.current) {
       listRef.current.scrollTo({
         top: listRef.current.scrollHeight,
-        behavior: 'smooth'
+        behavior: 'smooth',
       });
       setShowScrollButton(false);
     }
@@ -262,22 +255,25 @@ export default function ChatContent({
     <>
       {/* 스크롤바 스타일 추가 */}
       <style>{scrollbarStyles}</style>
-      
+
       {/* 최상단 div: 고정 높이 채팅 레이아웃(원하는 값으로 조정 가능) */}
       <div
-        className="flex flex-col"
+        className="chat-area"
         style={{
-          height: '600px', // ★ 고정 높이
-          minHeight: '400px', // 필요시 조정
-          maxHeight: '90vh',
-          width: '100%',
+          background: '#f7f8fa',
+          borderRadius: 16,
+          padding: 24,
+          minHeight: 400,
+          boxShadow: '0 2px 8px rgba(80,80,90,0.06)',
+          maxHeight: '70vh',
+          overflowY: 'auto',
         }}
       >
         <div
           className="flex-1 relative overflow-hidden"
           style={{
             borderRadius: '16px',
-            border: '2px solid rgba(139, 69, 19, 0.2)',
+            border: '2px solid #e0e0e7',
             display: 'flex',
             flexDirection: 'column',
             minHeight: 0, // flexbox 스크롤 안정화
@@ -288,16 +284,15 @@ export default function ChatContent({
           <div
             className="px-6 py-4 border-b"
             style={{
-              borderColor: 'rgba(139, 69, 19, 0.15)',
-              background:
-                'linear-gradient(90deg, rgba(212, 175, 55, 0.1) 0%, rgba(139, 69, 19, 0.05) 100%)',
+              borderColor: '#e0e0e7',
+              background: 'linear-gradient(90deg, #f7f7fa 0%, #ececf0 100%)',
             }}
           >
             <div className="flex items-center justify-between">
               <h3
                 className="text-lg font-bold"
                 style={{
-                  color: '#8B4513',
+                  color: '#444',
                   fontFamily: '"Noto Serif KR", serif',
                   letterSpacing: '0.05em',
                 }}
@@ -307,8 +302,8 @@ export default function ChatContent({
               <div
                 className="px-3 py-1 rounded-full text-sm"
                 style={{
-                  background: 'rgba(139, 69, 19, 0.1)',
-                  color: '#8B4513',
+                  background: '#f0f0f3',
+                  color: '#555',
                   fontFamily: '"Noto Sans KR", sans-serif',
                   fontWeight: '500',
                 }}
@@ -326,31 +321,32 @@ export default function ChatContent({
               minHeight: 0,
               maxHeight: '100%',
               background: `
-                radial-gradient(circle at 20% 30%, rgba(245, 240, 225, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 80% 70%, rgba(240, 235, 210, 0.2) 0%, transparent 50%),
-                linear-gradient(180deg, rgba(250, 245, 230, 0.1) 0%, rgba(245, 240, 225, 0.2) 100%)
+                radial-gradient(circle at 20% 30%, rgba(220, 220, 230, 0.18) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(210, 210, 220, 0.13) 0%, transparent 50%),
+                linear-gradient(180deg, #f7f8fa 0%, #ececf0 100%)
               `,
             }}
           >
             {messages.map((m, index) => (
               <div
                 key={m.id}
-                className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'} mb-4`}
+                className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'} mb-4 items-end`}
               >
                 {m.sender === 'user' ? (
                   <div className="max-w-[70%] group">
+                    {/* 사용자 말풍선 (오른쪽) */}
                     <div
                       className="relative p-4 rounded-2xl"
                       style={{
                         background: `
-                          linear-gradient(145deg, rgba(139, 69, 19, 0.9) 0%, rgba(101, 67, 33, 0.95) 100%)
+                          linear-gradient(145deg, #e0e0e7 0%, #cfd0d7 100%)
                         `,
-                        border: '1px solid rgba(212, 175, 55, 0.3)',
+                        border: '1.5px solid #bfc0c7',
                         boxShadow: `
-                          0 4px 16px rgba(139, 69, 19, 0.3),
-                          inset 0 1px 0 rgba(255, 255, 255, 0.1)
+                          0 4px 16px rgba(120,120,130,0.10),
+                          inset 0 1px 0 rgba(255,255,255,0.08)
                         `,
-                        color: '#F5DEB3',
+                        color: '#444',
                         fontFamily: '"Noto Sans KR", sans-serif',
                         fontSize: '15px',
                         lineHeight: '1.6',
@@ -360,76 +356,89 @@ export default function ChatContent({
                       <div
                         className="absolute top-4 -right-2 w-4 h-4 transform rotate-45"
                         style={{
-                          background:
-                            'linear-gradient(145deg, rgba(139, 69, 19, 0.9) 0%, rgba(101, 67, 33, 0.95) 100%)',
-                          border: '1px solid rgba(212, 175, 55, 0.3)',
+                          background: 'linear-gradient(145deg, #e0e0e7 0%, #cfd0d7 100%)',
+                          border: '1.5px solid #bfc0c7',
                           borderLeft: 'none',
                           borderBottom: 'none',
                         }}
                       />
                       <div className="relative z-10">{m.text}</div>
                     </div>
-                    <div className="text-xs mt-1 text-right opacity-60" style={{ color: '#8B4513' }}>
+                    <div className="text-xs mt-1 text-right opacity-60" style={{ color: '#888' }}>
                       {t('aiAssistant.chat.justNow')}
                     </div>
                   </div>
                 ) : (
-                  <div className="max-w-[70%] group">
-                    <div
-                      className="relative p-4 rounded-2xl"
+                  <div className="flex max-w-[80%] group">
+                    {/* 이음이 프로필 */}
+                    <img
+                      src={EeumProfile}
+                      alt="이음이 프로필"
+                      className="rounded-full object-cover flex-shrink-0"
                       style={{
-                        background: `
-                          linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(250, 245, 230, 0.95) 100%)
-                        `,
-                        border: '2px solid rgba(139, 69, 19, 0.2)',
-                        boxShadow: `
-                          0 4px 16px rgba(139, 69, 19, 0.1),
-                          inset 0 1px 0 rgba(255, 255, 255, 0.8)
-                        `,
-                        color: '#5D4037',
-                        fontFamily: '"Noto Sans KR", sans-serif',
-                        fontSize: '15px',
-                        lineHeight: '1.7',
-                        letterSpacing: '0.02em',
+                        width: 32,
+                        height: 32,
+                        marginRight: 12,
+                        border: '2px solid #e0e0e7',
+                        background: '#f7f8fa',
                       }}
-                    >
+                    />
+                    <div style={{ flex: 1, minWidth: 0 }}>
                       <div
-                        className="absolute top-4 -left-2 w-4 h-4 transform rotate-45"
+                        className="relative p-4 rounded-2xl"
                         style={{
-                          background:
-                            'linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(250, 245, 230, 0.95) 100%)',
-                          border: '2px solid rgba(139, 69, 19, 0.2)',
-                          borderRight: 'none',
-                          borderBottom: 'none',
+                          background: `
+                            linear-gradient(145deg, #fff 0%, #ececf0 100%)
+                        `,
+                          border: '2px solid #e0e0e7',
+                          boxShadow: `
+                            0 4px 16px rgba(120,120,130,0.07),
+                            inset 0 1px 0 rgba(255,255,255,0.08)
+                        `,
+                          color: '#444',
+                          fontFamily: '"Noto Sans KR", sans-serif',
+                          fontSize: '15px',
+                          lineHeight: '1.7',
+                          letterSpacing: '0.02em',
                         }}
-                      />
-                      <div
-                        className="absolute inset-0 rounded-2xl opacity-20 pointer-events-none"
-                        style={{
-                          backgroundImage: `
-                            radial-gradient(circle at 2px 2px, rgba(139, 69, 19, 0.1) 1px, transparent 0)
-                          `,
-                          backgroundSize: '16px 16px',
-                        }}
-                      />
-                      <div className="relative z-10">
-                        <ReactMarkdown
-                          remarkPlugins={[remarkGfm]}
-                          components={{
-                            p: ({ children }) => <div className="mb-2 last:mb-0">{children}</div>,
-                            strong: ({ children }) => (
-                              <span className="font-semibold text-amber-800">{children}</span>
-                            ),
-                            em: ({ children }) => (
-                              <span className="italic text-amber-700">{children}</span>
-                            ),
+                      >
+                        <div
+                          className="absolute top-4 -left-2 w-4 h-4 transform rotate-45"
+                          style={{
+                            background: 'linear-gradient(145deg, #fff 0%, #ececf0 100%)',
+                            border: '2px solid #e0e0e7',
+                            borderRight: 'none',
+                            borderBottom: 'none',
                           }}
-                          children={m.displayText ?? m.text}
                         />
+                        <div
+                          className="absolute inset-0 rounded-2xl opacity-20 pointer-events-none"
+                          style={{
+                            backgroundImage: `
+                              radial-gradient(circle at 2px 2px, rgba(180, 180, 200, 0.08) 1px, transparent 0)
+                          `,
+                            backgroundSize: '16px 16px',
+                          }}
+                        />
+                        <div className="relative z-10">
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            components={{
+                              p: ({ children }) => <div className="mb-2 last:mb-0">{children}</div>,
+                              strong: ({ children }) => (
+                                <span className="font-semibold text-gray-700">{children}</span>
+                              ),
+                              em: ({ children }) => (
+                                <span className="italic text-gray-500">{children}</span>
+                              ),
+                            }}
+                            children={m.displayText ?? m.text}
+                          />
+                        </div>
                       </div>
-                    </div>
-                    <div className="text-xs mt-1 opacity-60" style={{ color: '#8B4513' }}>
-                      {t('aiAssistant.chat.aiExpert')}
+                      <div className="text-xs mt-1 opacity-60" style={{ color: '#888' }}>
+                        {t('aiAssistant.chat.aiExpert')}
+                      </div>
                     </div>
                   </div>
                 )}
@@ -441,24 +450,23 @@ export default function ChatContent({
                 <div
                   className="px-4 py-3 rounded-2xl"
                   style={{
-                    background:
-                      'linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(250, 245, 230, 0.95) 100%)',
-                    border: '2px solid rgba(139, 69, 19, 0.2)',
-                    color: '#8B4513',
+                    background: 'linear-gradient(145deg, #fff 0%, #ececf0 100%)',
+                    border: '2px solid #e0e0e7',
+                    color: '#888',
                   }}
                 >
                   <div className="flex items-center space-x-2">
                     <div className="flex space-x-1">
                       <div
-                        className="w-2 h-2 bg-amber-600 rounded-full animate-bounce"
+                        className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
                         style={{ animationDelay: '0ms' }}
                       ></div>
                       <div
-                        className="w-2 h-2 bg-amber-600 rounded-full animate-bounce"
+                        className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
                         style={{ animationDelay: '150ms' }}
                       ></div>
                       <div
-                        className="w-2 h-2 bg-amber-600 rounded-full animate-bounce"
+                        className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
                         style={{ animationDelay: '300ms' }}
                       ></div>
                     </div>
@@ -468,32 +476,33 @@ export default function ChatContent({
               </div>
             )}
           </div>
-          
+
           {/* 🔥 스크롤 맨 아래로 이동 버튼 */}
           {showScrollButton && (
             <button
               onClick={scrollToBottom}
               className="absolute bottom-4 right-4 w-12 h-12 rounded-full shadow-lg transition-all duration-300 hover:scale-110 active:scale-95 z-10"
               style={{
-                background: 'linear-gradient(145deg, rgba(139, 69, 19, 0.9) 0%, rgba(101, 67, 33, 0.95) 100%)',
-                border: '2px solid rgba(212, 175, 55, 0.3)',
-                color: '#F5DEB3',
-                boxShadow: '0 4px 16px rgba(139, 69, 19, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+                background: 'linear-gradient(145deg, #e0e0e7 0%, #cfd0d7 100%)',
+                border: '1.5px solid #bfc0c7',
+                color: '#555',
+                boxShadow:
+                  '0 4px 16px rgba(120,120,130,0.13), inset 0 1px 0 rgba(255,255,255,0.08)',
               }}
               title="최신 메시지로 이동"
             >
-              <svg 
-                width="24" 
-                height="24" 
-                viewBox="0 0 24 24" 
-                fill="none" 
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
                 style={{ margin: 'auto' }}
               >
-                <path 
-                  d="M7 14L12 19L17 14M12 19V5" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
+                <path
+                  d="M7 14L12 19L17 14M12 19V5"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
                   strokeLinejoin="round"
                 />
               </svg>
@@ -504,9 +513,8 @@ export default function ChatContent({
           <div
             className="px-6 py-4 border-t"
             style={{
-              borderColor: 'rgba(139, 69, 19, 0.15)',
-              background:
-                'linear-gradient(90deg, rgba(139, 69, 19, 0.02) 0%, rgba(212, 175, 55, 0.05) 50%, rgba(139, 69, 19, 0.02) 100%)',
+              borderColor: '#e0e0e7',
+              background: 'linear-gradient(90deg, #f7f7fa 0%, #ececf0 100%)',
             }}
           >
             <div className="flex items-center space-x-4">
@@ -519,23 +527,23 @@ export default function ChatContent({
                   disabled={loading}
                   className="w-full px-4 py-3 rounded-full border-2 focus:outline-none transition-all duration-300"
                   style={{
-                    background: 'rgba(255, 255, 255, 0.9)',
-                    borderColor: 'rgba(139, 69, 19, 0.2)',
-                    color: '#5D4037',
+                    background: 'rgba(255, 255, 255, 0.97)',
+                    borderColor: '#e0e0e7',
+                    color: '#444',
                     fontFamily: '"Noto Sans KR", sans-serif',
                     fontSize: '15px',
-                    boxShadow: 'inset 0 2px 4px rgba(139, 69, 19, 0.1)',
+                    boxShadow: 'inset 0 2px 4px rgba(180,180,200,0.07)',
                     backdropFilter: 'blur(10px)',
                   }}
                   placeholder={t('aiAssistant.chat.placeholder')}
                   onFocus={e => {
-                    e.target.style.borderColor = 'rgba(212, 175, 55, 0.5)';
+                    e.target.style.borderColor = '#bfc0c7';
                     e.target.style.boxShadow =
-                      '0 0 0 3px rgba(212, 175, 55, 0.1), inset 0 2px 4px rgba(139, 69, 19, 0.1)';
+                      '0 0 0 3px rgba(180,180,200,0.10), inset 0 2px 4px rgba(180,180,200,0.07)';
                   }}
                   onBlur={e => {
-                    e.target.style.borderColor = 'rgba(139, 69, 19, 0.2)';
-                    e.target.style.boxShadow = 'inset 0 2px 4px rgba(139, 69, 19, 0.1)';
+                    e.target.style.borderColor = '#e0e0e7';
+                    e.target.style.boxShadow = 'inset 0 2px 4px rgba(180,180,200,0.07)';
                   }}
                 />
               </div>
@@ -546,14 +554,14 @@ export default function ChatContent({
                 style={{
                   background:
                     loading || !input.trim()
-                      ? 'linear-gradient(145deg, rgba(139, 69, 19, 0.3) 0%, rgba(101, 67, 33, 0.3) 100%)'
-                      : 'linear-gradient(145deg, rgba(139, 69, 19, 0.9) 0%, rgba(101, 67, 33, 0.95) 100%)',
-                  color: '#F5DEB3',
-                  border: '1px solid rgba(212, 175, 55, 0.3)',
+                      ? 'linear-gradient(145deg, #e0e0e7 0%, #cfd0d7 100%)'
+                      : 'linear-gradient(145deg, #bfc0c7 0%, #888a99 100%)',
+                  color: loading || !input.trim() ? '#aaa' : '#fff',
+                  border: '1.5px solid #bfc0c7',
                   boxShadow:
                     loading || !input.trim()
                       ? 'none'
-                      : '0 4px 16px rgba(139, 69, 19, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+                      : '0 4px 16px rgba(120,120,130,0.13), inset 0 1px 0 rgba(255,255,255,0.08)',
                   fontFamily: '"Noto Sans KR", sans-serif',
                   letterSpacing: '0.02em',
                 }}

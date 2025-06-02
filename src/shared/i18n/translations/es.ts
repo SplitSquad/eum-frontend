@@ -766,17 +766,17 @@ const es = {
       noEvents: 'No hay eventos programados',
     },
     community: {
-      title: 'Feed de Comunidad',
+      title: 'EUM Hub Comunidad',
       noPost: 'No hay publicaciones',
       viewMore: 'Ver Más',
     },
     debate: {
-      title: 'Feed de Debate',
+      title: 'EUM Plaza de Debate',
       noDebate: 'No hay debates',
       viewMore: 'Ver Más',
     },
     info: {
-      title: 'Feed de Información',
+      title: 'EUM Centro Info',
       noInfo: 'No hay información',
       viewMore: 'Ver Más',
     },
@@ -951,7 +951,8 @@ const es = {
     },
     auth: {
       googleLoginRequired: 'Inicio de sesión con Google requerido',
-      googleLoginDescription: 'La función de calendario está disponible solo para usuarios que han iniciado sesión con una cuenta de Google.',
+      googleLoginDescription:
+        'La función de calendario está disponible solo para usuarios que han iniciado sesión con una cuenta de Google.',
       feature1: '• Gestión de horarios sincronizando con Google Calendar',
       feature2: '• Sincronización en tiempo real permite ver horarios en todos los dispositivos',
       feature3: '• Configuración de notificaciones para no perderse eventos importantes',
@@ -1162,6 +1163,8 @@ const es = {
       authorSearch: 'Búsqueda de autor',
     },
     posts: {
+      showOriginal: 'Ver publicación original',
+      returnOriginal: 'Volver a la publicación original',
       title: 'Título de publicación',
       content: 'Contenido de publicación',
       author: 'Autor',
@@ -1406,7 +1409,7 @@ const es = {
       title: 'Exploración de alrededores',
       purposeLabels: {
         travel: 'Viaje',
-        work: 'Trabajo', 
+        work: 'Trabajo',
         residence: 'Residencia',
         study: 'Estudio',
       },
@@ -1423,16 +1426,16 @@ const es = {
         culture: 'Instalaciones culturales',
         transport: 'Transporte',
         hotel: 'Alojamiento',
-        
-        // Categorías de trabajo  
+
+        // Categorías de trabajo
         business: 'Espacios de oficina',
         bank: 'Bancos',
         government: 'Oficinas gubernamentales',
-        
+
         // Categorías de residencia
         market: 'Mercados/Tiendas',
         hospital: 'Hospitales',
-        
+
         // Categorías de estudio
         university: 'Universidades',
         library: 'Bibliotecas',
@@ -1441,7 +1444,7 @@ const es = {
       categoryKeywords: {
         tourist: 'turístico',
         restaurant: 'restaurante',
-        cafe: 'café', 
+        cafe: 'café',
         culture: 'museo',
         transport: 'metro',
         hotel: 'hotel',
@@ -1525,7 +1528,7 @@ const es = {
       },
     },
     imageGallery: {
-      title: 'Galería de imágenes recomendadas',
+      title: 'EUM Galería',
       search: {
         placeholder: 'Buscar imágenes (ej: Seúl, océano, comida)',
         button: 'Buscar',
@@ -1542,14 +1545,45 @@ const es = {
       messages: {
         loading: 'Cargando imágenes...',
         error: 'Error al cargar imágenes',
-        noResults: 'No hay resultados de búsqueda',
-        apiKeyMissing: 'Clave API de Pexels no configurada. Se muestran imágenes de ejemplo.',
+        noResults: 'Sin resultados de búsqueda',
+        apiKeyMissing: 'Clave API de Pexels no configurada. Se muestran imágenes de muestra.',
+      },
+      images: {
+        seoul_tower: 'Torre de Seúl',
+        hanok_village: 'Pueblo Hanok',
+        busan_haeundae: 'Playa Haeundae de Busan',
+        gyeongbokgung: 'Palacio Gyeongbokgung',
+        jeju_seongsan: 'Pico Seongsan de Jeju',
+        hangang_night: 'Vista nocturna del río Han',
+        korean_temple: 'Templo tradicional coreano',
+        korean_market: 'Mercado tradicional coreano',
+        korean_food: 'Comida coreana',
+        korean_cherry_blossom: 'Flores de cerezo coreanas',
+      },
+      tags: {
+        seoul: 'Seúl',
+        landmark: 'Punto de referencia',
+        traditional: 'Tradicional',
+        hanok: 'Hanok',
+        busan: 'Busan',
+        beach: 'Playa',
+        palace: 'Palacio',
+        jeju: 'Jeju',
+        nature: 'Naturaleza',
+        night: 'Vista nocturna',
+        temple: 'Templo',
+        market: 'Mercado',
+        culture: 'Cultura',
+        food: 'Comida',
+        korean_cuisine: 'Cocina coreana',
+        spring: 'Primavera',
+        cherry_blossom: 'Flor de cerezo',
       },
     },
     youtubeGallery: {
-      title: 'Galería de videos recomendados',
+      title: 'EUM Estudio',
       search: {
-        placeholder: 'Buscar videos (ej: viajes, comida, música)',
+        placeholder: 'Buscar videos (ej: viaje, comida, música)',
         button: 'Buscar',
       },
       actions: {
@@ -1566,8 +1600,26 @@ const es = {
         loading: 'Cargando videos...',
         error: 'Error al cargar videos',
         searchError: 'Error al buscar videos',
-        noResults: 'No hay resultados de búsqueda',
+        noResults: 'Sin resultados de búsqueda',
         apiKeyMissing: 'Clave API de YouTube no configurada',
+        sampleDataInfo: 'Se muestran videos recomendados sobre Corea',
+      },
+      purposes: {
+        travel: 'Viaje',
+        residence: 'Residencia',
+        employment: 'Empleo',
+        study: 'Estudios',
+      },
+      tags: {
+        travel: 'Viaje',
+        tourism: 'Turismo',
+        residence: 'Residencia',
+        living: 'Vida',
+        employment: 'Empleo',
+        job: 'Trabajo',
+        study: 'Estudio',
+        university: 'Universidad',
+        korea: 'Corea',
       },
     },
   },
@@ -1627,8 +1679,12 @@ const es = {
     next: 'Siguiente',
   },
   debate: {
-    title: 'Debate de Temas Candentes',
-    description: 'Únete a la discusión sobre los temas sociales más candentes de hoy y comparte tus diversas opiniones.',
+    showOriginal: 'prospecto',
+    returnOriginal: 'vuelta',
+    noDebates: 'No hay debates activos en este momento.',
+    title: 'Debate de temas candentes',
+    description:
+      'Participa en el debate sobre los temas sociales más candentes del momento y comparte tus opiniones diversas.',
     categories: {
       title: 'Categoría',
       all: 'Todos',
@@ -1661,12 +1717,17 @@ const es = {
     noParticipationData: 'No hay datos de participación disponibles',
     commentSection: 'Por favor respeta las diversas opiniones de las personas.',
     currentVote: 'Posición seleccionada',
-    commentGuide: 'Haz clic en el botón Votar para seleccionar tu posición primero, y tu posición aparecerá en los comentarios.',
+    commentGuide:
+      'Haz clic en el botón Votar para seleccionar tu posición primero, y tu posición aparecerá en los comentarios.',
     name: 'debate',
     topicTitle: 'Tema de Debate',
     proOpinion: 'Opinión a Favor',
     conOpinion: 'Opinión en Contra',
     comment: {
+      placeholder: 'Escribe tu comentario aquí',
+      pro: 'A favor',
+      con: 'En contra',
+      none: 'Sin opinión',
       empty: 'Aún no hay comentarios. ¡Sé el primero en comentar!',
       add: 'Agregar Comentario',
       newest: 'Más Recientes',
@@ -1677,11 +1738,15 @@ const es = {
       cancel: 'Cancelar',
     },
     reply: {
-      placeholder: 'Ingresa tu respuesta',
-      add: 'Agregar Respuesta',
-      edit: 'Editar Respuesta',
-      delete: 'Eliminar Respuesta',
-      deleteConfirm: '¿Estás seguro de que quieres eliminar esta respuesta?',
+      hide: 'Ocultar respuestas',
+      pro: 'A favor',
+      con: 'En contra',
+      none: 'Sin opinión',
+      placeholder: 'Escribe tu respuesta',
+      add: 'Agregar respuesta',
+      edit: 'Editar respuesta',
+      delete: 'Eliminar respuesta',
+      deleteConfirm: '¿Estás seguro de que deseas eliminar esta respuesta?',
       noReplies: 'Aún no hay respuestas. ¡Sé el primero en responder!',
       cancel: 'Cancelar',
     },
@@ -1712,8 +1777,12 @@ const es = {
       write: 'Escribir',
       viewAll: 'Ver todo',
       bookmark: 'Marcador',
+      bookmarked: 'Guardado',
       share: 'Compartir',
+      shareAction: 'Compartir',
       print: 'Imprimir',
+      printAction: 'Imprimir',
+      scrollToTop: 'Ir arriba',
     },
     content: {
       allInfo: 'Toda la info',

@@ -6,14 +6,14 @@ import { useTranslation } from '@/shared/i18n';
 
 const WelcomeCard = styled(Paper)`
   padding: 4rem 2rem;
-  max-width: 640px;
+  max-width: 700px;
   width: 100%;
   margin: 0 auto;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: rgba(250, 251, 252, 0.15);
+  background: #fafbfc;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
   border-radius: 18px;
   border: 1px solid #e0e0e0;
@@ -32,9 +32,34 @@ const EumiImg = styled('img')`
   border: 1.5px solid #ededed;
 `;
 
+const Title = styled(Typography)`
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #222;
+  margin-bottom: 2rem;
+  line-height: 1.2;
+  @media (max-width: 600px) {
+    font-size: 2rem;
+    margin-bottom: 1.2rem;
+  }
+`;
+
+const Description = styled(Typography)`
+  font-size: 1.18rem;
+  color: #444;
+  line-height: 2.1;
+  margin-bottom: 0.5rem;
+  white-space: pre-line;
+  letter-spacing: 0.01em;
+  text-align: center;
+  @media (max-width: 600px) {
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+`;
+
 const Welcome: React.FC = () => {
   const { t } = useTranslation();
-  const titleColor = '#222';
   return (
     <Container
       maxWidth="sm"
@@ -42,7 +67,7 @@ const Welcome: React.FC = () => {
     >
       <WelcomeCard elevation={3}>
         <EumiImg src={eum2Image} alt={t('welcome.characterAlt') || '이음이 캐릭터'} />
-        <Typography variant="h3" fontWeight={800} style={{ color: titleColor }} gutterBottom>
+        <Typography variant="h3" fontWeight={800} style={{ color: '#222' }} gutterBottom>
           {t('welcome.title')}
         </Typography>
         <Typography variant="h6" sx={{ mb: 3, color: '#555' }}>

@@ -15,15 +15,25 @@ const Slide1 = () => {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.6 }}
     >
-      <h2 className="text-4xl font-bold bg-gradient-to-r from-pink-300 to-pink-500 bg-clip-text text-transparent">
-        이음이와 함께 시작해요!
+      <h2
+        className="text-4xl font-bold bg-clip-text text-transparent"
+        style={{
+          background: 'linear-gradient(90deg, #d3d3d3 0%, #b0b0b0 100%)',
+          WebkitBackgroundClip: 'text',
+          color: 'transparent',
+        }}
+      >
+        Start your journey with EUM!
       </h2>
-      <p className="text-lg text-gray-600 leading-relaxed max-w-lg">
-        처음 만나는 한국, 이음이와 함께 천천히 알아가요.
+      <p className="text-lg leading-relaxed max-w-lg" style={{ color: '#222', fontWeight: 500 }}>
+        Discover Korea step by step with EUM.
         <br />
-        당신의 새로운 여정을 응원합니다.
+        We wish you a wonderful new journey.
       </p>
-      <div className="w-24 h-1 bg-gradient-to-r from-pink-300 to-pink-500 rounded-full mt-4" />
+      <div
+        className="w-24 h-1 rounded-full mt-4"
+        style={{ background: 'linear-gradient(90deg, #d3d3d3 0%, #b0b0b0 100%)' }}
+      />
     </motion.div>
   );
 };

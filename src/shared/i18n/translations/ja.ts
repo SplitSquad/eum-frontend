@@ -74,8 +74,7 @@ const ja = {
 
   welcome: {
     title: 'EUMへようこそ',
-    description:
-      'EUMは、異なる国の人々がコミュニケーションと協力を行うためのプラットフォームです。',
+    description: `韓国に来られた皆さまが安心して快適に生活できるようサポートします。\n現地適応に必要な情報とサービスをすべて一か所にまとめました。\n韓国に到着した瞬間から、心強い友としてそばでサポートします！`,
   },
 
   common: {
@@ -733,17 +732,17 @@ const ja = {
       noEvents: '予定がありません',
     },
     community: {
-      title: 'コミュニティフィード',
+      title: 'EUMコミュニティハブ',
       noPost: '投稿がありません',
       viewMore: 'もっと見る',
     },
     debate: {
-      title: '討論フィード',
+      title: 'EUM討論広場',
       noDebate: '討論がありません',
       viewMore: 'もっと見る',
     },
     info: {
-      title: '情報フィード',
+      title: 'EUM情報センター',
       noInfo: '情報がありません',
       viewMore: 'もっと見る',
     },
@@ -779,7 +778,8 @@ const ja = {
     },
     auth: {
       googleLoginRequired: 'Googleログインが必要',
-      googleLoginDescription: 'カレンダー機能はGoogleアカウントでログインしたユーザーのみ利用できます。',
+      googleLoginDescription:
+        'カレンダー機能はGoogleアカウントでログインしたユーザーのみ利用できます。',
       feature1: '• Googleカレンダーと連携してスケジュールを管理できます',
       feature2: '• リアルタイム同期により全てのデバイスでスケジュールを確認できます',
       feature3: '• 通知設定で重要なイベントを見逃しません',
@@ -840,7 +840,20 @@ const ja = {
     editPost: '投稿編集',
     create: '作成',
     edit: '編集',
-    fileUpload: 'ファイルアップロード',
+    fileUpload: {
+      fileUpload: 'ファイル添付',
+      imageHint: '💡 画像はプレビューで簡単に確認できます',
+      imageHint2: '画像はプレビュー表示されます ✨\n最大10MB、すべてのファイル形式対応',
+      editModeWarning: '⚠️ 新しいファイルを追加すると既存の添付ファイルはすべて削除されます',
+      dragOrClick: '📁 ファイルをドラッグまたはクリックしてアップロード',
+      editModeDragOrClick: '⚠️ 新しいファイルを追加（既存ファイルはすべて削除されます）',
+      editModeHint:
+        '新しいファイルを選択すると既存の添付ファイルはすべて削除されます\n慎重に選択してください',
+      newImage: '新しい画像（{count}件）',
+      newFile: '新しい添付ファイル（{count}件）',
+      existingImage: '既存画像（{count}件）',
+      existingFile: '既存添付ファイル（{count}件）',
+    },
     dragAndDropOrClickToUpload: 'ファイルをここにドラッグ&ドロップまたはクリックしてアップロード',
     max10MBImageAndDocumentFiles: '最大10MB、画像およびドキュメントファイルをサポート',
     selectedFiles: '選択されたファイル',
@@ -975,6 +988,8 @@ const ja = {
       authorSearch: '作成者検索',
     },
     posts: {
+      showOriginal: '元の投稿を表示',
+      returnOriginal: '元の投稿に戻る',
       title: '投稿タイトル',
       content: '投稿内容',
       author: '作成者',
@@ -1220,7 +1235,7 @@ const ja = {
       title: '周辺探索',
       purposeLabels: {
         travel: '旅行',
-        work: '就職', 
+        work: '就職',
         residence: '居住',
         study: '留学',
       },
@@ -1237,16 +1252,16 @@ const ja = {
         culture: '文化施設',
         transport: '交通',
         hotel: '宿泊',
-        
-        // 就職カテゴリ  
+
+        // 就職カテゴリ
         business: 'オフィス空間',
         bank: '銀行',
         government: '官公庁',
-        
+
         // 居住カテゴリ
         market: 'マート/市場',
         hospital: '病院',
-        
+
         // 留学カテゴリ
         university: '大学',
         library: '図書館',
@@ -1255,7 +1270,7 @@ const ja = {
       categoryKeywords: {
         tourist: '観光',
         restaurant: 'レストラン',
-        cafe: 'カフェ', 
+        cafe: 'カフェ',
         culture: '博物館',
         transport: '地下鉄駅',
         hotel: 'ホテル',
@@ -1378,6 +1393,7 @@ const ja = {
         searchError: '動画検索中にエラーが発生しました',
         noResults: '検索結果がありません',
         apiKeyMissing: 'YouTube APIキーが設定されていません',
+        sampleDataInfo: '韓国関連のおすすめ動画が表示されています',
       },
     },
   },
@@ -1437,8 +1453,10 @@ const ja = {
     next: '次へ',
   },
   debate: {
-    title: 'ホットイシュー討論',
-    description: '今最も注目されている社会問題について自由に討論し、多様な意見を交わしましょう。',
+    noDebates: '現在のところディベートはありません',
+    title: 'ホットイシューディベート',
+    description:
+      '今最も注目されている社会的な話題について自由に議論し、多様な意見を交換しましょう。',
     categories: {
       title: 'カテゴリ',
       all: '全て',
@@ -1477,16 +1495,24 @@ const ja = {
     proOpinion: '賛成意見',
     conOpinion: '反対意見',
     comment: {
-      empty: 'コメントがありません。最初のコメントを残してください！',
-      add: 'コメント追加',
-      newest: '最新順',
-      oldest: '古い順',
-      mostLiked: '人気順',
-      reply: 'コメント',
-      order: '並び替え',
-      cancel: 'キャンセル',
+      placeholder: 'コメントを入力してください',
+      pro: '賛成',
+      con: '反対',
+      none: 'なし',
+      empty: '暂无评论，欢迎发表第一个评论！',
+      add: '添加评论',
+      newest: '最新',
+      oldest: '最早',
+      mostLiked: '最受欢迎',
+      reply: '回复',
+      order: '排序',
+      cancel: '取消',
     },
     reply: {
+      hide: '非表示',
+      pro: '賛成',
+      con: '反対',
+      none: 'なし',
       placeholder: '返信を入力してください',
       add: '返信追加',
       edit: '返信編集',
@@ -1495,8 +1521,10 @@ const ja = {
       noReplies: '返信がありません。最初の返信を残してください！',
       cancel: 'キャンセル',
     },
-    specialIssues: 'すべてのイシューを見る',
-    noVotesYet: 'まだ投票がありません。最初の投票をしてみてください！',
+    specialIssue: '特別イシュー',
+    specialIssues: 'イシューまとめて見る',
+    noVotesYet: 'まだ投票がありません。最初の投票者になりましょう！',
+    noIssues: '登録された討論はありません。',
   },
   infoPage: {
     title: '韓国生活ガイド',
@@ -1522,8 +1550,12 @@ const ja = {
       write: '投稿する',
       viewAll: 'すべて見る',
       bookmark: 'ブックマーク',
+      bookmarked: '保存済み',
       share: '共有',
+      shareAction: '共有する',
       print: '印刷',
+      printAction: '印刷する',
+      scrollToTop: '最上部へ',
     },
     content: {
       allInfo: '全情報',
@@ -1606,6 +1638,7 @@ const ja = {
     title: '韓国生活アシスタント',
     subtitle: 'AI専門家と一緒に韓国生活ガイド',
     greeting: 'こんにちは！{{category}}分野のAI専門家です。',
+    matchingMessage: 'AI専門家をマッチング中です。しばらくお待ちください。',
     categories: {
       all: '🌏 全体',
       visa: '📑 滞在資格・ビザ',
@@ -1616,7 +1649,7 @@ const ja = {
       life: '👨‍👩‍👧 日常生活',
     },
     sidebar: {
-      title: '📚 分野別案内',
+      title: '分野別案内',
       autoSelectInfo: '質問すると自動的に分野が選択されます',
     },
     chat: {
@@ -1689,12 +1722,36 @@ const ja = {
     logout: 'ログアウト',
     adminpage: '管理者ページ',
   },
+  accessDenied: {
+    title: 'アクセス権限がありません',
+    description:
+      'このページにアクセスする権限がありません。ホームに戻るか、サポートにお問い合わせください。',
+    goHome: 'ホームに戻る',
+    contact: 'サポート',
+  },
+  intro: {
+    slide1: {
+      title: 'EUMで旅を始めましょう！',
+      desc1: 'EUMと一緒に一歩ずつ韓国を発見しましょう。',
+      desc2: '素晴らしい新しい旅をお祈りします。',
+    },
+    slide2: {
+      title: '少々お待ちください',
+      desc1: 'EUMが最高の体験を準備しています。',
+      desc2: '素晴らしい旅がまもなく始まります。',
+    },
+    slide3: {
+      title: 'ようこそ！',
+      desc1: 'EUMと共にする旅がまもなく始まります。',
+      desc2: '新しい体験の準備がすべて整いました。',
+    },
+  },
   editModeFileWarning:
     '新しいファイルを選択すると、既存の添付ファイルがすべて削除されます\n慎重に選択してください',
   // ホーム画面ウィジェット
   home: {
     communityFeed: {
-      title: 'コミュニティフィード',
+      title: 'EUMコミュニティハブ',
       tabs: {
         free: '自由',
         meeting: '集まり',
@@ -1739,7 +1796,7 @@ const ja = {
       },
     },
     debateFeed: {
-      title: '討論フィード',
+      title: 'EUM討論広場',
       subtitle: '討論',
       statusLabels: {
         active: '進行中',
@@ -1785,7 +1842,7 @@ const ja = {
       },
     },
     infoFeed: {
-      title: '情報フィード',
+      title: 'EUM情報センター',
       subtitle: '情報',
       difficultyLabels: {
         beginner: '初級',

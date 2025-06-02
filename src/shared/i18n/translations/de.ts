@@ -82,8 +82,7 @@ const de = {
 
   welcome: {
     title: 'Willkommen bei EUM',
-    description:
-      'EUM ist eine Plattform für die Kommunikation und Kooperation von Menschen aus verschiedenen Ländern.',
+    description: `Wir helfen Ihnen, in Korea sorgenfrei und komfortabel zu leben.\nAlle wichtigen Informationen und Services für die Eingewöhnung finden Sie an einem Ort.\nVom ersten Moment Ihrer Ankunft in Korea sind wir als verlässlicher Freund an Ihrer Seite!`,
   },
   common: {
     home: 'Startseite',
@@ -116,6 +115,13 @@ const de = {
   },
   nav: {
     accountSettings: 'Kontoeinstellungen',
+  },
+  accessDenied: {
+    title: 'Zugriff verweigert',
+    description:
+      'Sie haben keine Berechtigung, auf diese Seite zuzugreifen. Bitte kehren Sie zur Startseite zurück oder kontaktieren Sie den Support.',
+    goHome: 'Zur Startseite',
+    contact: 'Support kontaktieren',
   },
   auth: {
     loginWithGoogle: 'Mit Google anmelden',
@@ -788,9 +794,11 @@ const de = {
       },
       auth: {
         googleLoginRequired: 'Google-Anmeldung erforderlich',
-        googleLoginDescription: 'Die Kalenderfunktion steht nur Benutzern zur Verfügung, die mit einem Google-Konto angemeldet sind.',
+        googleLoginDescription:
+          'Die Kalenderfunktion steht nur Benutzern zur Verfügung, die mit einem Google-Konto angemeldet sind.',
         feature1: '• Terminverwaltung durch Synchronisation mit Google Kalender',
-        feature2: '• Echtzeit-Synchronisation ermöglicht das Anzeigen von Terminen auf allen Geräten',
+        feature2:
+          '• Echtzeit-Synchronisation ermöglicht das Anzeigen von Terminen auf allen Geräten',
         feature3: '• Benachrichtigungseinstellungen, um wichtige Termine nicht zu verpassen',
       },
       events: {
@@ -814,18 +822,18 @@ const de = {
       },
     },
     community: {
-      title: 'Community-Feed',
-      noPost: 'Keine Beiträge',
+      title: 'EUM Community Hub',
+      noPost: 'Keine Beiträge verfügbar',
       viewMore: 'Mehr anzeigen',
     },
     debate: {
-      title: 'Debatte-Feed',
-      noDebate: 'Keine Debatten',
+      title: 'EUM Diskussionsplatz',
+      noDebate: 'Keine Debatten verfügbar',
       viewMore: 'Mehr anzeigen',
     },
     info: {
-      title: 'Info-Feed',
-      noInfo: 'Keine Informationen',
+      title: 'EUM Info-Zentrum',
+      noInfo: 'Keine Informationen verfügbar',
       viewMore: 'Mehr anzeigen',
     },
     gallery: {
@@ -876,9 +884,20 @@ const de = {
     editPost: 'Beitrag Bearbeiten',
     create: 'Erstellen',
     edit: 'Bearbeiten',
-    fileUpload: 'Datei Upload',
-    dragAndDropOrClickToUpload: 'Dateien hier hinziehen oder klicken zum Hochladen',
-    max10MBImageAndDocumentFiles: 'Max 10MB, Bild- und Dokumentdateien unterstützt',
+    fileUpload: {
+      fileUpload: 'Dateianhang',
+      imageHint: '💡 Bilder werden zur einfachen Überprüfung als Vorschau angezeigt',
+      imageHint2: 'Bilder werden als Vorschau angezeigt ✨\nMax. 10MB, alle Dateitypen unterstützt',
+      editModeWarning: '⚠️ Das Hinzufügen neuer Dateien löscht alle vorhandenen Anhänge',
+      dragOrClick: '📁 Dateien zum Hochladen ziehen oder klicken',
+      editModeDragOrClick: '⚠️ Neue Dateien hinzufügen (alle vorhandenen Dateien werden gelöscht)',
+      editModeHint:
+        'Das Auswählen neuer Dateien löscht alle vorhandenen Anhänge\nBitte sorgfältig auswählen',
+      newImage: 'Neue Bilder ({count})',
+      newFile: 'Neue Anhänge ({count})',
+      existingImage: 'Vorhandene Bilder ({count})',
+      existingFile: 'Vorhandene Anhänge ({count})',
+    },
     selectedFiles: 'Ausgewählte Dateien',
     existingAttachedFiles: 'Vorhandene Anhänge',
     newImages: 'Neue Bilder',
@@ -1021,6 +1040,8 @@ const de = {
       authorSearch: 'Autorensuche',
     },
     posts: {
+      showOriginal: 'Original anzeigen',
+      returnOriginal: 'Zurück zum Original',
       title: 'Beitragstitel',
       content: 'Beitragsinhalt',
       author: 'Autor',
@@ -1113,6 +1134,7 @@ const de = {
             'Sie haben ungespeicherte Änderungen. Möchten Sie diese Seite wirklich verlassen?',
         },
       },
+      hideOriginal: 'Original ausblenden',
     },
     comments: {
       title: 'Kommentare',
@@ -1267,7 +1289,7 @@ const de = {
       title: 'Umgebung erkunden',
       purposeLabels: {
         travel: 'Reisen',
-        work: 'Arbeit', 
+        work: 'Arbeit',
         residence: 'Wohnen',
         study: 'Studium',
       },
@@ -1284,16 +1306,16 @@ const de = {
         culture: 'Kulturelle Einrichtungen',
         transport: 'Transport',
         hotel: 'Unterkunft',
-        
-        // Arbeitskategorien  
+
+        // Arbeitskategorien
         business: 'Büroräume',
         bank: 'Banken',
         government: 'Regierungsbüros',
-        
+
         // Wohnkategorien
         market: 'Märkte/Geschäfte',
         hospital: 'Krankenhäuser',
-        
+
         // Studienkategorien
         university: 'Universitäten',
         library: 'Bibliotheken',
@@ -1302,7 +1324,7 @@ const de = {
       categoryKeywords: {
         tourist: 'touristisch',
         restaurant: 'restaurant',
-        cafe: 'café', 
+        cafe: 'café',
         culture: 'museum',
         transport: 'u-bahn',
         hotel: 'hotel',
@@ -1429,6 +1451,7 @@ const de = {
         searchError: 'Fehler bei der Videosuche',
         noResults: 'Keine Suchergebnisse',
         apiKeyMissing: 'YouTube API-Schlüssel nicht konfiguriert',
+        sampleDataInfo: 'Empfohlene Videos über Korea werden angezeigt',
       },
     },
   },
@@ -1481,8 +1504,10 @@ const de = {
     next: 'Weiter',
   },
   debate: {
-    title: 'Debatte über Heiße Themen',
-    description: 'Nehmen Sie an der Diskussion über die heißesten gesellschaftlichen Themen von heute teil und teilen Sie Ihre vielfältigen Meinungen.',
+    noDebates: 'Keine Debatten verfügbar',
+    title: 'Heiße Debatte',
+    description:
+      'Diskutieren Sie frei über die aktuell heißesten gesellschaftlichen Themen und teilen Sie Ihre vielfältigen Meinungen.',
     categories: {
       title: 'Kategorie',
       all: 'Alle',
@@ -1515,14 +1540,19 @@ const de = {
     noParticipationData: 'Keine Teilnahmedaten verfügbar',
     commentSection: 'Bitte respektieren Sie die vielfältigen Meinungen der Menschen.',
     currentVote: 'Gewählte Position',
-    commentGuide: 'Klicken Sie zuerst auf den Abstimmen-Button, um Ihre Position auszuwählen, und Ihre Position wird in den Kommentaren angezeigt.',
+    commentGuide:
+      'Klicken Sie zuerst auf den Abstimmen-Button, um Ihre Position auszuwählen, und Ihre Position wird in den Kommentaren angezeigt.',
     name: 'Debatte',
     topicTitle: 'Debattenthema',
     proOpinion: 'Befürwortende Meinung',
     conOpinion: 'Ablehnende Meinung',
     comment: {
-      empty: 'Noch keine Kommentare. Seien Sie der Erste, der kommentiert!',
-      add: 'Kommentar Hinzufügen',
+      placeholder: 'Kommentar eingeben',
+      pro: 'Zustimmen',
+      con: 'Ablehnen',
+      none: 'Keine Meinung',
+      empty: 'Noch keine Kommentare. Sei der Erste und hinterlasse einen Kommentar!',
+      add: 'Kommentar hinzufügen',
       newest: 'Neueste',
       oldest: 'Älteste',
       mostLiked: 'Beliebteste',
@@ -1531,16 +1561,22 @@ const de = {
       cancel: 'Abbrechen',
     },
     reply: {
-      placeholder: 'Geben Sie Ihre Antwort ein',
-      add: 'Antwort Hinzufügen',
-      edit: 'Antwort Bearbeiten',
-      delete: 'Antwort Löschen',
-      deleteConfirm: 'Sind Sie sicher, dass Sie diese Antwort löschen möchten?',
-      noReplies: 'Noch keine Antworten. Seien Sie der Erste, der antwortet!',
+      hide: 'Antworten ausblenden',
+      pro: 'Zustimmen',
+      con: 'Ablehnen',
+      none: 'Keine Meinung',
+      placeholder: 'Antwort eingeben',
+      add: 'Antwort hinzufügen',
+      edit: 'Antwort bearbeiten',
+      delete: 'Antwort löschen',
+      deleteConfirm: 'Möchten Sie diese Antwort wirklich löschen?',
+      noReplies: 'Noch keine Antworten. Sei der Erste und antworte!',
       cancel: 'Abbrechen',
     },
-    specialIssues: 'Alle Themen Anzeigen',
-    noVotesYet: 'Noch keine Stimmen. Seien Sie der Erste, der abstimmt!',
+    specialIssue: 'Spezielle Themen',
+    specialIssues: 'Alle Themen anzeigen',
+    noVotesYet: 'Noch keine Stimmen. Sei der Erste, der abstimmt!',
+    noIssues: 'Keine Debatten gefunden.',
   },
   infoPage: {
     title: 'Korea Leben Guide',
@@ -1566,8 +1602,12 @@ const de = {
       write: 'Schreiben',
       viewAll: 'Alle anzeigen',
       bookmark: 'Lesezeichen',
+      bookmarked: 'Gespeichert',
       share: 'Teilen',
+      shareAction: 'Teilen',
       print: 'Drucken',
+      printAction: 'Drucken',
+      scrollToTop: 'Nach oben',
     },
     content: {
       allInfo: 'Alle Informationen',
@@ -1579,8 +1619,8 @@ const de = {
       createdAt: 'Erstellt',
     },
     sidebar: {
-      popularInfo: '🔥 Beliebte Informationen',
-      emergencyContacts: '🆘 Notfallkontakte',
+      popularInfo: 'Beliebte Informationen',
+      emergencyContacts: 'Notfallkontakte',
       emergency: {
         title: 'Notfall',
         subtitle: 'Feuer, medizinischer Notfall',
@@ -1650,6 +1690,7 @@ const de = {
     title: 'Korea Leben Assistent',
     subtitle: 'Korea Lebensführer mit KI-Experte',
     greeting: 'Hallo! Ich bin ein KI-Experte im Bereich {{category}}.',
+    matchingMessage: 'Ein KI-Experte wird für Sie gefunden. Bitte warten Sie einen Moment.',
     categories: {
       all: '🌏 Alle',
       visa: '📑 Visa/Rechtlich',
@@ -1660,7 +1701,7 @@ const de = {
       life: '👨‍👩‍👧 Alltag',
     },
     sidebar: {
-      title: '📚 Kategorienführer',
+      title: 'Kategorienführer',
       autoSelectInfo: 'Kategorien werden automatisch basierend auf Ihren Fragen ausgewählt',
     },
     chat: {
@@ -1669,7 +1710,7 @@ const de = {
       placeholder: 'Fragen Sie gerne alles...',
       send: 'Senden',
       sending: 'Wird gesendet...',
-      loading: 'Antwort wird vorbereitet...',
+      loading: 'Warte auf die Antwort des Experten...',
       initialMessage: 'Wie kann ich Ihnen helfen?',
       aiExpert: 'KI-Experte',
       justNow: 'Gerade eben',
@@ -1725,6 +1766,23 @@ const de = {
     welcome: 'Willkommen',
     termsAgreement:
       'Mit der Anmeldung stimmen Sie den Nutzungsbedingungen und der Datenschutzrichtlinie zu.',
+  },
+  intro: {
+    slide1: {
+      title: 'Starte deine Reise mit EUM!',
+      desc1: 'Entdecke Korea Schritt für Schritt mit EUM.',
+      desc2: 'Wir wünschen dir eine wundervolle neue Reise.',
+    },
+    slide2: {
+      title: 'Bitte warte einen Moment',
+      desc1: 'EUM bereitet das beste Erlebnis für dich vor.',
+      desc2: 'Deine großartige Reise beginnt in Kürze.',
+    },
+    slide3: {
+      title: 'Willkommen!',
+      desc1: 'Deine Reise mit EUM beginnt gleich.',
+      desc2: 'Alles ist bereit für dein neues Erlebnis.',
+    },
   },
   home: {
     communityFeed: {

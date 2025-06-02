@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useDebateStore } from '../store';
 import { Debate, mapIsVotedStateToVoteType, ReactionType, mapIsStateToEmotionType } from '../types';
 import {
@@ -25,19 +25,19 @@ import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAlt
 import SentimentVeryDissatisfiedIcon from '@mui/icons-material/SentimentVeryDissatisfied';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { styled } from '@mui/material/styles';
-import { useLocation } from 'react-router-dom';
-import { formatDate, formatRelativeTime } from '../utils/dateUtils';
+import { useTranslation } from '@/shared/i18n';
+import { useLanguageStore } from '@/features/theme/store/languageStore';
 import DebateLayout from '../components/common/DebateLayout';
 import CommentSection from '../components/comment/CommentSection';
 import DebateApi, { getVotesByDebateId } from '../api/debateApi';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { formatDate, formatRelativeTime } from '../utils/dateUtils';
 
 import FlagDisplay from '../../../shared/components/FlagDisplay';
 
 // Import the recharts library for pie charts
 // The recharts package should be installed with: npm install recharts
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
-import { useTranslation } from '@/shared/i18n';
 
 /**-----------------------------------웹로그 관련------------------------------------ **/
 // userId 꺼내오는 헬퍼
@@ -137,13 +137,7 @@ interface VoteButtonProps {
   color: string;
   selected?: boolean;
 }
-const SidebarContainer = styled(Box)(({ theme }) => ({
-  position: 'sticky',
-  top: 80, // 헤더가 있다면 헤더 높이만큼 띄워주고
-  maxHeight: 'calc(100vh - 80px)', // 뷰포트 높이에서 top 만큼 뺀 높이까지
-  overflowY: 'auto', // 넘칠 시 내부 스크롤
-  paddingRight: theme.spacing(2), // 스크롤바 나올 공간
-}));
+
 const VoteButton = styled(Button, {
   shouldForwardProp: prop => prop !== 'color' && prop !== 'selected',
 })<VoteButtonProps>(({ theme, color, selected }) => ({
@@ -350,8 +344,7 @@ const CommentItem = styled(ListItem)(({ theme }) => ({
 }));
 
 const ChartContainer = styled(Box)(({ theme }) => ({
-  width: '100%',
-  aspectRatio: '1',
+  height: 160,
   marginTop: theme.spacing(2),
   marginBottom: theme.spacing(2),
 }));
@@ -386,6 +379,7 @@ type EmotionType = 'like' | 'dislike' | 'sad' | 'angry' | 'confused';
 const DebateDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { t } = useTranslation();
+  const { language } = useLanguageStore();
   const navigate = useNavigate();
   const {
     currentDebate: debate,
@@ -397,11 +391,32 @@ const DebateDetailPage: React.FC = () => {
     voteOnDebate,
     createComment: submitComment,
     addReaction,
+    isLanguageChanging,
+    setLanguageChanging,
   } = useDebateStore();
   const [userVote, setUserVote] = useState<VoteType | null>(null);
   const [userEmotion, setUserEmotion] = useState<EmotionType | null>(null);
   const [comment, setComment] = useState<string>('');
   const [stance, setStance] = useState<VoteType | null>(null);
+  
+  // 언어 변경 추적을 위한 ref
+  const previousLanguageRef = useRef(language);
+  const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 데이터 새로고침 함수들을 useCallback으로 메모화
+  const refreshDebateData = useCallback(async () => {
+    if (!id) return;
+    
+    console.log('[INFO] 토론 상세 페이지 - 데이터 새로고침 시작');
+    setLanguageChanging(true);
+    
+    try {
+      await fetchDebateById(parseInt(id));
+    } finally {
+      setLanguageChanging(false);
+      console.log('[INFO] 토론 상세 페이지 - 데이터 새로고침 완료');
+    }
+  }, [id, fetchDebateById, setLanguageChanging]);
 
   // 직접 API 접근을 위한 함수들
   const directVoteOnDebate = async (debateId: number, stance: 'pro' | 'con'): Promise<any> => {
@@ -416,13 +431,55 @@ const DebateDetailPage: React.FC = () => {
     return await DebateApi.addReaction({ targetId, targetType, reactionType });
   };
 
+  // stance 상태가 바뀔 때마다 로컬스토리지에 저장
   useEffect(() => {
-    if (id) {
+    if (stance !== null) {
+      localStorage.setItem('stance', stance);
+    } else {
+      localStorage.removeItem('stance'); // null이면 삭제
+    }
+  }, [stance]);
+
+  // 초기 데이터 로드 - 중복 방지 개선
+  const hasInitialLoadedRef = useRef(false);
+  
+  useEffect(() => {
+    if (id && !hasInitialLoadedRef.current) {
+      hasInitialLoadedRef.current = true;
       fetchDebateById(parseInt(id));
     }
   }, [id, fetchDebateById]);
 
-  // 토론 상세 불러온 후 댓글도 불러오기
+  // 언어 변경 감지 및 데이터 새로고침 (최적화됨) - 깜빡임 방지
+  useEffect(() => {
+    // 초기 로드가 완료된 후에만 언어 변경에 반응
+    if (hasInitialLoadedRef.current && previousLanguageRef.current !== language && id && debate) {
+      console.log(`[INFO] 언어 변경 감지: ${previousLanguageRef.current} → ${language}`);
+      
+      // 기존 타이머 취소
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
+      }
+      
+      // 디바운스된 새로고침 (500ms 지연으로 증가하여 깜빡임 최소화)
+      refreshTimeoutRef.current = setTimeout(() => {
+        // 언어 변경 중임을 표시하지 않고 백그라운드에서 새로고침
+        fetchDebateById(parseInt(id));
+      }, 500);
+    }
+    
+    // 현재 언어를 이전 언어로 업데이트
+    previousLanguageRef.current = language;
+    
+    // 컴포넌트 언마운트 시 타이머 정리
+    return () => {
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
+      }
+    };
+  }, [language, id, debate, fetchDebateById]);
+
+  // 토론 상세 불러온 후 댓글도 불러오기 - 깜빡임 방지 개선
   useEffect(() => {
     if (debate) {
       // 상태 초기화
@@ -436,20 +493,24 @@ const DebateDetailPage: React.FC = () => {
         setUserVote(null);
         setStance(null);
       }
-      const userId = getUserId() ?? 0;
-      const chatLogPayload = {
-        UID: userId,
-        ClickPath: location.pathname,
-        TAG: debate.category,
-        CurrentPath: location.pathname,
-        Event: 'click',
-        Content: null,
-        Timestamp: new Date().toISOString(),
-      };
-      sendWebLog({ userId, content: JSON.stringify(chatLogPayload) });
+      
+      // 웹로그 전송 - 최초 1회만
+      if (!hasInitialLoadedRef.current) {
+        const userId = getUserId() ?? 0;
+        const chatLogPayload = {
+          UID: userId,
+          ClickPath: location.pathname,
+          TAG: debate.category,
+          CurrentPath: location.pathname,
+          Event: 'click',
+          Content: null,
+          Timestamp: new Date().toISOString(),
+        };
+        sendWebLog({ userId, content: JSON.stringify(chatLogPayload) });
+      }
 
-      // 코멘트 로드
-      if (id) {
+      // 코멘트 로드 - 중복 방지
+      if (id && (!debate.comments || debate.comments.length === 0)) {
         fetchComments(parseInt(id));
       }
 
@@ -995,8 +1056,54 @@ const DebateDetailPage: React.FC = () => {
         afterContent: '',
       };
 
-    // 실제 데이터 형태에 맞는 간단한 파싱
-    // "토론주제:", "찬성측의견:", "반대측의견:" 형태를 찾음
+    // 다국어 지원을 위한 키워드 매핑
+    const keywords = {
+      ko: {
+        topic: ['토론주제', '토론 주제', '주제'],
+        pro: ['찬성측의견', '찬성측 의견', '찬성', '찬성 의견'],
+        con: ['반대측의견', '반대측 의견', '반대', '반대 의견'],
+      },
+      en: {
+        topic: ['debate topic', 'topic', 'debate subject', 'subject'],
+        pro: ['pro opinion', 'supporting opinion', 'agree', 'for', 'support'],
+        con: ['con opinion', 'opposing opinion', 'disagree', 'against', 'oppose'],
+      },
+      zh: {
+        topic: ['讨论主题', '主题', '辩论主题'],
+        pro: ['赞成意见', '支持意见', '赞成', '支持'],
+        con: ['反对意见', '反对'],
+      },
+      ja: {
+        topic: ['討論トピック', 'トピック', '議題'],
+        pro: ['賛成意見', '賛成', '支持'],
+        con: ['反対意見', '反対'],
+      },
+      es: {
+        topic: ['tema de debate', 'tema', 'asunto'],
+        pro: ['opinión a favor', 'a favor', 'apoyo'],
+        con: ['opinión en contra', 'en contra', 'oposición'],
+      },
+      fr: {
+        topic: ['sujet de débat', 'sujet', 'thème'],
+        pro: ['opinion pour', 'pour', 'soutien'],
+        con: ['opinion contre', 'contre', 'opposition'],
+      },
+      de: {
+        topic: ['debattenthema', 'thema', 'diskussionsthema'],
+        pro: ['befürwortende meinung', 'befürwortung', 'dafür'],
+        con: ['ablehnende meinung', 'ablehnung', 'dagegen'],
+      },
+      ru: {
+        topic: ['тема дебатов', 'тема', 'предмет обсуждения'],
+        pro: ['мнение за', 'за', 'поддержка'],
+        con: ['мнение против', 'против'],
+      },
+      vi: {
+        topic: ['chủ đề tranh luận', 'chủ đề'],
+        pro: ['ý kiến ủng hộ', 'ủng hộ', 'đồng ý'],
+        con: ['ý kiến phản đối', 'phản đối', 'không đồng ý'],
+      },
+    };
 
     let beforeContent = '';
     let topic = '';
@@ -1004,78 +1111,54 @@ const DebateDetailPage: React.FC = () => {
     let conOpinion = '';
     let afterContent = '';
 
-    // 토론주제 위치 찾기
-    const topicMatch = content.match(/(.*?)토론주제\s*:\s*(.*?)(?=\s*찬성측의견|$)/is);
-    if (topicMatch) {
-      beforeContent = topicMatch[1].trim();
+    // 모든 언어의 키워드를 시도
+    for (const [lang, keywordSet] of Object.entries(keywords)) {
+      // 토론주제 패턴 생성 및 시도
+      for (const topicKeyword of keywordSet.topic) {
+        const topicPattern = new RegExp(
+          `(.*?)${topicKeyword}\\s*[:：]\\s*(.*?)(?=\\s*(?:${keywordSet.pro.join('|')})|$)`,
+          'is'
+        );
+        const topicMatch = content.match(topicPattern);
 
-      // 토론주제 이후 부분에서 찬성/반대 의견 찾기
-      const afterTopic = content.substring(topicMatch[0].length);
-      topic = topicMatch[2].trim();
+        if (topicMatch) {
+          beforeContent = topicMatch[1].trim();
+          topic = topicMatch[2].trim();
 
-      // 찬성측의견 찾기
-      const proMatch = afterTopic.match(/찬성측의견\s*:\s*(.*?)(?=\s*반대측의견|$)/is);
-      if (proMatch) {
-        proOpinion = proMatch[1].trim();
+          // 찬성 의견 찾기
+          for (const proKeyword of keywordSet.pro) {
+            const proPattern = new RegExp(
+              `${proKeyword}\\s*[:：]\\s*(.*?)(?=\\s*(?:${keywordSet.con.join('|')})|$)`,
+              'is'
+            );
+            const proMatch = content.match(proPattern);
+            if (proMatch) {
+              proOpinion = proMatch[1].trim();
+              break;
+            }
+          }
 
-        // 반대측의견 찾기
-        const conMatch = afterTopic.match(/반대측의견\s*:\s*(.*?)$/is);
-        if (conMatch) {
-          conOpinion = conMatch[1].trim();
-        }
-      }
+          // 반대 의견 찾기
+          for (const conKeyword of keywordSet.con) {
+            const conPattern = new RegExp(`${conKeyword}\\s*[:：]\\s*(.*?)$`, 'is');
+            const conMatch = content.match(conPattern);
+            if (conMatch) {
+              conOpinion = conMatch[1].trim();
+              break;
+            }
+          }
 
-      return {
-        beforeContent,
-        topic,
-        proOpinion,
-        conOpinion,
-        afterContent: '', // 현재 예시에서는 이후 내용이 없음
-        rawContent: content,
-        isParsed: !!(topic && (proOpinion || conOpinion)),
-      };
-    }
-
-    // 다른 형태의 구분자도 시도 (대안 패턴들)
-    const altPatterns = [
-      // "토론 주제:", "찬성측 의견:", "반대측 의견:" 형태
-      {
-        topic: /토론\s*주제\s*:\s*(.*?)(?=\s*찬성|$)/is,
-        pro: /찬성(?:측)?\s*(?:의견)?\s*:\s*(.*?)(?=\s*반대|$)/is,
-        con: /반대(?:측)?\s*(?:의견)?\s*:\s*(.*?)$/is,
-      },
-      // "주제:", "찬성:", "반대:" 형태
-      {
-        topic: /주제\s*:\s*(.*?)(?=\s*찬성|$)/is,
-        pro: /찬성\s*:\s*(.*?)(?=\s*반대|$)/is,
-        con: /반대\s*:\s*(.*?)$/is,
-      },
-    ];
-
-    for (const patterns of altPatterns) {
-      const topicMatch = content.match(patterns.topic);
-      const proMatch = content.match(patterns.pro);
-      const conMatch = content.match(patterns.con);
-
-      if (topicMatch && topicMatch[1]) {
-        // 토론주제 이전 내용 추출
-        const topicIndex = content.indexOf(topicMatch[0]);
-        beforeContent = content.substring(0, topicIndex).trim();
-
-        topic = topicMatch[1].trim();
-        proOpinion = proMatch && proMatch[1] ? proMatch[1].trim() : '';
-        conOpinion = conMatch && conMatch[1] ? conMatch[1].trim() : '';
-
-        if (topic && (proOpinion || conOpinion)) {
-          return {
-            beforeContent,
-            topic,
-            proOpinion,
-            conOpinion,
-            afterContent: '',
-            rawContent: content,
-            isParsed: true,
-          };
+          if (topic && (proOpinion || conOpinion)) {
+            return {
+              beforeContent,
+              topic,
+              proOpinion,
+              conOpinion,
+              afterContent: '',
+              rawContent: content,
+              isParsed: true,
+            };
+          }
         }
       }
     }
@@ -1127,7 +1210,7 @@ const DebateDetailPage: React.FC = () => {
                   component="span"
                   sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#3f51b5', mr: 1 }}
                 />
-                토론 주제
+                {t('debate.topicTitle')}
               </Typography>
               <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
                 {parsed.topic}
@@ -1152,7 +1235,7 @@ const DebateDetailPage: React.FC = () => {
                   sx={{ mb: 1, color: '#4caf50', display: 'flex', alignItems: 'center' }}
                 >
                   <SentimentSatisfiedAltIcon sx={{ fontSize: 18, mr: 1 }} />
-                  찬성측 의견
+                  {t('debate.proOpinion')}
                 </Typography>
                 <Typography variant="body2" sx={{ lineHeight: 1.6 }}>
                   {parsed.proOpinion}
@@ -1176,7 +1259,7 @@ const DebateDetailPage: React.FC = () => {
                   sx={{ mb: 1, color: '#f44336', display: 'flex', alignItems: 'center' }}
                 >
                   <SentimentVeryDissatisfiedIcon sx={{ fontSize: 18, mr: 1 }} />
-                  반대측 의견
+                  {t('debate.conOpinion')}
                 </Typography>
                 <Typography variant="body2" sx={{ lineHeight: 1.6 }}>
                   {parsed.conOpinion}
@@ -1202,7 +1285,7 @@ const DebateDetailPage: React.FC = () => {
       </Typography>
     );
   };
-  /////////////////////////////////////////////////////////////////////////////////////////////////
+
   // 투표 차트 영역 컴포넌트
   const VoteChartSection: React.FC<{
     voteRatio: { agree: number; disagree: number };
@@ -1275,8 +1358,8 @@ const DebateDetailPage: React.FC = () => {
                     data={chartData}
                     cx="50%"
                     cy="50%"
-                    innerRadius="20%"
-                    outerRadius="40%"
+                    innerRadius={32}
+                    outerRadius={52}
                     paddingAngle={5}
                     dataKey="value"
                     label={renderDiagonalLabel}
@@ -1319,11 +1402,24 @@ const DebateDetailPage: React.FC = () => {
               countryColors[stat.countryCode as keyof typeof countryColors] ||
               countryColors.default;
             return (
-              <CountryStatItem key={index}>
-                <CountryFlag>
+              <CountryStatItem
+                key={index}
+                sx={{
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
+                  gap: 1,
+                  padding: theme => theme.spacing(1, 1.5),
+                  minWidth: 0,
+                  width: '100%',
+                  boxSizing: 'border-box',
+                }}
+              >
+                <CountryFlag
+                  sx={{ minWidth: 0, flexShrink: 0, flexWrap: 'wrap', wordBreak: 'break-all' }}
+                >
                   <FlagDisplay nation={stat.countryCode} size="small" showName={true} />
                 </CountryFlag>
-                <Box sx={{ flex: 1, ml: 1, mr: 1 }}>
+                <Box sx={{ flex: 1, ml: 1, mr: 1, minWidth: 0 }}>
                   <Box
                     sx={{
                       width: '100%',
@@ -1331,29 +1427,50 @@ const DebateDetailPage: React.FC = () => {
                       borderRadius: '12px',
                       overflow: 'hidden',
                       background: '#f0f0f0',
+                      minWidth: 0,
                     }}
                   >
                     <Box
                       sx={{
-                        width: `${stat.percentage}%`,
+                        width: `${Math.round(stat.percentage)}%`,
                         height: '100%',
                         backgroundColor: color,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
+                        minWidth: 0,
                       }}
                     >
                       {stat.percentage > 15 && (
-                        <Typography variant="caption" color="white" fontWeight="bold">
-                          {stat.percentage}%
+                        <Typography
+                          variant="caption"
+                          color="white"
+                          fontWeight="bold"
+                          sx={{
+                            whiteSpace: 'normal',
+                            wordBreak: 'break-all',
+                            textAlign: 'center',
+                            width: '100%',
+                          }}
+                        >
+                          {Math.round(stat.percentage)}%
                         </Typography>
                       )}
                     </Box>
                   </Box>
                 </Box>
-                <Typography variant="body2" sx={{ minWidth: '60px', textAlign: 'right' }}>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    minWidth: 0,
+                    textAlign: 'right',
+                    wordBreak: 'break-all',
+                    whiteSpace: 'normal',
+                    flexShrink: 0,
+                  }}
+                >
                   {stat.count}
-                  {t('debate.ppl')} ({stat.percentage}%)
+                  {t('debate.ppl')} ({Math.round(stat.percentage)}%)
                 </Typography>
               </CountryStatItem>
             );
@@ -1370,7 +1487,7 @@ const DebateDetailPage: React.FC = () => {
   return (
     <DebateLayout
       sidebar={
-        <SidebarContainer sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           <VoteButtonGroup>
             <VoteButton
               variant="outlined"
@@ -1415,7 +1532,7 @@ const DebateDetailPage: React.FC = () => {
             enhancedDebate={enhancedDebate}
           />
           <CountryStatsSection enhancedDebate={enhancedDebate} t={t} />
-        </SidebarContainer>
+        </Box>
       }
     >
       <Container maxWidth="md" sx={{ py: 2 }}>
@@ -1554,13 +1671,7 @@ const DebateDetailPage: React.FC = () => {
                   <span style={{ margin: '0 4px' }}>•</span>
                   {formatDate(enhancedDebate.createdAt)}
                 </Typography>
-                <Typography
-                  variant="h5"
-                  component="h1"
-                  fontWeight={700}
-                  gutterBottom
-                  key={t('debate.title')}
-                >
+                <Typography variant="h5" component="h1" fontWeight={700} gutterBottom>
                   {enhancedDebate.title}
                 </Typography>
               </Box>

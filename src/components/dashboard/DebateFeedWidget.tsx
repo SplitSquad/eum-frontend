@@ -44,6 +44,7 @@ import DebateApi from '../../features/debate/api/debateApi';
 import { Debate } from '../../features/debate/types';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../../shared/i18n';
+import { useLanguageStore } from '../../features/theme/store/languageStore';
 
 // 토론 포스트 타입 정의 (API에서 받아오는 데이터 구조에 맞춤)
 interface DebatePost {
@@ -270,7 +271,7 @@ const DebateItem = memo(({ debate, onClick, t }: { debate: DebatePost, onClick?:
         {/* 카테고리 표시 */}
         {debate.category && (
           <Chip
-            label={debate.category}
+            label={translateDebateCategory(debate.category, t)}
             size="small"
             sx={{
               fontSize: '0.65rem',
@@ -293,8 +294,10 @@ const translateDebateTag = (tag: string, t: any): string => {
     '경제': 'debate.categories.economy', 
     '생활/문화': 'debate.categories.culture',
     '과학/기술': 'debate.categories.technology',
-    '스포츠': 'debate.categories.sports',
+    '스포츠/레저': 'debate.categories.sports',
     '엔터테인먼트': 'debate.categories.entertainment',
+    '교육': 'debate.categories.education',
+    '환경': 'debate.categories.environment',
     '기타': 'debate.categories.all',
     
     // 일반 관심 태그 - 중복 키 제거하고 고유한 키로 수정
@@ -321,6 +324,8 @@ const translateDebateCategory = (category: string, t: any): string => {
     '과학/기술': 'debate.categories.technology',
     '스포츠': 'debate.categories.sports',
     '엔터테인먼트': 'debate.categories.entertainment',
+    '교육': 'debate.categories.education',
+    '환경': 'debate.categories.environment',
     '기타': 'debate.categories.all',
   };
   
@@ -510,6 +515,7 @@ const DebateFeedWidget: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { language } = useLanguageStore();
 
   // 토론 추천 데이터 가져오기
   const fetchDebateData = useCallback(async () => {
@@ -612,12 +618,28 @@ const DebateFeedWidget: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []); // t 의존성 제거하여 무한 루프 방지
+  }, [language]); // language를 의존성에 추가하여 언어 변경 시 함수가 새로 생성되도록 함
 
   // 데이터 로딩
   useEffect(() => {
     fetchDebateData();
   }, [fetchDebateData]);
+
+  // 언어 변경 감지 및 데이터 새로고침
+  useEffect(() => {
+    console.log('[DEBUG] DebateFeedWidget - 언어 변경 감지:', language);
+    
+    // 언어 변경 시 즉시 로딩 상태로 전환하여 이전 데이터가 보이지 않도록 함
+    setIsLoading(true);
+    setDebates([]);
+    setPreference(null);
+    setError(null);
+    
+    // 다음 렌더 사이클에서 데이터 로딩하여 부드러운 전환 보장
+    setTimeout(() => {
+      fetchDebateData();
+    }, 0);
+  }, [language, fetchDebateData]);
 
   // 모달 핸들러
   const handleOpenModal = () => {

@@ -3,7 +3,6 @@ import { Button, CircularProgress } from '@mui/material';
 import styled from '@emotion/styled';
 import { useNavigate } from 'react-router-dom';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import { useThemeStore } from '@/features/theme/store/themeStore';
 import { seasonalColors } from '@/components/layout/springTheme';
 
 const BlossomWrapper = styled.div<{ season: string }>`
@@ -71,26 +70,33 @@ interface LoginButtonProps {
 const LoginButton: React.FC<LoginButtonProps> = ({ buttonText = '일반 계정으로 로그인' }) => {
   const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
-  const season = useThemeStore(state => state.season);
-  const colors = seasonalColors[season] || seasonalColors.spring;
+  const baseColors = seasonalColors.professional;
+  const colors = {
+    buttonBg: baseColors.primary || '#636363',
+    buttonText: baseColors.text || '#fff',
+    buttonShadow: 'rgba(60,60,60,0.12)',
+    buttonBorder: baseColors.primary || '#636363',
+    buttonHoverBg: baseColors.secondary || '#222',
+    buttonShadowHover: 'rgba(60,60,60,0.18)',
+    buttonBeforeBg: baseColors.gradient || undefined,
+    gradient: baseColors.gradient || '#636363',
+  };
 
   const handleLogin = async () => {
     navigate('/login');
   };
 
   return (
-    <BlossomWrapper season={season}>
-      <ThemedButton
-        variant="contained"
-        onClick={handleLogin}
-        disabled={loading}
-        fullWidth
-        startIcon={!loading && <AccountCircleIcon />}
-        colors={colors}
-      >
-        {loading ? <CircularProgress size={24} color="inherit" /> : buttonText}
-      </ThemedButton>
-    </BlossomWrapper>
+    <ThemedButton
+      variant="contained"
+      onClick={handleLogin}
+      disabled={loading}
+      fullWidth
+      startIcon={!loading && <AccountCircleIcon />}
+      colors={colors}
+    >
+      {loading ? <CircularProgress size={24} color="inherit" /> : buttonText}
+    </ThemedButton>
   );
 };
 

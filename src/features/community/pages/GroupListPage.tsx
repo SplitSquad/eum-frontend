@@ -41,7 +41,6 @@ import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import { styled } from '@mui/system';
 
-
 import CategoryTabs from '../components/shared/CategoryTabs';
 import PostList from '../components/post/PostList';
 import RegionSelector from '../components/shared/RegionSelector';
@@ -55,6 +54,7 @@ import { PostApi } from '../api/postApi';
 import { PostType } from '../types-folder';
 import { useRegionStore } from '../store/regionStore';
 import PageHeaderText from '@/components/layout/PageHeaderText';
+import { useTranslation } from '@/shared/i18n';
 
 /**
  * 게시글 목록 페이지 컴포넌트
@@ -119,6 +119,8 @@ const GroupListPage: React.FC = () => {
   const [searchType, setSearchType] = useState<string>('제목_내용');
   const [isSearchMode, setIsSearchMode] = useState<boolean>(false);
 
+  const { t } = useTranslation();
+
   // 카테고리별 태그 매핑
   const categoryTags = {
     travel: ['관광/체험', '식도락/맛집', '교통/이동', '숙소/지역정보', '대사관/응급'],
@@ -165,7 +167,7 @@ const GroupListPage: React.FC = () => {
     const newPostCreated = localStorage.getItem('newPostCreated');
     const newPostType = localStorage.getItem('newPostType');
     const isNewPostForThisPage = newPostCreated && newPostType === '모임';
-    
+
     if (isNewPostForThisPage) {
       console.log('새 모임 게시글이 생성됨 - 강제 새로고침 실행');
       // 플래그 제거
@@ -198,7 +200,7 @@ const GroupListPage: React.FC = () => {
     // 게시글 목록 조회 - 항상 최신 데이터 가져오기 (캐시 무시)
     fetchPosts({
       ...initialFilter,
-      _forceRefresh: Date.now() // 매번 새로운 타임스탬프로 캐시 무효화
+      _forceRefresh: Date.now(), // 매번 새로운 타임스탬프로 캐시 무효화
     });
     // 인기 게시글 로드
     fetchTopPosts(5);
@@ -213,7 +215,7 @@ const GroupListPage: React.FC = () => {
         setTimeout(() => {
           fetchPosts({
             ...filter,
-            _forceRefresh: Date.now()
+            _forceRefresh: Date.now(),
           });
         }, 100);
       }
@@ -605,12 +607,8 @@ const GroupListPage: React.FC = () => {
               },
             }}
           >
-            <ToggleButton value="groups">
-              📱 소모임
-            </ToggleButton>
-            <ToggleButton value="board">
-              💬 자유게시판
-            </ToggleButton>
+            <ToggleButton value="groups">📱 {t('community.groups.title')}</ToggleButton>
+            <ToggleButton value="board">💬 {t('community.board.title')}</ToggleButton>
           </ToggleButtonGroup>
         </Paper>
       </Box>
@@ -740,7 +738,6 @@ const GroupListPage: React.FC = () => {
 
           {/* 검색창 */}
           <TextField
-            placeholder="게시글 검색..."
             variant="outlined"
             size="small"
             value={searchTerm}

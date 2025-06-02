@@ -42,6 +42,7 @@ import { widgetPaperBase, widgetGradients, widgetCardBase, widgetChipBase } from
 import infoApi from '../../features/info/api/infoApi';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../../shared/i18n';
+import { useLanguageStore } from '../../features/theme/store/languageStore';
 
 // 정보 콘텐츠 타입 정의 (API에서 받아오는 데이터 구조에 맞춤)
 interface InfoContent {
@@ -204,21 +205,7 @@ const InfoItem = memo(({ info, onClick, t }: { info: InfoContent, onClick?: () =
         </Box>
       )}
 
-      {/* 평점 및 유형 */}
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
-        <Chip
-          label={info.contentType === 'guide' ? '가이드' : 
-                info.contentType === 'tip' ? '팁' : 
-                info.contentType === 'news' ? '뉴스' : '튜토리얼'}
-          size="small"
-          sx={{
-            fontSize: '0.65rem',
-            height: 18,
-            bgcolor: '#e8f5e9',
-            color: '#2e7d32',
-          }}
-        />
-      </Box>
+      
 
       {/* 하단 정보 */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -232,7 +219,7 @@ const InfoItem = memo(({ info, onClick, t }: { info: InfoContent, onClick?: () =
         {/* 카테고리 표시 */}
         {info.category && (
           <Chip
-            label={info.category}
+            label={translateInfoCategory(info.category, t)}
             size="small"
             sx={{
               fontSize: '0.65rem',
@@ -503,6 +490,7 @@ const InfoFeedWidget: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { language } = useLanguageStore();
 
   // 정보 추천 데이터 가져오기
   const fetchInfoData = useCallback(async () => {
@@ -605,12 +593,26 @@ const InfoFeedWidget: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []); // 무한 루프 방지를 위해 의존성 배열을 빈 배열로 설정
+  }, [language]); // language를 의존성에 추가하여 언어 변경 시 함수가 새로 생성되도록 함
 
   // 데이터 로딩
   useEffect(() => {
     fetchInfoData();
   }, [fetchInfoData]);
+
+  // 언어 변경 감지 및 데이터 새로고침
+  useEffect(() => {
+    console.log('[DEBUG] InfoFeedWidget - 언어 변경 감지:', language);
+    
+    // 커뮤니티 피드와 동일한 방식: 로딩 상태만 설정하고 fetchData가 내부적으로 처리하도록 함
+    setIsLoading(true);
+    setError(null);
+    
+    // 충분한 로딩 시간을 확보하여 부드러운 전환 보장 (커뮤니티 피드와 동일한 UX)
+    setTimeout(() => {
+      fetchInfoData();
+    }, 300); // 300ms로 늘려서 로딩 스피너가 충분히 보이도록 함
+  }, [language, fetchInfoData]);
 
   // 모달 핸들러
   const handleOpenModal = () => {

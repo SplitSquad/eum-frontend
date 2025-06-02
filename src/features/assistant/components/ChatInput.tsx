@@ -17,7 +17,6 @@ export default function ChatInput({ input, setInput, onSend, loading }: Props) {
         onKeyDown={e => e.key === 'Enter' && !loading && onSend()}
         disabled={loading}
         className="flex-1 px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring disabled:opacity-50"
-        placeholder="질문을 입력하세요..."
       />
       <button
         onClick={onSend}

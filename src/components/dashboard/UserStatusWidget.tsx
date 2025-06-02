@@ -39,6 +39,7 @@ import UserService, {
 // @ts-ignore - 모듈을 찾을 수 없다는 오류를 무시
 import WeatherService, { WeatherInfo } from '../../services/weather/weatherService';
 import { useTranslation } from '../../shared/i18n';
+import { useLanguageStore } from '../../features/theme/store/languageStore';
 import { env } from '@/config/env';
 import { useMypageStore } from '../../features/mypage/store/mypageStore';
 import { useAuthStore } from '../../features/auth/store/authStore';
@@ -113,6 +114,7 @@ declare global {
 
 const UserStatusWidget: React.FC = () => {
   const { t } = useTranslation();
+  const { language } = useLanguageStore();
   const { user } = useAuthStore();
   
   // 마이페이지 스토어 사용 - level 정보 포함
@@ -566,6 +568,25 @@ const UserStatusWidget: React.FC = () => {
       setActivityStreak(streak);
     }
   }, [posts, comments, debates, bookmarks, isLoading]);
+
+  // 언어 변경 감지 및 레이블 업데이트
+  useEffect(() => {
+    console.log('[DEBUG] UserStatusWidget - 언어 변경 감지:', language);
+    
+    // 언어 변경 시 뱃지와 활동 데이터 다시 생성 (번역된 텍스트로)
+    if (!isLoading && (posts || comments || debates || bookmarks)) {
+      const postsCount = posts?.content?.length || 0;
+      const commentsCount = comments?.content?.length || 0;
+      const debatesCount = debates?.content?.length || 0;
+      const bookmarksCount = bookmarks?.content?.length || 0;
+      
+      const badges = generateUserBadges(postsCount, commentsCount, debatesCount, bookmarksCount);
+      setUserBadges(badges);
+
+      const activities = generateRecentActivities();
+      setRecentActivities(activities);
+    }
+  }, [language, posts, comments, debates, bookmarks, isLoading]);
 
   // 로딩 중이면 로딩 화면 표시
   if (isLoading) {

@@ -63,7 +63,7 @@ const InfoDetailBody: React.FC = () => {
       sx={{
         p: 0,
         boxShadow:
-          '0 2px 8px -2px rgba(0,0,0,0.04), 2px 0 8px -2px rgba(0,0,0,0.04), -2px 0 8px -2px rgba(0,0,0,0.04)',
+          '0 2px 8px -2px rgba(0,0,0,0.04), 2px 0 8px -2px rgba(206, 128, 128, 0.04), -2px 0 8px -2px rgba(0,0,0,0.04)',
         background: 'transparent',
       }}
     >

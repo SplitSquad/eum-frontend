@@ -1094,17 +1094,17 @@ const en = {
       noEvents: 'No scheduled events',
     },
     community: {
-      title: 'Community Feed',
+      title: 'EUM Community Hub',
       noPost: 'No posts available',
       viewMore: 'View More',
     },
     debate: {
-      title: 'Debate Feed',
+      title: 'EUM Discussion Plaza',
       noDebate: 'No debates available',
       viewMore: 'View More',
     },
     info: {
-      title: 'Info Feed',
+      title: 'EUM Info Center',
       noInfo: 'No information available',
       viewMore: 'View More',
     },
@@ -1140,7 +1140,8 @@ const en = {
     },
     auth: {
       googleLoginRequired: 'Google Login Required',
-      googleLoginDescription: 'Calendar features are only available to users logged in with a Google account.',
+      googleLoginDescription:
+        'Calendar features are only available to users logged in with a Google account.',
       feature1: '• Manage schedules by syncing with Google Calendar',
       feature2: '• Real-time sync allows you to check schedules on all devices',
       feature3: '• Never miss important events with notification settings',
@@ -1342,6 +1343,8 @@ const en = {
       authorSearch: 'Author Search',
     },
     posts: {
+      showOriginal: 'Show Original',
+      returnOriginal: 'Go back',
       title: 'Post Title',
       content: 'Post Content',
       author: 'Author',
@@ -1592,7 +1595,7 @@ const en = {
       title: 'Nearby Exploration',
       purposeLabels: {
         travel: 'Travel',
-        work: 'Work', 
+        work: 'Work',
         residence: 'Residence',
         study: 'Study',
       },
@@ -1609,16 +1612,16 @@ const en = {
         culture: 'Cultural Facilities',
         transport: 'Transportation',
         hotel: 'Accommodation',
-        
-        // Work categories  
+
+        // Work categories
         business: 'Office Spaces',
         bank: 'Banks',
         government: 'Government Offices',
-        
+
         // Residence categories
         market: 'Markets/Stores',
         hospital: 'Hospitals',
-        
+
         // Study categories
         university: 'Universities',
         library: 'Libraries',
@@ -1627,7 +1630,7 @@ const en = {
       categoryKeywords: {
         tourist: 'tourist',
         restaurant: 'restaurant',
-        cafe: 'cafe', 
+        cafe: 'cafe',
         culture: 'museum',
         transport: 'subway',
         hotel: 'hotel',
@@ -1711,7 +1714,7 @@ const en = {
       },
     },
     imageGallery: {
-      title: 'Recommended Image Gallery',
+      title: 'EUM Gallery',
       search: {
         placeholder: 'Search images (e.g., Seoul, ocean, food)',
         button: 'Search',
@@ -1731,9 +1734,40 @@ const en = {
         noResults: 'No search results',
         apiKeyMissing: 'Pexels API key not configured. Sample images are displayed.',
       },
+      images: {
+        seoul_tower: 'Seoul Tower',
+        hanok_village: 'Hanok Village',
+        busan_haeundae: 'Busan Haeundae Beach',
+        gyeongbokgung: 'Gyeongbokgung Palace',
+        jeju_seongsan: 'Jeju Seongsan Ilchulbong',
+        hangang_night: 'Han River Night View',
+        korean_temple: 'Korean Traditional Temple',
+        korean_market: 'Korean Traditional Market',
+        korean_food: 'Korean Cuisine',
+        korean_cherry_blossom: 'Korean Cherry Blossom',
+      },
+      tags: {
+        seoul: 'Seoul',
+        landmark: 'Landmark',
+        traditional: 'Traditional',
+        hanok: 'Hanok',
+        busan: 'Busan',
+        beach: 'Beach',
+        palace: 'Palace',
+        jeju: 'Jeju',
+        nature: 'Nature',
+        night: 'Night View',
+        temple: 'Temple',
+        market: 'Market',
+        culture: 'Culture',
+        food: 'Food',
+        korean_cuisine: 'Korean Cuisine',
+        spring: 'Spring',
+        cherry_blossom: 'Cherry Blossom',
+      },
     },
     youtubeGallery: {
-      title: 'Recommended Video Gallery',
+      title: 'EUM Studio',
       search: {
         placeholder: 'Search videos (e.g., travel, food, music)',
         button: 'Search',
@@ -1754,6 +1788,24 @@ const en = {
         searchError: 'Error occurred while searching videos',
         noResults: 'No search results',
         apiKeyMissing: 'YouTube API key not configured',
+        sampleDataInfo: 'Korea-related recommended videos are being displayed',
+      },
+      purposes: {
+        travel: 'Travel',
+        residence: 'Living',
+        employment: 'Employment',
+        study: 'Study Abroad',
+      },
+      tags: {
+        travel: 'Travel',
+        tourism: 'Tourism',
+        residence: 'Living',
+        living: 'Living',
+        employment: 'Employment',
+        job: 'Job',
+        study: 'Study',
+        university: 'University',
+        korea: 'Korea',
       },
     },
   },
@@ -1812,6 +1864,7 @@ const en = {
     next: 'Next',
   },
   debate: {
+    noDebates: 'No debates available',
     title: 'Hot Issue Debate',
     description:
       "Join the discussion on today's hottest social issues and share your diverse opinions.",
@@ -1854,6 +1907,10 @@ const en = {
     proOpinion: 'Supporting Opinion',
     conOpinion: 'Opposing Opinion',
     comment: {
+      placeholder: 'Enter your comment',
+      pro: 'Agree',
+      con: 'Disagree',
+      none: 'No Opinion',
       empty: 'No comments yet. Be the first to comment!',
       add: 'Add Comment',
       newest: 'Newest',
@@ -1864,8 +1921,12 @@ const en = {
       cancel: 'Cancel',
     },
     reply: {
+      pro: 'Agree',
+      con: 'Disagree',
+      none: 'No Opinion',
       placeholder: 'Enter your reply',
       add: 'Add Reply',
+      hide: 'Hide Replies',
       edit: 'Edit Reply',
       delete: 'Delete Reply',
       deleteConfirm: 'Are you sure you want to delete this reply?',
@@ -1900,8 +1961,12 @@ const en = {
       write: 'Write',
       viewAll: 'View All',
       bookmark: 'Bookmark',
+      bookmarked: 'Saved',
       share: 'Share',
+      shareAction: 'Share',
       print: 'Print',
+      printAction: 'Print',
+      scrollToTop: 'Top',
     },
     content: {
       allInfo: 'All Info',
@@ -2068,7 +2133,7 @@ const en = {
   // Home screen widgets
   home: {
     communityFeed: {
-      title: 'Community Feed',
+      title: 'EUM Community Hub',
       tabs: {
         free: 'Free',
         meeting: 'Meetings',
@@ -2113,7 +2178,7 @@ const en = {
       },
     },
     debateFeed: {
-      title: 'Debate Feed',
+      title: 'EUM Discussion Plaza',
       subtitle: 'Debate',
       statusLabels: {
         active: 'Active',
@@ -2159,7 +2224,7 @@ const en = {
       },
     },
     infoFeed: {
-      title: 'Information Feed',
+      title: 'EUM Info Center',
       subtitle: 'Information',
       difficultyLabels: {
         beginner: 'Beginner',
