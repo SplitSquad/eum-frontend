@@ -541,7 +541,7 @@ const PostCreateEditPage: React.FC = () => {
         titleLength: formData.title.length,
         contentLength: formData.content.length,
         isUILanguageSameAsDetected: currentLanguage === detectedLanguage,
-        note: '⚡ 백엔드에서 제목과 내용을 각각 분리하여 번역합니다'
+        note: '⚡ 백엔드에서 제목과 내용을 각각 분리하여 번역합니다',
       });
 
       // 폼 데이터 준비 - API 형식에 맞게 변환
