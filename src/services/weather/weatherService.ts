@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { env } from '@/config/env';
 
 // 날씨 정보 인터페이스
 export interface WeatherInfo {
@@ -64,19 +65,19 @@ const CATEGORY_CODES = {
   SNO: 'SNO', // 1시간 신적설
 };
 
-// 날씨 상태 매핑
+// 날씨 상태 매핑 - 영어 키로 변경 (UI에서 번역 처리)
 const SKY_STATUS = {
-  '1': '맑음',
-  '3': '구름많음',
-  '4': '흐림',
+  '1': 'sunny',
+  '3': 'cloudy', 
+  '4': 'overcast',
 };
 
 const PTY_STATUS = {
   '0': '',
-  '1': '비',
-  '2': '비/눈',
-  '3': '눈',
-  '4': '소나기',
+  '1': 'rain',
+  '2': 'rain',
+  '3': 'snow',
+  '4': 'rain',
 };
 
 // 위경도 좌표를 기상청 격자 좌표로 변환하는 함수
@@ -239,7 +240,7 @@ const WeatherService = {
       const baseTime = String(baseHour).padStart(2, '0') + '00';
 
       // 기상청 API 키
-      let apiKey = import.meta.env.VITE_WEATHER_API_KEY;
+      let apiKey = env.WEATHER_API_KEY;
 
       console.log('UltraSrtNcst API Request:', {
         baseDate,
@@ -314,7 +315,7 @@ const WeatherService = {
       const { baseDate, baseTime } = getFormattedDateTime();
 
       // 기상청 API 키
-      let apiKey = import.meta.env.VITE_WEATHER_API_KEY;
+      let apiKey = env.WEATHER_API_KEY;
 
       // 운영 환경이 아닌 경우 실제 API 호출 대신 더미 데이터 반환
       if (!apiKey) {
@@ -405,88 +406,85 @@ const WeatherService = {
       // 현재 온도
       const temperature = parseFloat(currentWeather.T1H);
 
-      // 현재 날씨 상태
-      const current = PTY_STATUS[currentWeather.PTY] || SKY_STATUS[currentWeather.SKY] || '맑음';
+      // 현재 날씨 상태 (영어 키로 반환)
+      const current = PTY_STATUS[currentWeather.PTY] || SKY_STATUS[currentWeather.SKY] || 'sunny';
 
-      // 예보 데이터 가공
-      const forecastData: { day: string; icon: string; temp: number }[] = [];
+      // 예보 데이터 가공 - 하루 전체 최저/최고기온과 강수확률 포함
+      const forecastData: { day: string; icon: string; temp: number; minTemp?: number; maxTemp?: number; precipitationProbability?: number }[] = [];
 
-      // 오늘 정오 예보
-      const today = new Date();
-      const todayStr = today.toISOString().split('T')[0].replace(/-/g, '');
-
-      // 내일 정오 예보
+      // 내일 데이터 처리
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
       const tomorrowStr = tomorrow.toISOString().split('T')[0].replace(/-/g, '');
 
-      // 모레 정오 예보
+      // 모레 데이터 처리
       const dayAfterTomorrow = new Date();
       dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
       const dayAfterTomorrowStr = dayAfterTomorrow.toISOString().split('T')[0].replace(/-/g, '');
 
-      // 날짜별 정오 데이터 찾기
-      const findNoonData = (date: string, category: string) => {
-        const items = forecast.filter(
-          (item: any) =>
-            item.fcstDate === date && item.fcstTime === '1200' && item.category === category
+      // 특정 날짜의 하루 전체 데이터 분석
+      const getDayForecast = (date: string, dayName: string) => {
+        // 해당 날짜의 모든 데이터 필터링
+        const dayData = forecast.filter((item: any) => item.fcstDate === date);
+        
+        // 최저/최고 기온 찾기
+        const temps = dayData.filter((item: any) => item.category === 'TMP').map((item: any) => parseFloat(item.fcstValue));
+        const minTemp = temps.length > 0 ? Math.min(...temps) : null;
+        const maxTemp = temps.length > 0 ? Math.max(...temps) : null;
+        
+        // 강수확률 찾기 (하루 중 최대값)
+        const precipProbs = dayData.filter((item: any) => item.category === 'POP').map((item: any) => parseInt(item.fcstValue));
+        const maxPrecipProb = precipProbs.length > 0 ? Math.max(...precipProbs) : null;
+        
+        // 대표 날씨 (오후 시간대 기준 - 12시 또는 15시)
+        const representativeTime = dayData.find((item: any) => 
+          (item.fcstTime === '1200' || item.fcstTime === '1500') && item.category === 'SKY'
         );
-        return items.length > 0 ? items[0].fcstValue : null;
+        const representativePty = dayData.find((item: any) => 
+          (item.fcstTime === '1200' || item.fcstTime === '1500') && item.category === 'PTY'
+        );
+        
+        const skyValue = representativeTime?.fcstValue || '1';
+        const ptyValue = representativePty?.fcstValue || '0';
+        
+        // 평균 기온 (최저+최고)/2
+        const avgTemp = (minTemp && maxTemp) ? Math.round((minTemp + maxTemp) / 2) : 24;
+        
+        return {
+          day: dayName,
+          icon: getWeatherIcon(skyValue, ptyValue),
+          temp: avgTemp,
+          minTemp: minTemp ? Math.round(minTemp) : undefined,
+          maxTemp: maxTemp ? Math.round(maxTemp) : undefined,
+          precipitationProbability: maxPrecipProb || undefined
+        };
       };
 
-      // 오늘 정오 예보
-      const todayTemp = findNoonData(todayStr, 'TMP');
-      const todaySky = findNoonData(todayStr, 'SKY');
-      const todayPty = findNoonData(todayStr, 'PTY');
+      // 내일 예보 추가
+      const tomorrowForecast = getDayForecast(tomorrowStr, 'tomorrow');
+      // minTemp/maxTemp가 없어도 기본값으로 추가
+      forecastData.push({
+        ...tomorrowForecast,
+        minTemp: tomorrowForecast.minTemp || 20,
+        maxTemp: tomorrowForecast.maxTemp || 28,
+        precipitationProbability: tomorrowForecast.precipitationProbability || 30
+      });
 
-      if (todayTemp && todaySky) {
-        forecastData.push({
-          day: '오늘',
-          icon: getWeatherIcon(todaySky, todayPty || '0'),
-          temp: parseFloat(todayTemp),
-        });
-      }
-
-      // 내일 정오 예보
-      const tomorrowTemp = findNoonData(tomorrowStr, 'TMP');
-      const tomorrowSky = findNoonData(tomorrowStr, 'SKY');
-      const tomorrowPty = findNoonData(tomorrowStr, 'PTY');
-
-      if (tomorrowTemp && tomorrowSky) {
-        forecastData.push({
-          day: '내일',
-          icon: getWeatherIcon(tomorrowSky, tomorrowPty || '0'),
-          temp: parseFloat(tomorrowTemp),
-        });
-      }
-
-      // 모레 정오 예보
-      const dayAfterTomorrowTemp = findNoonData(dayAfterTomorrowStr, 'TMP');
-      const dayAfterTomorrowSky = findNoonData(dayAfterTomorrowStr, 'SKY');
-      const dayAfterTomorrowPty = findNoonData(dayAfterTomorrowStr, 'PTY');
-
-      if (dayAfterTomorrowTemp && dayAfterTomorrowSky) {
-        forecastData.push({
-          day: '모레',
-          icon: getWeatherIcon(dayAfterTomorrowSky, dayAfterTomorrowPty || '0'),
-          temp: parseFloat(dayAfterTomorrowTemp),
-        });
-      }
-
-      // 예보 데이터가 없는 경우 기본 데이터 생성
-      if (forecastData.length === 0) {
-        forecastData.push(
-          { day: '오늘', icon: '☀️', temp: 24 },
-          { day: '내일', icon: '⛅', temp: 26 },
-          { day: '모레', icon: '🌧️', temp: 22 }
-        );
-      }
+      // 모레 예보 추가  
+      const dayAfterTomorrowForecast = getDayForecast(dayAfterTomorrowStr, 'dayAfterTomorrow');
+      // minTemp/maxTemp가 없어도 기본값으로 추가
+      forecastData.push({
+        ...dayAfterTomorrowForecast,
+        minTemp: dayAfterTomorrowForecast.minTemp || 18,
+        maxTemp: dayAfterTomorrowForecast.maxTemp || 26,
+        precipitationProbability: dayAfterTomorrowForecast.precipitationProbability || 50
+      });
 
       // 최종 날씨 정보 반환
       return {
         current,
         temperature,
-        location: locationName || '알 수 없음',
+        location: locationName || 'unknown',
         humidity: parseInt(currentWeather.REH), // 습도
         forecast: forecastData,
       };
@@ -494,63 +492,62 @@ const WeatherService = {
       console.error('날씨 정보 조회 실패:', error);
       // 에러 발생 시 기본 날씨 정보 반환
       return {
-        current: '맑음',
+        current: 'sunny',
         temperature: 24,
-        location: locationName || '알 수 없음',
+        location: locationName || 'unknown',
         forecast: [
-          { day: '오늘', icon: '☀️', temp: 24 },
-          { day: '내일', icon: '⛅', temp: 26 },
-          { day: '모레', icon: '🌧️', temp: 22 },
+          { day: 'tomorrow', icon: '⛅', temp: 26, minTemp: 20, maxTemp: 30, precipitationProbability: 20 },
+          { day: 'dayAfterTomorrow', icon: '🌧️', temp: 22, minTemp: 18, maxTemp: 26, precipitationProbability: 70 },
         ],
       };
     }
   },
 
-  // 시간대별 인사말 생성
-  getTimeBasedGreeting(): string {
-    const hours = new Date().getHours();
-    if (hours < 12) {
-      return '좋은 아침이에요';
-    } else if (hours < 17) {
-      return '즐거운 오후예요';
-    } else {
-      return '편안한 저녁이에요';
-    }
-  },
+  // 시간대별 인사말 생성 (제거 - 컴포넌트에서 처리)
+  // getTimeBasedGreeting(): string {
+  //   const hours = new Date().getHours();
+  //   if (hours < 12) {
+  //     return '좋은 아침이에요';
+  //   } else if (hours < 17) {
+  //     return '즐거운 오후예요';
+  //   } else {
+  //     return '편안한 저녁이에요';
+  //   }
+  // },
 
-  // 날씨에 따른 활동 추천
-  getWeatherBasedActivities(weather: string): string[] {
-    const activities: Record<string, string[]> = {
-      맑음: [
-        '오늘은 날씨가 좋네요! 산책하기 좋은 날이에요.',
-        '햇살이 좋아요. 야외 활동하기 좋은 날씨네요.',
-        '창문을 열어 상쾌한 공기를 마셔보세요.',
-      ],
-      구름많음: [
-        '구름이 많지만 야외 활동하기에 괜찮은 날씨네요.',
-        '선크림은 잊지 마세요. 구름 사이로 UV는 여전히 강해요.',
-        '약간 흐리지만 기분 좋은 하루가 될 거예요.',
-      ],
-      흐림: [
-        '오늘은 흐린 날씨네요. 실내 활동은 어떨까요?',
-        '흐린 날은 집에서 책 읽기 좋은 날이에요.',
-        '습도가 높을 수 있으니 체감온도에 주의하세요.',
-      ],
-      비: [
-        '비가 오고 있어요. 우산 잊지 마세요!',
-        '오늘은 실내에서 차 한잔의 여유를 즐겨보는 건 어떨까요?',
-        '비 오는 날의 영화 감상도 좋겠네요.',
-      ],
-      눈: [
-        '눈이 내리고 있어요! 따뜻하게 입고 나가세요.',
-        '미끄러운 길 조심하세요.',
-        '따뜻한 음료로 몸을 녹여보세요.',
-      ],
-    };
+  // 날씨에 따른 활동 추천 (제거 - 컴포넌트에서 처리)
+  // getWeatherBasedActivities(weather: string): string[] {
+  //   const activities: Record<string, string[]> = {
+  //     맑음: [
+  //       '오늘은 날씨가 좋네요! 산책하기 좋은 날이에요.',
+  //       '햇살이 좋아요. 야외 활동하기 좋은 날씨네요.',
+  //       '창문을 열어 상쾌한 공기를 마셔보세요.',
+  //     ],
+  //     구름많음: [
+  //       '구름이 많지만 야외 활동하기에 괜찮은 날씨네요.',
+  //       '선크림은 잊지 마세요. 구름 사이로 UV는 여전히 강해요.',
+  //       '약간 흐리지만 기분 좋은 하루가 될 거예요.',
+  //     ],
+  //     흐림: [
+  //       '오늘은 흐린 날씨네요. 실내 활동은 어떨까요?',
+  //       '흐린 날은 집에서 책 읽기 좋은 날이에요.',
+  //       '습도가 높을 수 있으니 체감온도에 주의하세요.',
+  //     ],
+  //     비: [
+  //       '비가 오고 있어요. 우산 잊지 마세요!',
+  //       '오늘은 실내에서 차 한잔의 여유를 즐겨보는 건 어떨까요?',
+  //       '비 오는 날의 영화 감상도 좋겠네요.',
+  //     ],
+  //     눈: [
+  //       '눈이 내리고 있어요! 따뜻하게 입고 나가세요.',
+  //       '미끄러운 길 조심하세요.',
+  //       '따뜻한 음료로 몸을 녹여보세요.',
+  //     ],
+  //   };
 
-    // 해당 날씨에 맞는 활동 또는 기본 활동 반환
-    return activities[weather] || activities['맑음'];
-  },
+  //   // 해당 날씨에 맞는 활동 또는 기본 활동 반환
+  //   return activities[weather] || activities['맑음'];
+  // },
 };
 
 // 글로벌 윈도우 객체에 카카오맵 타입 확장 (TypeScript 정의)

@@ -1,16 +1,82 @@
 /**
- * 언어 감지 및 FormData 처리 유틸리티 (cld3-asm 사용)
+ * 언어 감지 및 FormData 처리 유틸리티 (fallback 방식 사용)
  */
 
-import { loadModule, LanguageIdentifier } from 'cld3-asm';
+// import { loadModule, LanguageIdentifier } from 'cld3-asm'; // 모듈 문제로 주석 처리
 
 // CLD3 언어감지기 인스턴스
-let detector: LanguageIdentifier | null = null;
-let isInitializing = false;
+// let detector: LanguageIdentifier | null = null;
+// let isInitializing = false;
 
 /**
- * CLD3 언어감지기를 초기화합니다
+ * 간단한 패턴 매칭을 통한 fallback 언어 감지
+ * @param text 감지할 텍스트
+ * @returns 감지된 언어 코드
  */
+const fallbackLanguageDetection = (text: string): string => {
+  const cleanText = text.toLowerCase().trim();
+  console.log('[언어감지] fallback 패턴 매칭 시작');
+
+  // 한국어 패턴 (한글 문자 포함)
+  if (/[가-힣]/.test(text)) {
+    console.log('[언어감지] 한글 문자 감지 - ko 반환');
+    return 'ko';
+  }
+
+  // 일본어 패턴 (히라가나, 가타카나 포함)
+  if (/[ひらがなカタカナ]|[ぁ-ゔ]|[ァ-ヴー]/.test(text)) {
+    console.log('[언어감지] 일본어 문자 감지 - ja 반환');
+    return 'ja';
+  }
+
+  // 중국어 패턴 (중국어 간체/번체 문자 포함)
+  if (/[\u4e00-\u9fff]/.test(text)) {
+    console.log('[언어감지] 중국어 문자 감지 - zh 반환');
+    return 'zh';
+  }
+
+  // 러시아어 패턴 (키릴 문자 포함)
+  if (/[а-яё]/i.test(text)) {
+    console.log('[언어감지] 러시아어 문자 감지 - ru 반환');
+    return 'ru';
+  }
+
+  // 독일어 패턴 (독일어 특수 문자 및 일반적인 단어)
+  if (/[äöüß]/.test(cleanText) || 
+      /\b(der|die|das|und|ist|ein|eine|mit|von|zu|auf|für|nicht|sich|werden|haben|sein)\b/.test(cleanText)) {
+    console.log('[언어감지] 독일어 패턴 감지 - de 반환');
+    return 'de';
+  }
+
+  // 프랑스어 패턴 (프랑스어 특수 문자 및 일반적인 단어)
+  if (/[àâäèéêëîïôùûüÿç]/.test(cleanText) || 
+      /\b(le|la|les|de|des|du|un|une|et|est|ce|qui|que|avec|pour|dans|sur|par|il|elle|vous|nous|je|tu)\b/.test(cleanText)) {
+    console.log('[언어감지] 프랑스어 패턴 감지 - fr 반환');
+    return 'fr';
+  }
+
+  // 스페인어 패턴 (스페인어 특수 문자 및 일반적인 단어)
+  if (/[ñáéíóúü¿¡]/.test(cleanText) || 
+      /\b(el|la|los|las|de|del|y|es|en|con|por|para|que|no|se|te|me|le|un|una|este|esta|estos|estas)\b/.test(cleanText)) {
+    console.log('[언어감지] 스페인어 패턴 감지 - es 반환');
+    return 'es';
+  }
+
+  // 영어 패턴 (영어 일반적인 단어들, 기타 언어가 감지되지 않은 경우)
+  if (/\b(the|and|is|in|to|of|a|that|it|with|for|as|was|on|are|he|his|they|at|be|this|have|from|or|one|had|by|word|but|not|what|all|were|we|when|your|can|said|there|each|which|she|do|how|their|if|will|up|other|about|out|many|then|them|these|so|some|her|would|make|like|into|him|has|two|more|very|after|first|been|than|its|who|now|people|my|made|over|did|down|only|way|find|use|may|water|long|little|work|know|place|year|live|me|back|give|most|good|man|think|say|great|where|much|through|get|should|our|old|see|could|go|might|come|well|such|take|look|high|every|last|call|came|just|also|around|another|put|end|why|ask|try|hand|life|move|too|any|off|tell|against|being|new|while|point|still|time|group|large|own|still)\b/i.test(cleanText)) {
+    console.log('[언어감지] 영어 패턴 감지 - en 반환');
+    return 'en';
+  }
+
+  // 기본값: 한국어
+  console.log('[언어감지] 패턴 매칭 실패 - 기본값 ko 반환');
+  return 'ko';
+};
+
+/**
+ * CLD3 언어감지기를 초기화합니다 (현재 사용하지 않음)
+ */
+/*
 const initializeDetector = async (): Promise<LanguageIdentifier> => {
   if (detector) {
     return detector;
@@ -41,6 +107,7 @@ const initializeDetector = async (): Promise<LanguageIdentifier> => {
     isInitializing = false;
   }
 };
+*/
 
 /**
  * 텍스트의 언어를 감지하고 ISO 639-1 코드로 변환하는 유틸리티 함수
@@ -62,12 +129,17 @@ export const detectLanguage = async (text: string): Promise<string> => {
       return fallbackLanguageDetection(text);
     }
 
-    console.log('[언어감지] CLD3으로 텍스트 분석 시작:', {
+    console.log('[언어감지] fallback 방식으로 텍스트 분석 시작:', {
       textPreview: text.substring(0, 100) + '...',
       textLength: text.length,
       timestamp: new Date().toISOString()
     });
 
+    // CLD3 대신 fallback 언어감지만 사용
+    return fallbackLanguageDetection(text);
+
+    /*
+    // CLD3 사용 코드 (모듈 문제로 주석 처리)
     try {
       // CLD3 언어감지기 초기화
       const cld3Detector = await initializeDetector();
@@ -135,6 +207,7 @@ export const detectLanguage = async (text: string): Promise<string> => {
 
     console.log('[언어감지] CLD3 결과 없음, fallback 사용');
     return fallbackLanguageDetection(text);
+    */
   } catch (error) {
     console.error('[언어감지] 전체 오류 발생:', {
       error: error,
@@ -159,71 +232,6 @@ export const detectLanguageSync = (text: string): string => {
   
   // 즉시 fallback 결과 반환
   return fallbackLanguageDetection(text);
-};
-
-/**
- * 간단한 패턴 매칭을 통한 fallback 언어 감지
- * @param text 감지할 텍스트
- * @returns 감지된 언어 코드
- */
-const fallbackLanguageDetection = (text: string): string => {
-  const cleanText = text.toLowerCase().trim();
-  console.log('[언어감지] fallback 패턴 매칭 시작');
-
-  // 한국어 패턴 (한글 문자 포함)
-  if (/[가-힣]/.test(text)) {
-    console.log('[언어감지] 한글 문자 감지 - ko 반환');
-    return 'ko';
-  }
-
-  // 일본어 패턴 (히라가나, 가타카나 포함)
-  if (/[ひらがなカタカナ]|[ぁ-ゔ]|[ァ-ヴー]/.test(text)) {
-    console.log('[언어감지] 일본어 문자 감지 - ja 반환');
-    return 'ja';
-  }
-
-  // 중국어 패턴 (중국어 간체/번체 문자 포함)
-  if (/[\u4e00-\u9fff]/.test(text)) {
-    console.log('[언어감지] 중국어 문자 감지 - zh 반환');
-    return 'zh';
-  }
-
-  // 러시아어 패턴 (키릴 문자 포함)
-  if (/[а-яё]/i.test(text)) {
-    console.log('[언어감지] 러시아어 문자 감지 - ru 반환');
-    return 'ru';
-  }
-
-  // 독일어 패턴 (독일어 특수 문자 및 일반적인 단어)
-  if (/[äöüß]/.test(cleanText) || 
-      /\b(der|die|das|und|ist|ein|eine|mit|von|zu|auf|für|nicht|sich|werden|haben|sein)\b/.test(cleanText)) {
-    console.log('[언어감지] 독일어 패턴 감지 - de 반환');
-    return 'de';
-  }
-
-  // 프랑스어 패턴 (프랑스어 특수 문자 및 일반적인 단어)
-  if (/[àâäéèêëïîôöùûüÿç]/.test(cleanText) || 
-      /\b(le|la|les|de|du|des|et|est|un|une|avec|pour|dans|sur|par|ne|pas|être|avoir|faire)\b/.test(cleanText)) {
-    console.log('[언어감지] 프랑스어 패턴 감지 - fr 반환');
-    return 'fr';
-  }
-
-  // 스페인어 패턴 (스페인어 특수 문자 및 일반적인 단어)
-  if (/[ñáéíóúü¿¡]/.test(cleanText) || 
-      /\b(el|la|los|las|de|del|y|es|un|una|con|para|en|por|no|ser|estar|tener|hacer)\b/.test(cleanText)) {
-    console.log('[언어감지] 스페인어 패턴 감지 - es 반환');
-    return 'es';
-  }
-
-  // 영어 패턴 (영어 일반적인 단어들)
-  if (/\b(the|and|is|in|to|of|a|that|it|with|for|as|was|on|are|you|this|be|have|from|or|one|had|by|word|but|not|what|all|were|they|we|when|your|can|said|there|each|which|she|do|how|their|if|will|up|other|about|out|many|then|them|these|so|some|her|would|make|like|into|him|has|two|more|go|no|way|could|my|than|first|been)\b/.test(cleanText)) {
-    console.log('[언어감지] 영어 패턴 감지 - en 반환');
-    return 'en';
-  }
-
-  // 기본값은 한국어
-  console.log('[언어감지] 패턴 매칭 실패 - 기본값 ko 반환');
-  return 'ko';
 };
 
 /**

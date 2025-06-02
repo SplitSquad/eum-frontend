@@ -20,6 +20,8 @@ import WeatherService from '../../services/weather/weatherService';
 import DebateApi from '../../features/debate/api/debateApi';
 import { Debate } from '../../features/debate/types';
 import apiClient from '../../features/debate/api/apiClient';
+import infoApi from '../../features/info/api/infoApi';
+import { env } from '@/config/env';
 
 // 배열을 랜덤하게 섞는 유틸리티 함수
 const shuffleArray = <T,>(array: T[]): T[] => {
@@ -98,20 +100,35 @@ const formatTimeAgo = (dateString: string): string => {
 const formatAddress = (address: string): string => {
   if (!address || address === '자유') return '자유';
   
+  console.log('formatAddress 입력:', address);
+  
   // 주소에서 구성 요소 추출
   const parts = address.split(' ');
+  console.log('주소 파트:', parts);
   
   // 주소 단계에 따라 처리
   if (parts.length >= 3) {
     // 시/도 처리 (특별시, 광역시 등은 그대로 유지)
     const city = parts[0]; // 예: 서울특별시
     const district = parts[1]; // 예: 중구, 양천구
+    let dong = parts[2]; // 예: 장충동, 목2동, 장충동2가
     
-    // 동 이름 처리 (숫자 제거)
-    let dong = parts[2]; // 예: 장충동, 목2동
-    // 숫자 제거하고 '동', '가' 등의 접미사 앞 부분만 추출
-    dong = dong.replace(/\d+/, ''); // 숫자 제거 (목2동 -> 목동)
+    // "가"가 포함된 주소는 그대로 사용 (장충동2가 형태)
+    if (dong.endsWith('가')) {
+      console.log(`${dong}는 '가'로 끝나는 주소임`);
+      return `${city} ${district} ${dong}`;
+    }
     
+    // 일반 "동"으로 끝나는 주소에서는 숫자만 제거
+    if (dong.endsWith('동')) {
+      console.log(`${dong}는 '동'으로 끝나는 주소임`);
+      // 숫자를 제거하되 '동' 부분은 유지 (목2동 -> 목동)
+      const dongName = dong.replace(/(\D+)(\d+)(동)/, '$1$3');
+      console.log(`${dong} -> ${dongName}로 변환됨`);
+      return `${city} ${district} ${dongName}`;
+    }
+    
+    // 기타 케이스
     return `${city} ${district} ${dong}`;
   } else if (parts.length >= 2) {
     // 시/도와 구/군만 있는 경우
@@ -485,7 +502,7 @@ const DynamicFeedWidget: React.FC = () => {
   // 유저 위치 정보 가져오기
   const getUserLocation = useCallback(async (): Promise<string> => {
     try {
-      // 기존에 저장된 위치 정보가 있으면 사용
+      // 이미 위치 정보가 있으면 사용
       if (userLocation) return userLocation;
       
       // 현재 위치 정보 가져오기
@@ -499,7 +516,7 @@ const DynamicFeedWidget: React.FC = () => {
         }
         
         const script = document.createElement('script');
-        script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${import.meta.env.VITE_KAKAO_MAP_KEY}&libraries=services&autoload=false`;
+        script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${env.KAKAO_MAP_API_KEY}&libraries=services&autoload=false`;
         script.onload = () => {
           window.kakao.maps.load(() => resolve());
         };
@@ -523,9 +540,12 @@ const DynamicFeedWidget: React.FC = () => {
               // 동 정보가 있으면 포함, 없으면 시/구만 사용
               const address = dong ? `${city} ${district} ${dong}` : `${city} ${district}`;
               
+              console.log('카카오맵 API 원본 주소:', address);
+              
               // 가공 처리된 주소 반환
               const formattedAddress = formatAddress(address);
-              setUserLocation(formattedAddress); // 상태 업데이트
+              console.log('가공 처리된 주소:', formattedAddress);
+              
               resolve(formattedAddress);
             } else {
               resolve('자유'); // 변환 실패 시 기본값
@@ -534,16 +554,53 @@ const DynamicFeedWidget: React.FC = () => {
         );
       });
       
+      setUserLocation(address); // 상태 업데이트를 여기서 수행하고 반환
       return address;
     } catch (error) {
       console.error('위치 정보 가져오기 실패:', error);
       return '자유'; // 오류 발생 시 기본값으로 '자유' 사용
     }
-  }, [userLocation]);
+  }, []); // userLocation 의존성 제거
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
     setMainTab(newValue as '추천'|'커뮤니티'|'토론'|'정보');
   };
+
+  // 카테고리별 색상 코드 반환 - useCallback으로 메모이제이션 (위치 이동: 먼저 선언)
+  const getCategoryColor = useCallback((category: string): string => {
+    const categoryColors: Record<string, string> = {
+      '여행': '#2196f3',
+      '맛집': '#f44336',
+      '사진': '#9c27b0',
+      '음악': '#4caf50',
+      '역사': '#ff9800',
+      '영화': '#795548',
+      '독서': '#607d8b',
+      '예술': '#e91e63',
+      '스포츠': '#00bcd4',
+      '취미': '#673ab7',
+      '토론': '#3f51b5',
+      '질문': '#009688',
+      // 토론 카테고리
+      '정치/사회': '#3f51b5',
+      '경제': '#009688',
+      '과학/기술': '#2196f3',
+      '생활/문화': '#f44336',
+      '스포츠/레저': '#4caf50',
+      '엔터테인먼트': '#9c27b0',
+      // 정보 카테고리
+      '교통': '#03a9f4',
+      '비자/법률': '#607d8b',
+      '금융/세금': '#4db6ac',
+      '교육': '#673ab7',
+      '주거/부동산': '#ff9800',
+      '의료/건강': '#f44336',
+      '쇼핑': '#e91e63',
+      '취업/직장': '#8bc34a',
+    };
+
+    return categoryColors[category] || '#757575'; // 매핑이 없으면 기본 색상 반환
+  }, []);
 
   // 토론 API를 통해 토론 게시글 가져오기
   const fetchDebatePosts = useCallback(async (): Promise<Post[]> => {
@@ -552,15 +609,31 @@ const DynamicFeedWidget: React.FC = () => {
       const result = await DebateApi.getRecommendedDebates();
       console.log('추천 토론 응답:', result);
       
-      if (result && result.debates && result.debates.length > 0) {
+      // 토론 목록 및 분석 데이터
+      const debates = result?.debates || [];
+      const analysis = result?.analysis || {};
+      
+      if (debates && debates.length > 0) {
         // 이미 올바르게 변환된 Debate 객체 사용
-        return result.debates.map(debate => {
-          // debate는 이미 Debate 타입으로 변환된 객체
+        return debates.map(debate => {
+          // 카테고리에 따른 매칭 점수 계산
+          let matchScore = 0;
+          if (debate.category && analysis[debate.category]) {
+            // 백엔드에서 제공하는 카테고리별 관심도 점수를 퍼센트로 변환 (0~1 -> 0~100)
+            matchScore = Math.round(analysis[debate.category] * 100);
+          } else if (debate.matchScore) {
+            // debate 객체에 이미 matchScore가 있으면 그대로 사용
+            matchScore = debate.matchScore;
+          } else {
+            // 분석 데이터가 없는 경우 0점
+            matchScore = 0;
+          }
+          
           return {
             id: String(debate.id),
             title: debate.title || '',
             content: debate.content || '내용이 없습니다.',
-            source: 'debate',
+            source: 'debate' as 'debate',
             createdAt: debate.createdAt,
             author: {
               id: '0',
@@ -574,7 +647,7 @@ const DynamicFeedWidget: React.FC = () => {
             category: debate.category || '토론',
             categoryColor: getCategoryColor(debate.category || '토론'),
             address: '',
-            matchScore: debate.matchScore || Math.floor(Math.random() * 15) + 80,
+            matchScore: matchScore,
             tags: [debate.category || '토론'].filter(Boolean),
             // 토론 통계 정보 추가
             debateStats: {
@@ -594,6 +667,9 @@ const DynamicFeedWidget: React.FC = () => {
       const response = await apiClient.get<any>('/debate/recommendation');
       const data = response.data || response;
       
+      // 분석 데이터
+      const apiAnalysis = data?.analysis || {};
+      
       if (data && data.debateList && Array.isArray(data.debateList)) {
         // 2차원 배열 구조 처리
         const allDebates: Post[] = [];
@@ -602,11 +678,24 @@ const DynamicFeedWidget: React.FC = () => {
           if (Array.isArray(debateGroup)) {
             // 각 그룹의 토론을 Post 형식으로 변환하여 추가
             const posts = debateGroup.map((item: any) => {
+              // 카테고리에 따른 매칭 점수 계산
+              let matchScore = 0;
+              if (item.category && apiAnalysis[item.category]) {
+                // 백엔드에서 제공하는 카테고리별 관심도 점수를 퍼센트로 변환
+                matchScore = Math.round(apiAnalysis[item.category] * 100);
+              } else if (item.matchScore !== undefined) {
+                // API 응답에 matchScore가 있으면 그대로 사용
+                matchScore = item.matchScore;
+              } else {
+                // 분석 데이터가 없는 경우 0점
+                matchScore = 0;
+              }
+              
               return {
                 id: String(item.debateId),
                 title: item.title || '',
                 content: item.content || '내용이 없습니다.',
-                source: 'debate' as const, // 리터럴 타입으로 처리
+                source: 'debate' as 'debate',
                 createdAt: item.createdAt,
                 author: {
                   id: '0',
@@ -620,7 +709,7 @@ const DynamicFeedWidget: React.FC = () => {
                 category: item.category || '토론',
                 categoryColor: getCategoryColor(item.category || '토론'),
                 address: '',
-                matchScore: Math.floor(Math.random() * 15) + 80, // 임의 값 생성
+                matchScore: matchScore,
                 tags: [item.category].filter(Boolean),
                 // 토론 통계 정보 추가
                 debateStats: {
@@ -643,99 +732,126 @@ const DynamicFeedWidget: React.FC = () => {
       console.error('토론 게시글 가져오기 실패:', error);
       return [];
     }
-  }, []);
+  }, [getCategoryColor]); // getCategoryColor 의존성 추가
 
-  // 정보 게시글 가져오는 임시 함수 (추후 실제 API로 대체)
+  // 정보 게시글 가져오는 함수
   const fetchInfoPosts = useCallback(async (): Promise<Post[]> => {
     try {
-      // 임시 더미 데이터 - 추후 실제 정보 API로 대체
-      const dummyData: Post[] = [
-        {
-          id: 'info-1',
-          title: '해외취업 성공 가이드',
-          content: '해외취업을 위한 이력서 준비부터 인터뷰까지, 성공적인 해외취업을 위한 모든 과정을 안내합니다.',
-          author: { id: 'info-author-1', name: '정보제공자', profileImagePath: '' },
-          category: '취업/이직',
-          categoryColor: '#2196f3',
-          createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-          likeCount: 42,
-          commentCount: 15,
-          viewCount: 230,
-          source: 'information',
-          matchScore: 89,
-          tags: ['해외취업', '이력서', '인터뷰']
-        },
-        {
-          id: 'info-2',
-          title: '비자 종류별 신청 안내',
-          content: '유학, 취업, 워킹홀리데이 등 목적별 비자 신청 방법과 필요 서류를 상세히 안내합니다.',
-          author: { id: 'info-author-2', name: '비자전문가', profileImagePath: '' },
-          category: '비자/법률',
-          categoryColor: '#f44336',
-          createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-          likeCount: 37,
-          commentCount: 23,
-          viewCount: 185,
-          source: 'information',
-          matchScore: 92,
-          tags: ['비자', '법률', '해외생활']
-        },
-        {
-          id: 'info-3',
-          title: '대륙별 생활비 비교 분석',
-          content: '아시아, 유럽, 북미, 남미, 오세아니아 등 대륙별 생활비를 항목별로 비교 분석했습니다.',
-          author: { id: 'info-author-3', name: '글로벌라이프', profileImagePath: '' },
-          category: '생활정보',
-          categoryColor: '#4caf50',
-          createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-          likeCount: 28,
-          commentCount: 9,
-          viewCount: 142,
-          source: 'information',
-          matchScore: 85,
-          tags: ['생활비', '해외생활', '비교분석']
-        }
-      ];
+      // 정보 추천 API 호출
+      const response = await infoApi.getRecommendations();
+      console.log('정보 추천 응답:', response);
       
-      return dummyData;
+      if (response && response.informationList && response.informationList.length > 0) {
+        // API 응답에서 정보글 추출 및 Post 형식으로 변환
+        const allInfoPosts: Post[] = [];
+        
+        // 분석 데이터 - 카테고리별 관심도
+        const analysis = response.analysis || {};
+        
+        // informationList는 2차원 배열 형태이므로 모든 정보글을 펼쳐서 처리
+        response.informationList.forEach(infoGroup => {
+          if (Array.isArray(infoGroup) && infoGroup.length > 0) {
+            const posts = infoGroup.map(info => {
+              // 콘텐츠가 JSON 문자열인 경우 파싱하여 텍스트 추출
+              let plainContent = '';
+              let images: string[] = [];
+              
+              try {
+                if (info.content && typeof info.content === 'string') {
+                  // 콘텐츠가 JSON 문자열인지 확인
+                  const contentObj = JSON.parse(info.content);
+                  
+                  // ProseMirror JSON 구조에서 텍스트와 이미지 추출
+                  if (contentObj.content && Array.isArray(contentObj.content)) {
+                    // 텍스트 추출
+                    plainContent = contentObj.content
+                      .filter(node => node.type === 'paragraph' || node.type === 'text')
+                      .map(node => {
+                        if (node.type === 'text') return node.text || '';
+                        
+                        if (node.content) {
+                          return node.content
+                            .filter(textNode => textNode.type === 'text')
+                            .map(textNode => textNode.text || '')
+                            .join(' ');
+                        }
+                        return '';
+                      })
+                      .join(' ')
+                      .substring(0, 200);
+                    
+                    if (plainContent.length >= 200) plainContent += '...';
+                    
+                    // 이미지 URL 추출
+                    contentObj.content.forEach(node => {
+                      if (node.type === 'image' && node.attrs && node.attrs.src) {
+                        images.push(node.attrs.src);
+                      }
+                    });
+                  }
+                }
+              } catch (error) {
+                // JSON 파싱 실패 시 원본 콘텐츠를 일부 사용
+                plainContent = info.content ? 
+                  (typeof info.content === 'string' ? 
+                    info.content.substring(0, 150) + '...' : 
+                    '내용을 불러올 수 없습니다.') : 
+                  '내용을 불러올 수 없습니다.';
+              }
+              
+              // 콘텐츠 추출 실패 시 기본값 설정
+              if (!plainContent) {
+                plainContent = '내용을 불러올 수 없습니다.';
+              }
+              
+              // 카테고리에 따른 매칭 점수 계산
+              let matchScore = 0;
+              if (info.category && analysis[info.category]) {
+                // 백엔드 API에서 제공하는 카테고리별 관심도 점수를 퍼센트로 변환 (0~1 -> 0~100)
+                matchScore = Math.round(analysis[info.category] * 100);
+              } else {
+                // 분석 데이터가 없는 경우 0점
+                matchScore = 0;
+              }
+              
+              // Post 형태로 변환
+              return {
+                id: String(info.informationId),
+                title: info.title || '',
+                content: plainContent,
+                author: {
+                  id: '0',
+                  name: info.userName || '정보 제공자',
+                  profileImagePath: ''
+                },
+                category: info.category || '정보',
+                categoryColor: getCategoryColor(info.category || '정보'),
+                createdAt: info.createdAt || new Date().toISOString(),
+                likeCount: info.isState || 0,
+                commentCount: 0, // 정보글은 댓글 수가 API에서 제공되지 않음
+                viewCount: info.views || 0,
+                source: 'information' as 'information',
+                images: images,
+                address: '',
+                matchScore: matchScore,
+                tags: [info.category].filter(Boolean)
+              };
+            });
+            
+            allInfoPosts.push(...posts);
+          }
+        });
+        
+        return allInfoPosts;
+      }
+      
+      console.log('API 응답에서 정보글을 찾을 수 없습니다');
+      return [];
     } catch (error) {
       console.error('정보 게시글 가져오기 실패:', error);
       return [];
     }
-  }, []);
-
-  // 카테고리별 색상 코드 반환
-  const getCategoryColor = (category: string): string => {
-    const categoryColors: Record<string, string> = {
-      '여행': '#2196f3',
-      '맛집': '#f44336',
-      '사진': '#9c27b0',
-      '음악': '#4caf50',
-      '역사': '#ff9800',
-      '영화': '#795548',
-      '독서': '#607d8b',
-      '예술': '#e91e63',
-      '스포츠': '#00bcd4',
-      '취미': '#673ab7',
-      '토론': '#3f51b5',
-      '질문': '#009688',
-      // 토론 카테고리
-      '정치/사회': '#3f51b5',
-      '경제': '#009688',
-      '과학/기술': '#2196f3',
-      '생활/문화': '#f44336',
-      '스포츠/레저': '#4caf50',
-      '엔터테인먼트': '#9c27b0',
-      // 정보 카테고리
-      '취업/이직': '#2196f3',
-      '비자/법률': '#f44336',
-      '생활정보': '#4caf50',
-      '학업/교육': '#9c27b0',
-      '부동산/주거': '#ff9800',
-    };
-
-    return categoryColors[category] || '#757575'; // 매핑이 없으면 기본 색상 반환
-  };
+  }, [getCategoryColor]); // getCategoryColor만 의존성으로 유지
 
   // 데이터 로딩 함수
   const loadData = useCallback(async () => {
@@ -745,12 +861,15 @@ const DynamicFeedWidget: React.FC = () => {
     try {
       // 유저 위치 정보 가져오기
       const userAddress = await getUserLocation();
+      console.log('위치 정보 로딩 완료, 사용할 주소:', userAddress);
       
       // 병렬로 모든 종류의 게시글을 가져오기
       try {
         // 자유/모임 게시글 주소 설정
         const jaYuAddress = '자유';
         const moimAddress = userAddress;
+        
+        console.log('모임 게시글 로드에 사용할 주소:', moimAddress);
         
         // 병렬로 API 호출
         const [jaYuPostsData, moimPostsData, debatePostsData, infoPostsData] = await Promise.all([
@@ -763,9 +882,16 @@ const DynamicFeedWidget: React.FC = () => {
           // 토론 게시글 - 추천 API 사용
           fetchDebatePosts(),
           
-          // 정보 게시글 (임시)
+          // 정보 게시글 - 추천 API 사용
           fetchInfoPosts()
         ]);
+        
+        console.log('API 응답 데이터:', {
+          자유: jaYuPostsData,
+          모임: moimPostsData,
+          토론: debatePostsData,
+          정보: infoPostsData
+        });
         
         // 자유 게시글 필터링 및 설정 - source가 community인 글만
         const filteredJaYuPosts = jaYuPostsData.filter(
@@ -793,11 +919,18 @@ const DynamicFeedWidget: React.FC = () => {
           ...infoPostsData
         ];
         
+        console.log('모든 게시글의 매칭 점수:', allPosts.map(p => ({
+          id: p.id,
+          title: p.title,
+          source: p.source,
+          matchScore: p.matchScore
+        })));
+        
         // 매칭 점수 기준으로 내림차순 정렬
         const sortedPosts = allPosts.sort((a, b) => {
-          // 매칭 점수가 없는 경우 기본값 설정
-          const scoreA = a.matchScore || 0;
-          const scoreB = b.matchScore || 0;
+          // 매칭 점수가 없는 경우 기본값 설정 (0으로 설정하면 매칭 점수가 있는 게시글이 우선됨)
+          const scoreA = a.matchScore !== undefined ? a.matchScore : 0; 
+          const scoreB = b.matchScore !== undefined ? b.matchScore : 0;
           return scoreB - scoreA;
         });
         
@@ -814,14 +947,14 @@ const DynamicFeedWidget: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [getUserLocation, fetchDebatePosts, fetchInfoPosts]);
+  }, [getUserLocation, fetchDebatePosts, fetchInfoPosts]); // 필요한 의존성만 유지
 
   // 컴포넌트 마운트 시 데이터 로딩
   useEffect(() => {
     loadData();
   }, [loadData]);
 
-  // communitySubTab이 변경될 때 데이터 다시 로드
+  // 탭이 변경될 때만 데이터 다시 로드하도록 수정
   useEffect(() => {
     if (isCommunitySubTabOpen) {
       loadData();

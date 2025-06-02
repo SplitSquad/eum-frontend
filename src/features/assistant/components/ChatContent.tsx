@@ -4,9 +4,38 @@ import React, { useState, useRef, useEffect } from 'react';
 import { fetchChatbotResponse } from '@/features/assistant/api/ChatApi';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Box, Typography } from '@mui/material';
+import { useTranslation } from '../../../shared/i18n';
+import { useLanguageStore } from '@/features/theme/store/languageStore';
+import { useAiAssistantStore } from '@/features/assistant/store/aiAssistantStore';
+import EeumProfile from '@/assets/images/characters/이음이.png';
 
-/**-----------------------------------웹로그 관련------------------------------------ **/
+// 스크롤바 스타일 CSS
+const scrollbarStyles = `
+  .chat-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(139, 69, 19, 0.5) rgba(139, 69, 19, 0.1);
+  }
+  
+  .chat-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .chat-scrollbar::-webkit-scrollbar-track {
+    background: rgba(139, 69, 19, 0.1);
+    border-radius: 4px;
+  }
+  
+  .chat-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(139, 69, 19, 0.5);
+    border-radius: 4px;
+    transition: background 0.3s ease;
+  }
+  
+  .chat-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(139, 69, 19, 0.7);
+  }
+`;
+
 // userId 꺼내오는 헬퍼
 export function getUserId(): number | null {
   try {
@@ -25,12 +54,8 @@ interface WebLog {
   content: string;
 }
 
-// BASE URL에 엔드포인트 설정
 const BASE = import.meta.env.VITE_API_BASE_URL;
-
-// 로그 전송 함수
 export function sendWebLog(log: WebLog) {
-  // jwt token 가져오기
   const token = localStorage.getItem('auth_token');
   if (!token) {
     throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
@@ -42,12 +67,9 @@ export function sendWebLog(log: WebLog) {
   }).catch(err => {
     console.error('WebLog 전송 실패:', err);
   });
-  // 전송 완료
   console.log('WebLog 전송 성공:', log);
 }
-/**------------------------------------------------------------------------------------**/
 
-// 채팅 메시지 객체 형태 정의
 interface Message {
   id: number;
   sender: 'user' | 'bot';
@@ -56,65 +78,74 @@ interface Message {
   isTyping?: boolean;
 }
 
-// ChatContent 컴포넌트 props 타입 정의
 interface ChatContentProps {
   categoryLabel?: string;
   onCategoryChange?: (newKey: string) => void;
 }
 
-/**
- * ChatContent 컴포넌트
- * - AI 챗봇과의 상호작용 UI를 렌더링하고,
- *   타자기 효과로 메시지를 한 글자씩 표시
- */
 export default function ChatContent({
   categoryLabel = '전체',
   onCategoryChange,
 }: ChatContentProps) {
-  // 메시지 목록, 초기 봇 메시지 포함
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: Date.now(),
-      sender: 'bot',
-      text: '무엇을 도와드릴까요?',
-      displayText: '무엇을 도와드릴까요?',
-      isTyping: false,
-    },
-  ]);
+  const { t } = useTranslation();
+  const { language } = useLanguageStore();
+  const { messages, setMessages, loading, setLoading } = useAiAssistantStore();
+
   const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [showScrollButton, setShowScrollButton] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
 
-  /**
-   * 메시지 전송 핸들러
-   */
+  // 1. 전체 채팅 컨테이너의 높이 고정 (아래 style 참조)
+  // 2. 내부 채팅 영역은 flex로 column 분리, 메시지리스트에만 overflow-auto
+
+  useEffect(() => {
+    if (messages.length === 0) {
+      const initialMessage = {
+        id: Date.now(),
+        sender: 'bot' as const,
+        text: t('aiAssistant.chat.initialMessage'),
+        displayText: t('aiAssistant.chat.initialMessage'),
+        isTyping: false,
+      };
+      setMessages([initialMessage]);
+    }
+  }, [messages.length, t]);
+
+  const prevLanguageRef = useRef(language);
+  useEffect(() => {
+    if (prevLanguageRef.current !== language) {
+      const initialMessage = {
+        id: Date.now(),
+        sender: 'bot' as const,
+        text: t('aiAssistant.chat.initialMessage'),
+        displayText: t('aiAssistant.chat.initialMessage'),
+        isTyping: false,
+      };
+      setMessages([initialMessage]);
+      prevLanguageRef.current = language;
+    }
+  }, [language, t]);
+
   const sendMessage = async (query?: string) => {
     const text = query ?? input.trim();
     if (!text) return;
-
-    // 사용자 메시지 추가
     setMessages(prev => [...prev, { id: Date.now(), sender: 'user', text }]);
-
-    // 웹로그 전송
     const userId = getUserId() ?? 0;
     const chatLogPayload = {
       UID: userId,
       ClickPath: location.pathname,
-      TAG: categoryLabel,
+      TAG: null,
       CurrentPath: location.pathname,
       Event: 'chat',
       Content: text,
       Timestamp: new Date().toISOString(),
     };
     sendWebLog({ userId, content: JSON.stringify(chatLogPayload) });
-
-    // 입력창 초기화 및 로딩 상태 설정
     setInput('');
     setLoading(true);
 
     try {
       const data = await fetchChatbotResponse(text, '1');
-      // 봇 메시지 placeholder 추가
       setMessages(prev => [
         ...prev,
         {
@@ -125,21 +156,8 @@ export default function ChatContent({
           isTyping: true,
         },
       ]);
-
-      // 봇 웹로그 전송
-      const userId = getUserId() ?? 0;
-      const chatLogPayload = {
-        UID: userId,
-        ClickPath: location.pathname,
-        TAG: categoryLabel,
-        CurrentPath: location.pathname,
-        Event: 'chat',
-        Content: text,
-        Timestamp: new Date().toISOString(),
-      };
-      sendWebLog({ userId, content: JSON.stringify(chatLogPayload) });
-
-      // 예시: 카테고리 매핑 로직
+      // (생략) 카테고리 등 기타 기능
+      const rag = data.metadata?.rag_type;
       const map: Record<string, string> = {
         visa_law: 'visa',
         social_security: 'social',
@@ -149,31 +167,25 @@ export default function ChatContent({
         daily_life: 'life',
         all: 'all',
       };
-
-      const rag = data.metadata?.rag_type;
       const newKey = rag && map[rag] ? map[rag] : undefined;
       if (newKey && onCategoryChange) onCategoryChange(newKey);
     } catch (error) {
-      // 오류 메시지
       setMessages(prev => [
         ...prev,
         {
           id: Date.now() + 2,
           sender: 'bot',
-          text: '응답 중 오류가 발생했습니다.',
-          displayText: '응답 중 오류가 발생했습니다.',
+          text: t('aiAssistant.errors.responseError'),
+          displayText: t('aiAssistant.errors.responseError'),
           isTyping: false,
         },
       ]);
     } finally {
       setLoading(false);
-      // 웹로그
     }
   };
 
-  /**
-   * 타자기(타이핑) 효과: 마지막 봇 메시지를 한 글자씩 표시
-   */
+  // 타이핑 효과
   useEffect(() => {
     const last = messages[messages.length - 1];
     if (last?.sender === 'bot' && last.isTyping) {
@@ -196,69 +208,370 @@ export default function ChatContent({
       }, 30);
       return () => clearInterval(interval);
     }
-    // 마지막 메시지 id 변경 시에만 effect 실행
   }, [messages[messages.length - 1]?.id]);
 
-  /**
-   * 메시지 추가 시 자동으로 스크롤 하단으로 이동
-   */
+  // 메시지 추가 시 스크롤 하단으로 부드럽게 이동 - 개선된 버전
   useEffect(() => {
     if (listRef.current) {
-      listRef.current.scrollTop = listRef.current.scrollHeight;
+      setTimeout(() => {
+        if (listRef.current) {
+          listRef.current.scrollTop = listRef.current.scrollHeight;
+        }
+      }, 0);
     }
-  }, [messages, loading]);
+  }, [messages.length]);
+
+  // 스크롤 위치 감지하여 버튼 표시 여부 결정
+  useEffect(() => {
+    const handleScroll = () => {
+      if (listRef.current) {
+        const { scrollTop, scrollHeight, clientHeight } = listRef.current;
+        const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100;
+        setShowScrollButton(!isNearBottom && messages.length > 3);
+      }
+    };
+
+    const listElement = listRef.current;
+    if (listElement) {
+      listElement.addEventListener('scroll', handleScroll);
+      return () => listElement.removeEventListener('scroll', handleScroll);
+    }
+  }, [messages.length]);
+
+  // 스크롤 맨 아래로 이동하는 함수
+  const scrollToBottom = () => {
+    if (listRef.current) {
+      listRef.current.scrollTo({
+        top: listRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+      setShowScrollButton(false);
+    }
+  };
+
+  // -------------- 여기부터 실제 레이아웃 ---------------
 
   return (
-    <div className="h-full">
-      {/* 카테고리 + 메인 flex (아래에 배치) */}
-      <div className="flex h-[calc(100%-120px)]">
-        {/* 오른쪽: 메인(채팅) */}
-        <main className="flex-1 flex flex-col pl-8">
-          {/* 메시지 리스트 영역 */}
-          <div ref={listRef} className="overflow-auto p-2 space-y-3 bg-gray-50 h-[50vh]">
-            {messages.map(m => (
+    <>
+      {/* 스크롤바 스타일 추가 */}
+      <style>{scrollbarStyles}</style>
+
+      {/* 최상단 div: 고정 높이 채팅 레이아웃(원하는 값으로 조정 가능) */}
+      <div
+        className="chat-area"
+        style={{
+          background: '#f7f8fa',
+          borderRadius: 16,
+          padding: 24,
+          minHeight: 400,
+          boxShadow: '0 2px 8px rgba(80,80,90,0.06)',
+          maxHeight: '70vh',
+          overflowY: 'auto',
+        }}
+      >
+        <div
+          className="flex-1 relative overflow-hidden"
+          style={{
+            borderRadius: '16px',
+            border: '2px solid #e0e0e7',
+            display: 'flex',
+            flexDirection: 'column',
+            minHeight: 0, // flexbox 스크롤 안정화
+            height: '100%',
+          }}
+        >
+          {/* 채팅 헤더 */}
+          <div
+            className="px-6 py-4 border-b"
+            style={{
+              borderColor: '#e0e0e7',
+              background: 'linear-gradient(90deg, #f7f7fa 0%, #ececf0 100%)',
+            }}
+          >
+            <div className="flex items-center justify-between">
+              <h3
+                className="text-lg font-bold"
+                style={{
+                  color: '#444',
+                  fontFamily: '"Noto Serif KR", serif',
+                  letterSpacing: '0.05em',
+                }}
+              >
+                {t('aiAssistant.chat.title')}
+              </h3>
+              <div
+                className="px-3 py-1 rounded-full text-sm"
+                style={{
+                  background: '#f0f0f3',
+                  color: '#555',
+                  fontFamily: '"Noto Sans KR", sans-serif',
+                  fontWeight: '500',
+                }}
+              >
+                {t('aiAssistant.chat.currentField', { category: categoryLabel })}
+              </div>
+            </div>
+          </div>
+
+          {/* 메시지 리스트: 여기에만 스크롤 (height, minHeight 꼭 적용) */}
+          <div
+            ref={listRef}
+            className="flex-1 overflow-auto p-6 space-y-4 chat-scrollbar relative"
+            style={{
+              minHeight: 0,
+              maxHeight: '100%',
+              background: `
+                radial-gradient(circle at 20% 30%, rgba(220, 220, 230, 0.18) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(210, 210, 220, 0.13) 0%, transparent 50%),
+                linear-gradient(180deg, #f7f8fa 0%, #ececf0 100%)
+              `,
+            }}
+          >
+            {messages.map((m, index) => (
               <div
                 key={m.id}
-                className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'} mb-4 items-end`}
               >
                 {m.sender === 'user' ? (
-                  <span className="inline-block px-4 py-2 rounded-xl max-w-[70%] break-words bg-blue-500 text-white">
-                    {m.text}
-                  </span>
+                  <div className="max-w-[70%] group">
+                    {/* 사용자 말풍선 (오른쪽) */}
+                    <div
+                      className="relative p-4 rounded-2xl"
+                      style={{
+                        background: `
+                          linear-gradient(145deg, #e0e0e7 0%, #cfd0d7 100%)
+                        `,
+                        border: '1.5px solid #bfc0c7',
+                        boxShadow: `
+                          0 4px 16px rgba(120,120,130,0.10),
+                          inset 0 1px 0 rgba(255,255,255,0.08)
+                        `,
+                        color: '#444',
+                        fontFamily: '"Noto Sans KR", sans-serif',
+                        fontSize: '15px',
+                        lineHeight: '1.6',
+                        letterSpacing: '0.02em',
+                      }}
+                    >
+                      <div
+                        className="absolute top-4 -right-2 w-4 h-4 transform rotate-45"
+                        style={{
+                          background: 'linear-gradient(145deg, #e0e0e7 0%, #cfd0d7 100%)',
+                          border: '1.5px solid #bfc0c7',
+                          borderLeft: 'none',
+                          borderBottom: 'none',
+                        }}
+                      />
+                      <div className="relative z-10">{m.text}</div>
+                    </div>
+                    <div className="text-xs mt-1 text-right opacity-60" style={{ color: '#888' }}>
+                      {t('aiAssistant.chat.justNow')}
+                    </div>
+                  </div>
                 ) : (
-                  <span className="inline-block px-4 py-2 rounded-xl max-w-[70%] whitespace-pre-wrap break-words bg-gray-200 text-gray-800">
-                    <ReactMarkdown
-                      remarkPlugins={[remarkGfm]}
-                      components={{ p: ({ children }) => <>{children}</> }}
-                      children={m.displayText ?? m.text}
+                  <div className="flex max-w-[80%] group">
+                    {/* 이음이 프로필 */}
+                    <img
+                      src={EeumProfile}
+                      alt="이음이 프로필"
+                      className="rounded-full object-cover flex-shrink-0"
+                      style={{
+                        width: 32,
+                        height: 32,
+                        marginRight: 12,
+                        border: '2px solid #e0e0e7',
+                        background: '#f7f8fa',
+                      }}
                     />
-                  </span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div
+                        className="relative p-4 rounded-2xl"
+                        style={{
+                          background: `
+                            linear-gradient(145deg, #fff 0%, #ececf0 100%)
+                        `,
+                          border: '2px solid #e0e0e7',
+                          boxShadow: `
+                            0 4px 16px rgba(120,120,130,0.07),
+                            inset 0 1px 0 rgba(255,255,255,0.08)
+                        `,
+                          color: '#444',
+                          fontFamily: '"Noto Sans KR", sans-serif',
+                          fontSize: '15px',
+                          lineHeight: '1.7',
+                          letterSpacing: '0.02em',
+                        }}
+                      >
+                        <div
+                          className="absolute top-4 -left-2 w-4 h-4 transform rotate-45"
+                          style={{
+                            background: 'linear-gradient(145deg, #fff 0%, #ececf0 100%)',
+                            border: '2px solid #e0e0e7',
+                            borderRight: 'none',
+                            borderBottom: 'none',
+                          }}
+                        />
+                        <div
+                          className="absolute inset-0 rounded-2xl opacity-20 pointer-events-none"
+                          style={{
+                            backgroundImage: `
+                              radial-gradient(circle at 2px 2px, rgba(180, 180, 200, 0.08) 1px, transparent 0)
+                          `,
+                            backgroundSize: '16px 16px',
+                          }}
+                        />
+                        <div className="relative z-10">
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            components={{
+                              p: ({ children }) => <div className="mb-2 last:mb-0">{children}</div>,
+                              strong: ({ children }) => (
+                                <span className="font-semibold text-gray-700">{children}</span>
+                              ),
+                              em: ({ children }) => (
+                                <span className="italic text-gray-500">{children}</span>
+                              ),
+                            }}
+                            children={m.displayText ?? m.text}
+                          />
+                        </div>
+                      </div>
+                      <div className="text-xs mt-1 opacity-60" style={{ color: '#888' }}>
+                        {t('aiAssistant.chat.aiExpert')}
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
             ))}
-            {loading && <div className="text-center text-gray-500">답변 중...</div>}
+            {/* 로딩 인디케이터 */}
+            {loading && (
+              <div className="flex justify-start mb-4">
+                <div
+                  className="px-4 py-3 rounded-2xl"
+                  style={{
+                    background: 'linear-gradient(145deg, #fff 0%, #ececf0 100%)',
+                    border: '2px solid #e0e0e7',
+                    color: '#888',
+                  }}
+                >
+                  <div className="flex items-center space-x-2">
+                    <div className="flex space-x-1">
+                      <div
+                        className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                        style={{ animationDelay: '0ms' }}
+                      ></div>
+                      <div
+                        className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                        style={{ animationDelay: '150ms' }}
+                      ></div>
+                      <div
+                        className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                        style={{ animationDelay: '300ms' }}
+                      ></div>
+                    </div>
+                    <span className="text-sm font-medium">{t('aiAssistant.chat.loading')}</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
-          {/* 입력창 영역 */}
-          <div className="px-6 py-4 bg-white border-t flex items-center">
-            <input
-              type="text"
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && !loading && sendMessage()}
-              disabled={loading}
-              className="flex-1 px-4 py-2 bg-white border rounded-full focus:outline-none focus:ring disabled:opacity-50"
-              placeholder="질문을 입력하세요..."
-            />
+
+          {/* 🔥 스크롤 맨 아래로 이동 버튼 */}
+          {showScrollButton && (
             <button
-              onClick={() => sendMessage()}
-              disabled={loading}
-              className="ml-4 px-6 py-2 bg-indigo-600 text-white rounded-full disabled:opacity-50"
+              onClick={scrollToBottom}
+              className="absolute bottom-4 right-4 w-12 h-12 rounded-full shadow-lg transition-all duration-300 hover:scale-110 active:scale-95 z-10"
+              style={{
+                background: 'linear-gradient(145deg, #e0e0e7 0%, #cfd0d7 100%)',
+                border: '1.5px solid #bfc0c7',
+                color: '#555',
+                boxShadow:
+                  '0 4px 16px rgba(120,120,130,0.13), inset 0 1px 0 rgba(255,255,255,0.08)',
+              }}
+              title="최신 메시지로 이동"
             >
-              전송
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                style={{ margin: 'auto' }}
+              >
+                <path
+                  d="M7 14L12 19L17 14M12 19V5"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
             </button>
+          )}
+
+          {/* 입력창 */}
+          <div
+            className="px-6 py-4 border-t"
+            style={{
+              borderColor: '#e0e0e7',
+              background: 'linear-gradient(90deg, #f7f7fa 0%, #ececf0 100%)',
+            }}
+          >
+            <div className="flex items-center space-x-4">
+              <div className="flex-1 relative">
+                <input
+                  type="text"
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && !loading && sendMessage()}
+                  disabled={loading}
+                  className="w-full px-4 py-3 rounded-full border-2 focus:outline-none transition-all duration-300"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.97)',
+                    borderColor: '#e0e0e7',
+                    color: '#444',
+                    fontFamily: '"Noto Sans KR", sans-serif',
+                    fontSize: '15px',
+                    boxShadow: 'inset 0 2px 4px rgba(180,180,200,0.07)',
+                    backdropFilter: 'blur(10px)',
+                  }}
+                  placeholder={t('aiAssistant.chat.placeholder')}
+                  onFocus={e => {
+                    e.target.style.borderColor = '#bfc0c7';
+                    e.target.style.boxShadow =
+                      '0 0 0 3px rgba(180,180,200,0.10), inset 0 2px 4px rgba(180,180,200,0.07)';
+                  }}
+                  onBlur={e => {
+                    e.target.style.borderColor = '#e0e0e7';
+                    e.target.style.boxShadow = 'inset 0 2px 4px rgba(180,180,200,0.07)';
+                  }}
+                />
+              </div>
+              <button
+                onClick={() => sendMessage()}
+                disabled={loading || !input.trim()}
+                className="px-6 py-3 rounded-full font-medium transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95"
+                style={{
+                  background:
+                    loading || !input.trim()
+                      ? 'linear-gradient(145deg, #e0e0e7 0%, #cfd0d7 100%)'
+                      : 'linear-gradient(145deg, #bfc0c7 0%, #888a99 100%)',
+                  color: loading || !input.trim() ? '#aaa' : '#fff',
+                  border: '1.5px solid #bfc0c7',
+                  boxShadow:
+                    loading || !input.trim()
+                      ? 'none'
+                      : '0 4px 16px rgba(120,120,130,0.13), inset 0 1px 0 rgba(255,255,255,0.08)',
+                  fontFamily: '"Noto Sans KR", sans-serif',
+                  letterSpacing: '0.02em',
+                }}
+              >
+                {loading ? t('aiAssistant.chat.sending') : t('aiAssistant.chat.send')}
+              </button>
+            </div>
           </div>
-        </main>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

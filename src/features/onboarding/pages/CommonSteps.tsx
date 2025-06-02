@@ -4,6 +4,7 @@ import LanguageLevelSelector from '../components/common/LanguageLevelSelector';
 import EmergencyInfoForm from '../components/common/EmergencyInfoForm';
 import OnboardingTagSelector from '../components/common/TagSelector';
 import { interestTags, debateCategories } from '../components/common/CommonTags';
+import { useTranslation } from '@/shared/i18n';
 
 // 공통 스텝에서 사용할 언어 레벨 데이터
 export interface LanguageData {
@@ -46,6 +47,7 @@ const CommonStep: React.FC<CommonStepProps> = ({
   onEmergencyChange,
   onInterestsChange,
 }) => {
+  const { t } = useTranslation();
   // 한국어 레벨 변경 핸들러
   const handleKoreanLevelChange = (level: string) => {
     onLanguageChange({
@@ -94,17 +96,17 @@ const CommonStep: React.FC<CommonStepProps> = ({
           <LanguageLevelSelector
             value={languageData.koreanLevel}
             onChange={handleKoreanLevelChange}
-            title="한국어 능력"
-            subtitle="본인의 한국어 능력 수준을 선택해주세요. 이 정보는 맞춤형 콘텐츠 추천에 활용됩니다."
+            title={t('onboarding.common.language.title')}
+            subtitle={t('onboarding.common.language.subtitle')}
           />
         );
 
       case 'interests':
         // 관심사 태그 준비
         const interestCategories = [
-          { id: 'basic', name: '일반 관심사' },
-          { id: 'community', name: '커뮤니티 주제' },
-          { id: 'debate', name: '토론 주제' },
+          { id: 'info', name: t('onboarding.common.interests.categories.info') },
+          { id: 'community', name: t('onboarding.common.interests.categories.community') },
+          { id: 'debate', name: t('onboarding.common.interests.categories.debate') },
         ];
 
         return (
@@ -114,13 +116,13 @@ const CommonStep: React.FC<CommonStepProps> = ({
             selectedTags={interests}
             onChange={onInterestsChange}
             maxSelection={10}
-            title="관심사 선택"
-            description="관심 있는 주제를 선택해주세요. 최대 10개까지 선택 가능합니다."
+            title={t('onboarding.common.interests.title')}
+            description={t('onboarding.common.interests.description')}
             grouped={true}
             groupMapping={{
-              basic: interestTags.slice(0, 20).map(tag => tag.id),
-              community: interestTags.slice(20, 37).map(tag => tag.id),
-              debate: interestTags.slice(37).map(tag => tag.id),
+              info: interestTags.slice(23, 31).map(tag => tag.id),
+              community: interestTags.slice(0, 17).map(tag => tag.id),
+              debate: interestTags.slice(17, 23).map(tag => tag.id),
             }}
           />
         );
@@ -136,8 +138,8 @@ const CommonStep: React.FC<CommonStepProps> = ({
             onMedicalConditionsChange={handleMedicalConditionsChange}
             onFoodAllergiesChange={handleFoodAllergiesChange}
             onReceiveEmergencyAlertsChange={handleReceiveAlertsChange}
-            title="응급 상황 설정"
-            subtitle="한국 체류 중 응급 상황에 대비하기 위한 정보를 입력해주세요. 이 정보는 응급 상황 발생 시 도움을 드리는 데 사용됩니다."
+            title={t('onboarding.common.emergency.title')}
+            subtitle={t('onboarding.common.emergency.subtitle')}
           />
         );
 

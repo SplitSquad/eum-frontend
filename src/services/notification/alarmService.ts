@@ -4,6 +4,8 @@ export interface AlarmDetail {
   alarmId: number;
   content: string;
   language: string;
+  serviceType: string;
+  postId: number;
   timestamp?: string;
 }
 
@@ -11,7 +13,6 @@ export interface AlarmDetail {
  * 읽지 않은 알람 전체 조회
  * GET /alarms/{userId}
  */
-
 export async function fetchUnreadAlarms(userId: string | number): Promise<AlarmDetail[]> {
   const token = localStorage.getItem('auth_token')!;
   try {

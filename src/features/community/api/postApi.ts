@@ -117,39 +117,78 @@ export const PostApi = {
     sortBy?: string;
     location?: string;
     tag?: string;
+    tags?: string[];
     postType?: PostType;
   }): Promise<PostListResponse> => {
     try {
       console.log('[DEBUG] getPosts 요청 시작, 원본 파라미터:', params);
 
-      // API 파라미터 변환 (백엔드 파라미터명에 맞게 변환)
+      // API 파라미터 변환 (백엔드 파라미터명에 맞게 변환) - 번역 없이 그대로 전달
       const apiParams: Record<string, any> = {
         page: params.page !== undefined ? params.page : 0,
         size: params.size || 6,
-        category: params.category === '전체' ? '전체' : params.category || '전체',
+        category: params.category || '전체',
         sort:
           params.sortBy === 'popular' ? 'views' : params.sortBy === 'oldest' ? 'oldest' : 'latest',
       };
 
-      // postType 처리 - 백엔드는 빈 문자열을 허용하지 않음, 항상 값이 있어야 함
-      apiParams.postType = params.postType || '자유';
+      console.log('[DEBUG] getPosts 정렬 파라미터 변환:', { 
+        원본sortBy: params.sortBy, 
+        변환후sort: apiParams.sort 
+      });
 
-      // region(지역) 처리 - 자유 게시글이면 무조건 '자유'로, 그렇지 않으면 location 값 사용
+      // postType 처리 - 백엔드는 빈 문자열을 허용하지 않음, 항상 값이 있어야 함
+      const postType = params.postType || '자유';
+      apiParams.postType = postType;
+
+      // region(지역) 처리 수정 - postStore에서 전달된 값 그대로 사용
       if (apiParams.postType === '자유') {
         apiParams.region = '자유';
       } else {
-        apiParams.region = params.location === '전체' ? '전체' : params.location || '전체';
+        // 모임 게시글의 경우 postStore에서 전달된 location 값을 그대로 사용
+        const location = params.location;
+        console.log('[DEBUG] postApi region 처리:', { 
+          전달받은location: location, 
+          postType: apiParams.postType 
+        });
+        
+        if (!location || location === '전체') {
+          apiParams.region = '전체';
+        } else {
+          // postStore에서 전달된 실제 지역명을 그대로 사용
+          apiParams.region = location;
+        }
+        
+        console.log('[DEBUG] postApi 최종 region 설정:', apiParams.region);
       }
 
-      // 태그 처리
-      if (params.tag && params.tag !== '전체') {
-        // 콤마로 분리된 태그 문자열을 배열로 변환
-        const tagsArray = params.tag.split(',').map(tag => tag.trim());
-        // 태그 배열을 직접 할당
-        apiParams.tags = tagsArray;
+      // 태그 처리 - undefined, null, 빈 문자열이거나 '전체'인 경우 태그 필터링 해제
+      if (!params.tag || params.tag === '전체' || params.tag === '') {
+        // 태그 필터링 해제 - tags 파라미터를 명시적으로 제거
+        console.log('[DEBUG] postApi - 태그 필터링 해제');
+      } else {
+        // 태그가 있는 경우에만 처리
+        const tagsArray = params.tag.split(',').map(tag => tag.trim()).filter(tag => tag);
+        if (tagsArray.length > 0) {
+          // Spring Boot가 기대하는 형식으로 tags 배열 전달
+          apiParams.tags = tagsArray; // 배열 형태
 
-        // 로그에 태그 정보 명확하게 표시
-        console.log('[DEBUG] 태그 필터링 적용:', { tag: params.tag, tagsArray });
+          // 로그에 태그 정보 명확하게 표시
+          console.log('[DEBUG] 태그 필터링 적용:', {
+            원본태그: params.tag,
+            태그배열: tagsArray,
+          });
+        } else {
+          console.log('[DEBUG] postApi - 빈 태그 배열, 태그 필터링 해제');
+        }
+      }
+      
+      // postStore에서 tags 배열로 전달되는 경우도 처리
+      if (params.tags && Array.isArray(params.tags) && params.tags.length > 0) {
+        apiParams.tags = params.tags;
+        console.log('[DEBUG] 태그 배열로 필터링 적용:', {
+          태그배열: params.tags,
+        });
       }
 
       // 실제 API 요청 로그
@@ -163,12 +202,13 @@ export const PostApi = {
           const searchParams = new URLSearchParams();
           Object.entries(params).forEach(([key, value]) => {
             if (Array.isArray(value)) {
-              // 배열인 경우 key[]=value1&key[]=value2 형식으로 직렬화
-              value.forEach(v => searchParams.append(`${key}[]`, v));
+              // Spring Boot가 기대하는 형식: tags=tag1&tags=tag2
+              value.forEach(v => searchParams.append(key, v));
             } else {
               searchParams.append(key, String(value));
             }
           });
+          console.log('[DEBUG] 최종 쿼리 문자열:', searchParams.toString());
           return searchParams.toString();
         },
       });
@@ -240,6 +280,7 @@ export const PostApi = {
             nickname: post.userName || '알 수 없음',
             profileImage: '',
             role: 'USER',
+            nation: post.nation || '',
           },
           viewCount: post.views || 0,
           likeCount: post.like || 0,
@@ -374,6 +415,21 @@ export const PostApi = {
         case 'title_content':
           searchByValue = '제목_내용';
           break;
+        case '作成者': // 일본어 작성자
+          searchByValue = '작성자';
+          break;
+        case '作者': // 중국어 작성자 (간체/번체 공통)
+          searchByValue = '작성자';
+          break;
+        case 'Autor': // 독일어 & 스페인어 작성자
+          searchByValue = '작성자';
+          break;
+        case 'Auteur': // 프랑스어 작성자
+          searchByValue = '작성자';
+          break;
+        case 'Автор': // 러시아어 작성자
+          searchByValue = '작성자';
+          break;
         default:
           // 이미 한글로 전달된 경우를 처리
           if (['제목', '내용', '작성자', '제목_내용'].includes(searchBy)) {
@@ -397,15 +453,21 @@ export const PostApi = {
       const sortValue = options.sort || 'createdAt,desc';
       // SpringBoot 형식의 sort를 backend 형식으로 변환
       let backendSort;
-      if (sortValue.includes('createdAt,desc')) {
-        backendSort = 'latest';
+      if (sortValue.includes('views,desc') || sortValue.includes('views')) {
+        backendSort = 'views'; // 조회수 내림차순 (인기순)
       } else if (sortValue.includes('createdAt,asc')) {
-        backendSort = 'oldest';
-      } else if (sortValue.includes('views')) {
-        backendSort = 'views';
+        backendSort = 'oldest'; // 날짜 오름차순 (오래된순)
+      } else if (sortValue.includes('createdAt,desc') || sortValue === 'latest') {
+        backendSort = 'latest'; // 날짜 내림차순 (최신순)
       } else {
         backendSort = 'latest'; // 기본값
       }
+      
+      console.log('[DEBUG] 정렬 파라미터 변환:', { 
+        원본: sortValue, 
+        변환후: backendSort 
+      });
+      
       searchParams.append('sort', backendSort);
 
       // 카테고리 (전체인 경우 '전체' 값으로 명시적 전달)
@@ -562,6 +624,7 @@ export const PostApi = {
             nickname: post.userName || post.writer?.nickname || '알 수 없음',
             profileImage: post.writer?.profileImage || '',
             role: post.writer?.role || 'USER',
+            nation: post.nation || post.writer?.nation || '',
           },
           createdAt: post.createdAt || new Date().toISOString(),
           viewCount: post.views || post.viewCount || 0,
@@ -603,13 +666,15 @@ export const PostApi = {
   /**
    * 게시글 상세 조회
    */
-  getPostById: async (postId: number, signal?: AbortSignal, noViewCount: boolean = false): Promise<Post> => {
+  getPostById: async (
+    postId: number,
+    signal?: AbortSignal,
+    noViewCount: boolean = false
+  ): Promise<Post> => {
     try {
       // 조회수를 증가시키지 않는 옵션 추가 (언어 변경 시 사용)
-      const url = noViewCount 
-        ? `${BASE_URL}/${postId}?noViewCount=true` 
-        : `${BASE_URL}/${postId}`;
-        
+      const url = noViewCount ? `${BASE_URL}/${postId}?noViewCount=true` : `${BASE_URL}/${postId}`;
+
       const response = await apiClient.get<any>(url, { signal });
 
       // 백엔드 응답 구조와 일치하도록 데이터 변환
@@ -621,6 +686,7 @@ export const PostApi = {
           nickname: response.userName || '알 수 없음',
           profileImage: '',
           role: 'USER',
+          nation: response.nation || '',
         },
         viewCount: response.views || 0,
         likeCount: response.like || 0,
@@ -640,9 +706,21 @@ export const PostApi = {
     }
   },
 
+  // 게시글 원문 조회
+  getPostOriginal: async (postId: number): Promise<string> => {
+    try {
+      const response = await apiClient.get<string>(`${BASE_URL}/origin/${postId}`);
+      console.log('[DEBUG] 게시글 원문 조회 응답:', response);
+      return response;
+    } catch (error) {
+      console.error('게시글 원문 조회 실패:', error);
+      throw error;
+    }
+  },
+
   /**
    * 게시글 조회수 증가
-   * 참고: 현재 getPostById API 호출 시 백엔드에서 자동으로 조회수가 증가하므로 
+   * 참고: 현재 getPostById API 호출 시 백엔드에서 자동으로 조회수가 증가하므로
    * 이 메서드는 실제로 호출하지 않아야 합니다. noViewCount=true 파라미터를 사용하여
    * 필요한 경우 조회수 증가를 방지할 수 있습니다.
    */
@@ -702,7 +780,8 @@ export const PostApi = {
   updatePost: async (
     postId: number,
     postDto: ApiUpdatePostRequest,
-    files: File[] = []
+    files: File[] = [],
+    removeFileIds: number[] = []
   ): Promise<Post> => {
     try {
       // DTO 기본값 채우기
@@ -716,6 +795,8 @@ export const PostApi = {
         postType: postDto.postType || '자유',
         // 자유 게시글은 '자유'로, 모임 게시글은 선택된 지역 사용
         address: postDto.postType === '자유' ? '자유' : postDto.address || '',
+        // 삭제할 파일 ID 목록 추가
+        removeFileIds: removeFileIds.length > 0 ? removeFileIds : undefined,
       };
 
       console.log('[DEBUG] 게시글 수정 요청 DTO:', dto);
@@ -811,6 +892,7 @@ export const PostApi = {
             nickname: post.userName || '알 수 없음',
             profileImage: '',
             role: 'USER',
+            nation: post.nation || '',
           },
           viewCount: post.views || 0,
           likeCount: post.like || 0,

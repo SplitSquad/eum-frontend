@@ -1,139 +1,168 @@
 'use client';
 import React, { useState, useRef, useEffect } from 'react';
 import { callAgentic } from '@/shared/utils/Agentic';
-import { callJobAgent, processCoverLetterResponse } from '@/shared/utils/JobAgent';
-import { CoverLetterState } from '@/types/CoverLetterTypes';
-type Message = { id: number; sender: 'user' | 'bot'; text: string };
-type AgentType = 'schedule' | 'job';
-export default function ModalContent() {
-  const [activeAgent, setActiveAgent] = useState<AgentType>('schedule');
+import { useModalStore } from '@/shared/store/ModalStore';
+// import { callJobAgent, processCoverLetterResponse } from '@/shared/utils/JobAgent';
+// import { CoverLetterState } from '@/types/CoverLetterTypes';
 
-  // 일정 에이전트 상태
-  const [scheduleMessages, setScheduleMessages] = useState<Message[]>([]);
-  const [scheduleLoading, setScheduleLoading] = useState(false);
+type Message = {
+  id: number;
+  sender: 'user' | 'bot';
+  text?: string;
+  imageUrl?: string;
+  pdfUrl?: string;
+  search?: { title: string; link: string }[];
+  Amenities?: string;
+  location?: {
+    place_name: string;
+    address_name: string;
+    phone: string;
+    distance: string;
+  }[];
+  post?: string;
+  calendar_add?: string;
+  calendar_edit?: string;
+  calendar_delete?: string;
+  calendar_check?: string;
+};
 
-  // 구직 에이전트 상태
-  const [jobMessages, setJobMessages] = useState<Message[]>([]);
-  const [jobLoading, setJobLoading] = useState(false);
-  const [coverLetterState, setCoverLetterState] = useState<CoverLetterState | null>(null);
+// 타입 추가
+interface ModalContentProps {
+  adjustKey?: number;
+  btnRect?: DOMRect;
+}
+
+export default function ModalContent({ adjustKey, btnRect }: ModalContentProps) {
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: Date.now(),
+      sender: 'bot',
+      text: '무엇을 도와드릴까요? (예: 일정 작성, 게시글 작성 등)',
+    },
+  ]);
+  const [loading, setLoading] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
   const [input, setInput] = useState('');
-  // 초기 환영 메시지
-  useEffect(() => {
-    if (activeAgent === 'schedule' && scheduleMessages.length === 0) {
-      setScheduleMessages([
-        {
-          id: Date.now(),
-          sender: 'bot',
-          text: '일정 및 게시글 작성 에이전트입니다. 무엇을 도와드릴까요?',
-        },
-      ]);
-    }
-    if (activeAgent === 'job' && jobMessages.length === 0) {
-      setJobMessages([
-        { id: Date.now(), sender: 'bot', text: '구직 에이전트입니다. 어떤 직무를 찾고 계신가요?' },
-      ]);
-    }
-  }, [activeAgent]);
-  // 자동 스크롤
+  const { openModal, content } = useModalStore();
+
+  const downloadImage = url => {
+    fetch(url)
+      .then(response => response.blob())
+      .then(blob => {
+        const blobUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = 'downloaded-image.jpg'; // 원하는 파일명으로 설정
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(blobUrl);
+      })
+      .catch(error => {
+        console.error('이미지 다운로드 중 오류 발생:', error);
+      });
+  };
+
   useEffect(() => {
     if (listRef.current) {
       listRef.current.scrollTop = listRef.current.scrollHeight;
     }
-  }, [scheduleMessages, jobMessages, scheduleLoading, jobLoading, activeAgent]);
-  const sendMessage = async () => {
-    const text = input.trim();
+  }, [messages, loading]);
+
+  // 모달 위치 보정: 모달의 오른쪽 아래가 btnRect의 왼쪽 위와 겹치도록
+  useEffect(() => {
+    if (modalRef.current && btnRect) {
+      const modalWidth = modalRef.current.offsetWidth;
+      const modalHeight = modalRef.current.offsetHeight;
+      const x = btnRect.left - modalWidth;
+      const y = btnRect.top - modalHeight;
+      const w: any = window;
+      if (w.__lastModalPos?.x === x && w.__lastModalPos?.y === y) return;
+      w.__lastModalPos = { x, y };
+      openModal(content, { x, y });
+    }
+    // eslint-disable-next-line
+  }, [btnRect]);
+
+  const sendMessage = async (msgText?: string) => {
+    const text = (msgText ?? input).trim();
     if (!text) return;
     setInput('');
-    if (activeAgent === 'schedule') {
-      // 일정 에이전트 로직
-      const nextId = Date.now();
-      setScheduleMessages(msgs => [...msgs, { id: nextId, sender: 'user', text }]);
-      setScheduleLoading(true);
-      try {
-        const { response } = await callAgentic(text, 'user_id');
-        setScheduleMessages(msgs => [...msgs, { id: nextId + 1, sender: 'bot', text: response }]);
-      } catch {
-        setScheduleMessages(msgs => [
+    const nextId = Date.now();
+    setMessages(msgs => [...msgs, { id: nextId, sender: 'user', text }]);
+    setLoading(true);
+    try {
+      // 👉 API 한 번만 호출
+      const result = await callAgentic(text, 'user_id');
+      console.log('[Agentic 응답 전체]', result);
+
+      const { response, metadata, state, url } = result;
+
+      // 👉 state나 metadata 활용하고 싶으면 여기서 처리
+      console.log('State:', state);
+      console.log('Metadata:', metadata);
+      console.log('url:', url);
+
+      // const targetStates = ['cover_letter_state', 'event_state', 'find_food', 'job_search', 'weather'];
+      if (state == 'cover_letter_state' || state === 'resume_service_state') {
+        setMessages(msgs => [
           ...msgs,
-          { id: nextId + 2, sender: 'bot', text: '응답 중 오류가 발생했습니다.' },
+          { id: nextId + 1, sender: 'bot', text: response },
+          { id: nextId + 2, sender: 'bot', pdfUrl: url },
         ]);
-      } finally {
-        setScheduleLoading(false);
-      }
-    } else {
-      // 구직 에이전트 로직
-      const nextId = Date.now();
-      setJobMessages(msgs => [...msgs, { id: nextId, sender: 'user', text }]);
-      setJobLoading(true);
-      try {
-        if (!coverLetterState) {
-          // 첫 메시지인 경우 자기소개서 시작
-          const response = await callJobAgent(text, 'user_id');
-          setCoverLetterState(response.state);
-          setJobMessages(msgs => [
-            ...msgs,
-            { id: nextId + 1, sender: 'bot', text: response.message },
-          ]);
-        } else {
-          // 이후 메시지는 자기소개서 응답 처리
-          const response = await processCoverLetterResponse(text, coverLetterState);
-          setCoverLetterState(response.state);
-          if (response.cover_letter) {
-            // 자기소개서가 생성된 경우
-            setJobMessages(msgs => [
-              ...msgs,
-              { id: nextId + 1, sender: 'bot', text: '자기소개서가 생성되었습니다!' },
-            ]);
-            // PDF 다운로드 링크 표시
-            if (response.pdf_path) {
-              setJobMessages(msgs => [
-                ...msgs,
-                {
-                  id: nextId + 3,
-                  sender: 'bot',
-                  text: `PDF 다운로드 링크: ${response.pdf_path}`,
-                },
-              ]);
-            }
-          } else {
-            // 다음 질문 표시
-            setJobMessages(msgs => [
-              ...msgs,
-              { id: nextId + 1, sender: 'bot', text: response.message },
-            ]);
-          }
+      } else if (state === 'find_food_state') {
+        let parsedLocation = [];
+        try {
+          parsedLocation = JSON.parse(response.replace(/'/g, '"'));
+        } catch (err) {
+          console.error('위치 결과 파싱 실패:', err);
         }
-      } catch (error) {
-        setJobMessages(msgs => [
+        setMessages(msgs => [...msgs, { id: nextId + 1, sender: 'bot', location: parsedLocation }]);
+      } else if (state == 'calendar_check_state') {
+        setMessages(msgs => [...msgs, { id: nextId + 1, sender: 'bot', calendar_check: response }]);
+      } else if (state == 'calendar_delete') {
+        setMessages(msgs => [
           ...msgs,
-          { id: nextId + 2, sender: 'bot', text: '구직 에이전트 오류가 발생했습니다.' },
+          { id: nextId + 1, sender: 'bot', calendar_delete: response },
         ]);
-      } finally {
-        setJobLoading(false);
+      } else if (state == 'calendar_general_add') {
+        setMessages(msgs => [...msgs, { id: nextId + 1, sender: 'bot', calendar_add: response }]);
+      } else if (state == 'calendar_general_edit') {
+        setMessages(msgs => [...msgs, { id: nextId + 1, sender: 'bot', calendar_edit: response }]);
+      } else if (state == 'location_category') {
+        setMessages(msgs => [...msgs, { id: nextId + 1, sender: 'bot', Amenities: response }]);
+      } else if (state === 'event_state' || state === 'job_search_state') {
+        let parsedSearch = [];
+        try {
+          parsedSearch = JSON.parse(response.replace(/'/g, '"')); // 작은따옴표 → 큰따옴표
+        } catch (err) {
+          console.error('검색 결과 파싱 실패:', err);
+        }
+        setMessages(msgs => [...msgs, { id: nextId + 1, sender: 'bot', search: parsedSearch }]);
+      } else if (url !== 'None') {
+        // const combinedMessage = `${response}\n👉 관련 링크: ${url}`;
+        setMessages(msgs => [
+          ...msgs,
+          { id: nextId + 1, sender: 'bot', text: response },
+          { id: nextId + 2, sender: 'bot', imageUrl: url },
+        ]);
+      } else {
+        // 👉 bot 메시지 추가
+        setMessages(msgs => [...msgs, { id: nextId + 1, sender: 'bot', text: response }]);
       }
+    } catch {
+      setMessages(msgs => [
+        ...msgs,
+        { id: nextId + 2, sender: 'bot', text: '응답 중 오류가 발생했습니다.' },
+      ]);
+    } finally {
+      setLoading(false);
     }
   };
-  // 현재 렌더할 메시지와 로딩 상태 선택
-  const messages = activeAgent === 'schedule' ? scheduleMessages : jobMessages;
-  const loading = activeAgent === 'schedule' ? scheduleLoading : jobLoading;
+
   return (
-    <div className="flex flex-col h-[400px] w-[350px] bg-white rounded-lg shadow-lg">
-      {/* 탭 버튼 */}
-      <div className="flex">
-        <button
-          className={`flex-1 py-2 ${activeAgent === 'schedule' ? 'bg-indigo-600 text-white' : 'bg-gray-200'}`}
-          onClick={() => setActiveAgent('schedule')}
-        >
-          일정 에이전트
-        </button>
-        <button
-          className={`flex-1 py-2 ${activeAgent === 'job' ? 'bg-indigo-600 text-white' : 'bg-gray-200'}`}
-          onClick={() => setActiveAgent('job')}
-        >
-          구직 에이전트
-        </button>
-      </div>
+    <div ref={modalRef} className="flex flex-col h-[400px] w-[350px] bg-white rounded-lg shadow-lg">
       {/* 메시지 리스트 */}
       <div ref={listRef} className="flex-1 overflow-auto p-3 space-y-2 bg-gray-50">
         {messages.map(m => (
@@ -146,7 +175,255 @@ export default function ModalContent() {
                 m.sender === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800'
               }`}
             >
-              {m.text}
+              {m.imageUrl ? (
+                m.imageUrl.includes('amazonaws') ? (
+                  <>
+                    <img src={m.imageUrl} alt="AI 응답 이미지" className="max-w-full rounded-md" />
+                    <a
+                      href={m.imageUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-blue-600 underline"
+                    >
+                      이미지 다운로드
+                    </a>
+                  </>
+                ) : (
+                  <>
+                    <img src={m.imageUrl} alt="AI 응답 이미지" className="max-w-full rounded-md" />
+                    <button
+                      onClick={() => downloadImage(m.imageUrl!)}
+                      className="text-sm text-blue-600 underline"
+                    >
+                      이미지 다운로드
+                    </button>
+                  </>
+                )
+              ) : m.post ? (
+                <div className="space-y-2 text-sm text-gray-800">
+                  {m.post.split('\n').map((line, idx) => {
+                    const match = line.match(/^(제목|카테고리|내용):\s*(.*)/);
+                    if (match) {
+                      const [, label, content] = match;
+                      return (
+                        <div key={idx}>
+                          <strong>{label}:</strong> {content}
+                        </div>
+                      );
+                    } else {
+                      // '글이 작성되었습니다.' 같은 일반 텍스트 출력
+                      return <div key={idx}>{line}</div>;
+                    }
+                  })}
+                </div>
+              ) : m.calendar_check ? (
+                (() => {
+                  type CalendarEvent = {
+                    summary: string;
+                    description?: string;
+                    start: { dateTime: string; timeZone?: string };
+                    end: { dateTime: string; timeZone?: string };
+                  };
+
+                  let events: CalendarEvent[] = [];
+
+                  try {
+                    events = JSON.parse(m.calendar_check);
+                  } catch (err) {
+                    console.error('calendar_check 파싱 실패:', err);
+                    return <div className="text-red-600">⛔ 일정을 불러오는 데 실패했습니다.</div>;
+                  }
+
+                  return (
+                    <div className="space-y-3">
+                      <div className="text-sm font-medium text-indigo-600 mb-1">📅 전체 일정</div>
+                      {events.map((event, index) => (
+                        <div key={index} className="border rounded-lg p-4 shadow-sm bg-white">
+                          <div className="text-lg font-semibold text-blue-600">{event.summary}</div>
+                          <div className="text-sm text-gray-500 mb-1">
+                            {event.description && event.description !== 'N/A'
+                              ? event.description
+                              : '설명 없음'}
+                          </div>
+                          <div className="text-sm">
+                            🕒 <span className="font-medium">시작:</span>{' '}
+                            {new Date(event.start.dateTime).toLocaleString('ko-KR')}
+                          </div>
+                          <div className="text-sm">
+                            🕓 <span className="font-medium">종료:</span>{' '}
+                            {new Date(event.end.dateTime).toLocaleString('ko-KR')}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()
+              ) : m.calendar_delete ? (
+                (() => {
+                  let event;
+                  try {
+                    const fixed = m.calendar_delete.replace(/'/g, '"');
+                    event = JSON.parse(fixed);
+                  } catch (err) {
+                    console.error('calendar_delete 파싱 실패:', err);
+                    return <div className="text-red-600">⛔ 삭제된 일정을 불러올 수 없습니다.</div>;
+                  }
+
+                  return (
+                    <div className="border rounded-lg p-4 mb-2 shadow-sm bg-white opacity-60">
+                      <div className="text-sm font-medium text-red-600 mb-2">
+                        🗑️ 일정이 삭제되었습니다.
+                      </div>
+                      <div className="text-lg font-semibold text-gray-700 line-through">
+                        {event.summary}
+                      </div>
+                      <div className="text-sm text-gray-500 mb-1 line-through">
+                        {event.description}
+                      </div>
+                      <div className="text-sm line-through">
+                        🕒 <span className="font-medium">시작:</span>{' '}
+                        {new Date(event.startDateTime).toLocaleString('ko-KR')}
+                      </div>
+                      <div className="text-sm line-through">
+                        🕓 <span className="font-medium">종료:</span>{' '}
+                        {new Date(event.endDateTime).toLocaleString('ko-KR')}
+                      </div>
+                    </div>
+                  );
+                })()
+              ) : m.calendar_add ? (
+                (() => {
+                  let event;
+                  try {
+                    // 문자열에 작은따옴표가 있어서 JSON.parse 전에 큰따옴표로 변환
+                    const fixed = m.calendar_add.replace(/'/g, '"');
+                    event = JSON.parse(fixed);
+                  } catch (err) {
+                    console.error('calendar_add 파싱 실패:', err);
+                    return <div className="text-red-600">⛔ 일정 정보를 불러올 수 없습니다.</div>;
+                  }
+
+                  return (
+                    <div className="border rounded-lg p-4 mb-2 shadow-sm bg-white">
+                      <div className="text-sm font-medium text-green-600 mb-2">
+                        ✅ 일정이 성공적으로 추가되었습니다.
+                      </div>
+                      <div className="text-lg font-semibold text-blue-600">{event.summary}</div>
+                      <div className="text-sm text-gray-500 mb-1">{event.description}</div>
+                      {event.location && (
+                        <div className="text-sm">
+                          📍 <span className="font-medium">장소:</span>{' '}
+                          {event.location || '장소 없음'}
+                        </div>
+                      )}
+                      <div className="text-sm">
+                        🕒 <span className="font-medium">시작:</span>{' '}
+                        {new Date(event.startDateTime).toLocaleString('ko-KR')}
+                      </div>
+                      <div className="text-sm">
+                        🕓 <span className="font-medium">종료:</span>{' '}
+                        {new Date(event.endDateTime).toLocaleString('ko-KR')}
+                      </div>
+                    </div>
+                  );
+                })()
+              ) : m.calendar_edit ? (
+                (() => {
+                  let event;
+                  try {
+                    // 작은따옴표 → 큰따옴표로 변환하여 JSON 파싱
+                    const fixed = m.calendar_edit.replace(/'/g, '"');
+                    event = JSON.parse(fixed);
+                  } catch (err) {
+                    console.error('calendar_edit 파싱 실패:', err);
+                    return <div className="text-red-600">⛔ 수정된 일정을 불러올 수 없습니다.</div>;
+                  }
+
+                  return (
+                    <div className="border rounded-lg p-4 mb-2 shadow-sm bg-white">
+                      <div className="text-sm font-medium text-yellow-600 mb-2">
+                        ✏️ 일정이 성공적으로 수정되었습니다.
+                      </div>
+                      <div className="text-lg font-semibold text-blue-600">{event.summary}</div>
+                      <div className="text-sm text-gray-500 mb-1">{event.description}</div>
+                      {event.location && (
+                        <div className="text-sm">
+                          📍 <span className="font-medium">장소:</span>{' '}
+                          {event.location || '장소 없음'}
+                        </div>
+                      )}
+                      <div className="text-sm">
+                        🕒 <span className="font-medium">시작:</span>{' '}
+                        {new Date(event.startDateTime).toLocaleString('ko-KR')}
+                      </div>
+                      <div className="text-sm">
+                        🕓 <span className="font-medium">종료:</span>{' '}
+                        {new Date(event.endDateTime).toLocaleString('ko-KR')}
+                      </div>
+                    </div>
+                  );
+                })()
+              ) : m.location ? (
+                <ul className="space-y-2">
+                  {Array.isArray(m.location) &&
+                    m.location.map((item, index) => (
+                      <li key={index} className="text-sm text-gray-800">
+                        <div className="font-semibold text-base">{item.place_name}</div>
+                        <div>📍 주소: {item.address_name}</div>
+                        <div>📞 전화번호: {item.phone ? item.phone : '없음'}</div>
+                        <div>📏 거리: {item.distance}m</div>
+                      </li>
+                    ))}
+                </ul>
+              ) : m.Amenities ? (
+                <ul className="space-y-1">
+                  {(m.Amenities.match(/\d+\.\s*[^0-9]+/g) || []).map((item, index) => {
+                    const [_, num, name] = item.match(/(\d+\.)\s*(.+)/) || [];
+                    return (
+                      <li key={index}>
+                        <span className="font-bold">{num}</span>{' '}
+                        <a
+                          href="#"
+                          className="text-blue-600 underline"
+                          onClick={e => {
+                            e.preventDefault();
+                            sendMessage(name.trim()); // ✅ 이렇게 해야 클릭 시 해당 항목으로 API 재질문 가능
+                          }}
+                        >
+                          &lt;{name.trim()}&gt;
+                        </a>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : m.pdfUrl ? (
+                <a
+                  href={m.pdfUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-indigo-600 underline"
+                >
+                  📄 PDF 파일 열기
+                </a>
+              ) : m.search ? (
+                <ul className="space-y-1">
+                  {Array.isArray(m.search) &&
+                    m.search.map((item: { title: string; link: string }, index: number) => (
+                      <li key={index}>
+                        <a
+                          href={item.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-blue-600 underline"
+                        >
+                          🔗 {item.title}
+                        </a>
+                      </li>
+                    ))}
+                </ul>
+              ) : (
+                m.text
+              )}
             </span>
           </div>
         ))}
@@ -165,14 +442,10 @@ export default function ModalContent() {
           onKeyDown={e => e.key === 'Enter' && !loading && sendMessage()}
           disabled={loading}
           className="flex-1 px-3 py-1 bg-white border rounded-lg focus:outline-none focus:ring disabled:opacity-50"
-          placeholder={
-            activeAgent === 'schedule'
-              ? '일정 및 게시글 작성 요청을 입력하세요...'
-              : '구직 관련 질문을 입력하세요...'
-          }
+          placeholder="질문이나 요청을 입력하세요..."
         />
         <button
-          onClick={sendMessage}
+          onClick={() => sendMessage()}
           disabled={loading}
           className="ml-2 px-4 py-1 bg-indigo-600 text-white rounded-lg disabled:opacity-50"
         >

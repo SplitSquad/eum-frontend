@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useDebateStore } from '../store';
 import { Debate, mapIsVotedStateToVoteType, ReactionType, mapIsStateToEmotionType } from '../types';
 import {
@@ -25,11 +25,15 @@ import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAlt
 import SentimentVeryDissatisfiedIcon from '@mui/icons-material/SentimentVeryDissatisfied';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { styled } from '@mui/material/styles';
-import { useLocation } from 'react-router-dom';
-import { formatDate, formatRelativeTime } from '../utils/dateUtils';
+import { useTranslation } from '@/shared/i18n';
+import { useLanguageStore } from '@/features/theme/store/languageStore';
 import DebateLayout from '../components/common/DebateLayout';
 import CommentSection from '../components/comment/CommentSection';
 import DebateApi, { getVotesByDebateId } from '../api/debateApi';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { formatDate, formatRelativeTime } from '../utils/dateUtils';
+
+import FlagDisplay from '../../../shared/components/FlagDisplay';
 
 // Import the recharts library for pie charts
 // The recharts package should be installed with: npm install recharts
@@ -121,9 +125,12 @@ const CategoryBadge = styled(Box, {
 
 const VoteButtonGroup = styled(Box)(({ theme }) => ({
   display: 'flex',
+  flexDirection: 'row',
   gap: theme.spacing(2),
-  marginTop: theme.spacing(3),
-  marginBottom: theme.spacing(3),
+  justifyContent: 'space-between',
+  marginBottom: 0,
+  paddingLeft: theme.spacing(2),
+  paddingRight: theme.spacing(2),
 }));
 
 interface VoteButtonProps {
@@ -134,30 +141,61 @@ interface VoteButtonProps {
 const VoteButton = styled(Button, {
   shouldForwardProp: prop => prop !== 'color' && prop !== 'selected',
 })<VoteButtonProps>(({ theme, color, selected }) => ({
-  flex: 1,
   display: 'flex',
-  flexDirection: 'column',
+  flexDirection: 'row',
   alignItems: 'center',
-  padding: theme.spacing(2),
+  justifyContent: 'center',
+  padding: theme.spacing(0.5, 1.5),
+  minHeight: 32,
+  height: 32,
+  minWidth: 0,
+  flex: 1,
+  maxWidth: 160,
   borderRadius: 8,
   backgroundColor: selected ? `${color}22` : 'transparent',
   border: `2px solid ${color}`,
   color: color,
+  boxSizing: 'border-box',
+  overflow: 'hidden',
   '&:hover': {
     backgroundColor: `${color}33`,
   },
   '& .MuiSvgIcon-root': {
-    fontSize: 36,
-    marginBottom: theme.spacing(1),
+    fontSize: 18,
+    margin: 0,
+    marginRight: theme.spacing(0.7),
+    verticalAlign: 'middle',
+  },
+  '& .MuiTypography-root': {
+    fontSize: 15,
+    fontWeight: 600,
+    margin: 0,
+    lineHeight: 1.1,
+    verticalAlign: 'middle',
+    padding: 0,
+  },
+  '& .vote-count': {
+    fontSize: 14,
+    fontWeight: 500,
+    marginLeft: theme.spacing(0.7),
+    color: '#888',
+    minWidth: 18,
+    textAlign: 'right',
+    padding: 0,
   },
 }));
 
 const EmotionButtonGroup = styled(Box)(({ theme }) => ({
   display: 'flex',
-  flexWrap: 'wrap',
-  gap: theme.spacing(1),
-  marginTop: theme.spacing(3),
-  marginBottom: theme.spacing(3),
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: theme.spacing(1.2),
+  position: 'absolute',
+  right: theme.spacing(2),
+  bottom: theme.spacing(2),
+  zIndex: 2,
+  paddingBottom: theme.spacing(0.5),
+  paddingTop: theme.spacing(0.5),
 }));
 
 interface EmotionButtonProps {
@@ -167,19 +205,55 @@ interface EmotionButtonProps {
 const EmotionButton = styled(Button, {
   shouldForwardProp: prop => prop !== 'selected',
 })<EmotionButtonProps>(({ theme, selected }) => ({
-  flex: '1 0 30%',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  padding: theme.spacing(1),
+  minWidth: 40,
+  height: 40,
+  padding: 0,
   borderRadius: 8,
-  backgroundColor: selected ? 'rgba(0, 0, 0, 0.08)' : 'transparent',
-  '&:hover': {
-    backgroundColor: 'rgba(0, 0, 0, 0.12)',
+  backgroundColor: 'transparent !important',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  boxShadow: 'none !important',
+  transition: 'transform 0.15s cubic-bezier(0.4,0,0.2,1)',
+  '&:hover, &:active, &:focus': {
+    backgroundColor: 'transparent !important',
+    boxShadow: 'none !important',
+    transform: 'scale(1.12)',
   },
   '& .MuiSvgIcon-root': {
-    fontSize: 24,
-    marginBottom: theme.spacing(0.5),
+    fontSize: 22,
+    margin: 0,
+  },
+  '& .MuiTypography-root': {
+    display: 'inline-block',
+    fontSize: 13,
+    marginLeft: 4,
+    fontWeight: 500,
+    color: 'inherit',
+    verticalAlign: 'middle',
+  },
+  '&:focus-visible': {
+    outline: '2px solid #bdbdbd',
+  },
+  position: 'relative',
+  '& .custom-tooltip': {
+    display: 'none',
+    position: 'absolute',
+    bottom: '110%',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    background: '#222',
+    color: '#fff',
+    fontSize: 12,
+    borderRadius: 4,
+    padding: '4px 10px',
+    whiteSpace: 'nowrap',
+    zIndex: 10,
+    pointerEvents: 'none',
+    opacity: 0.95,
+  },
+  '&:hover .custom-tooltip': {
+    display: 'block',
   },
 }));
 
@@ -270,7 +344,7 @@ const CommentItem = styled(ListItem)(({ theme }) => ({
 }));
 
 const ChartContainer = styled(Box)(({ theme }) => ({
-  height: 280,
+  height: 160,
   marginTop: theme.spacing(2),
   marginBottom: theme.spacing(2),
 }));
@@ -304,6 +378,8 @@ type EmotionType = 'like' | 'dislike' | 'sad' | 'angry' | 'confused';
  */
 const DebateDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const { t } = useTranslation();
+  const { language } = useLanguageStore();
   const navigate = useNavigate();
   const {
     currentDebate: debate,
@@ -315,11 +391,32 @@ const DebateDetailPage: React.FC = () => {
     voteOnDebate,
     createComment: submitComment,
     addReaction,
+    isLanguageChanging,
+    setLanguageChanging,
   } = useDebateStore();
   const [userVote, setUserVote] = useState<VoteType | null>(null);
   const [userEmotion, setUserEmotion] = useState<EmotionType | null>(null);
   const [comment, setComment] = useState<string>('');
   const [stance, setStance] = useState<VoteType | null>(null);
+  
+  // 언어 변경 추적을 위한 ref
+  const previousLanguageRef = useRef(language);
+  const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 데이터 새로고침 함수들을 useCallback으로 메모화
+  const refreshDebateData = useCallback(async () => {
+    if (!id) return;
+    
+    console.log('[INFO] 토론 상세 페이지 - 데이터 새로고침 시작');
+    setLanguageChanging(true);
+    
+    try {
+      await fetchDebateById(parseInt(id));
+    } finally {
+      setLanguageChanging(false);
+      console.log('[INFO] 토론 상세 페이지 - 데이터 새로고침 완료');
+    }
+  }, [id, fetchDebateById, setLanguageChanging]);
 
   // 직접 API 접근을 위한 함수들
   const directVoteOnDebate = async (debateId: number, stance: 'pro' | 'con'): Promise<any> => {
@@ -334,66 +431,96 @@ const DebateDetailPage: React.FC = () => {
     return await DebateApi.addReaction({ targetId, targetType, reactionType });
   };
 
+  // stance 상태가 바뀔 때마다 로컬스토리지에 저장
   useEffect(() => {
-    if (id) {
+    if (stance !== null) {
+      localStorage.setItem('stance', stance);
+    } else {
+      localStorage.removeItem('stance'); // null이면 삭제
+    }
+  }, [stance]);
+
+  // 초기 데이터 로드 - 중복 방지 개선
+  const hasInitialLoadedRef = useRef(false);
+  
+  useEffect(() => {
+    if (id && !hasInitialLoadedRef.current) {
+      hasInitialLoadedRef.current = true;
       fetchDebateById(parseInt(id));
     }
   }, [id, fetchDebateById]);
 
-  // 토론 상세 불러온 후 댓글도 불러오기
+  // 언어 변경 감지 및 데이터 새로고침 (최적화됨) - 깜빡임 방지
   useEffect(() => {
-    if (debate && id) {
-      // 댓글 목록 로드
-      fetchComments(parseInt(id));
+    // 초기 로드가 완료된 후에만 언어 변경에 반응
+    if (hasInitialLoadedRef.current && previousLanguageRef.current !== language && id && debate) {
+      console.log(`[INFO] 언어 변경 감지: ${previousLanguageRef.current} → ${language}`);
+      
+      // 기존 타이머 취소
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
+      }
+      
+      // 디바운스된 새로고침 (500ms 지연으로 증가하여 깜빡임 최소화)
+      refreshTimeoutRef.current = setTimeout(() => {
+        // 언어 변경 중임을 표시하지 않고 백그라운드에서 새로고침
+        fetchDebateById(parseInt(id));
+      }, 500);
+    }
+    
+    // 현재 언어를 이전 언어로 업데이트
+    previousLanguageRef.current = language;
+    
+    // 컴포넌트 언마운트 시 타이머 정리
+    return () => {
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
+      }
+    };
+  }, [language, id, debate, fetchDebateById]);
 
-      // 디버깅용 로그
-      console.log('토론 데이터 로드됨:', debate);
-      console.log('투표 상태 (isVotedState):', debate.isVotedState);
-      console.log('감정표현 상태 (isState):', debate.isState);
-
-      // 토론 관련 웹로그
-      const userId = getUserId() ?? 0;
-      const debateContent = {
-        // 토론 제목과 내용
-        debateTitle: debate.title,
-        debateContent: debate.content,
-      };
-      const chatLogPayload = {
-        UID: userId,
-        ClickPath: location.pathname,
-        TAG: debate.category,
-        CurrentPath: location.pathname,
-        Event: 'click',
-        Content: debateContent,
-        Timestamp: new Date().toISOString(),
-      };
-      sendWebLog({ userId, content: JSON.stringify(chatLogPayload) });
-
-      // 사용자 투표 상태 초기화
-      if (debate.isVotedState) {
-        const mappedVoteType = mapIsVotedStateToVoteType(debate.isVotedState);
-        console.log('매핑된 투표 타입:', mappedVoteType);
-        setUserVote(mappedVoteType);
-        setStance(mappedVoteType); // 댓글 작성 시 선택할 수 있는 입장도 함께 설정
+  // 토론 상세 불러온 후 댓글도 불러오기 - 깜빡임 방지 개선
+  useEffect(() => {
+    if (debate) {
+      // 상태 초기화
+      if (debate?.isVotedState === '찬성') {
+        setUserVote('pro');
+        setStance('pro');
+      } else if (debate?.isVotedState === '반대') {
+        setUserVote('con');
+        setStance('con');
       } else {
-        // 투표 상태가 없으면 초기화
         setUserVote(null);
         setStance(null);
       }
+      
+      // 웹로그 전송 - 최초 1회만
+      if (!hasInitialLoadedRef.current) {
+        const userId = getUserId() ?? 0;
+        const chatLogPayload = {
+          UID: userId,
+          ClickPath: location.pathname,
+          TAG: debate.category,
+          CurrentPath: location.pathname,
+          Event: 'click',
+          Content: null,
+          Timestamp: new Date().toISOString(),
+        };
+        sendWebLog({ userId, content: JSON.stringify(chatLogPayload) });
+      }
 
-      // 사용자 감정표현 상태 초기화
-      if (debate.isState) {
-        const mappedEmotionType = mapIsStateToEmotionType(debate.isState);
-        console.log('매핑된 감정 타입:', mappedEmotionType);
+      // 코멘트 로드 - 중복 방지
+      if (id && (!debate.comments || debate.comments.length === 0)) {
+        fetchComments(parseInt(id));
+      }
 
-        // 유효한 감정표현 타입이면 설정
-        if (mappedEmotionType) {
-          setUserEmotion(mappedEmotionType);
-        } else {
-          setUserEmotion(null);
-        }
+      // 감정표현 상태 확인
+      const mappedEmotionType = debate.isState ? mapIsStateToEmotionType(debate.isState) : null;
+
+      // 감정표현 상태가 있으면 설정
+      if (mappedEmotionType) {
+        setUserEmotion(mappedEmotionType);
       } else {
-        // 감정표현 상태가 없으면 초기화
         setUserEmotion(null);
       }
 
@@ -402,45 +529,47 @@ const DebateDetailPage: React.FC = () => {
         console.log('국가별 참여 정보:', debate.countryStats);
       } else {
         console.log('국가별 참여 정보가 없습니다.');
-      }
 
-      // 항상 최신 투표 정보를 가져오기 위해 VoteController의 getVotes API 호출
-      getVotesByDebateId(parseInt(id))
-        .then(voteData => {
-          if (voteData && voteData.nationPercent) {
-            console.log('투표 API에서 국가별 참여 정보 로드됨:', voteData.nationPercent);
+        // 국가별 참여 정보가 없을 경우 즉시 API에서 가져옴
+        if (id) {
+          getVotesByDebateId(parseInt(id))
+            .then(voteData => {
+              if (voteData && voteData.nationPercent) {
+                console.log('투표 API에서 국가별 참여 정보 로드됨:', voteData.nationPercent);
 
-            // nationPercent를 countryStats로 변환
-            const countryStats = Object.entries(voteData.nationPercent).map(
-              ([countryCode, percentage]) => {
-                // 국가 코드에서 국가명 추출 (간단한 매핑)
-                let countryName = countryCode;
-                if (countryCode === 'KR') countryName = '대한민국';
-                else if (countryCode === 'US') countryName = '미국';
-                else if (countryCode === 'JP') countryName = '일본';
-                else if (countryCode === 'CN') countryName = '중국';
+                // nationPercent를 countryStats로 변환
+                const countryStats = Object.entries(voteData.nationPercent).map(
+                  ([countryCode, percentage]) => {
+                    // 국가 코드에서 국가명 추출
+                    let countryName = countryCode;
+                    if (countryCode === 'KR') countryName = t('debate.korea');
+                    else if (countryCode === 'US') countryName = '미국';
+                    else if (countryCode === 'JP') countryName = '일본';
+                    else if (countryCode === 'CN') countryName = '중국';
 
-                return {
-                  countryCode,
-                  countryName,
-                  count: Math.round(((percentage as number) / 100) * (voteData.voteCnt || 0)),
-                  percentage: percentage as number,
-                };
+                    return {
+                      countryCode,
+                      countryName,
+                      count: Math.round(((percentage as number) / 100) * (voteData.voteCnt || 0)),
+                      percentage: percentage as number,
+                    };
+                  }
+                );
+
+                // 토론 객체의 countryStats 업데이트
+                debate.countryStats = countryStats;
+
+                // 강제 리렌더링을 위해 상태 업데이트
+                setUserVote(prev => prev);
+              } else {
+                console.log('투표 API에서 국가별 참여 정보를 가져오지 못했습니다.');
               }
-            );
-
-            // 토론 객체의 countryStats 업데이트
-            debate.countryStats = countryStats;
-
-            // 컴포넌트 강제 리렌더링을 위해 상태 업데이트 (빈 객체로 업데이트해도 리렌더링 발생)
-            setUserVote(prev => prev);
-          } else {
-            console.log('투표 API에서 국가별 참여 정보를 가져오지 못했습니다.');
-          }
-        })
-        .catch(error => {
-          console.error('투표 API 호출 중 오류:', error);
-        });
+            })
+            .catch(error => {
+              console.error('투표 API 호출 중 오류:', error);
+            });
+        }
+      }
     }
   }, [debate, id, fetchComments]);
 
@@ -483,7 +612,7 @@ const DebateDetailPage: React.FC = () => {
             ([countryCode, percentage]) => {
               // 국가 코드에서 국가명 추출 (간단한 매핑)
               let countryName = countryCode;
-              if (countryCode === 'KR') countryName = '대한민국';
+              if (countryCode === 'KR') countryName = t('debate.korea');
               else if (countryCode === 'US') countryName = '미국';
               else if (countryCode === 'JP') countryName = '일본';
               else if (countryCode === 'CN') countryName = '중국';
@@ -499,6 +628,9 @@ const DebateDetailPage: React.FC = () => {
 
           // 상태 업데이트
           debate.countryStats = countryStats;
+
+          // 강제 리렌더링을 위해 상태 업데이트
+          setUserVote(prev => prev);
         }
         // 투표 실패하거나 응답에 nationPercent가 없는 경우 최신 투표 정보 가져오기
         else if (!success || !response.nationPercent) {
@@ -513,7 +645,7 @@ const DebateDetailPage: React.FC = () => {
                   ([countryCode, percentage]) => {
                     // 국가 코드에서 국가명 추출 (간단한 매핑)
                     let countryName = countryCode;
-                    if (countryCode === 'KR') countryName = '대한민국';
+                    if (countryCode === 'KR') countryName = t('debate.korea');
                     else if (countryCode === 'US') countryName = '미국';
                     else if (countryCode === 'JP') countryName = '일본';
                     else if (countryCode === 'CN') countryName = '중국';
@@ -587,7 +719,7 @@ const DebateDetailPage: React.FC = () => {
             ([countryCode, percentage]) => {
               // 국가 코드에서 국가명 추출 (간단한 매핑)
               let countryName = countryCode;
-              if (countryCode === 'KR') countryName = '대한민국';
+              if (countryCode === 'KR') countryName = t('debate.korea');
               else if (countryCode === 'US') countryName = '미국';
               else if (countryCode === 'JP') countryName = '일본';
               else if (countryCode === 'CN') countryName = '중국';
@@ -603,6 +735,9 @@ const DebateDetailPage: React.FC = () => {
 
           // 상태 업데이트
           debate.countryStats = countryStats;
+
+          // 강제 리렌더링을 위해 상태 업데이트
+          setUserVote(prev => prev);
         }
 
         // 실패 시에만 원래 상태로 되돌림
@@ -783,12 +918,12 @@ const DebateDetailPage: React.FC = () => {
 
   // Category colors for styling
   const categoryColors = {
-    '정치/사회': '#1976d2',
-    경제: '#ff9800',
-    '생활/문화': '#4caf50',
-    '과학/기술': '#9c27b0',
-    스포츠: '#f44336',
-    엔터테인먼트: '#2196f3',
+    '정치/사회': '#42a5f5', // 진한 파스텔 블루
+    경제: '#ffb300', // 진한 파스텔 오렌지
+    '생활/문화': '#66bb6a', // 진한 파스텔 그린
+    '과학/기술': '#ab47bc', // 진한 파스텔 퍼플
+    스포츠: '#e57373', // 진한 파스텔 레드
+    엔터테인먼트: '#29b6f6', // 진한 파스텔 하늘색
   };
 
   // Special labels (예시)
@@ -820,24 +955,54 @@ const DebateDetailPage: React.FC = () => {
   // Prepare data for pie chart
   const prepareChartData = (agree: number, disagree: number) => {
     return [
-      { name: '찬성', value: agree },
-      { name: '반대', value: disagree },
+      { name: t('debate.yes'), value: agree },
+      { name: t('debate.no'), value: disagree },
     ];
   };
 
   const COLORS = ['#e91e63', '#9c27b0'];
 
+  // 카테고리 한글명 → 번역 텍스트 매핑
+  const categoryNameMap: Record<string, string> = {
+    '정치/사회': t('debate.categories.politics'),
+    경제: t('debate.categories.economy'),
+    '생활/문화': t('debate.categories.culture'),
+    '과학/기술': t('debate.categories.technology'),
+    스포츠: t('debate.categories.sports'),
+    엔터테인먼트: t('debate.categories.entertainment'),
+    기타: t('debate.categories.etc'),
+  };
+
+  // Pie chart custom label with color per slice
+  const renderDiagonalLabel = props => {
+    const { cx, cy, midAngle, innerRadius, outerRadius, percent, name, index } = props;
+    const RADIAN = Math.PI / 180;
+    const angle = midAngle;
+    const radius = outerRadius + 18;
+    const x = cx + radius * Math.cos(-angle * RADIAN);
+    const y = cy + radius * Math.sin(-angle * RADIAN);
+    // COLORS: ['#e91e63', '#9c27b0']
+    const fill = COLORS[index % COLORS.length];
+    return (
+      <text
+        x={x}
+        y={y}
+        fill={fill}
+        textAnchor={x > cx ? 'start' : 'end'}
+        dominantBaseline="central"
+        fontSize={13}
+        fontWeight={600}
+        style={{ pointerEvents: 'none', userSelect: 'none' }}
+      >
+        {`${name} ${(percent * 100).toFixed(0)}%`}
+      </text>
+    );
+  };
+
   // Render loading state
   if (loading) {
     return (
-      <DebateLayout
-        headerProps={{
-          title: '토론 상세',
-          showBackButton: true,
-          onBackClick: handleGoBack,
-          showUserIcons: true,
-        }}
-      >
+      <DebateLayout>
         <Box
           sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}
         >
@@ -850,14 +1015,7 @@ const DebateDetailPage: React.FC = () => {
   // Render error state
   if (error || !debate) {
     return (
-      <DebateLayout
-        headerProps={{
-          title: '토론 상세',
-          showBackButton: true,
-          onBackClick: handleGoBack,
-          showUserIcons: true,
-        }}
-      >
+      <DebateLayout>
         <Container maxWidth="md" sx={{ py: 4 }}>
           <Box sx={{ textAlign: 'center', py: 4 }}>
             <Typography color="error" variant="h6">
@@ -886,28 +1044,606 @@ const DebateDetailPage: React.FC = () => {
     (enhancedDebate.category &&
       categoryColors[enhancedDebate.category as keyof typeof categoryColors]) ||
     '#757575';
+  // 토론 콘텐츠 파싱 함수
+  const parseDebateContent = (content: string) => {
+    if (!content)
+      return {
+        topic: '',
+        proOpinion: '',
+        conOpinion: '',
+        rawContent: content,
+        beforeContent: '',
+        afterContent: '',
+      };
+
+    // 다국어 지원을 위한 키워드 매핑
+    const keywords = {
+      ko: {
+        topic: ['토론주제', '토론 주제', '주제'],
+        pro: ['찬성측의견', '찬성측 의견', '찬성', '찬성 의견'],
+        con: ['반대측의견', '반대측 의견', '반대', '반대 의견'],
+      },
+      en: {
+        topic: ['debate topic', 'topic', 'debate subject', 'subject'],
+        pro: ['pro opinion', 'supporting opinion', 'agree', 'for', 'support'],
+        con: ['con opinion', 'opposing opinion', 'disagree', 'against', 'oppose'],
+      },
+      zh: {
+        topic: ['讨论主题', '主题', '辩论主题'],
+        pro: ['赞成意见', '支持意见', '赞成', '支持'],
+        con: ['反对意见', '反对'],
+      },
+      ja: {
+        topic: ['討論トピック', 'トピック', '議題'],
+        pro: ['賛成意見', '賛成', '支持'],
+        con: ['反対意見', '反対'],
+      },
+      es: {
+        topic: ['tema de debate', 'tema', 'asunto'],
+        pro: ['opinión a favor', 'a favor', 'apoyo'],
+        con: ['opinión en contra', 'en contra', 'oposición'],
+      },
+      fr: {
+        topic: ['sujet de débat', 'sujet', 'thème'],
+        pro: ['opinion pour', 'pour', 'soutien'],
+        con: ['opinion contre', 'contre', 'opposition'],
+      },
+      de: {
+        topic: ['debattenthema', 'thema', 'diskussionsthema'],
+        pro: ['befürwortende meinung', 'befürwortung', 'dafür'],
+        con: ['ablehnende meinung', 'ablehnung', 'dagegen'],
+      },
+      ru: {
+        topic: ['тема дебатов', 'тема', 'предмет обсуждения'],
+        pro: ['мнение за', 'за', 'поддержка'],
+        con: ['мнение против', 'против'],
+      },
+      vi: {
+        topic: ['chủ đề tranh luận', 'chủ đề'],
+        pro: ['ý kiến ủng hộ', 'ủng hộ', 'đồng ý'],
+        con: ['ý kiến phản đối', 'phản đối', 'không đồng ý'],
+      },
+    };
+
+    let beforeContent = '';
+    let topic = '';
+    let proOpinion = '';
+    let conOpinion = '';
+    let afterContent = '';
+
+    // 모든 언어의 키워드를 시도
+    for (const [lang, keywordSet] of Object.entries(keywords)) {
+      // 토론주제 패턴 생성 및 시도
+      for (const topicKeyword of keywordSet.topic) {
+        const topicPattern = new RegExp(
+          `(.*?)${topicKeyword}\\s*[:：]\\s*(.*?)(?=\\s*(?:${keywordSet.pro.join('|')})|$)`,
+          'is'
+        );
+        const topicMatch = content.match(topicPattern);
+
+        if (topicMatch) {
+          beforeContent = topicMatch[1].trim();
+          topic = topicMatch[2].trim();
+
+          // 찬성 의견 찾기
+          for (const proKeyword of keywordSet.pro) {
+            const proPattern = new RegExp(
+              `${proKeyword}\\s*[:：]\\s*(.*?)(?=\\s*(?:${keywordSet.con.join('|')})|$)`,
+              'is'
+            );
+            const proMatch = content.match(proPattern);
+            if (proMatch) {
+              proOpinion = proMatch[1].trim();
+              break;
+            }
+          }
+
+          // 반대 의견 찾기
+          for (const conKeyword of keywordSet.con) {
+            const conPattern = new RegExp(`${conKeyword}\\s*[:：]\\s*(.*?)$`, 'is');
+            const conMatch = content.match(conPattern);
+            if (conMatch) {
+              conOpinion = conMatch[1].trim();
+              break;
+            }
+          }
+
+          if (topic && (proOpinion || conOpinion)) {
+            return {
+              beforeContent,
+              topic,
+              proOpinion,
+              conOpinion,
+              afterContent: '',
+              rawContent: content,
+              isParsed: true,
+            };
+          }
+        }
+      }
+    }
+
+    // 파싱 실패 시 원본 반환
+    return {
+      beforeContent: '',
+      topic: '',
+      proOpinion: '',
+      conOpinion: '',
+      afterContent: '',
+      rawContent: content,
+      isParsed: false,
+    };
+  };
+
+  /* 파싱 관련 데이터 변경 렌더링 파트*/
+  // 토론 콘텐츠 렌더링 컴포넌트
+  const DebateContentRenderer: React.FC<{ content: string }> = ({ content }) => {
+    const parsed = parseDebateContent(content);
+
+    // 파싱이 성공한 경우 구조화된 형태로 표시
+    if (parsed.isParsed) {
+      return (
+        <Box sx={{ my: 3 }}>
+          {/* 이전 내용 (구조화 이전 텍스트) */}
+          {parsed.beforeContent && (
+            <Typography variant="body1" sx={{ mb: 3, lineHeight: 1.7 }}>
+              {parsed.beforeContent}
+            </Typography>
+          )}
+
+          {/* 토론 주제 */}
+          {parsed.topic && (
+            <Paper
+              sx={{
+                p: 2.5,
+                mb: 2,
+                bgcolor: 'rgba(63, 81, 181, 0.05)',
+                borderLeft: '4px solid #3f51b5',
+              }}
+            >
+              <Typography
+                variant="subtitle1"
+                fontWeight={600}
+                sx={{ mb: 1, color: '#3f51b5', display: 'flex', alignItems: 'center' }}
+              >
+                <Box
+                  component="span"
+                  sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#3f51b5', mr: 1 }}
+                />
+                {t('debate.topicTitle')}
+              </Typography>
+              <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
+                {parsed.topic}
+              </Typography>
+            </Paper>
+          )}
+
+          <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', md: 'row' } }}>
+            {/* 찬성측 의견 */}
+            {parsed.proOpinion && (
+              <Paper
+                sx={{
+                  flex: 1,
+                  p: 2.5,
+                  bgcolor: 'rgba(76, 175, 80, 0.05)',
+                  borderLeft: '4px solid #4caf50',
+                }}
+              >
+                <Typography
+                  variant="subtitle1"
+                  fontWeight={600}
+                  sx={{ mb: 1, color: '#4caf50', display: 'flex', alignItems: 'center' }}
+                >
+                  <SentimentSatisfiedAltIcon sx={{ fontSize: 18, mr: 1 }} />
+                  {t('debate.proOpinion')}
+                </Typography>
+                <Typography variant="body2" sx={{ lineHeight: 1.6 }}>
+                  {parsed.proOpinion}
+                </Typography>
+              </Paper>
+            )}
+
+            {/* 반대측 의견 */}
+            {parsed.conOpinion && (
+              <Paper
+                sx={{
+                  flex: 1,
+                  p: 2.5,
+                  bgcolor: 'rgba(244, 67, 54, 0.05)',
+                  borderLeft: '4px solid #f44336',
+                }}
+              >
+                <Typography
+                  variant="subtitle1"
+                  fontWeight={600}
+                  sx={{ mb: 1, color: '#f44336', display: 'flex', alignItems: 'center' }}
+                >
+                  <SentimentVeryDissatisfiedIcon sx={{ fontSize: 18, mr: 1 }} />
+                  {t('debate.conOpinion')}
+                </Typography>
+                <Typography variant="body2" sx={{ lineHeight: 1.6 }}>
+                  {parsed.conOpinion}
+                </Typography>
+              </Paper>
+            )}
+          </Box>
+
+          {/* 이후 내용 (구조화 이후 텍스트) */}
+          {parsed.afterContent && (
+            <Typography variant="body1" sx={{ mt: 3, lineHeight: 1.7 }}>
+              {parsed.afterContent}
+            </Typography>
+          )}
+        </Box>
+      );
+    }
+
+    // 파싱이 실패한 경우 원본 텍스트 그대로 표시
+    return (
+      <Typography variant="body1" sx={{ my: 3, lineHeight: 1.7 }}>
+        {content}
+      </Typography>
+    );
+  };
+
+  // 투표 차트 영역 컴포넌트
+  const VoteChartSection: React.FC<{
+    voteRatio: { agree: number; disagree: number };
+    chartData: any[];
+    COLORS: string[];
+    t: any;
+    enhancedDebate: any;
+  }> = ({ voteRatio, chartData, COLORS, t, enhancedDebate }) => {
+    const totalVotes = (enhancedDebate.proCount || 0) + (enhancedDebate.conCount || 0);
+    return (
+      <ProgressSection sx={{ mb: 0 }}>
+        <Typography variant="h6" fontWeight={600} gutterBottom sx={{ color: '#222' }}>
+          {t('debate.voteResults')}
+        </Typography>
+        {totalVotes === 0 ? (
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: 120,
+              py: 2,
+            }}
+          >
+            <Typography
+              variant="subtitle1"
+              sx={{
+                color: '#888',
+                fontWeight: 600,
+                fontSize: 17,
+                letterSpacing: 0.1,
+                textAlign: 'center',
+                border: '1.5px dashed #e0e0e0',
+                borderRadius: 2,
+                px: 2.5,
+                py: 2,
+                background: '#fafbfc',
+                mt: 2,
+              }}
+            >
+              {t('debate.noVotesYet')}
+            </Typography>
+          </Box>
+        ) : (
+          <>
+            <VoteBarContainer>
+              <Typography variant="body2" fontWeight={600} color="#e91e63" width={40}>
+                {voteRatio.agree}%
+              </Typography>
+              <VoteBar>
+                <AgreeBar width={voteRatio.agree}>
+                  {voteRatio.agree > 10 && t('debate.yes')}
+                </AgreeBar>
+                <DisagreeBar width={voteRatio.disagree}>
+                  {voteRatio.disagree > 10 && t('debate.no')}
+                </DisagreeBar>
+              </VoteBar>
+              <Typography variant="body2" fontWeight={600} color="#9c27b0" width={40}>
+                {voteRatio.disagree}%
+              </Typography>
+            </VoteBarContainer>
+            <Typography variant="body2" textAlign="right">
+              {t('debate.totalVotes')}: {totalVotes}
+            </Typography>
+            <ChartContainer>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={chartData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={32}
+                    outerRadius={52}
+                    paddingAngle={5}
+                    dataKey="value"
+                    label={renderDiagonalLabel}
+                  >
+                    {chartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </>
+        )}
+      </ProgressSection>
+    );
+  };
+
+  // 국가별 투표 현황 컴포넌트
+  const CountryStatsSection: React.FC<{
+    enhancedDebate: any;
+    t: any;
+  }> = ({ enhancedDebate, t }) => (
+    <Box>
+      <ProgressSection sx={{ mb: 0 }}>
+        <Typography variant="h6" fontWeight={600} gutterBottom sx={{ color: '#222' }}>
+          {t('debate.countryParticipation')}
+        </Typography>
+        {enhancedDebate.countryStats && enhancedDebate.countryStats.length > 0 ? (
+          enhancedDebate.countryStats.map((stat: any, index: number) => {
+            const countryColors = {
+              KR: '#4caf50',
+              US: '#2196f3',
+              JP: '#f44336',
+              CN: '#ff9800',
+              default: '#9c27b0',
+            };
+            const color =
+              countryColors[stat.countryCode as keyof typeof countryColors] ||
+              countryColors.default;
+            return (
+              <CountryStatItem
+                key={index}
+                sx={{
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
+                  gap: 1,
+                  padding: theme => theme.spacing(1, 1.5),
+                  minWidth: 0,
+                  width: '100%',
+                  boxSizing: 'border-box',
+                }}
+              >
+                <CountryFlag
+                  sx={{ minWidth: 0, flexShrink: 0, flexWrap: 'wrap', wordBreak: 'break-all' }}
+                >
+                  <FlagDisplay nation={stat.countryCode} size="small" showName={true} />
+                </CountryFlag>
+                <Box sx={{ flex: 1, ml: 1, mr: 1, minWidth: 0 }}>
+                  <Box
+                    sx={{
+                      width: '100%',
+                      height: '24px',
+                      borderRadius: '12px',
+                      overflow: 'hidden',
+                      background: '#f0f0f0',
+                      minWidth: 0,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: `${Math.round(stat.percentage)}%`,
+                        height: '100%',
+                        backgroundColor: color,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        minWidth: 0,
+                      }}
+                    >
+                      {stat.percentage > 15 && (
+                        <Typography
+                          variant="caption"
+                          color="white"
+                          fontWeight="bold"
+                          sx={{
+                            whiteSpace: 'normal',
+                            wordBreak: 'break-all',
+                            textAlign: 'center',
+                            width: '100%',
+                          }}
+                        >
+                          {Math.round(stat.percentage)}%
+                        </Typography>
+                      )}
+                    </Box>
+                  </Box>
+                </Box>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    minWidth: 0,
+                    textAlign: 'right',
+                    wordBreak: 'break-all',
+                    whiteSpace: 'normal',
+                    flexShrink: 0,
+                  }}
+                >
+                  {stat.count}
+                  {t('debate.ppl')} ({Math.round(stat.percentage)}%)
+                </Typography>
+              </CountryStatItem>
+            );
+          })
+        ) : (
+          <Typography variant="body2" align="center" color="text.secondary" sx={{ py: 2 }}>
+            {t('debate.noParticipationData')}
+          </Typography>
+        )}
+      </ProgressSection>
+    </Box>
+  );
 
   return (
     <DebateLayout
-      headerProps={{
-        title: '토론 상세',
-        showBackButton: true,
-        onBackClick: handleGoBack,
-        showUserIcons: true,
-      }}
+      sidebar={
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <VoteButtonGroup>
+            <VoteButton
+              variant="outlined"
+              color="inherit"
+              selected={userVote === 'pro'}
+              onClick={() => handleVote('pro')}
+              sx={{
+                color: '#e91e63',
+                borderColor: '#e91e63',
+                '&:hover': {
+                  backgroundColor: 'rgba(233, 30, 99, 0.1)',
+                },
+              }}
+            >
+              <SentimentSatisfiedAltIcon />
+              <Typography component="span">{t('debate.yes')}</Typography>
+              <span className="vote-count">{enhancedDebate.proCount || 0}</span>
+            </VoteButton>
+            <VoteButton
+              variant="outlined"
+              color="inherit"
+              selected={userVote === 'con'}
+              onClick={() => handleVote('con')}
+              sx={{
+                color: '#9c27b0',
+                borderColor: '#9c27b0',
+                '&:hover': {
+                  backgroundColor: 'rgba(156, 39, 176, 0.1)',
+                },
+              }}
+            >
+              <SentimentVeryDissatisfiedIcon />
+              <Typography component="span">{t('debate.no')}</Typography>
+              <span className="vote-count">{enhancedDebate.conCount || 0}</span>
+            </VoteButton>
+          </VoteButtonGroup>
+          <VoteChartSection
+            voteRatio={voteRatio}
+            chartData={chartData}
+            COLORS={COLORS}
+            t={t}
+            enhancedDebate={enhancedDebate}
+          />
+          <CountryStatsSection enhancedDebate={enhancedDebate} t={t} />
+        </Box>
+      }
     >
-      <Container maxWidth="md" sx={{ py: 4 }}>
-        {/* 개발용 디버그 버튼 */}
-        {import.meta.env.DEV && (
-          <Button variant="outlined" color="info" onClick={handleReloadDebateData} sx={{ mb: 2 }}>
-            데이터 새로고침 (개발용)
-          </Button>
-        )}
-
-        {/* 토론 메인 카드 */}
-        <DebateCard>
+      <Container maxWidth="md" sx={{ py: 2 }}>
+        {/* 토론 메인 카드 + 감정표현 버튼 + 뒤로가기 버튼 */}
+        <DebateCard sx={{ position: 'relative' }}>
           <CategoryIndicator color={categoryColor} />
-          <Box sx={{ p: 3, pl: 4 }}>
+          {/* 상단 바: 뒤로가기 + 이모션 버튼 그룹 */}
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              px: 2,
+              pt: 2,
+              pb: 0,
+            }}
+          >
+            <Button
+              onClick={handleGoBack}
+              sx={{
+                minWidth: 40,
+                height: 40,
+                p: 0,
+                borderRadius: 8,
+                background: 'transparent !important',
+                boxShadow: 'none !important',
+                color: '#555',
+                mr: 1,
+                '&:hover, &:active, &:focus': {
+                  background: 'transparent !important',
+                  boxShadow: 'none !important',
+                },
+                outline: 'none',
+                border: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              disableRipple
+              disableElevation
+            >
+              <ArrowBackIcon fontSize="medium" />
+            </Button>
+            <Box sx={{ flex: 1 }} />
+            <EmotionButtonGroup
+              sx={{ position: 'static', right: 'unset', bottom: 'unset', gap: 1.2 }}
+            >
+              <EmotionButton
+                variant="text"
+                selected={userEmotion === 'like'}
+                onClick={() => handleEmotionSelect('like')}
+                sx={{ color: '#4caf50' }}
+              >
+                <Box display="flex" alignItems="center" position="relative">
+                  <ThumbUpIcon />
+                  <span className="custom-tooltip">{t('debate.like')}</span>
+                  <Typography>{enhancedDebate.reactions.like || 0}</Typography>
+                </Box>
+              </EmotionButton>
+              <EmotionButton
+                variant="text"
+                selected={userEmotion === 'dislike'}
+                onClick={() => handleEmotionSelect('dislike')}
+                sx={{ color: '#f44336' }}
+              >
+                <Box display="flex" alignItems="center" position="relative">
+                  <ThumbUpIcon sx={{ transform: 'rotate(180deg)' }} />
+                  <span className="custom-tooltip">{t('debate.dislike')}</span>
+                  <Typography>{enhancedDebate.reactions.dislike || 0}</Typography>
+                </Box>
+              </EmotionButton>
+              <EmotionButton
+                variant="text"
+                selected={userEmotion === 'sad'}
+                onClick={() => handleEmotionSelect('sad')}
+                sx={{ color: '#2196f3' }}
+              >
+                <Box display="flex" alignItems="center" position="relative">
+                  <SentimentVeryDissatisfiedIcon />
+                  <span className="custom-tooltip">{t('debate.sad')}</span>
+                  <Typography>{enhancedDebate.reactions.sad || 0}</Typography>
+                </Box>
+              </EmotionButton>
+              <EmotionButton
+                variant="text"
+                selected={userEmotion === 'angry'}
+                onClick={() => handleEmotionSelect('angry')}
+                sx={{ color: '#ff9800' }}
+              >
+                <Box display="flex" alignItems="center" position="relative">
+                  <SentimentVeryDissatisfiedIcon />
+                  <span className="custom-tooltip">{t('debate.angry')}</span>
+                  <Typography>{enhancedDebate.reactions.angry || 0}</Typography>
+                </Box>
+              </EmotionButton>
+              <EmotionButton
+                variant="text"
+                selected={userEmotion === 'confused'}
+                onClick={() => handleEmotionSelect('confused')}
+                sx={{ color: '#9c27b0' }}
+              >
+                <Box display="flex" alignItems="center" position="relative">
+                  <SentimentSatisfiedAltIcon />
+                  <span className="custom-tooltip">{t('debate.unsure')}</span>
+                  <Typography>{enhancedDebate.reactions.unsure || 0}</Typography>
+                </Box>
+              </EmotionButton>
+            </EmotionButtonGroup>
+          </Box>
+          <Box sx={{ p: 3, pl: 4, pb: 8 }}>
             <Box
               sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}
             >
@@ -923,10 +1659,14 @@ const DebateDetailPage: React.FC = () => {
                   sx={{ mb: 0.5, display: 'flex', alignItems: 'center', gap: 0.5 }}
                   component="div"
                 >
-                  {enhancedDebate.category}
+                  {enhancedDebate.category && (
+                    <CategoryBadge color={categoryColor}>
+                      {categoryNameMap[enhancedDebate.category] || enhancedDebate.category}
+                    </CategoryBadge>
+                  )}
                   <CountryFlag>
                     <FlagIcon fontSize="small" />
-                    한국
+                    {t('debate.korea')}
                   </CountryFlag>
                   <span style={{ margin: '0 4px' }}>•</span>
                   {formatDate(enhancedDebate.createdAt)}
@@ -937,365 +1677,33 @@ const DebateDetailPage: React.FC = () => {
               </Box>
             </Box>
 
-            <Typography variant="body1" sx={{ my: 3, lineHeight: 1.7 }}>
-              {enhancedDebate.content}
-            </Typography>
+            <DebateContentRenderer content={enhancedDebate.content} />
           </Box>
         </DebateCard>
-
-        {/* 투표 섹션 */}
-        <Typography
-          variant="h6"
-          fontWeight={600}
-          gutterBottom
-          sx={{
-            background: 'linear-gradient(45deg, #FF69B4, #E91E63)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-          }}
-        >
-          찬성과 반대, 당신의 의견은?
-        </Typography>
-
-        <VoteButtonGroup>
-          <VoteButton
-            variant="outlined"
-            color="inherit"
-            selected={userVote === 'pro'}
-            onClick={() => handleVote('pro')}
-            sx={{
-              color: '#e91e63',
-              borderColor: '#e91e63',
-              '&:hover': {
-                backgroundColor: 'rgba(233, 30, 99, 0.1)',
-              },
-            }}
-          >
-            <SentimentSatisfiedAltIcon />
-            <Typography variant="subtitle1" fontWeight={600}>
-              찬성
-            </Typography>
-            <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>
-              {enhancedDebate.proCount || 0}
-            </Typography>
-          </VoteButton>
-
-          <VoteButton
-            variant="outlined"
-            color="inherit"
-            selected={userVote === 'con'}
-            onClick={() => handleVote('con')}
-            sx={{
-              color: '#9c27b0',
-              borderColor: '#9c27b0',
-              '&:hover': {
-                backgroundColor: 'rgba(156, 39, 176, 0.1)',
-              },
-            }}
-          >
-            <SentimentVeryDissatisfiedIcon />
-            <Typography variant="subtitle1" fontWeight={600}>
-              반대
-            </Typography>
-            <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>
-              {enhancedDebate.conCount || 0}
-            </Typography>
-          </VoteButton>
-        </VoteButtonGroup>
-
-        {/* 감정표현 섹션 */}
-        <Typography
-          variant="h6"
-          fontWeight={600}
-          gutterBottom
-          sx={{
-            background: 'linear-gradient(45deg, #FF69B4, #E91E63)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-          }}
-        >
-          이 토론에 대한 감정을 표현해주세요
-        </Typography>
-
-        <EmotionButtonGroup>
-          <EmotionButton
-            variant="outlined"
-            selected={userEmotion === 'like'}
-            onClick={() => handleEmotionSelect('like')}
-            sx={{
-              color: '#4caf50',
-              borderColor: '#4caf50',
-              backgroundColor: userEmotion === 'like' ? 'rgba(76, 175, 80, 0.08)' : 'transparent',
-              '&:hover': {
-                backgroundColor: 'rgba(76, 175, 80, 0.12)',
-              },
-            }}
-          >
-            <ThumbUpIcon />
-            <Typography variant="body2">좋아요</Typography>
-            <Typography variant="caption" sx={{ mt: 0.5, color: 'text.secondary' }}>
-              {enhancedDebate.reactions.like || 0}
-            </Typography>
-          </EmotionButton>
-
-          <EmotionButton
-            variant="outlined"
-            selected={userEmotion === 'dislike'}
-            onClick={() => handleEmotionSelect('dislike')}
-            sx={{
-              color: '#f44336',
-              borderColor: '#f44336',
-              backgroundColor:
-                userEmotion === 'dislike' ? 'rgba(244, 67, 54, 0.08)' : 'transparent',
-              '&:hover': {
-                backgroundColor: 'rgba(244, 67, 54, 0.12)',
-              },
-            }}
-          >
-            <ThumbUpIcon sx={{ transform: 'rotate(180deg)' }} />
-            <Typography variant="body2">싫어요</Typography>
-            <Typography variant="caption" sx={{ mt: 0.5, color: 'text.secondary' }}>
-              {enhancedDebate.reactions.dislike || 0}
-            </Typography>
-          </EmotionButton>
-
-          <EmotionButton
-            variant="outlined"
-            selected={userEmotion === 'sad'}
-            onClick={() => handleEmotionSelect('sad')}
-            sx={{
-              color: '#2196f3',
-              borderColor: '#2196f3',
-              backgroundColor: userEmotion === 'sad' ? 'rgba(33, 150, 243, 0.08)' : 'transparent',
-              '&:hover': {
-                backgroundColor: 'rgba(33, 150, 243, 0.12)',
-              },
-            }}
-          >
-            <SentimentVeryDissatisfiedIcon />
-            <Typography variant="body2">슬퍼요</Typography>
-            <Typography variant="caption" sx={{ mt: 0.5, color: 'text.secondary' }}>
-              {enhancedDebate.reactions.sad || 0}
-            </Typography>
-          </EmotionButton>
-
-          <EmotionButton
-            variant="outlined"
-            selected={userEmotion === 'angry'}
-            onClick={() => handleEmotionSelect('angry')}
-            sx={{
-              color: '#ff9800',
-              borderColor: '#ff9800',
-              backgroundColor: userEmotion === 'angry' ? 'rgba(255, 152, 0, 0.08)' : 'transparent',
-              '&:hover': {
-                backgroundColor: 'rgba(255, 152, 0, 0.12)',
-              },
-            }}
-          >
-            <SentimentVeryDissatisfiedIcon />
-            <Typography variant="body2">화나요</Typography>
-            <Typography variant="caption" sx={{ mt: 0.5, color: 'text.secondary' }}>
-              {enhancedDebate.reactions.angry || 0}
-            </Typography>
-          </EmotionButton>
-
-          <EmotionButton
-            variant="outlined"
-            selected={userEmotion === 'confused'}
-            onClick={() => handleEmotionSelect('confused')}
-            sx={{
-              color: '#9c27b0',
-              borderColor: '#9c27b0',
-              backgroundColor:
-                userEmotion === 'confused' ? 'rgba(156, 39, 176, 0.08)' : 'transparent',
-              '&:hover': {
-                backgroundColor: 'rgba(156, 39, 176, 0.12)',
-              },
-            }}
-          >
-            <SentimentSatisfiedAltIcon />
-            <Typography variant="body2">글쎄요</Typography>
-            <Typography variant="caption" sx={{ mt: 0.5, color: 'text.secondary' }}>
-              {enhancedDebate.reactions.unsure || 0}
-            </Typography>
-          </EmotionButton>
-        </EmotionButtonGroup>
-
-        {/* 투표 결과 */}
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
-          <Box sx={{ flex: 1 }}>
-            <ProgressSection>
-              <Typography
-                variant="h6"
-                fontWeight={600}
-                gutterBottom
-                sx={{
-                  background: 'linear-gradient(45deg, #FF69B4, #E91E63)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                }}
-              >
-                투표 결과
-              </Typography>
-
-              <VoteBarContainer>
-                <Typography variant="body2" fontWeight={600} color="#e91e63" width={40}>
-                  {voteRatio.agree}%
-                </Typography>
-                <VoteBar>
-                  <AgreeBar width={voteRatio.agree}>{voteRatio.agree > 10 && '찬성'}</AgreeBar>
-                  <DisagreeBar width={voteRatio.disagree}>
-                    {voteRatio.disagree > 10 && '반대'}
-                  </DisagreeBar>
-                </VoteBar>
-                <Typography variant="body2" fontWeight={600} color="#9c27b0" width={40}>
-                  {voteRatio.disagree}%
-                </Typography>
-              </VoteBarContainer>
-
-              <Typography variant="body2" textAlign="right">
-                총 투표수: {(enhancedDebate.proCount || 0) + (enhancedDebate.conCount || 0)}
-              </Typography>
-
-              <ChartContainer>
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={chartData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={80}
-                      paddingAngle={5}
-                      dataKey="value"
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    >
-                      {chartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            </ProgressSection>
-          </Box>
-
-          <Box sx={{ flex: 1 }}>
-            <ProgressSection>
-              <Typography
-                variant="h6"
-                fontWeight={600}
-                gutterBottom
-                sx={{
-                  background: 'linear-gradient(45deg, #FF69B4, #E91E63)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                }}
-              >
-                국가별 참여 현황
-              </Typography>
-
-              {enhancedDebate.countryStats && enhancedDebate.countryStats.length > 0 ? (
-                enhancedDebate.countryStats.map((stat, index) => {
-                  // 국가별로 다른 색상 사용 (각 국가마다 고유한 색상)
-                  const countryColors = {
-                    KR: '#4caf50', // 한국 - 초록
-                    US: '#2196f3', // 미국 - 파랑
-                    JP: '#f44336', // 일본 - 빨강
-                    CN: '#ff9800', // 중국 - 주황
-                    default: '#9c27b0', // 기타 - 보라
-                  };
-
-                  const color =
-                    countryColors[stat.countryCode as keyof typeof countryColors] ||
-                    countryColors.default;
-
-                  return (
-                    <CountryStatItem key={index}>
-                      <CountryFlag>
-                        <FlagIcon fontSize="small" />
-                        <Typography variant="body2" fontWeight={500}>
-                          {stat.countryName}
-                        </Typography>
-                      </CountryFlag>
-                      <Box sx={{ flex: 1, ml: 1, mr: 1 }}>
-                        <Box
-                          sx={{
-                            width: '100%',
-                            height: '24px',
-                            borderRadius: '12px',
-                            overflow: 'hidden',
-                            background: '#f0f0f0',
-                          }}
-                        >
-                          <Box
-                            sx={{
-                              width: `${stat.percentage}%`,
-                              height: '100%',
-                              backgroundColor: color,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                            }}
-                          >
-                            {stat.percentage > 15 && (
-                              <Typography variant="caption" color="white" fontWeight="bold">
-                                {stat.percentage}%
-                              </Typography>
-                            )}
-                          </Box>
-                        </Box>
-                      </Box>
-                      <Typography variant="body2" sx={{ minWidth: '60px', textAlign: 'right' }}>
-                        {stat.count}명 ({stat.percentage}%)
-                      </Typography>
-                    </CountryStatItem>
-                  );
-                })
-              ) : (
-                <Typography variant="body2" align="center" color="text.secondary" sx={{ py: 2 }}>
-                  국가별 참여 정보가 없습니다.
-                </Typography>
-              )}
-            </ProgressSection>
-          </Box>
-        </Box>
-
         {/* 댓글 섹션 */}
         <Box sx={{ mt: 4 }}>
-          <Typography
-            variant="h6"
-            fontWeight={600}
-            gutterBottom
-            sx={{
-              background: 'linear-gradient(45deg, #FF69B4, #E91E63)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}
-          >
-            사람들의 다양한 의견을 존중해주세요.
+          <Typography variant="h6" fontWeight={600} gutterBottom sx={{ color: '#222' }}>
+            {t('debate.commentSection')}
           </Typography>
 
           {/* 입장 선택 안내 메시지 */}
           {stance ? (
             <Box sx={{ mb: 2, p: 1, bgcolor: 'rgba(255, 255, 255, 0.7)', borderRadius: 1 }}>
               <Typography variant="body2" color="text.secondary">
-                선택한 입장:{' '}
+                {t('debate.currentVote')}{' '}
                 <Box
                   component="span"
                   fontWeight="bold"
                   sx={{ color: stance === 'pro' ? '#4caf50' : '#f44336' }}
                 >
-                  {stance === 'pro' ? '찬성' : '반대'}
+                  {stance === 'pro' ? t('debate.yes') : t('debate.no')}
                 </Box>
               </Typography>
             </Box>
           ) : (
             <Box sx={{ mb: 2, p: 1, bgcolor: 'rgba(255, 255, 255, 0.7)', borderRadius: 1 }}>
               <Typography variant="body2" color="text.secondary">
-                투표 버튼을 클릭하여 먼저 입장을 선택하면 댓글에 입장이 표시됩니다.
+                {t('debate.commentGuide')}
               </Typography>
             </Box>
           )}

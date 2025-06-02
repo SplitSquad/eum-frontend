@@ -9,6 +9,8 @@ import {
   GroupListPage,
   BoardListPage,
 } from './pages';
+import ProGroupListPage from './pages/theme/ProGroupListPage';
+import ProBoardListPage from './pages/theme/ProBoardListPage';
 
 /**
  * 커뮤니티 서브 라우트
@@ -17,9 +19,9 @@ import {
 export const CommunityRoutes: React.FC = () => {
   return (
     <Routes>
-      <Route path="/" element={<GroupListPage />} />
-      <Route path="/groups" element={<GroupListPage />} />
-      <Route path="/board" element={<BoardListPage />} />
+      <Route path="/" element={<ProGroupListPage />} />
+      <Route path="/groups" element={<ProGroupListPage />} />
+      <Route path="/board" element={<ProBoardListPage />} />
       <Route path="/create" element={<PostCreatePage />} />
       <Route path="/edit/:postId" element={<PostCreatePage />} />
       <Route path="/:postId" element={<PostDetailPage />} />

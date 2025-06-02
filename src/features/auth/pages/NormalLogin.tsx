@@ -16,14 +16,15 @@ import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 import { loginUser } from '../api/authApi';
 import Loading from '@/pages/Loading';
+import { useTranslation } from '@/shared/i18n';
+
 // 로그인 카드 스타일
 const LoginCard = styled(Paper)`
   padding: 2rem;
   border-radius: 16px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 235, 235, 0.8);
+  background: #fafbfc;
+  border: 1.5px solid #e0e0e0;
   max-width: 450px;
   width: 100%;
   margin: 0 auto;
@@ -37,14 +38,14 @@ const LogoContainer = styled(Box)`
 
 // 페이지 제목 스타일
 const PageTitle = styled(Typography)`
-  color: #333;
+  color: #636363;
   margin-bottom: 0.5rem;
   font-weight: 700;
 `;
 
 // 부제목 스타일
 const Subtitle = styled(Typography)`
-  color: #777;
+  color: #888;
   margin-bottom: 2rem;
 `;
 
@@ -59,7 +60,7 @@ const InputBox = styled('div')`
 const LoginInputs = ({ id, setId, password, setPassword }) => (
   <InputBox>
     <TextField
-      label="아이디"
+      label="ID"
       variant="outlined"
       value={id}
       onChange={e => setId(e.target.value)}
@@ -68,7 +69,7 @@ const LoginInputs = ({ id, setId, password, setPassword }) => (
       sx={{ background: 'rgba(255,255,255,0.7)' }}
     />
     <TextField
-      label="비밀번호"
+      label="PASSWORD"
       variant="outlined"
       type="password"
       value={password}
@@ -80,56 +81,63 @@ const LoginInputs = ({ id, setId, password, setPassword }) => (
   </InputBox>
 );
 
-const LoginActionButton = ({ onClick, loading }) => (
-  <Button
-    variant="contained"
-    color="primary"
-    fullWidth
-    size="large"
-    sx={{
-      mt: 1,
-      borderRadius: 2,
-      fontWeight: 700,
-      background: 'linear-gradient(90deg, #FFB6B9 0%, #FF9999 100%)',
-      boxShadow: '0 2px 8px rgba(255, 170, 165, 0.15)',
-      '&:hover': {
-        background: 'linear-gradient(90deg, #FF9999 0%, #FFB6B9 100%)',
-      },
-    }}
-    onClick={onClick}
-    disabled={loading}
-  >
-    {loading ? '로그인 중...' : '로그인'}
-  </Button>
-);
+const LoginActionButton = ({ onClick, loading }) => {
+  const { t } = useTranslation();
+  return (
+    <Button
+      variant="contained"
+      color="primary"
+      fullWidth
+      size="large"
+      sx={{
+        mt: 1,
+        borderRadius: 2,
+        fontWeight: 700,
+        background: '#636363',
+        boxShadow: '0 2px 8px #bdbdbd',
+        '&:hover': {
+          background: '#222',
+        },
+      }}
+      onClick={onClick}
+      disabled={loading}
+    >
+      {loading ? t('login.loading') : t('login.login')}
+    </Button>
+  );
+};
 
-const SignupButton = ({ onClick }) => (
-  <Button
-    variant="outlined"
-    color="secondary"
-    fullWidth
-    sx={{
-      mt: 2,
-      borderRadius: 2,
-      fontWeight: 700,
-      borderColor: '#FFB6B9',
-      color: '#FF9999',
-      '&:hover': {
-        borderColor: '#FF9999',
-        background: 'rgba(255, 170, 165, 0.08)',
-      },
-    }}
-    onClick={onClick}
-  >
-    회원가입
-  </Button>
-);
+const SignupButton = ({ onClick }) => {
+  const { t } = useTranslation();
+  return (
+    <Button
+      variant="outlined"
+      color="secondary"
+      fullWidth
+      sx={{
+        mt: 2,
+        borderRadius: 2,
+        fontWeight: 700,
+        borderColor: '#636363',
+        color: '#636363',
+        '&:hover': {
+          borderColor: '#636363',
+          background: '#fafbfc',
+        },
+      }}
+      onClick={onClick}
+    >
+      {t('login.signup')}
+    </Button>
+  );
+};
 
 /**
  * 로그인 페이지 컴포넌트
  * 봄 테마를 적용한 디자인으로 구글 로그인 기능 제공
  */
 const LoginPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -139,16 +147,6 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // 이미 로그인되어 있으면 메인 페이지로 리디렉션
-  /*
-  useEffect(() => {
-    // sessionStorage에도 토큰이 있으면 로그인 상태로 간주
-    const token = sessionStorage.getItem('auth_token');
-    if (isAuthenticated || token) {
-      navigate('/home');
-    }
-  }, [isAuthenticated, navigate]);
-*/
   const handleLoginClick = async () => {
     setLoading(true);
     try {
@@ -161,21 +159,25 @@ const LoginPage: React.FC = () => {
       const updatedUser = useAuthStore.getState().user;
       setLoading(false);
       // 온보딩 여부에 따라 라우팅
-      setTimeout(() => {
-        if (updatedUser?.isNewUser || !updatedUser?.isOnBoardDone) {
-          navigate('/onboarding');
-        } else {
-          navigate('/home');
-        }
-      }, 1000);
+      if (!updatedUser?.isOnBoardDone) {
+        navigate('/onboarding');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err: any) {
       setLoading(false);
-      setError(err.message || '로그인 중 오류가 발생했습니다.');
+      setError(t('login.loginError'));
     }
   };
 
   const handleSignupClick = () => {
     navigate('/signup');
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !loading) {
+      handleLoginClick();
+    }
   };
 
   return (
@@ -201,17 +203,13 @@ const LoginPage: React.FC = () => {
                   variant="h4"
                   sx={{
                     fontWeight: 700,
-                    color: '#FF9999',
-                    fontFamily: '"Roboto", "Noto Sans KR", sans-serif',
+                    color: '#636363',
+                    fontFamily: 'Roboto, Noto Sans KR, sans-serif',
                   }}
-                >
-                  봄날의 기억
-                </Typography>
+                ></Typography>
               </LogoContainer>
-              <PageTitle variant={isMobile ? 'h5' : 'h4'}>환영합니다</PageTitle>
-              <Subtitle variant="body1">
-                일반 로그인 시 구글 캘린더 연동 기능 사용이 어렵습니다.
-              </Subtitle>
+              <PageTitle variant={isMobile ? 'h5' : 'h4'}>{t('login.welcome')}</PageTitle>
+              <Subtitle variant="body1">{t('login.calenderDescription')}</Subtitle>
               {error && (
                 <Box mb={3}>
                   <Alert severity="error" onClose={() => setError(null)}>
@@ -228,6 +226,8 @@ const LoginPage: React.FC = () => {
                     transform: 'scale(1.02)',
                   },
                 }}
+                onKeyDown={handleKeyDown}
+                tabIndex={0}
               >
                 {/*아이디 비밀번호 입력 영역*/}
                 <LoginInputs id={id} setId={setId} password={password} setPassword={setPassword} />
@@ -238,7 +238,7 @@ const LoginPage: React.FC = () => {
               </Box>
               <Box mt={4}>
                 <Typography variant="caption" color="textSecondary">
-                  로그인 시 서비스 이용약관 및 개인정보 처리방침에 동의하게 됩니다.
+                  {t('login.termsAgreement')}
                 </Typography>
               </Box>
             </LoginCard>

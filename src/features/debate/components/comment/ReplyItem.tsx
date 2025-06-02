@@ -3,28 +3,39 @@ import { DebateReply } from '../../types';
 import { useDebateStore } from '../../store';
 import ReactionButtons from '../shared/ReactionButtons';
 import { formatDateTime, getEditedMark } from '../../../../utils/dateFormat';
-import { 
-  Box, 
-  Avatar, 
-  Typography, 
-  Button, 
-  TextField, 
+import {
+  Box,
+  Avatar,
+  Typography,
+  Button,
+  TextField,
   IconButton,
   Card,
   CardContent,
   Chip,
-  Stack
+  Stack,
+  Menu,
+  MenuItem,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FlagIcon from '@mui/icons-material/Flag';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import FlagDisplay from '../../../../shared/components/FlagDisplay';
+import { useAuthStore } from '../../../auth';
+import ReportDialog, {
+  ReportTargetType,
+  ServiceType,
+} from '../../../common/components/ReportDialog';
+import { useTranslation } from '@/shared/i18n';
 
 interface ReplyItemProps {
   reply: DebateReply;
   onUpdate: () => void;
 }
 
+const { t } = useTranslation();
 // 스타일 컴포넌트
 const StyledCard = styled(Card)(({ theme }) => ({
   borderRadius: 12,
@@ -53,16 +64,89 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
     updatedAt,
     reactions,
     countryCode,
-    countryName
+    countryName,
+    stance,
+    nation,
   } = reply;
 
   const { updateReply, deleteReply } = useDebateStore();
+  const { user } = useAuthStore();
 
   // 로컬 상태
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(initialContent);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [content, setContent] = useState(initialContent); // 로컬에서 관리할 내용 상태
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+
+  // content에서 stance 정보 추출
+  let extractedStance: 'pro' | 'con' | null =
+    stance === 'pro' ? 'pro' : stance === 'con' ? 'con' : null;
+
+  // 내가 작성한 답글인지 확인
+  const isMyReply = userId && ((user as any)?.id ?? (user as any)?.userId) === userId;
+
+  // 관리자 권한 확인
+  const isAdmin = user?.role === 'ROLE_ADMIN';
+
+  // 수정/삭제 권한 확인 (본인 또는 관리자)
+  const canEditOrDelete = isMyReply || isAdmin;
+
+  const StanceChip = styled(Chip, {
+    shouldForwardProp: prop => prop !== 'stance',
+  })<{ stance?: 'pro' | 'con' | null }>(({ theme, stance }) => ({
+    borderRadius: 16,
+    height: 26,
+    fontSize: '0.75rem',
+    fontWeight: 700,
+    boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+    transition: 'all 0.3s ease',
+    '&:hover': {
+      transform: 'translateY(-2px)',
+      boxShadow: '0 3px 8px rgba(0,0,0,0.15)',
+    },
+    ...(stance === 'pro'
+      ? {
+          backgroundColor: 'rgba(76, 175, 80, 0.15)',
+          color: '#2e7d32',
+          border: '1px solid rgba(76, 175, 80, 0.5)',
+        }
+      : stance === 'con'
+        ? {
+            backgroundColor: 'rgba(244, 67, 54, 0.15)',
+            color: '#d32f2f',
+            border: '1px solid rgba(244, 67, 54, 0.5)',
+          }
+        : {
+            backgroundColor: 'rgba(158, 158, 158, 0.15)',
+            color: '#616161',
+            border: '1px solid rgba(158, 158, 158, 0.5)',
+          }),
+  }));
+
+  // 메뉴 관련 핸들러
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  // 신고 대화상자 핸들러
+  const handleOpenReportDialog = () => {
+    if (!user) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+    setReportDialogOpen(true);
+  };
+
+  const handleCloseReportDialog = () => {
+    setReportDialogOpen(false);
+  };
 
   // 대댓글 수정 핸들러
   const handleEdit = async (e?: React.MouseEvent) => {
@@ -70,27 +154,27 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
       e.preventDefault();
       e.stopPropagation();
     }
-    
+
     if (!editText.trim() || editText === content) {
       setIsEditing(false);
       setEditText(content);
       return;
     }
-    
+
     setIsSubmitting(true);
-    
+
     // 수정 직후 UI 먼저 업데이트 (낙관적 UI 업데이트)
     const originalContent = content;
-    
+
     try {
       // 낙관적 UI 업데이트 - 먼저 로컬 상태 업데이트
       setContent(editText);
       setIsEditing(false);
-      
+
       // 수정 작업은 동기적으로 완료될 때까지 기다림
       const result = await updateReply(id, editText);
       console.log('답글 수정 완료:', result);
-      
+
       // 부모 컴포넌트에 변경 알림 - 리다이렉션 방지를 위해 제거
       console.log('답글 수정 성공 - 리다이렉션 방지를 위해 자동 새로고침 비활성화됨');
       // onUpdate();
@@ -111,12 +195,12 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
       e.preventDefault();
       e.stopPropagation();
     }
-    
+
     if (window.confirm('정말 답글을 삭제하시겠습니까?')) {
       try {
         setIsSubmitting(true);
         await deleteReply(id);
-        
+
         // 리다이렉션 방지를 위해 onUpdate 호출 제거
         console.log('답글 삭제 성공 - 리다이렉션 방지를 위해 자동 새로고침 비활성화됨');
         // onUpdate();
@@ -134,6 +218,7 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
     e.preventDefault();
     e.stopPropagation();
     setIsEditing(true);
+    handleMenuClose();
   };
 
   // 편집 취소
@@ -158,47 +243,94 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
       <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
         <Box sx={{ display: 'flex', gap: 1 }}>
           {/* 프로필 영역 */}
-          <Avatar 
-            src={userProfileImage} 
-            alt={userName}
-            sx={{ width: 32, height: 32 }}
-          >
+          <Avatar src={userProfileImage} alt={userName} sx={{ width: 32, height: 32 }}>
             {userName.charAt(0)}
           </Avatar>
-          
+
           {/* 내용 영역 */}
           <Box sx={{ flexGrow: 1 }}>
             {/* 작성자 정보 */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 0.5 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                mb: 0.5,
+              }}
+            >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
                 <Typography variant="subtitle2" fontSize="0.85rem">
                   {userName}
                 </Typography>
-                
-                {countryName && (
-                  <CountryChip 
-                    icon={<FlagIcon sx={{ fontSize: '0.7rem' }} />} 
-                    label={countryName}
-                    size="small"
-                  />
+
+                {/* 국가/국기 표시 */}
+                {nation && (
+                  <FlagDisplay nation={nation} size="small" showName={false} sx={{ mr: 0.5 }} />
                 )}
-                
+
+                {/* 입장 표시 - 댓글 내용에서 추출한 stance 사용 */}
+                <StanceChip
+                  label={
+                    extractedStance === 'con'
+                      ? t('debate.reply.con')
+                      : extractedStance === 'pro'
+                        ? t('debate.reply.pro')
+                        : t('debate.reply.none')
+                  }
+                  stance={extractedStance || undefined}
+                  size="small"
+                />
+
                 <Typography variant="caption" color="text.secondary" sx={{ ml: 0.5 }}>
                   {formatDateTime(createdAt)}
                   {getEditedMark(createdAt, updatedAt)}
                 </Typography>
               </Box>
-              
-              <Box>
-                <IconButton size="small" onClick={toggleEdit} sx={{ p: 0.5 }}>
-                  <EditIcon fontSize="small" sx={{ fontSize: '0.9rem' }} />
-                </IconButton>
-                <IconButton size="small" onClick={handleDelete} sx={{ p: 0.5 }}>
-                  <DeleteIcon fontSize="small" sx={{ fontSize: '0.9rem' }} />
-                </IconButton>
-              </Box>
+
+              {/* 본인이 작성했거나 관리자인 경우 수정/삭제 버튼, 아니면 신고 버튼 */}
+              {user && (
+                <>
+                  {canEditOrDelete ? (
+                    <IconButton size="small" onClick={handleMenuOpen} sx={{ p: 0.5 }}>
+                      <MoreVertIcon fontSize="small" sx={{ fontSize: '0.9rem' }} />
+                    </IconButton>
+                  ) : (
+                    <IconButton
+                      size="small"
+                      onClick={handleOpenReportDialog}
+                      sx={{
+                        p: 0.5,
+                        '&:hover': {
+                          color: 'error.main',
+                        },
+                      }}
+                    >
+                      <FlagIcon fontSize="small" sx={{ fontSize: '0.9rem' }} />
+                    </IconButton>
+                  )}
+                </>
+              )}
+
+              {/* 수정/삭제 메뉴 */}
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleMenuClose}
+                onClick={e => e.stopPropagation()}
+              >
+                <MenuItem onClick={toggleEdit}>수정</MenuItem>
+                <MenuItem
+                  onClick={e => {
+                    e.stopPropagation();
+                    handleMenuClose();
+                    handleDelete();
+                  }}
+                >
+                  삭제
+                </MenuItem>
+              </Menu>
             </Box>
-            
+
             {/* 댓글 내용 */}
             {isEditing ? (
               <Box sx={{ mt: 1 }}>
@@ -208,22 +340,22 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
                   minRows={2}
                   maxRows={4}
                   value={editText}
-                  onChange={(e) => setEditText(e.target.value)}
+                  onChange={e => setEditText(e.target.value)}
                   variant="outlined"
                   size="small"
                   sx={{ mb: 1, fontSize: '0.85rem' }}
                   onKeyDown={handleKeyDown}
                   disabled={isSubmitting}
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={e => e.stopPropagation()}
                 />
-                <Stack 
-                  direction="row" 
-                  spacing={1} 
+                <Stack
+                  direction="row"
+                  spacing={1}
                   justifyContent="flex-end"
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={e => e.stopPropagation()}
                 >
-                  <Button 
-                    variant="outlined" 
+                  <Button
+                    variant="outlined"
                     size="small"
                     onClick={cancelEdit}
                     sx={{ py: 0.25, px: 1, minWidth: 'auto', fontSize: '0.75rem' }}
@@ -232,8 +364,8 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
                   >
                     취소
                   </Button>
-                  <Button 
-                    variant="contained" 
+                  <Button
+                    variant="contained"
                     size="small"
                     onClick={handleEdit}
                     sx={{ py: 0.25, px: 1, minWidth: 'auto', fontSize: '0.75rem' }}
@@ -245,16 +377,21 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
                 </Stack>
               </Box>
             ) : (
-              <Typography variant="body2" fontSize="0.85rem" color="text.primary" sx={{ whiteSpace: 'pre-wrap' }}>
+              <Typography
+                variant="body2"
+                fontSize="0.85rem"
+                color="text.primary"
+                sx={{ whiteSpace: 'pre-wrap' }}
+              >
                 {content}
               </Typography>
             )}
-            
+
             {/* 감정표현 */}
             <Box sx={{ mt: 1 }}>
-              <ReactionButtons 
-                targetId={id} 
-                targetType="reply" 
+              <ReactionButtons
+                targetId={id}
+                targetType="reply"
                 reactions={reactions}
                 isState={reply.isState}
                 size="sm"
@@ -263,8 +400,18 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
           </Box>
         </Box>
       </CardContent>
+
+      {/* 신고 다이얼로그 */}
+      <ReportDialog
+        open={reportDialogOpen}
+        onClose={handleCloseReportDialog}
+        targetId={id}
+        targetType={'REPLY'}
+        serviceType={'DEBATE'}
+        reportedUserId={userId || 0}
+      />
     </StyledCard>
   );
 };
 
-export default ReplyItem; 
+export default ReplyItem;

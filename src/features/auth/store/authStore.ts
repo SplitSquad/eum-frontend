@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { checkAuthStatus, logout } from '../api/authApi'; // 실제 구글 인증 API
-import { getToken, setToken, removeToken } from '../tokenUtils';
+import { getToken, setToken, removeToken, getValidToken, isTokenExpired } from '../tokenUtils';
 
 /**
  * 사용자 타입 정의
@@ -16,6 +16,10 @@ export interface User {
   picture?: string;
   profileImagePath?: string; // 프로필 이미지 경로 추가
   googleId?: string;
+  nation?: string;
+  language?: string;
+  gender?: string;
+  visitPurpose?: string;
 }
 
 /**
@@ -27,14 +31,14 @@ export interface User {
  * TODO: 상훈님이랑 협의하여 전역 상태 관리 방식으로 리팩토링 필요
  */
 interface AuthState {
-  isAuthenticated: boolean;
-  user: User | null;
+  isAuthenticated: boolean | undefined;
+  user: User | undefined;
   token: string | null;
   isLoading: boolean;
   error: string | null;
 
   // 액션
-  setUser: (user: User | null) => void;
+  setUser: (user: User | undefined) => void;
   setToken: (token: string | null) => void;
   setAuthenticated: (isAuthenticated: boolean) => void;
   setLoading: (isLoading: boolean) => void;
@@ -50,6 +54,9 @@ interface AuthState {
   // isOnBoardDone 직접 제어 (추가)
   setOnBoardDone: (isDone: boolean) => void;
   getOnBoardDone: () => boolean;
+
+  // 프로필 이미지 업데이트 (추가)
+  updateProfileImage: (imagePath: string) => void;
 }
 
 // 타입 변환 헬퍼 함수: isOnBoardDone 값을 항상 boolean으로 처리
@@ -84,8 +91,8 @@ const getUserIdFromToken = (token: string): number => {
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
-      isAuthenticated: false,
-      user: null,
+      isAuthenticated: undefined,
+      user: undefined,
       token: null,
       isLoading: false,
       error: null,
@@ -233,9 +240,10 @@ export const useAuthStore = create<AuthState>()(
         try {
           set({ isLoading: true });
 
-          // 토큰이 없으면 인증 상태가 아님
-          const storedToken = localStorage.getItem('auth_token');
-          if (!storedToken) {
+          // 유효한 토큰이 없으면 인증 상태 정리
+          const validToken = getValidToken();
+          if (!validToken) {
+            console.log('authStore.loadUser: 유효한 토큰이 없어 인증 상태를 정리합니다.');
             get().clearAuthState();
             return;
           }
@@ -274,7 +282,7 @@ export const useAuthStore = create<AuthState>()(
             set({
               user: normalizedUserData,
               isAuthenticated: true,
-              token: storedToken,
+              token: validToken,
             });
           } catch (apiError) {
             console.warn('API에서 사용자 정보 가져오기 실패, 토큰에서 정보 추출 시도:', apiError);
@@ -282,7 +290,7 @@ export const useAuthStore = create<AuthState>()(
             // API 호출 실패 시 토큰에서 직접 정보 추출
             try {
               // JWT 토큰 디코딩
-              const payload = JSON.parse(atob(storedToken.split('.')[1]));
+              const payload = JSON.parse(atob(validToken.split('.')[1]));
               const userId = payload.userId || 0;
               const role = payload.role || 'ROLE_USER';
               const name = payload.name || ''; // 이름 정보도 추출
@@ -307,7 +315,7 @@ export const useAuthStore = create<AuthState>()(
               set({
                 user: extractedUser,
                 isAuthenticated: true,
-                token: storedToken,
+                token: validToken,
               });
             } catch (tokenError) {
               console.error('토큰 디코딩 실패, 인증 상태 초기화:', tokenError);
@@ -334,10 +342,19 @@ export const useAuthStore = create<AuthState>()(
         // 상태 초기화
         set({
           isAuthenticated: false,
-          user: null,
+          user: undefined,
           token: null,
           error: null,
         });
+      },
+
+      // 프로필 이미지 업데이트 (추가)
+      updateProfileImage: (imagePath: string) => {
+        const { user } = get();
+        if (user) {
+          const updatedUser = { ...user, profileImagePath: imagePath };
+          set({ user: updatedUser });
+        }
       },
     }),
     {
@@ -349,6 +366,13 @@ export const useAuthStore = create<AuthState>()(
         user: state.user,
         token: state.token,
       }),
+      // hydration 후 토큰 없으면 인증 해제
+      onRehydrateStorage: () => state => {
+        const storedToken = getToken() || localStorage.getItem('auth_token');
+        if (!storedToken) {
+          state?.clearAuthState();
+        }
+      },
     }
   )
 );

@@ -4,7 +4,7 @@ const UseIntroSlider = (isLoading: boolean, totalSlides: number) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [cycleCount, setCycleCount] = useState(0);
 
-  const interval = 1500;
+  const interval = 2000;
 
   useEffect(() => {
     if (!isLoading && cycleCount >= 1) return;

@@ -28,6 +28,7 @@ import useAuthStore from '../../../auth/store/authStore';
 import ReplyForm from '../ReplyForm';
 import ReportDialog, { ReportTargetType } from '../../../common/components/ReportDialog';
 import { useComments } from '../../hooks';
+import { useTranslation } from '../../../../shared/i18n';
 
 // 스타일링된 컴포넌트
 const CommentBox = styled(Box)(({ theme }) => ({
@@ -83,12 +84,13 @@ const CommentItem: React.FC<CommentItemProps> = ({
   isReply = false,
   parentId,
 }) => {
+  const { t } = useTranslation();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [repliesVisible, setRepliesVisible] = useState(true);
   const [editMode, setEditMode] = useState(false);
   const [editedContent, setEditedContent] = useState(comment.content);
-  
+
   // 신고 다이얼로그 관련 상태
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
 
@@ -104,7 +106,14 @@ const CommentItem: React.FC<CommentItemProps> = ({
     ((currentUser as any)?.id ?? (currentUser as any)?.userId)?.toString() ===
     ((comment.writer as any)?.id ?? (comment.writer as any)?.userId)?.toString();
 
+  // 관리자 권한 확인
+  const isAdmin = currentUser?.role === 'ROLE_ADMIN';
+
+  // 수정/삭제 권한 확인 (본인 또는 관리자)
+  const canEditOrDelete = isCommentAuthor || isAdmin;
+
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+    console.log('handleMenuClick 실행됨', isCommentAuthor);
     setAnchorEl(event.currentTarget);
   };
 
@@ -154,6 +163,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
   const handleEditStart = () => {
     setEditMode(true);
     setEditedContent(comment.content);
+    console.log('handleEditStart', comment.content);
     handleMenuClose();
   };
 
@@ -176,7 +186,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
   const handleReplyFormClose = () => {
     setShowReplyForm(false);
   };
-  
+
   // 신고 다이얼로그 열기
   const handleOpenReportDialog = () => {
     if (!comment.writer?.userId) {
@@ -192,7 +202,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
   };
 
   const formattedDate = comment.createdAt
-    ? format(new Date(comment.createdAt), 'yyyy년 MM월 dd일 HH:mm', { locale: ko })
+    ? format(new Date(comment.createdAt), 'yyyy-MM-dd HH:mm', { locale: ko })
     : '날짜 없음';
 
   const CommentContainer = isReply ? ReplyBox : CommentBox;
@@ -218,18 +228,36 @@ const CommentItem: React.FC<CommentItemProps> = ({
             </Box>
           </Box>
 
-          {isCommentAuthor && (
-            <IconButton size="small" onClick={handleMenuClick} sx={{ color: '#888' }}>
-              <MoreVertIcon fontSize="small" />
-            </IconButton>
+          {/* 본인이 작성했거나 관리자인 경우 수정/삭제 버튼, 아니면 신고 버튼 */}
+          {currentUser && (
+            <>
+              {canEditOrDelete ? (
+                <IconButton size="small" onClick={handleMenuClick} sx={{ color: '#888' }}>
+                  <MoreVertIcon fontSize="small" />
+                </IconButton>
+              ) : (
+                <IconButton
+                  size="small"
+                  onClick={handleOpenReportDialog}
+                  sx={{
+                    color: '#888',
+                    '&:hover': {
+                      color: '#f57c00',
+                    },
+                  }}
+                >
+                  <FlagIcon fontSize="small" />
+                </IconButton>
+              )}
+            </>
           )}
 
           <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
             <MenuItem onClick={handleEditStart} sx={{ color: '#2196F3' }}>
-              수정하기
+              {t('community.comments.editComment')}
             </MenuItem>
             <MenuItem onClick={handleDelete} sx={{ color: '#f44336' }}>
-              삭제하기
+              {t('community.comments.deleteComment')}
             </MenuItem>
           </Menu>
         </Box>
@@ -273,7 +301,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
                   },
                 }}
               >
-                취소
+                {t('common.cancel')}
               </Button>
               <Button
                 size="small"
@@ -288,7 +316,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
                   boxShadow: '0 2px 4px rgba(255, 170, 165, 0.3)',
                 }}
               >
-                수정완료
+                {t('common.save')}
               </Button>
             </Box>
           </Box>
@@ -341,14 +369,14 @@ const CommentItem: React.FC<CommentItemProps> = ({
               '&:hover': {
                 backgroundColor: 'rgba(255, 170, 165, 0.2)',
               },
-              mr: 1
+              mr: 1,
             }}
           >
-            답글 작성 {comment.replies?.length ? `(${comment.replies.length})` : ''}
+            {t('debate.reply.add')} {comment.replies?.length ? `(${comment.replies.length})` : ''}
           </ActionButton>
-          
-          {/* 신고 버튼 - 작성자가 아닌 경우에만 표시 */}
-          {currentUser && !isCommentAuthor && (
+
+          {/* 신고 버튼 - 작성자가 아니고 관리자가 아닌 경우에만 표시 */}
+          {currentUser && !canEditOrDelete && (
             <ActionButton
               startIcon={<FlagIcon fontSize="small" />}
               onClick={handleOpenReportDialog}
@@ -395,14 +423,14 @@ const CommentItem: React.FC<CommentItemProps> = ({
           </Collapse>
         </>
       )}
-      
+
       {/* 신고 다이얼로그 */}
       {comment.writer?.userId && (
         <ReportDialog
           open={reportDialogOpen}
           onClose={handleCloseReportDialog}
           targetId={comment.commentId}
-          targetType={isReply ? "REPLY" : "COMMENT"}
+          targetType={isReply ? 'REPLY' : 'COMMENT'}
           serviceType="COMMUNITY"
           reportedUserId={Number(comment.writer.userId)}
         />

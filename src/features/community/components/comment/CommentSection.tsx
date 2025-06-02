@@ -44,6 +44,8 @@ import ReportDialog, {
   ReportTargetType,
   ServiceType,
 } from '../../../common/components/ReportDialog';
+import { useTranslation } from '../../../../shared/i18n';
+import FlagDisplay from '../../../../shared/components/FlagDisplay';
 
 const CommentCardWrapper = styled(Box)(({ theme }) => ({
   padding: theme.spacing(2),
@@ -78,12 +80,12 @@ const ReactionButton = styled(Button)(({ theme }) => ({
   minWidth: 'auto',
 }));
 
-function formatDateToAbsolute(dateString: string) {
+function formatDateToAbsolute(dateString: string, t: any) {
   try {
-    return format(new Date(dateString), 'yyyy년 MM월 dd일 HH:mm', { locale: ko });
+    return format(new Date(dateString), 'yyyy-MM-dd HH:mm', { locale: ko });
   } catch (e) {
     console.error('날짜 형식 변환 오류:', e);
-    return '날짜 정보 없음';
+    return t('community.posts.noDate');
   }
 }
 
@@ -105,6 +107,7 @@ type User = {
   nickname?: string;
   name?: string;
   profileImage?: string;
+  nation?: string;
 };
 
 type Reply = {
@@ -147,6 +150,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   onEditComment: propEdit,
   onDeleteComment: propDelete,
 }) => {
+  const { t } = useTranslation();
   // Local state
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -156,6 +160,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(5);
   const [totalPages, setTotalPages] = useState<number>(0);
+  const [sortBy, setSortBy] = useState<'latest' | 'popular' | 'oldest'>('latest');
 
   // Snackbar notifications
   const { enqueueSnackbar } = useSnackbar();
@@ -177,11 +182,11 @@ const CommentSection: React.FC<CommentSectionProps> = ({
 
   // 댓글 목록 불러오기 - useCallback으로 최적화
   const fetchComments = useCallback(
-    async (page: number = currentPage) => {
+    async (page: number = currentPage, sort: string = sortBy) => {
       setIsLoading(true);
       try {
-        console.log('[DEBUG] 댓글 가져오기 시작 - postId:', postId, 'page:', page);
-        const response = await CommentApi.getComments(postId, 'post', page, pageSize);
+        console.log('[DEBUG] 댓글 가져오기 시작 - postId:', postId, 'page:', page, 'sort:', sort);
+        const response = await CommentApi.getComments(postId, 'post', page, pageSize, sort);
         console.log('[DEBUG] 댓글 응답 구조:', JSON.stringify(response, null, 2));
 
         if (response && response.commentList) {
@@ -235,12 +240,12 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         setComments([]);
         setTotal(0);
         setTotalPages(0);
-        enqueueSnackbar('댓글을 불러오는 중 오류가 발생했습니다.', { variant: 'error' });
+        enqueueSnackbar(t('community.comments.loadFailed'), { variant: 'error' });
       } finally {
         setIsLoading(false);
       }
     },
-    [postId, pageSize, enqueueSnackbar]
+    [postId, pageSize, enqueueSnackbar, sortBy]
   );
 
   // 페이지 변경 핸들러
@@ -248,6 +253,14 @@ const CommentSection: React.FC<CommentSectionProps> = ({
     // API는 0부터 시작하는 페이지 인덱스 사용
     const apiPageIndex = page - 1;
     fetchComments(apiPageIndex);
+  };
+
+  // 정렬 변경 핸들러 추가
+  const handleSortChange = (newSort: 'latest' | 'popular' | 'oldest') => {
+    console.log('[DEBUG] 댓글 정렬 변경:', sortBy, '→', newSort);
+    setSortBy(newSort);
+    setCurrentPage(0); // 첫 페이지로 리셋
+    fetchComments(0, newSort); // 새로운 정렬로 첫 페이지부터 로드
   };
 
   // 대댓글 로드 함수 - useCallback으로 최적화
@@ -365,12 +378,12 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   // 새 댓글 작성 처리
   const handleSubmitComment = async () => {
     if (!newCommentText.trim()) {
-      enqueueSnackbar('댓글 내용을 입력해주세요.', { variant: 'warning' });
+      enqueueSnackbar(t('community.comments.commentRequired'), { variant: 'warning' });
       return;
     }
 
     if (!user) {
-      enqueueSnackbar('로그인이 필요합니다.', { variant: 'warning' });
+      enqueueSnackbar(t('auth.loginRequired'), { variant: 'warning' });
       return;
     }
 
@@ -379,7 +392,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
       console.log('[DEBUG] 댓글 작성 시작:', newCommentText.substring(0, 20) + '...');
 
       // 사용자 이름 확실하게 가져오기
-      const userName = user.name || (user as any).nickname || '사용자';
+      const userName = user.name || (user as any).nickname || t('community.comments.anonymous');
       console.log('[DEBUG] 댓글 작성에 사용할 사용자 이름:', userName);
 
       // 입력 필드 초기화
@@ -409,15 +422,15 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         // 총 댓글 수 증가
         setTotal(prev => prev + 1);
 
-        enqueueSnackbar('댓글이 등록되었습니다.', { variant: 'success' });
+        enqueueSnackbar(t('community.comments.saveSuccess'), { variant: 'success' });
       } else {
         // 응답이 없으면 전체 목록 새로고침
         fetchComments(0);
-        enqueueSnackbar('댓글이 등록되었지만 새로고침이 필요합니다.', { variant: 'info' });
+        enqueueSnackbar(t('community.comments.saveSuccess'), { variant: 'info' });
       }
     } catch (error) {
       console.error('[ERROR] 댓글 작성 실패:', error);
-      enqueueSnackbar('댓글 작성에 실패했습니다.', { variant: 'error' });
+      enqueueSnackbar(t('community.comments.saveFailed'), { variant: 'error' });
     } finally {
       setSubmittingComment(false);
     }
@@ -435,10 +448,10 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         )
       );
 
-      enqueueSnackbar('댓글이 수정되었습니다.', { variant: 'success' });
+      enqueueSnackbar(t('community.comments.saveSuccess'), { variant: 'success' });
     } catch (error) {
       console.error('[ERROR] 댓글 수정 실패:', error);
-      enqueueSnackbar('댓글 수정에 실패했습니다.', { variant: 'error' });
+      enqueueSnackbar(t('community.comments.saveFailed'), { variant: 'error' });
     }
   };
 
@@ -451,10 +464,10 @@ const CommentSection: React.FC<CommentSectionProps> = ({
       setComments(prevComments => prevComments.filter(comment => comment.commentId !== commentId));
       setTotal(prev => Math.max(0, prev - 1));
 
-      enqueueSnackbar('댓글이 삭제되었습니다.', { variant: 'success' });
+      enqueueSnackbar(t('community.comments.deleteSuccess'), { variant: 'success' });
     } catch (error) {
       console.error('[ERROR] 댓글 삭제 실패:', error);
-      enqueueSnackbar('댓글 삭제에 실패했습니다.', { variant: 'error' });
+      enqueueSnackbar(t('community.comments.deleteFailed'), { variant: 'error' });
       // 실패 시 댓글 목록 다시 로드
       fetchComments();
     }
@@ -485,7 +498,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   // 댓글 반응 함수 - 서버 응답이 불완전해도 UI 상태가 유지되도록 개선
   const handleReactionComment = async (commentId: number, type: 'like' | 'dislike') => {
     if (!user) {
-      enqueueSnackbar('로그인이 필요합니다.', { variant: 'warning' });
+      enqueueSnackbar(t('auth.loginRequired'), { variant: 'warning' });
       return;
     }
 
@@ -640,7 +653,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
       });
     } catch (error) {
       console.error('[ERROR] 댓글 반응 처리 실패:', error);
-      enqueueSnackbar('댓글 반응 처리에 실패했습니다.', { variant: 'error' });
+      enqueueSnackbar(t('community.comments.saveFailed'), { variant: 'error' });
       // 에러 시 전체 다시 로드
       fetchComments();
     }
@@ -653,7 +666,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
     commentId: number
   ) => {
     if (!user) {
-      enqueueSnackbar('로그인이 필요합니다.', { variant: 'warning' });
+      enqueueSnackbar(t('auth.loginRequired'), { variant: 'warning' });
       return;
     }
 
@@ -816,7 +829,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
       });
     } catch (error) {
       console.error('[ERROR] 답글 반응 처리 실패:', error);
-      enqueueSnackbar('답글 반응 처리에 실패했습니다.', { variant: 'error' });
+      enqueueSnackbar(t('community.comments.saveFailed'), { variant: 'error' });
       // 에러 시 해당 댓글의 답글만 다시 로드
       loadReplies(commentId);
     }
@@ -825,12 +838,12 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   // 대댓글 작성 함수 최적화
   const handleReplyComment = async (commentId: number, content: string) => {
     if (!content.trim()) {
-      enqueueSnackbar('답글 내용을 입력해주세요.', { variant: 'warning' });
+      enqueueSnackbar(t('community.comments.commentRequired'), { variant: 'warning' });
       return;
     }
 
     if (!user) {
-      enqueueSnackbar('로그인이 필요합니다.', { variant: 'warning' });
+      enqueueSnackbar(t('auth.loginRequired'), { variant: 'warning' });
       return;
     }
 
@@ -851,7 +864,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
       }
 
       // 사용자 이름 확실하게 가져오기
-      const userName = user.name || (user as any).nickname || '사용자';
+      const userName = user.name || (user as any).nickname || t('community.comments.anonymous');
       console.log('[DEBUG] 답글 작성에 사용할 사용자 이름:', userName);
 
       // 임시 답글 객체 생성
@@ -878,6 +891,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         ...prev,
         [numericCommentId]: [...(prev[numericCommentId] || []), tempReply],
       }));
+      // 대댓글 optimistic 추가 시 total 증가
+      setTotal(prev => prev + 1);
 
       // 댓글의 대댓글 카운트 증가
       setComments(prevComments =>
@@ -919,7 +934,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         return updatedReplies;
       });
 
-      enqueueSnackbar('답글이 등록되었습니다.', { variant: 'success' });
+      enqueueSnackbar(t('community.comments.saveSuccess'), { variant: 'success' });
     } catch (error) {
       console.error('[ERROR] 답글 작성 실패:', error);
 
@@ -931,6 +946,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         }
         return updatedReplies;
       });
+      // 대댓글 추가 실패 시 total 롤백
+      setTotal(prev => Math.max(0, prev - 1));
 
       // 댓글의 대댓글 카운트 복구
       setComments(prevComments =>
@@ -945,7 +962,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         )
       );
 
-      enqueueSnackbar('답글 작성에 실패했습니다.', { variant: 'error' });
+      enqueueSnackbar(t('community.comments.saveFailed'), { variant: 'error' });
     }
   };
 
@@ -977,11 +994,11 @@ const CommentSection: React.FC<CommentSectionProps> = ({
           return updatedReplies;
         });
 
-        enqueueSnackbar('답글이 수정되었습니다.', { variant: 'success' });
+        enqueueSnackbar(t('community.comments.saveSuccess'), { variant: 'success' });
       }
     } catch (error) {
       console.error('[ERROR] 대댓글 수정 실패:', error);
-      enqueueSnackbar('답글 수정에 실패했습니다.', { variant: 'error' });
+      enqueueSnackbar(t('community.comments.saveFailed'), { variant: 'error' });
 
       // 에러 발생 시 해당 댓글의 대댓글만 다시 로드
       if (parentCommentId !== null) {
@@ -1019,6 +1036,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         }
         return updatedReplies;
       });
+      // 대댓글 optimistic 삭제 시 total 감소
+      setTotal(prev => Math.max(0, prev - 1));
 
       // 댓글의 대댓글 카운트 감소 (전체 새로고침 없이)
       setComments(prevComments =>
@@ -1033,14 +1052,16 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         )
       );
 
-      enqueueSnackbar('답글이 삭제되었습니다.', { variant: 'success' });
+      enqueueSnackbar(t('community.comments.deleteSuccess'), { variant: 'success' });
     } catch (error) {
       console.error('[ERROR] 대댓글 삭제 실패:', error);
-      enqueueSnackbar('답글 삭제에 실패했습니다.', { variant: 'error' });
+      enqueueSnackbar(t('community.comments.deleteFailed'), { variant: 'error' });
 
       // 에러 발생 시 대댓글만 다시 로드
       if (parentCommentId !== null) {
         loadReplies(parentCommentId);
+        // 대댓글 삭제 실패 시 total 롤백
+        setTotal(prev => prev + 1);
       }
     }
   };
@@ -1074,7 +1095,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
     userId: number
   ) => {
     if (!user) {
-      enqueueSnackbar('로그인이 필요합니다.', { variant: 'warning' });
+      enqueueSnackbar(t('auth.loginRequired'), { variant: 'warning' });
       return;
     }
     setReportTarget({ id: targetId, type: targetType, userId });
@@ -1110,15 +1131,24 @@ const CommentSection: React.FC<CommentSectionProps> = ({
           </Avatar>
           <Box>
             <Typography variant="subtitle2">{comment.writer?.nickname}</Typography>
+            {/* 국가 정보 표시 */}
+            {comment.writer?.nation && (
+              <Typography
+                variant="caption"
+                sx={{ fontSize: '0.7rem', color: '#999', mt: 0.2, display: 'block' }}
+              >
+                <FlagDisplay nation={comment.writer.nation} size="small" showName={false} />
+              </Typography>
+            )}
             <Typography variant="caption" color="text.secondary">
-              {format(new Date(comment.createdAt), 'yyyy년 MM월 dd일 HH:mm', { locale: ko })}
+              {format(new Date(comment.createdAt), 'yyyy-MM-dd HH:mm', { locale: ko })}
               {comment.translating && (
                 <Typography
                   component="span"
                   variant="caption"
                   sx={{ ml: 1, color: 'info.main', fontStyle: 'italic' }}
                 >
-                  (번역 중...)
+                  ({t('common.loading')})
                 </Typography>
               )}
             </Typography>
@@ -1160,16 +1190,27 @@ const CommentSection: React.FC<CommentSectionProps> = ({
       </Box>
 
       {/* 댓글 내용 */}
-      <Typography
-        variant="body1"
-        sx={{
-          mb: 2,
-          whiteSpace: 'pre-wrap',
-          wordBreak: 'break-word',
-        }}
-      >
-        {comment.content}
-      </Typography>
+      {controls.editMode[comment.commentId] ? (
+        <CommentForm
+          initialValue={comment.content}
+          onSubmit={async content => {
+            return await handleCommentForm(comment.commentId, content, false);
+          }}
+          onCancel={() => controls.handleEditCancel(comment.commentId)}
+          buttonText={t('community.comments.editComment')}
+        />
+      ) : (
+        <Typography
+          variant="body1"
+          sx={{
+            mb: 2,
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word',
+          }}
+        >
+          {comment.content}
+        </Typography>
+      )}
 
       <CommentFooter>
         <ReactionButton
@@ -1197,7 +1238,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
           size="small"
           onClick={() => handleReplyToggle(comment.commentId)}
         >
-          답글 {replies[comment.commentId]?.length || 0}
+          {t('community.comments.reply')} {replies[comment.commentId]?.length || 0}
         </Button>
       </CommentFooter>
 
@@ -1218,13 +1259,13 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                       fullWidth
                       multiline
                       rows={2}
-                      placeholder="답글을 작성해주세요"
+                      placeholder={t('community.comments.enterComment')}
                       value={controls.replyContents[comment.commentId] || ''}
                       onChange={e => controls.handleReplyChange(comment.commentId, e.target.value)}
                     />
                     <Box display="flex" justifyContent="flex-end" mt={1} gap={1}>
                       <Button onClick={() => controls.handleReplyToggle(comment.commentId)}>
-                        취소
+                        {t('buttons.cancel')}
                       </Button>
                       <Button
                         variant="contained"
@@ -1235,7 +1276,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                           )
                         }
                       >
-                        답글 작성
+                        {t('community.comments.writeComment')}
                       </Button>
                     </Box>
                   </Paper>
@@ -1256,7 +1297,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                               return await handleCommentForm(reply.replyId, content, true);
                             }}
                             onCancel={() => controls.handleEditCancel(reply.replyId)}
-                            buttonText="수정"
+                            buttonText={t('buttons.edit')}
                           />
                         ) : (
                           <>
@@ -1275,8 +1316,28 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                                 <Typography variant="body2" fontWeight="bold">
                                   {reply.writer?.nickname}
                                 </Typography>
+                                {/* 국가 정보 표시 */}
+                                {reply.writer?.nation && (
+                                  <Typography
+                                    variant="caption"
+                                    sx={{
+                                      fontSize: '0.7rem',
+                                      color: '#999',
+                                      mt: 0.2,
+                                      display: 'block',
+                                    }}
+                                  >
+                                    <FlagDisplay
+                                      nation={reply.writer.nation}
+                                      size="small"
+                                      showName={false}
+                                    />
+                                  </Typography>
+                                )}
                                 <Typography variant="caption" color="text.secondary">
-                                  {formatDateToAbsolute(reply.createdAt)}
+                                  {format(new Date(reply.createdAt), 'yyyy-MM-dd HH:mm', {
+                                    locale: ko,
+                                  })}
                                 </Typography>
                               </Box>
 
@@ -1367,7 +1428,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                     ))
                   ) : (
                     <Typography variant="body2" color="text.secondary" sx={{ ml: 2, mb: 2 }}>
-                      답글이 없습니다. 첫 번째 답글을 작성해보세요.
+                      {t('community.comments.noComments')}
                     </Typography>
                   )}
                 </Box>
@@ -1401,7 +1462,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
           }
         }}
       >
-        수정
+        {t('community.comments.editComment')}
       </MenuItem>
       <MenuItem
         onClick={() => {
@@ -1416,7 +1477,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
           }
         }}
       >
-        삭제
+        {t('community.comments.deleteComment')}
       </MenuItem>
     </Menu>
   );
@@ -1444,8 +1505,54 @@ const CommentSection: React.FC<CommentSectionProps> = ({
           },
         }}
       >
-        댓글 {total}개
+        {t('community.comments.totalComments', { count: total.toString() })}
       </Typography>
+
+      {/* 댓글 정렬 버튼 */}
+      <Box display="flex" gap={1} mb={3}>
+        <Button
+          variant={sortBy === 'latest' ? 'contained' : 'outlined'}
+          size="small"
+          onClick={() => handleSortChange('latest')}
+          sx={{
+            backgroundColor: sortBy === 'latest' ? 'primary.main' : 'transparent',
+            color: sortBy === 'latest' ? 'white' : 'primary.main',
+            '&:hover': {
+              backgroundColor: sortBy === 'latest' ? 'primary.dark' : 'primary.light',
+            },
+          }}
+        >
+          {t('community.filters.latest')}
+        </Button>
+        <Button
+          variant={sortBy === 'popular' ? 'contained' : 'outlined'}
+          size="small"
+          onClick={() => handleSortChange('popular')}
+          sx={{
+            backgroundColor: sortBy === 'popular' ? 'primary.main' : 'transparent',
+            color: sortBy === 'popular' ? 'white' : 'primary.main',
+            '&:hover': {
+              backgroundColor: sortBy === 'popular' ? 'primary.dark' : 'primary.light',
+            },
+          }}
+        >
+          {t('community.filters.popular')}
+        </Button>
+        <Button
+          variant={sortBy === 'oldest' ? 'contained' : 'outlined'}
+          size="small"
+          onClick={() => handleSortChange('oldest')}
+          sx={{
+            backgroundColor: sortBy === 'oldest' ? 'primary.main' : 'transparent',
+            color: sortBy === 'oldest' ? 'white' : 'primary.main',
+            '&:hover': {
+              backgroundColor: sortBy === 'oldest' ? 'primary.dark' : 'primary.light',
+            },
+          }}
+        >
+          {t('debate.comment.oldest')}
+        </Button>
+      </Box>
 
       {/* 새 댓글 작성 폼 */}
       <Box mb={4}>
@@ -1453,7 +1560,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
           fullWidth
           multiline
           rows={3}
-          placeholder="댓글을 작성해주세요"
+          placeholder={t('community.comments.enterComment')}
           value={newCommentText}
           onChange={e => setNewCommentText(e.target.value)}
           disabled={!user}
@@ -1469,7 +1576,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
             onClick={handleSubmitComment}
             disabled={!newCommentText.trim() || !user || submittingComment}
           >
-            {submittingComment ? '등록 중...' : '댓글 작성'}
+            {submittingComment ? t('common.loading') : t('community.comments.writeComment')}
           </Button>
         </Box>
       </Box>
@@ -1484,7 +1591,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
       {/* 댓글 없음 상태 */}
       {!isLoading && comments.length === 0 && (
         <Box py={4} textAlign="center" bgcolor="rgba(255, 255, 255, 0.7)" borderRadius={2}>
-          <Typography color="text.secondary">첫 번째 댓글을 작성해보세요!</Typography>
+          <Typography color="text.secondary">{t('community.comments.noComments')}</Typography>
         </Box>
       )}
 

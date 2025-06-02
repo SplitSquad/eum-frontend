@@ -12,6 +12,23 @@ declare global {
 const KAKAO_MAP_API_KEY = env.KAKAO_MAP_API_KEY;
 
 /**
+ * API 키 유효성 검사
+ */
+const validateApiKey = (): boolean => {
+  if (!KAKAO_MAP_API_KEY) {
+    console.error('카카오맵 API 키가 설정되지 않았습니다.');
+    return false;
+  }
+  
+  if (KAKAO_MAP_API_KEY.length < 10) {
+    console.error('카카오맵 API 키가 너무 짧습니다. 올바른 키인지 확인해주세요.');
+    return false;
+  }
+  
+  return true;
+};
+
+/**
  * 카카오맵 로드 상태 관리 (싱글톤)
  */
 let isLoading = false;
@@ -19,6 +36,8 @@ let isLoaded = false;
 let loadError: Error | null = null;
 let resolvePromise: ((value: any) => void) | null = null;
 let rejectPromise: ((reason: any) => void) | null = null;
+let retryCount = 0;
+const MAX_RETRY_COUNT = 3;
 
 /**
  * 카카오맵 스크립트 로드 완료 프로미스
@@ -100,10 +119,10 @@ export const loadKakaoMapScript = (): Promise<any> => {
     kakaoMapPromise = null;
   }
 
-  // API 키 확인
-  if (!KAKAO_MAP_API_KEY) {
+  // API 키 유효성 검사
+  if (!validateApiKey()) {
     const error = new Error(
-      '카카오맵 API 키가 설정되지 않았습니다. .env 파일에 VITE_KAKAO_MAP_API_KEY를 설정해주세요.'
+      '카카오맵 API 키가 설정되지 않았습니다. .env 파일에 VITE_KAKAO_JAVASCRIPT_KEY 또는 VITE_KAKAO_REST_API_KEY를 설정해주세요. 웹사이트에서 지도 표시용으로는 JavaScript Key를 권장합니다.'
     );
     console.error(error.message);
     return Promise.reject(error);
@@ -186,16 +205,26 @@ export const loadKakaoMapScript = (): Promise<any> => {
 function createScript(onSuccess: (maps: any) => void, onError: (error: Error) => void) {
   try {
     console.log('카카오맵: 새 스크립트 생성');
+    
+    // 기존 스크립트 제거 (중복 방지)
+    const existingScript = document.querySelector('script[src*="dapi.kakao.com"]');
+    if (existingScript) {
+      console.log('카카오맵: 기존 스크립트 제거');
+      existingScript.remove();
+    }
+    
     const script = document.createElement('script');
     script.type = 'text/javascript';
     script.async = true;
-    script.defer = true; // defer 속성 추가
+    script.defer = true;
+    script.crossOrigin = 'anonymous'; // CORS 설정 추가
     script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_MAP_API_KEY}&autoload=false&libraries=services,clusterer,drawing,geometry`;
 
-    // 10초 타임아웃 설정
-    const timeout = setTimeout(() => {
-      onError(new Error('카카오맵: 스크립트 다운로드 타임아웃 (10초)'));
-    }, 10000);
+          // 20초 타임아웃 설정 (더 여유롭게)
+      const timeout = setTimeout(() => {
+        script.remove();
+        onError(new Error('카카오맵: 스크립트 다운로드 타임아웃 (20초) - 네트워크 상태를 확인해주세요'));
+      }, 20000);
 
     script.onload = () => {
       clearTimeout(timeout);
@@ -206,15 +235,17 @@ function createScript(onSuccess: (maps: any) => void, onError: (error: Error) =>
         return;
       }
 
-      // 스크립트 로드 후 추가 지연
+      // 스크립트 로드 후 추가 지연 (더 안정적으로)
       setTimeout(() => {
         loadMapsModule(onSuccess, onError);
-      }, 300); // 300ms 지연으로 스크립트 초기화 시간 확보
+      }, 500); // 500ms 지연으로 스크립트 초기화 시간 확보
     };
 
     script.onerror = event => {
       clearTimeout(timeout);
-      onError(new Error('카카오맵: 스크립트 로드 실패 - 네트워크 오류'));
+      script.remove();
+      console.error('카카오맵: 스크립트 로드 실패', event);
+      onError(new Error('카카오맵: 스크립트 로드 실패 - 네트워크 오류 또는 API 키 문제'));
     };
 
     document.head.appendChild(script);
@@ -528,14 +559,14 @@ export const getCoordsFromAddress = async (
 };
 
 /**
- * 카카오맵 웹 길찾기 URL 생성 함수
+ * 길찾기 페이지 URL 생성 함수
  * @param startName 출발지 이름
  * @param startLat 출발지 위도
  * @param startLng 출발지 경도
  * @param endName 도착지 이름
  * @param endLat 도착지 위도
  * @param endLng 도착지 경도
- * @returns 카카오맵 웹 URL
+ * @returns 길찾기 페이지 URL
  */
 export const getKakaoMapDirectionsUrl = (
   startName: string,
@@ -545,14 +576,8 @@ export const getKakaoMapDirectionsUrl = (
   endLat: number,
   endLng: number
 ): string => {
-  // 모바일에서는 from-to 형식으로 길찾기 가능
-  const mobileUrl = `https://map.kakao.com/link/to/${endName},${endLat},${endLng}/from/${startName},${startLat},${startLng}`;
-
-  // 웹에서는 to만 지원
-  const webUrl = `https://map.kakao.com/link/to/${endName},${endLat},${endLng}`;
-
-  // 모바일 디바이스 체크
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-  return isMobile ? mobileUrl : webUrl;
+  // 카카오맵 길찾기 페이지로 연결
+  const kakaoMapUrl = `https://map.kakao.com/link/to/${encodeURIComponent(endName)},${endLat},${endLng}`;
+  
+  return kakaoMapUrl;
 };

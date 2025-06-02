@@ -1,4 +1,6 @@
 import apiClient from './apiClient';
+import { detectLanguage } from '../utils/languageUtils';
+import { debugLog } from '../../../shared/utils/debug';
 // import { Comment, Reply, ReactionType } from '../types-folder/index'; // 존재하지 않아 임시 주석 처리
 
 // 임시 타입 선언 (실제 타입 정의에 맞게 수정 필요)
@@ -25,6 +27,9 @@ function convertIsStateToMyReaction(isState: string | null | undefined): Reactio
  * 댓글 객체를 변환하는 헬퍼 함수 (백엔드 응답 -> 프론트엔드 형식)
  */
 function transformCommentData(comment: any, postId?: number): Comment {
+  // 디버그 로그 추가 - 백엔드에서 받은 원본 데이터 구조 확인
+  console.log('[DEBUG] 원본 댓글 데이터:', JSON.stringify(comment, null, 2));
+
   // isState를 myReaction으로 변환
   const myReaction = convertIsStateToMyReaction(comment.isState);
 
@@ -33,7 +38,11 @@ function transformCommentData(comment: any, postId?: number): Comment {
     userId: comment.userId,
     nickname: comment.userName,
     profileImage: comment.userPicture || '',
+    nation:
+      comment.nation || comment.userNation || comment.countryName || comment.countryCode || '', // 다양한 필드명 시도
   };
+
+  console.log('[DEBUG] 변환된 writer 객체:', JSON.stringify(writerObj, null, 2));
 
   return {
     ...comment,
@@ -49,6 +58,9 @@ function transformCommentData(comment: any, postId?: number): Comment {
  * 대댓글 객체 변환 헬퍼 함수 (백엔드 응답 -> 프론트엔드 형식)
  */
 function transformReplyData(reply: any, commentId?: number): Reply {
+  // 디버그 로그 추가 - 백엔드에서 받은 원본 데이터 구조 확인
+  console.log('[DEBUG] 원본 답글 데이터:', JSON.stringify(reply, null, 2));
+
   // isState를 myReaction으로 변환
   const myReaction = convertIsStateToMyReaction(reply.isState);
 
@@ -57,7 +69,10 @@ function transformReplyData(reply: any, commentId?: number): Reply {
     userId: reply.userId,
     nickname: reply.userName,
     profileImage: reply.userPicture || '',
+    nation: reply.nation || reply.userNation || reply.countryName || reply.countryCode || '', // 다양한 필드명 시도
   };
+
+  console.log('[DEBUG] 변환된 답글 writer 객체:', JSON.stringify(writerObj, null, 2));
 
   return {
     ...reply,
@@ -116,14 +131,30 @@ export const CommentApi = {
     postId: number,
     targetType: string = 'post', // targetType은 내부적으로만 사용, 백엔드에 전달하지 않음
     page: number = 0,
-    size: number = 5
+    size: number = 5,
+    sort: string = 'latest' // 정렬 파라미터 추가: 'latest' | 'popular'
   ): Promise<CommentResponseData> => {
     try {
-      console.log(`[DEBUG] 댓글 목록 API 호출 - postId: ${postId}`);
+      console.log(`[DEBUG] 댓글 목록 API 호출 - postId: ${postId}, sort: ${sort}`);
+      
+      // 정렬 파라미터 변환 (프론트엔드 → 백엔드)
+      let sortParam = 'latest'; // 기본값은 최신순
+      if (sort === 'popular') {
+        sortParam = 'heart'; // 인기순 (좋아요 기준)
+      } else if (sort === 'oldest') {
+        sortParam = 'oldest'; // 오래된순
+      } else {
+        sortParam = 'latest'; // 최신순 (기본값)
+      }
+      
+      console.log(`[DEBUG] 정렬 파라미터 변환: ${sort} → ${sortParam}`);
+      
+      // 최종 URL 생성 - 백엔드 스펙에 맞게 수정
+      const url = `${COMMENTS_BASE_URL}?postId=${postId}&page=${page}&size=${size}&sort=${sortParam}`;
+      console.log(`[DEBUG] 댓글 API 요청 URL: ${url}`);
+      
       // 백엔드 API 요청 형식에 맞게 수정
-      const response = await apiClient.get<CommentResponseData>(
-        `${COMMENTS_BASE_URL}?postId=${postId}&page=${page}&size=${size}&sort=latest`
-      );
+      const response = await apiClient.get<CommentResponseData>(url);
 
       console.log('[DEBUG] 댓글 원본 응답:', JSON.stringify(response, null, 2));
 
@@ -193,20 +224,37 @@ export const CommentApi = {
     try {
       // 숫자형으로 강제 변환하여 타입 문제 방지
       const numericPostId = Number(postId);
+
+      // 언어 감지 - await를 제대로 처리
+      const detectedLanguage = await detectLanguage(content);
+
+      debugLog('댓글 언어 감지 결과:', {
+        content: content.substring(0, 50) + '...',
+        detectedLanguage,
+        contentLength: content.length,
+      });
+
       console.log('[DEBUG] 댓글 생성 API 요청 시작:', {
         postId: numericPostId,
         content: content.substring(0, 20) + '...',
+        detectedLanguage,
         url: COMMENTS_BASE_URL,
       });
+
+      // 현재 로그인된 사용자 정보 가져오기
+      const authStore = (window as any).__AUTH_STORE__;
+      const currentUser = authStore ? authStore.getState().user : null;
+      const userName = currentUser?.name || '';
 
       // 백엔드 API 요청 형식에 맞게 수정
       const payload = {
         postId: numericPostId,
         content,
-        language: 'ko', // 백엔드 요구사항에 맞게 추가
+        language: detectedLanguage.toUpperCase(), // 이제 await된 문자열 결과
+        anonymous: false, // 익명 댓글 명시적으로 비활성화 - 항상 실명 사용
       };
 
-      console.log('[DEBUG] 댓글 생성 요청 페이로드:', payload);
+      debugLog('댓글 생성 요청 페이로드:', payload);
 
       const response = await apiClient.post<Comment>(COMMENTS_BASE_URL, payload);
 
@@ -423,15 +471,24 @@ export const CommentApi = {
         throw new Error('유효하지 않은 게시글 ID 또는 댓글 ID입니다.');
       }
 
+      // 언어 감지 - await를 제대로 처리
+      const detectedLanguage = await detectLanguage(content);
+
+      debugLog('대댓글 언어 감지 결과:', {
+        content: content.substring(0, 50) + '...',
+        detectedLanguage,
+        contentLength: content.length,
+      });
+
       // 백엔드 API 요청 형식에 맞게 수정
       const payload = {
         postId: Number(postId),
         commentId: Number(commentId),
         content,
-        language: 'ko', // 백엔드 요구사항에 맞게 추가
+        language: detectedLanguage.toUpperCase(), // 이제 await된 문자열 결과
       };
 
-      console.log('[DEBUG] 대댓글 생성 페이로드:', payload);
+      debugLog('대댓글 생성 페이로드:', payload);
 
       const response = await apiClient.post<Reply>(REPLIES_BASE_URL, payload);
 
@@ -448,10 +505,19 @@ export const CommentApi = {
    */
   updateReply: async (replyId: number, content: string): Promise<Reply> => {
     try {
+      // 언어 감지 - await를 제대로 처리
+      const detectedLanguage = await detectLanguage(content);
+
+      debugLog('대댓글 수정 언어 감지 결과:', {
+        content: content.substring(0, 50) + '...',
+        detectedLanguage,
+        contentLength: content.length,
+      });
+
       // 백엔드 API 요청 형식에 맞게 수정
       const response = await apiClient.patch<Reply>(`${REPLIES_BASE_URL}/${replyId}`, {
         content,
-        language: 'ko', // 백엔드 요구사항에 맞게 추가
+        language: detectedLanguage.toUpperCase(), // 이제 await된 문자열 결과
       });
       return response;
     } catch (error) {

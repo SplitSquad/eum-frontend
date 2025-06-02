@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { shallow } from 'zustand/shallow';
 import { useLanguageStore } from '../../../features/theme/store/languageStore';
-import * as postApi from '../api/postApi';
+import { PostApi } from '../api/postApi';
 import {
   Post,
   PostFilter,
@@ -64,7 +64,21 @@ interface PostState {
   totalPages: number;
   totalElements: number;
 
-  // 검색 상태 유지를 위한 필드 추가
+  // 검색 상태 유지를 위한 필드 추가 - postType별로 분리
+  searchStates: {
+    '자유': {
+      active: boolean;
+      term: string;
+      type: string;
+    };
+    '모임': {
+      active: boolean;
+      term: string;
+      type: string;
+    };
+  };
+
+  // 레거시 검색 상태 (하위 호환성 위해 유지)
   searchActive: boolean;
   searchTerm: string;
   searchType: string;
@@ -77,7 +91,7 @@ interface PostActions {
   fetchRecentPosts: (count?: number) => Promise<void>;
   fetchPostById: (postId: number) => Promise<Post | null>;
   createPost: (postDto: ApiCreatePostRequest, files?: File[]) => Promise<void>;
-  updatePost: (postId: number, postDto: ApiUpdatePostRequest, files?: File[]) => Promise<void>;
+  updatePost: (postId: number, postDto: ApiUpdatePostRequest, files?: File[], removeFileIds?: number[]) => Promise<void>;
   deletePost: (postId: number) => Promise<void>;
   reactToPost: (postId: number, option: string) => Promise<void>;
 
@@ -159,8 +173,14 @@ const setupLanguageChangeListener = () => {
 
       const postState = usePostStore.getState();
 
+      // 캐시 초기화 (하지만 현재 posts 데이터는 유지)
+      lastFetchTimestamp = 0;
+      lastFetchedFilter = null;
+      pageCache = {};
+
       // 현재 필터 정보를 유지하면서 게시글 목록 새로고침
       const currentFilter = postState.postFilter;
+      const currentPosts = postState.posts; // 현재 게시글 데이터 백업
 
       // 캐시를 무시하고 새로 요청하기 위해 임시 필터 속성 추가
       const refreshFilter = {
@@ -168,19 +188,52 @@ const setupLanguageChangeListener = () => {
         _forceRefresh: Date.now(), // 강제 새로고침을 위한 임시 속성
       };
 
-      // 게시글 목록 데이터 다시 로드
-      setTimeout(() => {
-        usePostStore.getState().fetchPosts(refreshFilter);
+      // 백그라운드에서 새로운 데이터 가져오기 (기존 데이터는 유지)
+      setTimeout(async () => {
+        try {
+          console.log(`[INFO] 언어 변경 - 현재 게시글 ${currentPosts.length}개 유지하며 백그라운드 새로고침`);
+          
+          // 검색 상태 확인
+          const isSearchActive = postState.searchActive;
+          const searchTerm = postState.searchTerm;
+          const searchType = postState.searchType;
+          
+          if (isSearchActive && searchTerm) {
+            console.log(`[INFO] 언어 변경 - 검색 상태 유지: "${searchTerm}" (${searchType})`);
+            
+            // 검색 상태인 경우 검색 API로 새로고침
+            await usePostStore.getState().searchPosts(searchTerm, searchType, {
+              page: currentFilter.page || 0,
+              size: 6,
+              sort: currentFilter.sortBy === 'popular' ? 'views,desc' : 'createdAt,desc',
+              postType: currentFilter.postType,
+              region: currentFilter.location,
+              category: currentFilter.category,
+              tag: currentFilter.tag,
+            });
+          } else {
+            // 일반 상태인 경우 일반 API로 새로고침
+            await usePostStore.getState().fetchPosts(refreshFilter);
+          }
 
-        // 현재 보고 있는 게시글이 있다면 상세 정보도 새로고침
-        const currentPost = postState.currentPost;
-        if (currentPost) {
-          console.log(
-            `[INFO] 언어 변경으로 현재 게시글(ID: ${currentPost.postId}) 상세 정보 새로고침`
-          );
-          usePostStore.getState().fetchPostById(currentPost.postId);
+          // 현재 보고 있는 게시글이 있다면 상세 정보도 새로고침
+          const currentPost = postState.currentPost;
+          if (currentPost) {
+            console.log(
+              `[INFO] 언어 변경으로 현재 게시글(ID: ${currentPost.postId}) 상세 정보 새로고침`
+            );
+            await usePostStore.getState().fetchPostById(currentPost.postId);
+          }
+        } catch (error) {
+          console.error('[ERROR] 언어 변경 시 데이터 새로고침 실패:', error);
+          // 에러 발생 시에도 기존 데이터 유지
+          usePostStore.setState({ 
+            posts: currentPosts,
+            postLoading: false,
+            postError: null
+          });
         }
-      }, 0);
+      }, 50); // 지연 시간을 줄여서 더 빠른 응답
     }
   });
 };
@@ -228,13 +281,29 @@ export const usePostStore = create<PostState & PostActions>()(
       totalPages: 0,
       totalElements: 0,
 
-      // 검색 상태 유지를 위한 필드 추가
+      // 검색 상태 유지를 위한 필드 추가 - postType별로 분리
+      searchStates: {
+        '자유': {
+          active: false,
+          term: '',
+          type: '',
+        },
+        '모임': {
+          active: false,
+          term: '',
+          type: '',
+        },
+      },
+
+      // 레거시 검색 상태 (하위 호환성 위해 유지)
       searchActive: false,
       searchTerm: '',
       searchType: '',
 
       // 액션: 게시글 관련
       fetchPosts: async filter => {
+        let normalizedFilter: any = null; // 함수 시작 시 선언
+        
         try {
           console.log('[DEBUG] fetchPosts 시작 - 필터:', filter);
 
@@ -247,32 +316,60 @@ export const usePostStore = create<PostState & PostActions>()(
           // resetSearch가 명시적으로 true인 경우에만 검색 상태 초기화
           if (filter?.resetSearch === true) {
             console.log('[DEBUG] resetSearch가 true, 검색 상태 초기화');
-            set({
+            const postType = filter.postType || currentState.postFilter.postType || '자유';
+            set(state => ({
+              searchStates: {
+                ...state.searchStates,
+                [postType]: {
+                  active: false,
+                  term: '',
+                  type: '',
+                },
+              },
+              // 레거시 호환성
               searchActive: false,
               searchTerm: '',
               searchType: '',
-            });
+            }));
           }
-          // 검색 활성화된 경우, 검색 상태 유지하고 페이지 이동만 처리
-          else if (currentState.searchActive && currentState.searchTerm) {
-            console.log(
-              '[DEBUG] 검색 상태에서 페이지 이동:',
-              currentState.searchTerm,
-              currentState.searchType
-            );
-            // 검색 API로 페이지 이동
-            return get().searchPosts({
-              page: filter?.page !== undefined ? filter.page : currentState.postPageInfo.page,
-              size: 6,
-              sort: currentState.postFilter.sortBy,
-              postType: filter?.postType || currentState.postFilter.postType,
-              region: filter?.location || currentState.postFilter.location,
-              category: filter?.category || currentState.postFilter.category,
+          // 검색 활성화된 경우, 해당 postType의 검색 상태 확인
+          else {
+            const postType = filter?.postType || currentState.postFilter.postType || '자유';
+            const searchState = currentState.searchStates[postType];
+            
+            console.log('[DEBUG] fetchPosts - 검색 상태 확인:', {
+              postType,
+              searchState,
+              레거시검색상태: {
+                active: currentState.searchActive,
+                term: currentState.searchTerm,
+                type: currentState.searchType
+              }
             });
+            
+            if (searchState?.active && searchState?.term) {
+              console.log(
+                '[DEBUG] 검색 상태에서 페이지 이동:',
+                postType,
+                searchState.term,
+                searchState.type
+              );
+              // 검색 API로 페이지 이동 - 올바른 검색어와 타입 사용
+              return get().searchPosts(searchState.term, searchState.type, {
+                page: filter?.page !== undefined ? filter.page : currentState.postPageInfo.page,
+                size: 6,
+                sort: currentState.postFilter.sortBy === 'popular' ? 'views,desc' : 'createdAt,desc',
+                postType: filter?.postType || currentState.postFilter.postType,
+                region: filter?.location || currentState.postFilter.location,
+                category: filter?.category || currentState.postFilter.category,
+                tag: filter?.tag || currentState.postFilter.tag,
+              });
+            }
           }
 
           // 필터 병합 전에 언어 변경 확인
-          if (filter && filter._forceRefresh) {
+          const isLanguageRefresh = filter && filter._forceRefresh;
+          if (isLanguageRefresh) {
             console.log('[DEBUG] 언어 변경으로 인한 강제 새로고침, 캐시 무시');
             lastFetchTimestamp = 0; // 캐시 무효화
             pageCache = {}; // 페이지 캐시도 초기화
@@ -294,8 +391,8 @@ export const usePostStore = create<PostState & PostActions>()(
             category: filter?.category || currentState.postFilter.category || '전체',
             // 지역 처리
             location: filter?.location || currentState.postFilter.location,
-            // 태그 처리
-            tag: filter?.tag || currentState.postFilter.tag,
+            // 태그 처리 - 번역 없이 그대로 전달
+            tag: filter && 'tag' in filter ? filter.tag : currentState.postFilter.tag,
             // postType 처리 - 빈 문자열이거나 undefined이면 '전체'로 설정
             postType:
               filter?.postType !== undefined
@@ -310,13 +407,99 @@ export const usePostStore = create<PostState & PostActions>()(
             postType: mergedFilter.postType || '전체',
           });
 
-          // 캐시 키 생성 - 페이지, 카테고리, 정렬, 지역, postType, 태그 포함
+          // 필터 정규화 적용 (백엔드에는 한국어 원본값 전달)
+          normalizedFilter = { ...mergedFilter };
+
+          // 카테고리 번역 변환 (번역된 값 → 한국어 원본 값)
+          if (normalizedFilter.category) {
+            const categoryTranslationMap: Record<string, string> = {
+              // 한국어 (원본값은 그대로)
+              '전체': '전체',
+              'travel': 'travel',
+              'living': 'living',
+              'study': 'study',
+              'job': 'job',
+              // 영어
+              'All': '전체',
+              'Travel': 'travel',
+              'Living': 'living',
+              'Study': 'study',
+              'Job': 'job',
+              // 프랑스어
+              'Tout': '전체',
+              'Voyage': 'travel',
+              'Vie': 'living',
+              'Étude': 'study',
+              'Emploi': 'job',
+              // 독일어
+              'Alle': '전체',
+              'Alles': '전체', // 독일어 추가 변형
+              'Reise': 'travel',
+              'Leben': 'living',
+              'Studium': 'study',
+              'Arbeit': 'job',
+              // 스페인어
+              'Todo': '전체',
+              'Todos': '전체', // 스페인어 복수형 추가
+              'Viaje': 'travel',
+              'Vida': 'living',
+              'Estudio': 'study',
+              'Trabajo': 'job',
+              // 러시아어
+              'Всё': '전체',
+              'Все': '전체', // 러시아어 변형 추가
+              'Путешествие': 'travel',
+              'Путешествия': 'travel', // 러시아어 복수형 추가
+              'Проживание': 'living',
+              'Жизнь': 'living', // 러시아어 변형 추가
+              'Учёба': 'study',
+              'Образование': 'study', // 러시아어 변형 추가
+              'Работа': 'job',
+              // 일본어
+              'すべて': '전체',
+              '全て': '전체', // 일본어 전체
+              '旅行_JP': 'travel', // 일본어 여행
+              '生活_JP': 'living', // 일본어 생활
+              '勉強': 'study',
+              '学習': 'study', // 일본어 변형 추가
+              '仕事': 'job',
+              '就職': 'job', // 일본어 변형 추가
+              // 중국어 간체
+              '全部': '전체',
+              '所有': '전체', // 중국어 간체 변형 추가
+              '旅游': 'travel',
+              '旅行_CN': 'travel', // 중국어 간체 여행
+              '生活_CN': 'living', // 중국어 간체 생활
+              '学习': 'study',
+              '學習_CN': 'study', // 중국어 간체 학습
+              '工作_CN': 'job', // 중국어 간체 작업
+              // 중국어 번체
+              '全體': '전체', // 중국어 번체 전체
+              '全体': '전체', // 간체/번체 혼용 지원
+              '旅遊': 'travel',
+              '生活_TW': 'living', // 중국어 번체 생활
+              '學習_TW': 'study', // 중국어 번체 학습
+              '工作_TW': 'job', // 중국어 번체 작업
+            };
+
+            const originalCategory = categoryTranslationMap[normalizedFilter.category] || normalizedFilter.category;
+            
+            if (originalCategory !== normalizedFilter.category) {
+              console.log('[DEBUG] 카테고리 번역 변환:', {
+                번역된값: normalizedFilter.category,
+                원본값: originalCategory
+              });
+              normalizedFilter.category = originalCategory;
+            }
+          }
+
+          // 캐시 키 생성 - 정규화된 필터 사용
           const postTypeForCache =
-            !mergedFilter.postType || mergedFilter.postType === ('ALL' as any)
+            !normalizedFilter.postType || normalizedFilter.postType === ('ALL' as any)
               ? '전체'
-              : mergedFilter.postType;
-          const tagForCache = mergedFilter.tag || 'notag';
-          const cacheKey = `${mergedFilter.page}_${mergedFilter.category || '전체'}_${mergedFilter.sortBy || 'latest'}_${mergedFilter.location || '전체'}_${postTypeForCache}_${tagForCache}`;
+              : normalizedFilter.postType;
+          const tagForCache = normalizedFilter.tag || 'notag';
+          const cacheKey = `${normalizedFilter.page}_${normalizedFilter.category || '전체'}_${normalizedFilter.sortBy || 'latest'}_${normalizedFilter.location || '전체'}_${postTypeForCache}_${tagForCache}`;
 
           console.log(`[DEBUG] 생성된 캐시 키: ${cacheKey}`);
 
@@ -327,7 +510,7 @@ export const usePostStore = create<PostState & PostActions>()(
           if (
             currentState.postLoading &&
             activeRequest &&
-            areFiltersEqual(lastFetchedFilter, mergedFilter)
+            areFiltersEqual(lastFetchedFilter, normalizedFilter)
           ) {
             console.log('[DEBUG] 이미 동일한 요청이 진행 중입니다. 중복 요청 방지.');
             return await activeRequest;
@@ -341,7 +524,7 @@ export const usePostStore = create<PostState & PostActions>()(
             set({
               posts: pageCache[cacheKey].data.posts,
               postPageInfo: pageCache[cacheKey].data.pageInfo,
-              postFilter: mergedFilter,
+              postFilter: normalizedFilter,
             });
 
             return;
@@ -349,9 +532,9 @@ export const usePostStore = create<PostState & PostActions>()(
 
           // postType 변경 시는 강제로 캐시 무시
           if (
-            filter &&
-            filter.postType !== undefined &&
-            filter.postType !== lastFetchedFilter?.postType
+            normalizedFilter &&
+            normalizedFilter.postType !== undefined &&
+            normalizedFilter.postType !== lastFetchedFilter?.postType
           ) {
             console.log('[DEBUG] postType 변경됨, 캐시 무시 및 새 요청 시작');
             lastFetchTimestamp = 0; // 캐시 무효화
@@ -360,9 +543,9 @@ export const usePostStore = create<PostState & PostActions>()(
           }
           // 카테고리 변경 시는 강제로 캐시 무시
           else if (
-            filter &&
-            filter.category !== undefined &&
-            filter.category !== lastFetchedFilter?.category
+            normalizedFilter &&
+            normalizedFilter.category !== undefined &&
+            normalizedFilter.category !== lastFetchedFilter?.category
           ) {
             console.log('[DEBUG] 카테고리 변경됨, 캐시 무시 및 새 요청 시작');
             lastFetchTimestamp = 0; // 캐시 무효화
@@ -370,7 +553,7 @@ export const usePostStore = create<PostState & PostActions>()(
             pageCache = {};
           }
           // 태그 변경 시는 강제로 캐시 무시
-          else if (filter && filter.tag !== undefined && filter.tag !== lastFetchedFilter?.tag) {
+          else if (normalizedFilter && normalizedFilter.tag !== undefined && normalizedFilter.tag !== lastFetchedFilter?.tag) {
             console.log('[DEBUG] 태그 변경됨, 캐시 무시 및 새 요청 시작');
             lastFetchTimestamp = 0; // 캐시 무효화
             // 페이지 캐시도 초기화
@@ -379,7 +562,7 @@ export const usePostStore = create<PostState & PostActions>()(
             // 3. 일반 캐시 확인 - 동일 필터 요청이 최근에 있었는지
             if (
               currentState.posts.length > 0 &&
-              areFiltersEqual(lastFetchedFilter, mergedFilter) &&
+              areFiltersEqual(lastFetchedFilter, normalizedFilter) &&
               now - lastFetchTimestamp < CACHE_TTL
             ) {
               console.log('[DEBUG] 일반 캐시 사용 (5초 이내), API 요청 스킵');
@@ -390,8 +573,14 @@ export const usePostStore = create<PostState & PostActions>()(
           // 로딩 상태 설정 - 페이지 이동은 빠르게 처리되어야 해서 지연 적용
           let loadingTimeout: any = null;
 
+          // 언어 변경으로 인한 새로고침인 경우 로딩 상태를 부드럽게 처리
+          if (isLanguageRefresh) {
+            console.log('[DEBUG] 언어 변경 새로고침 - 기존 데이터 유지하며 백그라운드 로딩');
+            // 기존 데이터를 유지하면서 백그라운드에서 로딩
+            set({ postLoading: true, postError: null });
+          }
           // 페이지네이션 이동 시 100ms 후에만 로딩 상태 표시 (깜빡임 방지)
-          if (filter?.page !== undefined && currentState.posts.length > 0) {
+          else if (normalizedFilter?.page !== undefined && currentState.posts.length > 0) {
             loadingTimeout = setTimeout(() => {
               // 이 요청이 여전히 최신 요청인 경우에만 로딩 상태 설정
               if (currentRequestId === lastRequestId && activeRequest) {
@@ -404,10 +593,10 @@ export const usePostStore = create<PostState & PostActions>()(
           }
 
           // 현재 필터 저장 (중복 요청 방지용)
-          lastFetchedFilter = { ...mergedFilter };
+          lastFetchedFilter = { ...normalizedFilter };
 
           // 최종 필터로 상태 업데이트
-          set({ postFilter: mergedFilter });
+          set({ postFilter: normalizedFilter });
 
           // API 요청 생성 및 추적
           const fetchData = async () => {
@@ -429,23 +618,90 @@ export const usePostStore = create<PostState & PostActions>()(
 
               // API 호출용 파라미터 - size는 항상 6으로 고정
               const apiParams = {
-                page: mergedFilter.page,
+                page: normalizedFilter.page,
                 size: 6, // 항상 6으로 고정
-                category: mergedFilter.category,
-                sortBy: mergedFilter.sortBy,
-                location: mergedFilter.location,
-                tag: mergedFilter.tag,
-                postType: mergedFilter.postType, // postType도 확실히 전달
+                category: normalizedFilter.category,
+                sortBy: normalizedFilter.sortBy,
+                location: normalizedFilter.location,
+                tag: normalizedFilter.tag,
+                postType: normalizedFilter.postType, // postType도 확실히 전달
               };
 
-              console.log('[DEBUG] API 요청 파라미터:', apiParams);
+              console.log('[DEBUG] API 요청 파라미터 (수정 전):', apiParams);
 
               // API 요청 시작
               let response;
 
               try {
-                if (apiParams.postType === '전체') apiParams.postType = undefined as any;
-                response = await postApi.PostApi.getPosts(apiParams as any);
+                // API 파라미터 변환 (백엔드 파라미터명에 맞게 변환) - 번역 없이 그대로 전달
+                const finalApiParams: Record<string, any> = {
+                  page: apiParams.page !== undefined ? apiParams.page : 0,
+                  size: apiParams.size || 6,
+                  category: apiParams.category || '전체',
+                  sortBy: apiParams.sortBy || 'latest', // sortBy를 그대로 전달하여 postApi에서 변환하도록 함
+                  location: apiParams.location, // location 필드 추가 - 지역 필터링을 위해 필수
+                };
+
+                console.log('[DEBUG] 정렬 파라미터 전달:', { 
+                  원본sortBy: apiParams.sortBy, 
+                  전달될sortBy: finalApiParams.sortBy 
+                });
+
+                // postType 처리 - 백엔드는 빈 문자열을 허용하지 않음, 항상 값이 있어야 함
+                const postType = apiParams.postType || '자유';
+                finalApiParams.postType = postType;
+
+                // region(지역) 처리 수정 - 올바른 지역 값 전달
+                if (finalApiParams.postType === '자유') {
+                  finalApiParams.region = '자유';
+                } else {
+                  // 모임 게시글의 경우 실제 선택된 location 값 사용
+                  const location = apiParams.location;
+                  console.log('[DEBUG] 지역 처리:', { 
+                    원본location: location, 
+                    postType: finalApiParams.postType 
+                  });
+                  
+                  if (!location || location === '전체') {
+                    finalApiParams.region = '전체';
+                  } else {
+                    // 실제 선택된 지역명을 그대로 사용
+                    finalApiParams.region = location;
+                  }
+                  
+                  console.log('[DEBUG] 최종 region 설정:', finalApiParams.region);
+                }
+
+                // 태그 처리 - 백엔드가 기대하는 형식으로 전달
+                // tag가 undefined, null, 빈 문자열이거나 '전체'인 경우 태그 필터링 해제
+                if (!apiParams.tag || apiParams.tag === '전체' || apiParams.tag === '') {
+                  // 태그 필터링 해제 - tags 파라미터를 명시적으로 제거
+                  delete finalApiParams.tags;
+                  console.log('[DEBUG] 태그 필터링 해제 - tags 파라미터 제거');
+                } else {
+                  // 태그가 있는 경우에만 처리
+                  const tagsArray = apiParams.tag.split(',').map(tag => tag.trim()).filter(tag => tag);
+                  if (tagsArray.length > 0) {
+                    // 백엔드가 기대하는 형식: tags 배열로 전달
+                    finalApiParams.tags = tagsArray;
+
+                    // 로그에 태그 정보 명확하게 표시
+                    console.log('[DEBUG] 태그 필터링 적용:', { 
+                      원본태그: apiParams.tag, 
+                      태그배열: tagsArray,
+                      최종파라미터: finalApiParams
+                    });
+                  } else {
+                    // 빈 배열인 경우에도 태그 필터링 해제
+                    delete finalApiParams.tags;
+                    console.log('[DEBUG] 빈 태그 배열 - tags 파라미터 제거');
+                  }
+                }
+
+                // 디버그 로그 - 실제 전송되는 파라미터
+                console.log('[DEBUG] 서버로 전송되는 최종 파라미터:', finalApiParams);
+                
+                response = await PostApi.getPosts(finalApiParams as any);
                 console.log('[DEBUG] API 응답 받음:', response);
               } catch (apiError) {
                 console.error('[ERROR] API 호출 실패:', apiError);
@@ -456,12 +712,21 @@ export const usePostStore = create<PostState & PostActions>()(
                   loadingTimeout = null;
                 }
 
-                // 오류 상태 설정 및 빈 배열 반환
-                set({
-                  postLoading: false,
-                  postError: '게시글을 불러올 수 없습니다.',
-                  posts: [], // 에러 시 빈 목록으로 설정
-                });
+                // 언어 변경으로 인한 요청인 경우 기존 데이터 유지
+                if (isLanguageRefresh) {
+                  console.log('[DEBUG] 언어 변경 중 API 에러 - 기존 데이터 유지');
+                  set({
+                    postLoading: false,
+                    postError: null, // 에러 메시지도 표시하지 않음
+                  });
+                } else {
+                  // 일반적인 에러인 경우에만 빈 배열로 설정
+                  set({
+                    postLoading: false,
+                    postError: '게시글을 불러올 수 없습니다.',
+                    posts: [], // 에러 시 빈 목록으로 설정
+                  });
+                }
 
                 // 에러 발생 시 캐시 타임스탬프 초기화
                 lastFetchTimestamp = 0;
@@ -479,17 +744,25 @@ export const usePostStore = create<PostState & PostActions>()(
                   loadingTimeout = null;
                 }
 
-                // 빈 결과 설정
-                set({
-                  posts: [],
-                  postPageInfo: {
-                    page: mergedFilter.page,
-                    size: 6,
-                    totalElements: 0,
-                    totalPages: 0,
-                  },
-                  postLoading: false,
-                });
+                // 언어 변경으로 인한 요청인 경우 기존 데이터 유지
+                if (isLanguageRefresh) {
+                  console.log('[DEBUG] 언어 변경 중 응답 없음 - 기존 데이터 유지');
+                  set({
+                    postLoading: false,
+                  });
+                } else {
+                  // 일반적인 경우에만 빈 결과 설정
+                  set({
+                    posts: [],
+                    postPageInfo: {
+                      page: normalizedFilter.page,
+                      size: 6,
+                      totalElements: 0,
+                      totalPages: 0,
+                    },
+                    postLoading: false,
+                  });
+                }
 
                 return;
               }
@@ -514,7 +787,7 @@ export const usePostStore = create<PostState & PostActions>()(
 
               // 페이지 정보 구성
               const pageInfo = {
-                page: mergedFilter.page,
+                page: normalizedFilter.page,
                 size: 6, // 항상 6으로 고정
                 totalElements: totalCount,
                 totalPages: totalPages,
@@ -546,7 +819,7 @@ export const usePostStore = create<PostState & PostActions>()(
 
               // 로그에 페이지네이션 상태 출력
               console.log('[DEBUG] 페이지네이션 상태:', {
-                currentPage: mergedFilter.page,
+                currentPage: normalizedFilter.page,
                 pageSize: 6, // 항상 6으로 고정
                 totalElements: totalCount,
                 totalPages: totalPages,
@@ -568,11 +841,20 @@ export const usePostStore = create<PostState & PostActions>()(
                 loadingTimeout = null;
               }
 
-              set({
-                postLoading: false,
-                postError: '게시글을 불러오는 중 오류가 발생했습니다.',
-                posts: [],
-              });
+              // 언어 변경으로 인한 요청인 경우 기존 데이터 유지
+              if (isLanguageRefresh) {
+                console.log('[DEBUG] 언어 변경 중 전체 에러 - 기존 데이터 유지');
+                set({
+                  postLoading: false,
+                  postError: null,
+                });
+              } else {
+                set({
+                  postLoading: false,
+                  postError: '게시글을 불러오는 중 오류가 발생했습니다.',
+                  posts: [],
+                });
+              }
 
               // 에러 발생 시 캐시 타임스탬프 초기화
               lastFetchTimestamp = 0;
@@ -588,11 +870,22 @@ export const usePostStore = create<PostState & PostActions>()(
           await activeRequest;
         } catch (error) {
           console.error('fetchPosts 전체 실패:', error);
-          set({
-            postLoading: false,
-            postError: '게시글을 불러오는 중 오류가 발생했습니다.',
-            posts: [],
-          });
+          
+          // 언어 변경으로 인한 요청인 경우 기존 데이터 유지
+          const isLanguageRefresh = normalizedFilter && normalizedFilter._forceRefresh;
+          if (isLanguageRefresh) {
+            console.log('[DEBUG] 언어 변경 중 최외부 에러 - 기존 데이터 유지');
+            set({
+              postLoading: false,
+              postError: null,
+            });
+          } else {
+            set({
+              postLoading: false,
+              postError: '게시글을 불러오는 중 오류가 발생했습니다.',
+              posts: [],
+            });
+          }
 
           // 진행 중인 요청 추적 제거
           activeRequest = null;
@@ -601,7 +894,7 @@ export const usePostStore = create<PostState & PostActions>()(
 
       fetchTopPosts: async (count = 5) => {
         try {
-          const posts = await postApi.PostApi.getTopPosts(count);
+          const posts = await PostApi.getTopPosts(count);
           set({ topPosts: posts });
         } catch (error) {
           console.error('인기 게시글 조회 실패:', error);
@@ -610,7 +903,7 @@ export const usePostStore = create<PostState & PostActions>()(
 
       fetchRecentPosts: async (count = 5) => {
         try {
-          const posts = await postApi.PostApi.getRecentPosts(count);
+          const posts = await PostApi.getRecentPosts(count);
           set({ recentPosts: posts });
         } catch (error) {
           console.error('최신 게시글 조회 실패:', error);
@@ -643,7 +936,7 @@ export const usePostStore = create<PostState & PostActions>()(
             set({ currentPost: null });
           }
 
-          const post = await postApi.PostApi.getPostById(postId);
+          const post = await PostApi.getPostById(postId);
           console.log('API 응답 받음:', post);
 
           if (!post || typeof post !== 'object') {
@@ -668,7 +961,7 @@ export const usePostStore = create<PostState & PostActions>()(
         set({ isLoading: true, error: null });
         try {
           if (postDto.postType === '전체') postDto.postType = undefined as any;
-          const createdPost = await postApi.PostApi.createPost(postDto as any, files);
+          const createdPost = await PostApi.createPost(postDto as any, files);
           set(state => ({
             posts: [createdPost, ...state.posts],
             isLoading: false,
@@ -679,7 +972,7 @@ export const usePostStore = create<PostState & PostActions>()(
         }
       },
 
-      updatePost: async (postId, postDto, files) => {
+      updatePost: async (postId, postDto, files, removeFileIds) => {
         set({ isLoading: true, error: null });
         try {
           console.log('[DEBUG] 게시글 수정 시작:', {
@@ -689,10 +982,11 @@ export const usePostStore = create<PostState & PostActions>()(
               content: postDto.content ? postDto.content.substring(0, 50) + '...' : '',
             },
             filesCount: files?.length || 0,
+            removeFileIds,
           });
 
           if (postDto.postType === '전체') postDto.postType = undefined as any;
-          const updatedPost = await postApi.PostApi.updatePost(postId, postDto as any, files);
+          const updatedPost = await PostApi.updatePost(postId, postDto as any, files, removeFileIds);
 
           console.log('[DEBUG] 게시글 수정 성공:', {
             updatedPost: {
@@ -760,7 +1054,7 @@ export const usePostStore = create<PostState & PostActions>()(
           const prevState = get();
 
           // API 호출
-          await postApi.PostApi.deletePost(postId);
+          await PostApi.deletePost(postId);
 
           // 해당 게시글을 posts 배열에서 제거하고 currentPost도 업데이트
           set(state => {
@@ -796,7 +1090,7 @@ export const usePostStore = create<PostState & PostActions>()(
         try {
           const currentPost = get().currentPost;
           if (currentPost && currentPost.postId === postId) {
-            const response = await postApi.PostApi.reactToPost(
+            const response = await PostApi.reactToPost(
               postId,
               option as 'LIKE' | 'DISLIKE'
             );
@@ -983,12 +1277,14 @@ export const usePostStore = create<PostState & PostActions>()(
           // First argument is an object (for backward compatibility)
           if (typeof keywordOrOptions === 'object' && keywordOrOptions !== null) {
             searchOptions = keywordOrOptions;
-            keyword = get().searchTerm || '';
-            searchType = get().searchType || '제목_내용';
+            // postType별 검색 상태 사용
+            const currentPostType = searchOptions.postType || get().postFilter.postType || '자유';
+            const currentSearchState = get().searchStates[currentPostType];
+            keyword = currentSearchState?.term || '';
+            searchType = currentSearchState?.type || '제목_내용';
             console.log(
-              '[DEBUG] Object argument detected, using existing search term/type:',
-              keyword,
-              searchType
+              '[DEBUG] Object argument detected, using postType-specific search term/type:',
+              { postType: currentPostType, keyword, searchType }
             );
           } else {
             keyword = keywordOrOptions as string;
@@ -1002,52 +1298,193 @@ export const usePostStore = create<PostState & PostActions>()(
           const currentState = get();
 
           // 검색 상태 설정 - 항상 로딩 시작
-          set({
+          const currentPostType = searchOptions.postType || currentState.postFilter.postType || '자유';
+          
+          set(state => ({
             postLoading: true,
-            searchActive: true,
-            searchTerm: keyword,
-            searchType: searchType,
+            searchStates: {
+              ...state.searchStates,
+              [currentPostType]: {
+                active: true,
+                term: keyword,
+                type: searchType || '',
+              },
+            },
+            // 레거시 호환성을 위해 현재 postType의 검색 상태로만 설정
+            searchActive: currentPostType === (state.postFilter.postType || '자유'),
+            searchTerm: currentPostType === (state.postFilter.postType || '자유') ? keyword : state.searchTerm,
+            searchType: currentPostType === (state.postFilter.postType || '자유') ? (searchType || '') : state.searchType,
             postPageInfo: {
-              ...currentState.postPageInfo,
+              ...state.postPageInfo,
               page: searchOptions.page || 0,
             },
             // 필터 상태 업데이트 - 검색 시 필터도 함께 업데이트
             postFilter: {
-              ...currentState.postFilter,
+              ...state.postFilter,
               category:
                 searchOptions.category !== undefined
                   ? searchOptions.category
-                  : currentState.postFilter.category,
+                  : state.postFilter.category,
               location:
                 searchOptions.region !== undefined
                   ? searchOptions.region
-                  : currentState.postFilter.location,
+                  : state.postFilter.location,
               postType:
                 searchOptions.postType !== undefined
                   ? (searchOptions.postType as PostType)
-                  : currentState.postFilter.postType,
+                  : state.postFilter.postType,
               tag:
-                searchOptions.tag !== undefined ? searchOptions.tag : currentState.postFilter.tag,
+                searchOptions.tag !== undefined ? searchOptions.tag : state.postFilter.tag,
               sortBy: searchOptions.sort === 'views,desc' ? 'popular' : 'latest',
               page: searchOptions.page || 0,
             },
-          });
+          }));
+
+          // 번역된 검색 타입을 한국어로 변환
+          let convertedSearchType = searchType;
+          if (searchType) {
+            // 검색 타입은 UI에서 선택되므로 한국어 기본값으로 처리
+            convertedSearchType = searchType;
+            console.log('[DEBUG] 검색 타입:', { 검색타입: convertedSearchType });
+          }
 
           // 검색 API 호출 시 필터 적용
           const apiParams: any = {
             keyword: keyword,
-            searchType: searchType,
+            searchType: convertedSearchType,
             page: searchOptions.page || 0,
             size: searchOptions.size || 6,
             sort: searchOptions.sort || 'createdAt,desc',
           };
 
-          // 필터 조건 추가
+          // 필터 조건 추가 (번역 변환 포함)
           if (searchOptions.category) {
-            apiParams.category = searchOptions.category;
+            // 카테고리 번역 변환 (번역된 값 → 한국어 원본 값)
+            const categoryTranslationMap: Record<string, string> = {
+              // 한국어 (원본값은 그대로)
+              '전체': '전체',
+              'travel': 'travel',
+              'living': 'living',
+              'study': 'study',
+              'job': 'job',
+              // 영어
+              'All': '전체',
+              'Travel': 'travel',
+              'Living': 'living',
+              'Study': 'study',
+              'Job': 'job',
+              // 프랑스어
+              'Tout': '전체',
+              'Voyage': 'travel',
+              'Vie': 'living',
+              'Étude': 'study',
+              'Emploi': 'job',
+              // 독일어
+              'Alle': '전체',
+              'Alles': '전체', // 독일어 추가 변형
+              'Reise': 'travel',
+              'Leben': 'living',
+              'Studium': 'study',
+              'Arbeit': 'job',
+              // 스페인어
+              'Todo': '전체',
+              'Todos': '전체', // 스페인어 복수형 추가
+              'Viaje': 'travel',
+              'Vida': 'living',
+              'Estudio': 'study',
+              'Trabajo': 'job',
+              // 러시아어
+              'Всё': '전체',
+              'Все': '전체', // 러시아어 변형 추가
+              'Путешествие': 'travel',
+              'Путешествия': 'travel', // 러시아어 복수형 추가
+              'Проживание': 'living',
+              'Жизнь': 'living', // 러시아어 변형 추가
+              'Учёба': 'study',
+              'Образование': 'study', // 러시아어 변형 추가
+              'Работа': 'job',
+              // 일본어
+              'すべて': '전체',
+              '全て': '전체', // 일본어 전체
+              '旅行_JP': 'travel', // 일본어 여행
+              '生活_JP': 'living', // 일본어 생활
+              '勉強': 'study',
+              '学習': 'study', // 일본어 변형 추가
+              '仕事': 'job',
+              '就職': 'job', // 일본어 변형 추가
+              // 중국어 간체
+              '全部': '전체',
+              '所有': '전체', // 중국어 간체 변형 추가
+              '旅游': 'travel',
+              '旅行_CN': 'travel', // 중국어 간체 여행
+              '生活_CN': 'living', // 중국어 간체 생활
+              '学习': 'study',
+              '學習_CN': 'study', // 중국어 간체 학습
+              '工作_CN': 'job', // 중국어 간체 작업
+              // 중국어 번체
+              '全體': '전체', // 중국어 번체 전체
+              '全体': '전체', // 간체/번체 혼용 지원
+              '旅遊': 'travel',
+              '生活_TW': 'living', // 중국어 번체 생활
+              '學習_TW': 'study', // 중국어 번체 학습
+              '工作_TW': 'job', // 중국어 번체 작업
+            };
+            
+            apiParams.category = categoryTranslationMap[searchOptions.category] || searchOptions.category;
+            
+            if (apiParams.category !== searchOptions.category) {
+              console.log('[DEBUG] 검색 시 카테고리 번역 변환:', {
+                번역된값: searchOptions.category,
+                원본값: apiParams.category
+              });
+            }
           }
           if (searchOptions.region) {
-            apiParams.region = searchOptions.region;
+            // 지역 번역 변환 (번역된 값 → 한국어 원본 값)
+            const regionTranslationMap: Record<string, string> = {
+              // 한국어 (원본값은 그대로)
+              '전체': '전체',
+              '자유': '자유',
+              // 영어
+              'All': '전체',
+              'Free': '자유',
+              // 프랑스어
+              'Tout': '전체',
+              'Libre_FR': '자유', // 프랑스어 자유
+              // 독일어
+              'Alle': '전체',
+              'Alles': '전체',
+              'Frei': '자유',
+              // 스페인어
+              'Todo': '전체',
+              'Todos': '전체',
+              'Libre_ES': '자유', // 스페인어 자유
+              // 러시아어
+              'Всё': '전체',
+              'Все': '전체',
+              'Свободный': '자유',
+              // 일본어
+              'すべて': '전체',
+              '全て': '전체',
+              '全体': '전체', // 일본어/중국어 공통
+              '自由': '자유',
+              // 중국어 간체
+              '全部': '전체',
+              '所有': '전체',
+              '自由_CN': '자유',
+              // 중국어 번체
+              '全體': '전체',
+              '自由_TW': '자유',
+            };
+            
+            apiParams.region = regionTranslationMap[searchOptions.region] || searchOptions.region;
+            
+            if (apiParams.region !== searchOptions.region) {
+              console.log('[DEBUG] 검색 시 지역 번역 변환:', {
+                번역된값: searchOptions.region,
+                원본값: apiParams.region
+              });
+            }
           }
           if (searchOptions.postType) {
             apiParams.postType = searchOptions.postType;
@@ -1071,9 +1508,9 @@ export const usePostStore = create<PostState & PostActions>()(
           });
 
           try {
-            // API 호출과 타임아웃 중 먼저 완료되는 것 처리
+            // API 호출과 타임아웃 중 먼저 완료되는 것 처리 - 번역된 파라미터 사용
             const response = (await Promise.race([
-              postApi.PostApi.searchPosts(keyword, searchType, searchOptions),
+              PostApi.searchPosts(keyword, convertedSearchType, apiParams),
               timeoutPromise,
             ])) as any;
 

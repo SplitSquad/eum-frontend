@@ -10,22 +10,40 @@ import {
   useTheme,
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import GoogleLoginButton from '../features/auth/components/GoogleLoginButton';
 import useAuthStore from '../features/auth/store/authStore';
 import LoginButton from '../features/auth/components/LoginButton';
+import { useSnackbar } from 'notistack';
+import { useTranslation } from '@/shared/i18n';
+
+const TransparentSnackbar = styled('div')<{ color: string }>(({ color }) => ({
+  borderRadius: 10,
+  padding: '10px 16px',
+  fontWeight: 600,
+  fontSize: '0.95rem',
+  color: '#fff',
+  background: color,
+  boxShadow: '0 4px 16px rgba(255, 170, 165, 0.15)',
+  display: 'flex',
+  alignItems: 'center',
+  gap: 12,
+}));
+
 // 로그인 카드 스타일
 const LoginCard = styled(Paper)`
-  padding: 2rem;
-  border-radius: 16px;
+  padding: 2.5rem 2rem;
+  border-radius: 18px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 235, 235, 0.8);
+  background: #fafbfc;
+  border: 1.5px solid #e0e0e0;
   max-width: 450px;
   width: 100%;
   margin: 0 auto;
   text-align: center;
+  transition:
+    background 0.3s,
+    border 0.3s;
 `;
 
 // 로고 영역
@@ -35,14 +53,14 @@ const LogoContainer = styled(Box)`
 
 // 페이지 제목 스타일
 const PageTitle = styled(Typography)`
-  color: #333;
+  color: #636363;
   margin-bottom: 0.5rem;
   font-weight: 700;
 `;
 
 // 부제목 스타일
 const Subtitle = styled(Typography)`
-  color: #777;
+  color: #888;
   margin-bottom: 2rem;
 `;
 
@@ -51,43 +69,53 @@ const Subtitle = styled(Typography)`
  * 봄 테마를 적용한 디자인으로 구글 로그인 기능 제공
  */
 const LoginPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const { isAuthenticated, handleLogin } = useAuthStore();
+  const { isAuthenticated, user, token, handleLogin } = useAuthStore();
   const [error, setError] = useState<string | null>(null);
+  const [qs] = useSearchParams();
+  const { enqueueSnackbar } = useSnackbar();
 
   // 이미 로그인되어 있으면 메인 페이지로 리디렉션
   useEffect(() => {
-    // sessionStorage에도 토큰이 있으면 로그인 상태로 간주
-    const token = sessionStorage.getItem('auth_token');
-    if (isAuthenticated || token) {
-      navigate('/home');
+    if (isAuthenticated === undefined || user === undefined) return;
+    if (isAuthenticated && token) {
+      navigate('/dashboard');
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, user, token, navigate]);
+
+  useEffect(() => {
+    if (qs.has('from')) {
+      enqueueSnackbar(t('auth.loginRequired'), {
+        variant: 'warning',
+        autoHideDuration: 1500,
+        content: (key, message) => (
+          <TransparentSnackbar id={key as string} color="#fafbfc">
+            {message}
+          </TransparentSnackbar>
+        ),
+      });
+    }
+  }, [qs, enqueueSnackbar, t]);
 
   const handleLoginSuccess = (response: any) => {
     try {
-      // 로그인 응답에서 토큰과 사용자 정보 추출
       const { token, user } = response;
-
       if (!token || !user) {
-        throw new Error('로그인 정보가 올바르지 않습니다.');
+        throw new Error(t('auth.invalidLoginInfo'));
       }
-
-      // 전역 상태에 로그인 정보 저장
       handleLogin(token, user);
-
-      // 홈페이지로 리디렉션
-      navigate('/home');
+      navigate('/dashboard');
     } catch (err) {
-      setError('로그인 처리 중 오류가 발생했습니다.');
+      setError(t('auth.loginError'));
       console.error('로그인 처리 실패:', err);
     }
   };
 
   const handleLoginError = (error: any) => {
-    setError('구글 로그인 중 오류가 발생했습니다. 다시 시도해주세요.');
+    setError(t('auth.googleLoginError'));
     console.error('구글 로그인 오류:', error);
   };
 
@@ -102,27 +130,25 @@ const LoginPage: React.FC = () => {
           minHeight: 'calc(100vh - 4rem)',
           position: 'relative',
           zIndex: 10,
+          transition: 'background 0.3s',
         }}
       >
         <Fade in={true} timeout={1000}>
           <LoginCard elevation={3}>
             <LogoContainer>
-              {/* TODO: 실제 로고로 교체 */}
               <Typography
                 variant="h4"
                 sx={{
                   fontWeight: 700,
-                  color: '#FF9999',
-                  fontFamily: '"Roboto", "Noto Sans KR", sans-serif',
+                  color: '#636363',
+                  fontFamily: 'Roboto, Noto Sans KR, sans-serif',
                 }}
-              >
-                봄날의 기억
-              </Typography>
+              ></Typography>
             </LogoContainer>
 
-            <PageTitle variant={isMobile ? 'h5' : 'h4'}>환영합니다</PageTitle>
+            <PageTitle variant={isMobile ? 'h5' : 'h4'}>{t('auth.welcome')}</PageTitle>
 
-            <Subtitle variant="body1">구글 계정으로 간편하게 로그인하세요</Subtitle>
+            <Subtitle variant="body1">{t('auth.loginDescription')}</Subtitle>
 
             {error && (
               <Box mb={3}>
@@ -140,7 +166,7 @@ const LoginPage: React.FC = () => {
                 '&:hover': {
                   transform: 'scale(1.02)',
                 },
-                background: 'linear-gradient(135deg,rgb(252, 237, 241) 0%,rgb(255, 240, 246) 100%)',
+                background: '#fafbfc',
                 borderRadius: 3,
                 p: 3,
                 display: 'flex',
@@ -151,14 +177,14 @@ const LoginPage: React.FC = () => {
               <GoogleLoginButton
                 onSuccess={handleLoginSuccess}
                 onError={handleLoginError}
-                buttonText="구글 계정으로 로그인"
+                buttonText={t('auth.loginWithGoogle')}
               />
-              <LoginButton buttonText="일반 계정으로 로그인" />
+              <LoginButton buttonText={t('auth.loginWithGeneral')} />
             </Box>
 
             <Box mt={4}>
-              <Typography variant="caption" color="textSecondary">
-                로그인 시 서비스 이용약관 및 개인정보 처리방침에 동의하게 됩니다.
+              <Typography variant="caption" sx={{ color: '#bdbdbd' }}>
+                {t('auth.termsAgreement')}
               </Typography>
             </Box>
           </LoginCard>

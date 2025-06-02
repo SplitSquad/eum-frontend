@@ -1,21 +1,43 @@
 /**
  * 온보딩에서 사용할 관심사 태그 데이터
  */
-
+import { useTranslation } from '@/shared/i18n';
+const { t } = useTranslation();
 // 대분류
 export const mainCategories = [
-  { id: 'travel', name: '여행' },
-  { id: 'living', name: '주거' },
-  { id: 'study', name: '유학' },
-  { id: 'job', name: '취업' },
+  { id: 'travel', name: t('mainCategories.travel') },
+  { id: 'living', name: t('mainCategories.living') },
+  { id: 'study', name: t('mainCategories.study') },
+  { id: 'job', name: t('mainCategories.job') },
 ];
 
 // 커뮤니티 관련 태그 (소분류)
 export const communityTags: Record<string, string[]> = {
-  travel: ['관광/체험', '식도락/맛집', '교통/이동', '숙소/지역정보', '대사관/응급'],
-  living: ['부동산/계약', '생활환경/편의', '문화/생활', '주거지 관리/유지'],
-  study: ['학사/캠퍼스', '학업지원/시설', '행정/비자/서류', '기숙사/주거'],
-  job: ['이력/채용준비', '비자/법률/노동', '잡페어/네트워킹', '알바/파트타임'],
+  travel: [
+    t('communityTags.travel.0'),
+    t('communityTags.travel.1'),
+    t('communityTags.travel.2'),
+    t('communityTags.travel.3'),
+    t('communityTags.travel.4'),
+  ],
+  living: [
+    t('communityTags.living.0'),
+    t('communityTags.living.1'),
+    t('communityTags.living.2'),
+    t('communityTags.living.3'),
+  ],
+  study: [
+    t('communityTags.study.0'),
+    t('communityTags.study.1'),
+    t('communityTags.study.2'),
+    t('communityTags.study.3'),
+  ],
+  job: [
+    t('communityTags.job.0'),
+    t('communityTags.job.1'),
+    t('communityTags.job.2'),
+    t('communityTags.job.3'),
+  ],
 };
 
 // 토론/뉴스 관련 카테고리
@@ -30,61 +52,69 @@ export const debateCategories = [
 
 // 언어 능력 레벨
 export const languageLevels = [
-  { id: 'none', name: '전혀 모름', description: '한국어를 전혀 모릅니다' },
-  { id: 'basic', name: '기초', description: '인사와 간단한 표현 정도만 할 수 있습니다' },
-  { id: 'intermediate', name: '중급', description: '일상 대화가 가능합니다' },
-  { id: 'advanced', name: '고급', description: '복잡한 대화도 가능합니다' },
-  { id: 'fluent', name: '유창함', description: '한국어를 능숙하게 구사합니다' },
+  {
+    id: 'none',
+    name: t('languageLevels.none.name'),
+    description: t('languageLevels.none.description'),
+  },
+  {
+    id: 'basic',
+    name: t('languageLevels.basic.name'),
+    description: t('languageLevels.basic.description'),
+  },
+  {
+    id: 'intermediate',
+    name: t('languageLevels.intermediate.name'),
+    description: t('languageLevels.intermediate.description'),
+  },
+  {
+    id: 'advanced',
+    name: t('languageLevels.advanced.name'),
+    description: t('languageLevels.advanced.description'),
+  },
+  {
+    id: 'fluent',
+    name: t('languageLevels.fluent.name'),
+    description: t('languageLevels.fluent.description'),
+  },
 ];
 
-// 온보딩에서 사용할 모든 관심사 태그 (커뮤니티 + 토론 + 일반)
+// 온보딩에서 사용할 모든 관심사 태그 (커뮤니티 + 토론 + 정보)
 export const interestTags = [
-  // 일반 관심사
-  { id: 'food', name: '한국 음식' },
-  { id: 'language', name: '한국어 배우기' },
-  { id: 'culture', name: '문화 체험' },
-  { id: 'travel', name: '국내 여행' },
-  { id: 'kpop', name: 'K-pop/엔터테인먼트' },
-  { id: 'friends', name: '친구 사귀기' },
-  { id: 'history', name: '역사/전통' },
-  { id: 'technology', name: '기술/스타트업' },
-  { id: 'art', name: '예술/디자인' },
-  { id: 'sports', name: '스포츠/레저' },
-  { id: 'fashion', name: '패션/뷰티' },
-  { id: 'business', name: '비즈니스/취업' },
-  { id: 'education', name: '교육' },
-  { id: 'healthcare', name: '의료/건강' },
-  { id: 'housing', name: '주거/부동산' },
-  { id: 'finance', name: '금융/법률' },
-  { id: 'transportation', name: '교통/여행' },
-  { id: 'shopping', name: '쇼핑' },
-  { id: 'events', name: '축제/이벤트' },
-  { id: 'nightlife', name: '나이트라이프' },
-  
-  // 커뮤니티 태그 추가
-  { id: 'tourism', name: '관광/체험' },
-  { id: 'food_tour', name: '식도락/맛집' },
-  { id: 'transportation', name: '교통/이동' },
-  { id: 'accommodation', name: '숙소/지역정보' },
-  { id: 'embassy', name: '대사관/응급' },
-  { id: 'realestate', name: '부동산/계약' },
-  { id: 'living_env', name: '생활환경/편의' },
-  { id: 'cultural_living', name: '문화/생활' },
-  { id: 'housing_mgmt', name: '주거지 관리/유지' },
-  { id: 'academic', name: '학사/캠퍼스' },
-  { id: 'study_support', name: '학업지원/시설' },
-  { id: 'admin_visa', name: '행정/비자/서류' },
-  { id: 'dormitory', name: '기숙사/주거' },
-  { id: 'resume', name: '이력/채용준비' },
-  { id: 'visa_law', name: '비자/법률/노동' },
-  { id: 'job_networking', name: '잡페어/네트워킹' },
-  { id: 'part_time', name: '알바/파트타임' },
-  
-  // 토론 카테고리 추가
-  { id: 'politics', name: '정치/사회' },
-  { id: 'economy', name: '경제' },
-  { id: 'life_culture', name: '생활/문화' },
-  { id: 'science_tech', name: '과학/기술' },
-  { id: 'sports_news', name: '스포츠' },
-  { id: 'entertainment_news', name: '엔터테인먼트' },
-]; 
+  // Community
+  { id: 'tourism', name: t('interestTags.tourism') },
+  { id: 'food_tour', name: t('interestTags.food_tour') },
+  { id: 'transportation', name: t('interestTags.transportation') },
+  { id: 'accommodation', name: t('interestTags.accommodation') },
+  { id: 'embassy', name: t('interestTags.embassy') },
+  { id: 'realestate', name: t('interestTags.realestate') },
+  { id: 'living_env', name: t('interestTags.living_env') },
+  { id: 'cultural_living', name: t('interestTags.cultural_living') },
+  { id: 'housing_mgmt', name: t('interestTags.housing_mgmt') },
+  { id: 'academic', name: t('interestTags.academic') },
+  { id: 'study_support', name: t('interestTags.study_support') },
+  { id: 'admin_visa', name: t('interestTags.admin_visa') },
+  { id: 'dormitory', name: t('interestTags.dormitory') },
+  { id: 'resume', name: t('interestTags.resume') },
+  { id: 'visa_law', name: t('interestTags.visa_law') },
+  { id: 'job_networking', name: t('interestTags.job_networking') },
+  { id: 'part_time', name: t('interestTags.part_time') },
+
+  // Debate
+  { id: 'politics', name: t('interestTags.politics') },
+  { id: 'economy', name: t('interestTags.economy') },
+  { id: 'life_culture', name: t('interestTags.life_culture') },
+  { id: 'science_tech', name: t('interestTags.science_tech') },
+  { id: 'sports_news', name: t('interestTags.sports_news') },
+  { id: 'entertainment_news', name: t('interestTags.entertainment_news') },
+
+  // Info
+  { id: 'transportation_info', name: t('interestTags.transportation_info') },
+  { id: 'visa_legal', name: t('interestTags.visa_legal') },
+  { id: 'finance_tax', name: t('interestTags.finance_tax') },
+  { id: 'education_info', name: t('interestTags.education_info') },
+  { id: 'housing_realestate', name: t('interestTags.housing_realestate') },
+  { id: 'healthcare', name: t('interestTags.healthcare') },
+  { id: 'shopping_info', name: t('interestTags.shopping_info') },
+  { id: 'employment_workplace', name: t('interestTags.employment_workplace') },
+];

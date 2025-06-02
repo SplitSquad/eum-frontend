@@ -19,11 +19,10 @@ import {
   Container,
   InputAdornment,
   Avatar,
-  alpha,
   styled,
   Button,
   IconButton,
-  Theme
+  Theme,
 } from '@mui/material';
 import OnboardingLayout from '../components/common/OnboardingLayout';
 import FormButtons from '../components/common/FormButtons';
@@ -46,14 +45,22 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import VisaIcon from '@mui/icons-material/DocumentScanner';
 import PaymentsIcon from '@mui/icons-material/Payments';
+import { useAuthStore } from '@/features/auth/store/authStore';
+import { useTranslation } from '@/shared/i18n';
+import CountrySelector from '@/shared/components/CountrySelector';
+
+// 번역을 위한 useTranslation 훅
+const { t } = useTranslation();
 
 // 스타일링된 컴포넌트
 const StyledPaper = styled(Paper)(({ theme }) => ({
   borderRadius: theme.spacing(3),
-  boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
+  boxShadow: '0 10px 40px rgba(80, 80, 90, 0.08)',
   overflow: 'hidden',
   transition: 'all 0.3s ease',
   position: 'relative',
+  background: '#fafbfc',
+  border: '1px solid #e0e0e0',
 }));
 
 const StyledTextField = styled(TextField)(({ theme }) => ({
@@ -61,53 +68,56 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
     borderRadius: theme.spacing(1.5),
     transition: 'all 0.3s ease',
     '&:hover .MuiOutlinedInput-notchedOutline': {
-      borderColor: alpha(theme.palette.primary.main, 0.5),
+      borderColor: '#bdbdbd',
     },
     '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-      borderColor: theme.palette.primary.main,
+      borderColor: '#636363',
       borderWidth: '2px',
     },
   },
   '& .MuiInputLabel-outlined.Mui-focused': {
-    color: theme.palette.primary.main,
+    color: '#636363',
   },
   '& .MuiInputBase-input': {
     padding: theme.spacing(1.5, 2),
   },
 }));
 
-const GradientButton = styled(Button)(({ theme, gradientcolors }: { theme: Theme, gradientcolors?: string }) => ({
-  background: gradientcolors || `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${alpha(theme.palette.primary.main, 0.8)} 100%)`,
+const GradientButton = styled(Button)(({ theme }) => ({
+  background: '#636363',
   color: '#fff',
   fontWeight: 600,
   padding: theme.spacing(1.2, 3),
   borderRadius: theme.spacing(6),
-  boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
+  boxShadow: '0 4px 15px #e0e0e0',
   '&:hover': {
-    boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
+    boxShadow: '0 6px 20px #bdbdbd',
+    background: '#888',
   },
 }));
 
-const StepIcon = styled(Box)(({ theme, color = '#1976d2' }: { theme: Theme, color?: string }) => ({
+const StepIcon = styled(Box)(({ theme }) => ({
   width: 50,
   height: 50,
   borderRadius: '50%',
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
-  background: `linear-gradient(135deg, ${color} 0%, ${alpha(color, 0.8)} 100%)`,
-  boxShadow: `0 4px 15px ${alpha(color, 0.3)}`,
-  color: 'white',
+  background: '#e0e0e0',
+  boxShadow: '0 4px 15px #bdbdbd',
+  color: '#636363',
   margin: '0 auto',
   fontSize: '1.5rem',
 }));
 
-const StepConnector = styled(Box)(({ theme, active = false }: { theme: Theme, active?: boolean }) => ({
-  height: 3,
-  backgroundColor: active ? theme.palette.primary.main : theme.palette.grey[300],
-  width: '100%',
-  transition: 'background-color 0.3s ease',
-}));
+const StepConnector = styled(Box)(
+  ({ theme, active = false }: { theme: Theme; active?: boolean }) => ({
+    height: 3,
+    backgroundColor: active ? theme.palette.primary.main : theme.palette.grey[300],
+    width: '100%',
+    transition: 'background-color 0.3s ease',
+  })
+);
 
 const AnimatedBackground = styled(Box)(({ theme }) => ({
   position: 'absolute',
@@ -129,29 +139,28 @@ const AnimatedCircle = styled(motion.div)(({ theme }) => ({
  * 취업 온보딩 정보 데이터
  */
 interface JobProfileData {
-  name: string;
   gender: string;
   age: string;
   nationality: string;
   country: string;
   uiLanguage: string;
-  
+
   // 직업 정보
   jobField: string;
   workExperience: string;
   desiredPosition: string;
   visaType: string;
-  
+
   // 취업 날짜 및 기간
   startDate: string;
   endDate: string;
   employmentDuration: string;
-  
+
   // 희망 조건
   desiredSalary: string;
   desiredLocations: string[];
   desiredWorkingHours: string;
-  
+
   // 공통 섹션 데이터
   language: LanguageData;
   emergencyInfo: EmergencyData;
@@ -170,45 +179,45 @@ const uiLanguageOptions = [
 ];
 
 // 직업 분야 옵션
-const jobFieldOptions = [
-  { code: 'it', name: 'IT / 소프트웨어' },
-  { code: 'design', name: '디자인 / 미디어' },
-  { code: 'finance', name: '금융 / 회계' },
-  { code: 'engineering', name: '엔지니어링' },
-  { code: 'sales', name: '영업 / 마케팅' },
-  { code: 'research', name: '연구 / 개발' },
-  { code: 'education', name: '교육 / 강의' },
-  { code: 'consulting', name: '컨설팅' },
-  { code: 'manufacturing', name: '제조 / 생산' },
-  { code: 'service', name: '서비스업' },
-  { code: 'healthcare', name: '의료 / 건강' },
-  { code: 'agriculture', name: '농업 / 축산업' },
-  { code: 'construction', name: '건설 / 건축' },
-  { code: 'translation', name: '번역 / 통역' },
-  { code: 'hospitality', name: '호텔 / 관광' },
-  { code: 'art', name: '예술 / 문화' },
-  { code: 'cooking', name: '요리 / 음식' },
-  { code: 'sports', name: '스포츠 / 레저' },
-  { code: 'beauty', name: '미용 / 패션' },
-  { code: 'other', name: '기타' },
+const getJobFieldOptions = (t: any) => [
+  { code: 'it', name: t('onboarding.job.fields.it') },
+  { code: 'design', name: t('onboarding.job.fields.design') },
+  { code: 'finance', name: t('onboarding.job.fields.finance') },
+  { code: 'engineering', name: t('onboarding.job.fields.engineering') },
+  { code: 'sales', name: t('onboarding.job.fields.sales') },
+  { code: 'research', name: t('onboarding.job.fields.research') },
+  { code: 'education', name: t('onboarding.job.fields.education') },
+  { code: 'consulting', name: t('onboarding.job.fields.consulting') },
+  { code: 'manufacturing', name: t('onboarding.job.fields.manufacturing') },
+  { code: 'service', name: t('onboarding.job.fields.service') },
+  { code: 'healthcare', name: t('onboarding.job.fields.healthcare') },
+  { code: 'agriculture', name: t('onboarding.job.fields.agriculture') },
+  { code: 'construction', name: t('onboarding.job.fields.construction') },
+  { code: 'translation', name: t('onboarding.job.fields.translation') },
+  { code: 'hospitality', name: t('onboarding.job.fields.hospitality') },
+  { code: 'art', name: t('onboarding.job.fields.art') },
+  { code: 'cooking', name: t('onboarding.job.fields.cooking') },
+  { code: 'sports', name: t('onboarding.job.fields.sports') },
+  { code: 'beauty', name: t('onboarding.job.fields.beauty') },
+  { code: 'other', name: t('onboarding.job.fields.other') },
 ];
 
 // 경력 수준 옵션
 const careerLevelOptions = [
-  { value: 'entry', label: '신입' },
-  { value: 'junior', label: '주니어 (1-3년)' },
-  { value: 'midLevel', label: '미드레벨 (4-6년)' },
-  { value: 'senior', label: '시니어 (7년 이상)' },
-  { value: 'executive', label: '임원급' },
+  { value: 'entry', label: t('onboarding.career.levels.entry') },
+  { value: 'junior', label: t('onboarding.career.levels.junior') },
+  { value: 'midLevel', label: t('onboarding.career.levels.midLevel') },
+  { value: 'senior', label: t('onboarding.career.levels.senior') },
+  { value: 'executive', label: t('onboarding.career.levels.executive') },
 ];
 
 // 근무 시간 옵션
 const workingHoursOptions = [
-  { value: 'fullTime', label: '풀타임' },
-  { value: 'partTime', label: '파트타임' },
-  { value: 'flexible', label: '유연근무제' },
-  { value: 'remote', label: '원격근무' },
-  { value: 'shift', label: '교대근무' },
+  { value: 'fullTime', label: t('onboarding.career.hours.fullTime') },
+  { value: 'partTime', label: t('onboarding.career.hours.partTime') },
+  { value: 'flexible', label: t('onboarding.career.hours.flexible') },
+  { value: 'remote', label: t('onboarding.career.hours.remote') },
+  { value: 'shift', label: t('onboarding.career.hours.shift') },
 ];
 
 // 비자 종류 옵션
@@ -244,40 +253,40 @@ const visaTypeOptions = [
  * 취업 프로필 페이지
  */
 const JobProfile: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { season } = useThemeStore();
-  
+
   // 현재 스텝
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 시/도 목록 (select box용)
   const cityProvinceList = Object.keys(koreanAdministrativeDivisions);
-  
+
   // 데이터 스테이트
   const [formData, setFormData] = useState<JobProfileData>({
-    name: '',
     gender: '',
     age: '',
     nationality: '',
     country: '',
     uiLanguage: 'ko',
-    
+
     jobField: '',
     workExperience: '',
     desiredPosition: '',
     visaType: '',
-    
+
     startDate: '',
     endDate: '',
     employmentDuration: '',
-    
+
     desiredSalary: '',
     desiredLocations: [],
     desiredWorkingHours: '',
-    
+
     // 공통 섹션 초기화
     language: { koreanLevel: 'basic' },
     emergencyInfo: {
@@ -288,31 +297,18 @@ const JobProfile: React.FC = () => {
     },
     interests: [],
   });
-  
-  // 계절에 따른 색상 가져오기
-  const getColorByTheme = () => {
-    switch (season) {
-      case 'spring': return '#FFAAA5';
-      case 'summer': return '#77AADD';
-      case 'autumn': return '#E8846B';
-      case 'winter': return '#8795B5';
-      default: return '#FFAAA5';
-    }
-  };
 
-  const primaryColor = getColorByTheme();
-  
   // 스텝 라벨 정의
   const stepLabels = [
-    '취업자 세부 프로필',
-    '직업 상세 정보',
-    '취업 날짜 및 기간',
-    '희망 조건',
-    '언어 능력',
-    '관심사 선택',
-    '응급 상황 설정',
+    t('onboarding.job.steps.profile'),
+    t('onboarding.job.steps.details'),
+    t('onboarding.job.steps.schedule'),
+    t('onboarding.job.steps.conditions'),
+    t('onboarding.job.steps.language'),
+    t('onboarding.job.steps.interests'),
+    t('onboarding.job.steps.emergency'),
   ];
-  
+
   // 스텝 아이콘 정의
   const stepIcons = [
     <PersonIcon />,
@@ -323,22 +319,28 @@ const JobProfile: React.FC = () => {
     <FavoriteIcon />,
     <HealthAndSafetyIcon />,
   ];
-  
+
   // 총 스텝 수
   const totalSteps = stepLabels.length;
-  
+
   // 현재 스텝에 해당하는 공통 컴포넌트 타입
   const getCommonStepType = (): CommonStepType | null => {
     switch (currentStep) {
-      case 5: return 'language';
-      case 6: return 'interests';
-      case 7: return 'emergency';
-      default: return null;
+      case 5:
+        return 'language';
+      case 6:
+        return 'interests';
+      case 7:
+        return 'emergency';
+      default:
+        return null;
     }
   };
-  
+
   // 입력값 변경 핸들러
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>
+  ) => {
     const { name, value } = e.target;
     if (name) {
       setFormData(prev => ({
@@ -347,7 +349,7 @@ const JobProfile: React.FC = () => {
       }));
     }
   };
-  
+
   // 불리언 값 변경 핸들러
   const handleBooleanChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target;
@@ -356,7 +358,7 @@ const JobProfile: React.FC = () => {
       [name]: checked,
     }));
   };
-  
+
   // 언어 데이터 변경 핸들러
   const handleLanguageChange = (data: LanguageData) => {
     setFormData(prev => ({
@@ -364,7 +366,7 @@ const JobProfile: React.FC = () => {
       language: data,
     }));
   };
-  
+
   // 응급 정보 변경 핸들러
   const handleEmergencyChange = (data: EmergencyData) => {
     setFormData(prev => ({
@@ -372,7 +374,7 @@ const JobProfile: React.FC = () => {
       emergencyInfo: data,
     }));
   };
-  
+
   // 관심사 변경 핸들러
   const handleInterestsChange = (interests: string[]) => {
     setFormData(prev => ({
@@ -380,7 +382,7 @@ const JobProfile: React.FC = () => {
       interests,
     }));
   };
-  
+
   // 다음 단계로 이동
   const handleNext = () => {
     if (currentStep < totalSteps) {
@@ -389,7 +391,7 @@ const JobProfile: React.FC = () => {
       handleSubmit();
     }
   };
-  
+
   // 이전 단계로 이동
   const handleBack = () => {
     if (currentStep > 1) {
@@ -398,11 +400,11 @@ const JobProfile: React.FC = () => {
       navigate('/onboarding');
     }
   };
-  
+
   // 폼 제출 처리
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    
+
     try {
       // 필수 필드 검증
       if (!formData.nationality && !formData.country) {
@@ -416,28 +418,27 @@ const JobProfile: React.FC = () => {
         setIsSubmitting(false);
         return;
       }
-      
+
       // 백엔드에 전달할 데이터 객체 생성
       const onboardingData = {
         // 백엔드 필수 필드에 매핑될 데이터
         country: formData.nationality || formData.country, // nation 필드로 매핑
         gender: formData.gender, // gender 필드로 매핑
         uiLanguage: formData.uiLanguage || 'ko', // language 필드로 매핑
-        
+
         // 상세 정보 (onBoardingPreference JSON으로 저장됨)
-        name: formData.name,
         age: formData.age,
         jobField: formData.jobField,
         workExperience: formData.workExperience,
         desiredPosition: formData.desiredPosition,
         visaType: formData.visaType,
-        
+
         // 공통 정보
         language: formData.language,
         emergencyInfo: formData.emergencyInfo,
         interests: formData.interests,
       };
-      
+
       try {
         // 백엔드에 데이터 저장 (visit purpose: job)
         await saveOnboardingData('job', onboardingData);
@@ -448,20 +449,23 @@ const JobProfile: React.FC = () => {
         console.warn('온보딩 데이터 저장 실패. 테스트 모드에서는 무시합니다:', saveError);
         // 에러를 throw하지 않고 계속 진행
       }
-      
+
+      // store의 사용자 정보 최신화
+      await useAuthStore.getState().loadUser();
+
       // 메인 페이지로 이동
-      navigate('/home');
+      navigate('/dashboard');
     } catch (error) {
       console.error('온보딩 데이터 저장 실패:', error);
     } finally {
       setIsSubmitting(false);
     }
   };
-  
+
   // 현재 단계에 따른 폼 렌더링
   const renderFormByStep = () => {
     const commonStepType = getCommonStepType();
-    
+
     if (commonStepType) {
       return (
         <CommonStep
@@ -475,36 +479,38 @@ const JobProfile: React.FC = () => {
         />
       );
     }
-    
+
     switch (currentStep) {
       case 1: // 취업자 세부 프로필
         return (
           <StyledPaper elevation={0} sx={{ p: 4 }}>
             <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
               <Avatar
-                sx={{ 
-                  bgcolor: alpha(primaryColor, 0.2), 
-                  color: primaryColor,
+                sx={{
+                  bgcolor: '#e0e0e0',
+                  color: '#636363',
                   width: 48,
                   height: 48,
-                  mr: 2
+                  mr: 2,
                 }}
               >
                 <PersonIcon />
               </Avatar>
               <Typography variant="h5" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                취업자 세부 프로필
+                {t('onboarding.worker.profileTitle')}
               </Typography>
             </Box>
-            
-            <Box sx={{ 
-              display: 'grid', 
-              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
-              gap: 3,
-              mb: 2 
-            }}>
-              <StyledTextField
-                label="이름"
+
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+                gap: 3,
+                mb: 2,
+              }}
+            >
+              {/* <StyledTextField
+                label={t('onboarding.worker.form.name')}
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
@@ -514,23 +520,23 @@ const JobProfile: React.FC = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <PersonIcon sx={{ color: alpha(primaryColor, 0.7) }} />
+                      <PersonIcon sx={{ color: '#bdbdbd' }} />
                     </InputAdornment>
                   ),
                 }}
-              />
-              
+              /> */}
+
               <Box>
                 <FormControl component="fieldset" fullWidth>
-                  <FormLabel 
-                    id="gender-label" 
-                    sx={{ 
+                  <FormLabel
+                    id="gender-label"
+                    sx={{
                       color: 'text.secondary',
-                      '&.Mui-focused': { color: primaryColor },
-                      mb: 1
+                      '&.Mui-focused': { color: '#636363' },
+                      mb: 1,
                     }}
                   >
-                    성별
+                    {t('onboarding.worker.form.gender')}
                   </FormLabel>
                   <RadioGroup
                     row
@@ -539,55 +545,48 @@ const JobProfile: React.FC = () => {
                     value={formData.gender}
                     onChange={handleInputChange}
                   >
-                    <FormControlLabel 
-                      value="male" 
+                    <FormControlLabel
+                      value="male"
                       control={
-                        <Radio 
-                          sx={{ 
-                            color: theme.palette.grey[400],
-                            '&.Mui-checked': { color: primaryColor },
-                          }} 
+                        <Radio
+                          sx={{
+                            color: '#bdbdbd',
+                            '&.Mui-checked': { color: '#636363' },
+                          }}
                         />
-                      } 
-                      label="남성" 
+                      }
+                      label={t('onboarding.worker.form.male')}
                     />
-                    <FormControlLabel 
-                      value="female" 
+                    <FormControlLabel
+                      value="female"
                       control={
-                        <Radio 
-                          sx={{ 
-                            color: theme.palette.grey[400],
-                            '&.Mui-checked': { color: primaryColor },
-                          }} 
+                        <Radio
+                          sx={{
+                            color: '#bdbdbd',
+                            '&.Mui-checked': { color: '#636363' },
+                          }}
                         />
-                      } 
-                      label="여성" 
+                      }
+                      label={t('onboarding.worker.form.female')}
                     />
-                    <FormControlLabel 
-                      value="other" 
+                    <FormControlLabel
+                      value="other"
                       control={
-                        <Radio 
-                          sx={{ 
-                            color: theme.palette.grey[400],
-                            '&.Mui-checked': { color: primaryColor },
-                          }} 
+                        <Radio
+                          sx={{
+                            color: '#bdbdbd',
+                            '&.Mui-checked': { color: '#636363' },
+                          }}
                         />
-                      } 
-                      label="기타" 
+                      }
+                      label={t('onboarding.worker.form.other')}
                     />
                   </RadioGroup>
                 </FormControl>
               </Box>
-            </Box>
-            
-            <Box sx={{ 
-              display: 'grid', 
-              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
-              gap: 3,
-              mb: 2 
-            }}>
+
               <StyledTextField
-                label="나이"
+                label={t('onboarding.worker.form.age')}
                 name="age"
                 value={formData.age}
                 onChange={handleInputChange}
@@ -595,40 +594,40 @@ const JobProfile: React.FC = () => {
                 color="primary"
                 type="number"
               />
-              
-              <StyledTextField
-                label="국적"
-                name="nationality"
-                value={formData.nationality}
-                onChange={handleInputChange}
-                fullWidth
-                color="primary"
-              />
             </Box>
-            
-            <Box sx={{ 
-              display: 'grid', 
-              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
-              gap: 3
-            }}>
+
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+                gap: 3,
+              }}
+            >
+              <CountrySelector
+                label={t('onboarding.worker.form.nationality')}
+                value={formData.nationality}
+                onChange={value => setFormData(prev => ({ ...prev, nationality: value }))}
+                fullWidth
+              />
+
               <StyledTextField
                 select
-                label="UI 언어 선택"
+                label={t('onboarding.worker.form.uiLanguage')}
                 name="uiLanguage"
                 value={formData.uiLanguage}
                 onChange={handleInputChange}
                 fullWidth
-                helperText="앱에서 사용할 언어를 선택해주세요"
+                helperText={t('onboarding.worker.form.uiLanguageHelper')}
                 color="primary"
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <TranslateIcon sx={{ color: alpha(primaryColor, 0.7) }} />
+                      <TranslateIcon sx={{ color: '#bdbdbd' }} />
                     </InputAdornment>
                   ),
                 }}
               >
-                {uiLanguageOptions.map((option) => (
+                {uiLanguageOptions.map(option => (
                   <MenuItem key={option.code} value={option.code}>
                     {option.name}
                   </MenuItem>
@@ -637,31 +636,31 @@ const JobProfile: React.FC = () => {
             </Box>
           </StyledPaper>
         );
-        
+
       case 2: // 직업 상세 정보
         return (
           <StyledPaper elevation={0} sx={{ p: 4 }}>
             <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
               <Avatar
-                sx={{ 
-                  bgcolor: alpha(primaryColor, 0.2), 
-                  color: primaryColor,
+                sx={{
+                  bgcolor: '#e0e0e0',
+                  color: '#636363',
                   width: 48,
                   height: 48,
-                  mr: 2
+                  mr: 2,
                 }}
               >
                 <WorkIcon />
               </Avatar>
               <Typography variant="h5" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                직업 상세 정보
+                {t('onboarding.worker.detail.title')}
               </Typography>
             </Box>
-            
+
             <Box sx={{ mb: 3 }}>
               <StyledTextField
                 select
-                label="희망 직종"
+                label={t('onboarding.worker.detail.jobField')}
                 name="jobField"
                 value={formData.jobField}
                 onChange={handleInputChange}
@@ -672,23 +671,23 @@ const JobProfile: React.FC = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <WorkIcon sx={{ color: alpha(primaryColor, 0.7) }} />
+                      <WorkIcon sx={{ color: '#bdbdbd' }} />
                     </InputAdornment>
                   ),
                 }}
               >
-                {jobFieldOptions.map((option) => (
+                {getJobFieldOptions(t).map(option => (
                   <MenuItem key={option.code} value={option.code}>
                     {option.name}
                   </MenuItem>
                 ))}
               </StyledTextField>
             </Box>
-            
+
             <Box sx={{ mb: 3 }}>
               <StyledTextField
                 select
-                label="경력 수준"
+                label={t('onboarding.worker.detail.workExperience')}
                 name="workExperience"
                 value={formData.workExperience}
                 onChange={handleInputChange}
@@ -697,42 +696,52 @@ const JobProfile: React.FC = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <BusinessIcon sx={{ color: alpha(primaryColor, 0.7) }} />
+                      <BusinessIcon sx={{ color: '#bdbdbd' }} />
                     </InputAdornment>
                   ),
                 }}
               >
-                <MenuItem value="entry">신입 (경력 없음)</MenuItem>
-                <MenuItem value="junior">주니어 (1-3년)</MenuItem>
-                <MenuItem value="mid">미드레벨 (4-6년)</MenuItem>
-                <MenuItem value="senior">시니어 (7-10년)</MenuItem>
-                <MenuItem value="expert">전문가 (10년 이상)</MenuItem>
+                <MenuItem value="entry">
+                  {t('onboarding.worker.detail.workExperienceOptions.entry')}
+                </MenuItem>
+                <MenuItem value="junior">
+                  {t('onboarding.worker.detail.workExperienceOptions.junior')}
+                </MenuItem>
+                <MenuItem value="mid">
+                  {t('onboarding.worker.detail.workExperienceOptions.mid')}
+                </MenuItem>
+                <MenuItem value="senior">
+                  {t('onboarding.worker.detail.workExperienceOptions.senior')}
+                </MenuItem>
+                <MenuItem value="expert">
+                  {t('onboarding.worker.detail.workExperienceOptions.expert')}
+                </MenuItem>
               </StyledTextField>
             </Box>
-            
+
             <Box sx={{ mb: 3 }}>
               <StyledTextField
-                label="희망 직무/포지션"
+                label={t('onboarding.worker.detail.desiredPosition')}
                 name="desiredPosition"
                 value={formData.desiredPosition}
                 onChange={handleInputChange}
                 fullWidth
                 color="primary"
-                placeholder="예: 소프트웨어 개발자, 회계사, 디자이너 등"
+                placeholder={t('onboarding.worker.detail.desiredPositionPlaceholder')}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <WorkIcon sx={{ color: alpha(primaryColor, 0.7) }} />
+                      <WorkIcon sx={{ color: '#bdbdbd' }} />
                     </InputAdornment>
                   ),
                 }}
               />
             </Box>
-            
+
             <Box sx={{ mt: 3 }}>
               <StyledTextField
                 select
-                label="비자 종류"
+                label={t('onboarding.worker.detail.visaType')}
                 name="visaType"
                 value={formData.visaType}
                 onChange={handleInputChange}
@@ -741,55 +750,55 @@ const JobProfile: React.FC = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <VisaIcon sx={{ color: alpha(primaryColor, 0.7) }} />
+                      <VisaIcon sx={{ color: '#bdbdbd' }} />
                     </InputAdornment>
                   ),
                 }}
               >
-                {visaTypeOptions.map((option) => (
+                {visaTypeOptions.map(option => (
                   <MenuItem key={option.code} value={option.code}>
-                    {option.name}
+                    {t(`onboarding.job.visaTypeOptions.${option.code}`)}
                   </MenuItem>
                 ))}
               </StyledTextField>
             </Box>
           </StyledPaper>
         );
-      
+
       case 3: // 취업 날짜 및 기간
         return (
           <StyledPaper elevation={0} sx={{ p: 4 }}>
             <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
               <Avatar
-                sx={{ 
-                  bgcolor: alpha(primaryColor, 0.2), 
-                  color: primaryColor,
+                sx={{
+                  bgcolor: '#e0e0e0',
+                  color: '#636363',
                   width: 48,
                   height: 48,
-                  mr: 2
+                  mr: 2,
                 }}
               >
                 <CalendarTodayIcon />
               </Avatar>
               <Typography variant="h5" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                취업 날짜 및 기간
+                {t('onboarding.worker.schedule.title')}
               </Typography>
             </Box>
-            
+
             <Box sx={{ mb: 4 }}>
-              <Typography 
-                variant="subtitle2" 
-                sx={{ 
-                  mb: 1, 
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  mb: 1,
                   color: 'text.secondary',
-                  fontWeight: 500
+                  fontWeight: 500,
                 }}
               >
-                희망 근무 기간을 선택해주세요
+                {t('onboarding.worker.schedule.selectDuration')}
               </Typography>
               <StyledTextField
                 select
-                label="희망 근무 기간"
+                label={t('onboarding.worker.schedule.durationLabel')}
                 name="employmentDuration"
                 value={formData.employmentDuration}
                 onChange={handleInputChange}
@@ -800,40 +809,50 @@ const JobProfile: React.FC = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <CalendarTodayIcon sx={{ color: alpha(primaryColor, 0.7) }} />
+                      <CalendarTodayIcon sx={{ color: '#bdbdbd' }} />
                     </InputAdornment>
                   ),
                 }}
               >
-                <MenuItem value="short_term">단기 (3개월 미만)</MenuItem>
-                <MenuItem value="temporary">임시직 (3-6개월)</MenuItem>
-                <MenuItem value="contract">계약직 (6개월-1년)</MenuItem>
-                <MenuItem value="long_term">장기 계약직 (1-3년)</MenuItem>
-                <MenuItem value="permanent">정규직 (무기한)</MenuItem>
+                <MenuItem value="short_term">
+                  {t('onboarding.worker.schedule.durationOptions.short_term')}
+                </MenuItem>
+                <MenuItem value="temporary">
+                  {t('onboarding.worker.schedule.durationOptions.temporary')}
+                </MenuItem>
+                <MenuItem value="contract">
+                  {t('onboarding.worker.schedule.durationOptions.contract')}
+                </MenuItem>
+                <MenuItem value="long_term">
+                  {t('onboarding.worker.schedule.durationOptions.long_term')}
+                </MenuItem>
+                <MenuItem value="permanent">
+                  {t('onboarding.worker.schedule.durationOptions.permanent')}
+                </MenuItem>
               </StyledTextField>
             </Box>
-            
-            <Box 
-              sx={{ 
-                display: 'grid', 
-                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
+
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
                 gap: 3,
-                mb: 4
+                mb: 4,
               }}
             >
               <Box>
-                <Typography 
-                  variant="subtitle2" 
-                  sx={{ 
-                    mb: 1, 
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    mb: 1,
                     color: 'text.secondary',
-                    fontWeight: 500
+                    fontWeight: 500,
                   }}
                 >
-                  근무 시작 희망일
+                  {t('onboarding.worker.schedule.startDateLabel')}
                 </Typography>
                 <StyledTextField
-                  label="시작 날짜"
+                  label={t('onboarding.worker.schedule.startDate')}
                   name="startDate"
                   type="date"
                   value={formData.startDate}
@@ -844,26 +863,26 @@ const JobProfile: React.FC = () => {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <CalendarTodayIcon sx={{ color: alpha(primaryColor, 0.7) }} />
+                        <CalendarTodayIcon sx={{ color: '#bdbdbd' }} />
                       </InputAdornment>
                     ),
                   }}
                 />
               </Box>
-              
+
               <Box>
-                <Typography 
-                  variant="subtitle2" 
-                  sx={{ 
-                    mb: 1, 
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    mb: 1,
                     color: 'text.secondary',
-                    fontWeight: 500
+                    fontWeight: 500,
                   }}
                 >
-                  근무 종료 예정일 (정규직은 비워두세요)
+                  {t('onboarding.worker.schedule.endDateLabel')}
                 </Typography>
                 <StyledTextField
-                  label="종료 날짜"
+                  label={t('onboarding.worker.schedule.endDate')}
                   name="endDate"
                   type="date"
                   value={formData.endDate}
@@ -874,28 +893,28 @@ const JobProfile: React.FC = () => {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <CalendarTodayIcon sx={{ color: alpha(primaryColor, 0.7) }} />
+                        <CalendarTodayIcon sx={{ color: '#bdbdbd' }} />
                       </InputAdornment>
                     ),
                   }}
                 />
               </Box>
             </Box>
-            
+
             <Box sx={{ mb: 2 }}>
-              <Typography 
-                variant="subtitle2" 
-                sx={{ 
-                  mb: 1, 
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  mb: 1,
                   color: 'text.secondary',
-                  fontWeight: 500
+                  fontWeight: 500,
                 }}
               >
-                희망 근무 시간
+                {t('onboarding.worker.schedule.workingHoursLabel')}
               </Typography>
               <StyledTextField
                 select
-                label="근무 시간"
+                label={t('onboarding.worker.schedule.workingHoursInputLabel')}
                 name="desiredWorkingHours"
                 value={formData.desiredWorkingHours}
                 onChange={handleInputChange}
@@ -904,51 +923,61 @@ const JobProfile: React.FC = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <CalendarTodayIcon sx={{ color: alpha(primaryColor, 0.7) }} />
+                      <CalendarTodayIcon sx={{ color: '#bdbdbd' }} />
                     </InputAdornment>
                   ),
                 }}
               >
-                <MenuItem value="full_time">풀타임 (주 40시간)</MenuItem>
-                <MenuItem value="part_time">파트타임 (주 20-30시간)</MenuItem>
-                <MenuItem value="flexible">유연근무제</MenuItem>
-                <MenuItem value="weekend">주말 근무</MenuItem>
-                <MenuItem value="night_shift">야간 근무</MenuItem>
+                <MenuItem value="full_time">
+                  {t('onboarding.worker.schedule.workingHoursOptions.full_time')}
+                </MenuItem>
+                <MenuItem value="part_time">
+                  {t('onboarding.worker.schedule.workingHoursOptions.part_time')}
+                </MenuItem>
+                <MenuItem value="flexible">
+                  {t('onboarding.worker.schedule.workingHoursOptions.flexible')}
+                </MenuItem>
+                <MenuItem value="weekend">
+                  {t('onboarding.worker.schedule.workingHoursOptions.weekend')}
+                </MenuItem>
+                <MenuItem value="night_shift">
+                  {t('onboarding.worker.schedule.workingHoursOptions.night_shift')}
+                </MenuItem>
               </StyledTextField>
             </Box>
           </StyledPaper>
         );
-        
-      case 4: // 희망 조건
+
+      case 4: // 희망 근무 조건
         return (
           <StyledPaper elevation={0} sx={{ p: 4 }}>
             <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
               <Avatar
-                sx={{ 
-                  bgcolor: alpha(primaryColor, 0.2), 
-                  color: primaryColor,
+                sx={{
+                  bgcolor: '#e0e0e0',
+                  color: '#636363',
                   width: 48,
                   height: 48,
-                  mr: 2
+                  mr: 2,
                 }}
               >
                 <BusinessIcon />
               </Avatar>
               <Typography variant="h5" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                희망 근무 조건
+                {t('onboarding.worker.preference.title')}
               </Typography>
             </Box>
-            
+
             <Box sx={{ mb: 4 }}>
-              <Typography 
-                variant="subtitle2" 
-                sx={{ 
-                  mb: 1, 
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  mb: 1,
                   color: 'text.secondary',
-                  fontWeight: 500
+                  fontWeight: 500,
                 }}
               >
-                희망 근무 지역
+                {/* {t('onboarding.worker.preference.locationLabel')} */}
               </Typography>
               <Autocomplete
                 multiple
@@ -958,7 +987,7 @@ const JobProfile: React.FC = () => {
                 onChange={(event, newValue) => {
                   setFormData(prev => ({
                     ...prev,
-                    desiredLocations: newValue
+                    desiredLocations: newValue,
                   }));
                 }}
                 renderTags={(value, getTagProps) =>
@@ -967,32 +996,32 @@ const JobProfile: React.FC = () => {
                       label={option}
                       {...getTagProps({ index })}
                       sx={{
-                        backgroundColor: alpha(primaryColor, 0.1),
-                        color: primaryColor,
+                        backgroundColor: '#e0e0e0',
+                        color: '#636363',
                         borderRadius: '16px',
-                        border: `1px solid ${alpha(primaryColor, 0.3)}`,
+                        border: '1px solid #bdbdbd',
                         '& .MuiChip-deleteIcon': {
-                          color: primaryColor,
+                          color: '#636363',
                           '&:hover': {
-                            color: alpha(primaryColor, 0.7),
+                            color: '#bdbdbd',
                           },
                         },
                       }}
                     />
                   ))
                 }
-                renderInput={(params) => (
+                renderInput={params => (
                   <StyledTextField
                     {...params}
-                    label="희망 근무 지역"
-                    placeholder="지역을 검색하세요"
+                    label={t('onboarding.worker.preference.locationInputLabel')}
+                    placeholder={t('onboarding.worker.preference.locationPlaceholder')}
                     color="primary"
                     InputProps={{
                       ...params.InputProps,
                       startAdornment: (
                         <>
                           <InputAdornment position="start">
-                            <LocationOnIcon sx={{ color: alpha(primaryColor, 0.7) }} />
+                            <LocationOnIcon sx={{ color: '#bdbdbd' }} />
                           </InputAdornment>
                           {params.InputProps.startAdornment}
                         </>
@@ -1001,31 +1030,31 @@ const JobProfile: React.FC = () => {
                   />
                 )}
               />
-              <Typography 
-                variant="caption" 
-                sx={{ 
+              <Typography
+                variant="caption"
+                sx={{
                   color: 'text.secondary',
                   display: 'block',
-                  mt: 1
+                  mt: 1,
                 }}
               >
-                최소 1개 이상의 지역을 선택해주세요.
+                {t('onboarding.worker.preference.locationSelectAtLeastOne')}
               </Typography>
             </Box>
-            
+
             <Box sx={{ mb: 3 }}>
               <StyledTextField
-                label="희망 연봉/급여"
+                label={t('onboarding.worker.preference.salaryLabel')}
                 name="desiredSalary"
                 value={formData.desiredSalary}
                 onChange={handleInputChange}
                 fullWidth
                 color="primary"
-                placeholder="예: 3000만원, 협의 가능 등"
+                placeholder={t('onboarding.worker.preference.salaryPlaceholder')}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <PaymentsIcon sx={{ color: alpha(primaryColor, 0.7) }} />
+                      <PaymentsIcon sx={{ color: '#bdbdbd' }} />
                     </InputAdornment>
                   ),
                 }}
@@ -1033,12 +1062,12 @@ const JobProfile: React.FC = () => {
             </Box>
           </StyledPaper>
         );
-        
+
       default:
         return null;
     }
   };
-  
+
   // 배경 애니메이션용 원 위치 생성
   const circleVariants = {
     animate: (i: number) => ({
@@ -1046,12 +1075,12 @@ const JobProfile: React.FC = () => {
       transition: {
         duration: 4 + i,
         repeat: Infinity,
-        ease: "easeInOut",
-        delay: i * 0.3
-      }
-    })
+        ease: 'easeInOut',
+        delay: i * 0.3,
+      },
+    }),
   };
-  
+
   // 커스텀 스텝 표시
   const renderCustomStepper = () => {
     return (
@@ -1071,9 +1100,9 @@ const JobProfile: React.FC = () => {
         {stepLabels.map((label, index) => {
           const isActive = currentStep === index + 1;
           const isCompleted = currentStep > index + 1;
-          
+
           return (
-            <Box 
+            <Box
               key={index}
               sx={{
                 display: 'flex',
@@ -1094,16 +1123,15 @@ const JobProfile: React.FC = () => {
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center',
-                  background: isActive || isCompleted 
-                    ? `linear-gradient(135deg, ${primaryColor} 0%, ${alpha(primaryColor, 0.8)} 100%)`
-                    : theme.palette.grey[200],
-                  boxShadow: isActive 
-                    ? `0 4px 12px ${alpha(primaryColor, 0.3)}`
-                    : 'none',
+                  background:
+                    isActive || isCompleted
+                      ? 'linear-gradient(135deg, #636363 0%, #888 100%)'
+                      : '#e0e0e0',
+                  boxShadow: isActive ? '0 4px 12px #bdbdbd' : 'none',
                   mb: 1,
                   transition: 'all 0.3s ease',
                   transform: isActive ? 'scale(1.1)' : 'scale(1)',
-                  color: isActive || isCompleted ? 'white' : theme.palette.grey[500],
+                  color: isActive || isCompleted ? 'white' : '#636363',
                 }}
               >
                 {isCompleted ? (
@@ -1112,13 +1140,13 @@ const JobProfile: React.FC = () => {
                   <Typography sx={{ fontWeight: 600 }}>{index + 1}</Typography>
                 )}
               </Box>
-              
+
               <Typography
                 variant="caption"
                 sx={{
                   fontSize: isMobile ? '0.7rem' : '0.75rem',
                   fontWeight: isActive ? 600 : 400,
-                  color: isActive ? primaryColor : 'text.secondary',
+                  color: isActive ? '#636363' : 'text.secondary',
                   textAlign: 'center',
                   lineHeight: 1.2,
                   width: isMobile ? 60 : 70,
@@ -1132,12 +1160,12 @@ const JobProfile: React.FC = () => {
       </Box>
     );
   };
-  
+
   // 다음 버튼 비활성화 여부 확인
   const isNextDisabled = () => {
     switch (currentStep) {
       case 1: // 취업자 세부 프로필
-        return !formData.name || !formData.gender || !formData.nationality;
+        return !formData.gender || !formData.nationality;
       case 2: // 직업 상세 정보
         return !formData.jobField || !formData.workExperience;
       case 3: // 취업 날짜 및 기간
@@ -1154,7 +1182,7 @@ const JobProfile: React.FC = () => {
         return false;
     }
   };
-  
+
   return (
     <Box
       sx={{
@@ -1165,7 +1193,7 @@ const JobProfile: React.FC = () => {
         position: 'relative',
         py: 4,
         px: 2,
-        background: `linear-gradient(135deg, ${alpha(primaryColor, 0.02)} 0%, ${alpha(primaryColor, 0.05)} 100%)`,
+        background: 'transparent',
       }}
     >
       {/* 배경 애니메이션 */}
@@ -1181,62 +1209,62 @@ const JobProfile: React.FC = () => {
               height: `${150 + i * 100}px`,
               top: `${Math.random() * 80}%`,
               left: `${Math.random() * 80}%`,
-              border: `1px solid ${alpha(primaryColor, 0.03)}`,
+              border: `1px solid #bdbdbd`,
               opacity: 0.3 - i * 0.04,
             }}
           />
         ))}
       </AnimatedBackground>
-      
+
       <Container maxWidth="md" sx={{ py: 2, zIndex: 1, width: '100%' }}>
         {/* 헤더 */}
-        <Box 
-          sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
             mb: 4,
             mt: 2,
           }}
         >
-          <IconButton 
+          <IconButton
             onClick={handleBack}
-            sx={{ 
+            sx={{
               mr: 2,
               color: 'text.secondary',
-              '&:hover': { color: primaryColor }
+              '&:hover': { color: '#636363' },
             }}
           >
             <ArrowBackIcon />
           </IconButton>
-          
+
           <Box>
-            <Typography 
-              variant="h4" 
-              component="h1" 
-              sx={{ 
-                fontWeight: 600, 
+            <Typography
+              variant="h4"
+              component="h1"
+              sx={{
+                fontWeight: 600,
                 color: 'text.primary',
                 fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' },
                 letterSpacing: '-0.01em',
               }}
             >
-              취업 프로필 설정
+              {t('onboarding.job.profileSetting')}
             </Typography>
-            <Typography 
-              variant="body2" 
-              sx={{ 
+            <Typography
+              variant="body2"
+              sx={{
                 color: 'text.secondary',
                 opacity: 0.85,
               }}
             >
-              한국 취업에 필요한 정보를 알려주세요
+              {t('onboarding.job.profileDescription')}
             </Typography>
           </Box>
         </Box>
-        
+
         {/* 스텝퍼 */}
         {renderCustomStepper()}
-        
+
         {/* 메인 콘텐츠 */}
         <motion.div
           key={currentStep}
@@ -1247,11 +1275,11 @@ const JobProfile: React.FC = () => {
         >
           {renderFormByStep()}
         </motion.div>
-        
+
         {/* 버튼 */}
-        <Box 
-          sx={{ 
-            display: 'flex', 
+        <Box
+          sx={{
+            display: 'flex',
             justifyContent: 'space-between',
             mt: 4,
             mb: 6,
@@ -1262,43 +1290,47 @@ const JobProfile: React.FC = () => {
             onClick={handleBack}
             startIcon={<ArrowBackIcon />}
             sx={{
-              borderColor: alpha(theme.palette.grey[400], 0.5),
+              borderColor: '#bdbdbd',
               color: 'text.secondary',
               px: 3,
               py: 1,
               borderRadius: '50px',
               '&:hover': {
-                borderColor: alpha(theme.palette.grey[600], 0.5),
-                backgroundColor: alpha(theme.palette.grey[100], 0.5),
+                borderColor: '#888',
+                backgroundColor: '#e0e0e0',
               },
               textTransform: 'none',
             }}
           >
-            이전
+            {t('onboarding.travel.back')}
           </Button>
-          
+
           <Button
             variant="contained"
             onClick={currentStep === totalSteps ? handleSubmit : handleNext}
             endIcon={<ArrowForwardIcon />}
             disabled={isNextDisabled() || isSubmitting}
             sx={{
-              bgcolor: primaryColor,
+              bgcolor: '#636363',
               color: 'white',
               px: { xs: 3, md: 4 },
               py: 1,
               borderRadius: '50px',
               fontWeight: 600,
-              boxShadow: `0 6px 16px ${alpha(primaryColor, 0.25)}`,
+              boxShadow: '0 6px 16px #bdbdbd',
               '&:hover': {
-                bgcolor: alpha(primaryColor, 0.9),
-                boxShadow: `0 8px 20px ${alpha(primaryColor, 0.35)}`,
+                bgcolor: '#888',
+                boxShadow: '0 8px 20px #bdbdbd',
                 transform: 'translateY(-2px)',
               },
               textTransform: 'none',
             }}
           >
-            {currentStep === totalSteps ? (isSubmitting ? '저장 중...' : '완료') : '다음'}
+            {currentStep === totalSteps
+              ? isSubmitting
+                ? t('onboarding.travel.saving')
+                : t('onboarding.travel.finish')
+              : t('onboarding.travel.next')}
           </Button>
         </Box>
       </Container>
@@ -1306,4 +1338,4 @@ const JobProfile: React.FC = () => {
   );
 };
 
-export default JobProfile; 
+export default JobProfile;

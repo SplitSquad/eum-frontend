@@ -38,6 +38,29 @@ export interface UserActivity {
 }
 
 /**
+ * 사용자 활동 통계 인터페이스
+ */
+export interface UserActivityStats {
+  postsCount: number;
+  commentsCount: number;
+  debatesCount: number;
+  bookmarksCount: number;
+  totalActivities: number;
+}
+
+/**
+ * 사용자 뱃지 인터페이스
+ */
+export interface UserBadge {
+  id: number;
+  name: string;
+  icon: string;
+  description: string;
+  unlocked: boolean;
+  unlockedAt?: string;
+}
+
+/**
  * 사용자 서비스
  */
 const UserService = {
@@ -77,6 +100,40 @@ const UserService = {
     } catch (error) {
       console.error('사용자 활동 조회 실패:', error);
       // 에러 발생 시 빈 배열 반환 (UI에서 예외 처리 용이하게)
+      return [];
+    }
+  },
+
+  /**
+   * 사용자 활동 통계 조회
+   */
+  getActivityStats: async (): Promise<UserActivityStats> => {
+    try {
+      const response = await apiClient.get<UserActivityStats>('/users/activity-stats');
+      return response;
+    } catch (error) {
+      console.error('사용자 활동 통계 조회 실패:', error);
+      // 에러 발생 시 기본값 반환
+      return {
+        postsCount: 0,
+        commentsCount: 0,
+        debatesCount: 0,
+        bookmarksCount: 0,
+        totalActivities: 0,
+      };
+    }
+  },
+
+  /**
+   * 사용자 뱃지 목록 조회
+   */
+  getUserBadges: async (): Promise<UserBadge[]> => {
+    try {
+      const response = await apiClient.get<UserBadge[]>('/users/badges');
+      return response;
+    } catch (error) {
+      console.error('사용자 뱃지 조회 실패:', error);
+      // 에러 발생 시 빈 배열 반환
       return [];
     }
   },

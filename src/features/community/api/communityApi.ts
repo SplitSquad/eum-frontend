@@ -25,6 +25,7 @@ export const getTopPosts = PostApi.getTopPosts;
 export const getRecentPosts = PostApi.getRecentPosts;
 export const searchPosts = PostApi.searchPosts;
 export const getPostById = PostApi.getPostById;
+export const getPostOriginal = PostApi.getPostOriginal;
 export const increaseViewCount = PostApi.increaseViewCount;
 export const createPost = PostApi.createPost;
 export const updatePost = PostApi.updatePost;
@@ -39,32 +40,36 @@ interface UserPostsResponse {
 }
 
 // 사용자 작성 게시글 목록 조회 함수 추가
-export const getUserPosts = async (userId: number, page = 0, size = 100): Promise<UserPostsResponse> => {
+export const getUserPosts = async (
+  userId: number,
+  page = 0,
+  size = 100
+): Promise<UserPostsResponse> => {
   try {
     const response = await apiClient.get(`/community/post/written`, {
-      params: { userId, page, size }
+      params: { userId, page, size },
     });
-    
+
     // 백엔드 응답 데이터 구조에 맞게 처리
     const data = response as any; // linter 에러 방지를 위한 any 타입 캐스팅
-    
+
     // 응답이 직접 배열인 경우 (백엔드 응답 구조에 따라 조정 필요)
     if (Array.isArray(data)) {
       return { postList: data };
-    } 
+    }
     // 페이징 응답인 경우
     else if (data?.content && Array.isArray(data.content)) {
-      return { 
+      return {
         postList: data.content,
         total: data.totalElements,
-        totalPages: data.totalPages 
+        totalPages: data.totalPages,
       };
     }
     // postList 필드가 있는 경우
     else if (data?.postList && Array.isArray(data.postList)) {
       return data as UserPostsResponse;
     }
-    
+
     // 기본 빈 응답 반환
     return { postList: [] };
   } catch (error) {

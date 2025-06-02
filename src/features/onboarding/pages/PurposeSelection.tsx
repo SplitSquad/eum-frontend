@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -24,10 +24,12 @@ import WorkIcon from '@mui/icons-material/Work';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { mainCategories } from '../components/common/CommonTags';
 import { motion } from 'framer-motion';
+import { useSnackbar } from 'notistack';
+import { useTranslation } from '@/shared/i18n';
 
 // Material UI의 Grid를 스타일링된 버전으로 재정의
 //const Grid = styled(Box)(({ theme }) => ({}));
-
+const { t } = useTranslation();
 const MotionCard = styled(motion.div)(({ theme }) => ({
   height: '100%',
   width: '100%',
@@ -36,12 +38,13 @@ const MotionCard = styled(motion.div)(({ theme }) => ({
 
 const StyledCard = styled(Card)(({ theme }) => ({
   borderRadius: theme.spacing(3),
-  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.08)',
+  boxShadow: '0 8px 24px rgba(80, 80, 90, 0.08)',
   overflow: 'hidden',
   height: '100%',
   transition: 'all 0.3s ease',
   position: 'relative',
-  border: '1px solid rgba(230, 230, 230, 0.7)',
+  border: '1px solid #e0e0e0',
+  background: '#fafbfc',
 }));
 
 const CardOverlay = styled(Box)(({ theme }) => ({
@@ -50,7 +53,7 @@ const CardOverlay = styled(Box)(({ theme }) => ({
   left: 0,
   right: 0,
   bottom: 0,
-  background: 'linear-gradient(180deg, rgba(0,0,0,0) 60%, rgba(0,0,0,0.4) 100%)',
+  background: 'linear-gradient(180deg, rgba(0,0,0,0) 60%, rgba(0,0,0,0.04) 100%)',
   zIndex: 1,
   opacity: 0,
   transition: 'opacity 0.3s ease',
@@ -65,6 +68,8 @@ const IconWrapper = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   marginBottom: theme.spacing(3),
   transition: 'all 0.3s ease',
+  background: '#e0e0e0',
+  color: '#636363',
 }));
 
 const PurposeCard: React.FC<{
@@ -95,11 +100,11 @@ const PurposeCard: React.FC<{
       <StyledCard
         elevation={selected ? 4 : 0}
         sx={{
-          border: selected ? `1px solid ${themeColor}` : '1px solid rgba(230, 230, 230, 0.7)',
+          border: selected ? '1px solid #636363' : '1px solid #e0e0e0',
           '&:hover': {
-            boxShadow: '0 12px 28px rgba(0, 0, 0, 0.1)',
+            boxShadow: '0 12px 28px #bdbdbd',
           },
-          background: imageSrc ? `url(${imageSrc})` : 'transparent',
+          background: imageSrc ? `url(${imageSrc})` : '#fafbfc',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
@@ -115,9 +120,7 @@ const PurposeCard: React.FC<{
             padding: { xs: 3, md: 4 },
             position: 'relative',
             zIndex: 2,
-            backgroundColor: imageSrc
-              ? alpha(theme.palette.background.paper, 0.85)
-              : theme.palette.background.paper,
+            backgroundColor: '#fafbfc',
           }}
         >
           <Box
@@ -130,14 +133,14 @@ const PurposeCard: React.FC<{
               bottom: 0,
               opacity: 0,
               transition: 'opacity 0.3s ease',
-              background: `linear-gradient(135deg, ${alpha(themeColor, 0.05)} 0%, ${alpha(themeColor, 0.1)} 100%)`,
+              background: '#e0e0e0',
             }}
           />
 
           <IconWrapper
             sx={{
-              backgroundColor: selected ? themeColor : alpha(themeColor, 0.1),
-              color: selected ? 'white' : themeColor,
+              backgroundColor: selected ? '#636363' : '#e0e0e0',
+              color: selected ? 'white' : '#636363',
               transform: selected ? 'scale(1.1)' : 'scale(1)',
               width: 70,
               height: 70,
@@ -150,7 +153,7 @@ const PurposeCard: React.FC<{
             sx={{
               width: '100%',
               textAlign: 'center',
-              padding: theme.spacing(2, 1, 1),
+              padding: 2,
             }}
           >
             <Typography
@@ -159,7 +162,7 @@ const PurposeCard: React.FC<{
               fontWeight="600"
               gutterBottom
               sx={{
-                color: selected ? themeColor : 'text.primary',
+                color: selected ? '#636363' : 'text.primary',
                 transition: 'color 0.3s ease',
                 fontSize: { xs: '1.3rem', md: '1.5rem' },
                 letterSpacing: '-0.01em',
@@ -194,11 +197,11 @@ const PurposeCard: React.FC<{
                 size="small"
                 endIcon={<ArrowForwardIcon />}
                 sx={{
-                  borderColor: themeColor,
-                  color: themeColor,
+                  borderColor: '#636363',
+                  color: '#636363',
                   '&:hover': {
-                    borderColor: themeColor,
-                    backgroundColor: alpha(themeColor, 0.1),
+                    borderColor: '#636363',
+                    backgroundColor: '#e0e0e0',
                   },
                   fontWeight: 600,
                   borderRadius: '50px',
@@ -206,7 +209,7 @@ const PurposeCard: React.FC<{
                   textTransform: 'none',
                 }}
               >
-                선택하기
+                {t('onboarding.purpose.select')}
               </Button>
             )}
           </CardContent>
@@ -250,26 +253,10 @@ const PurposeSelection: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { season } = useThemeStore();
+  const { enqueueSnackbar } = useSnackbar();
+  const location = useLocation();
 
   const [selectedPurpose, setSelectedPurpose] = useState<string | null>(null);
-
-  // 계절에 따른 색상 가져오기
-  const getColorByTheme = () => {
-    switch (season) {
-      case 'spring':
-        return '#FFAAA5';
-      case 'summer':
-        return '#77AADD';
-      case 'autumn':
-        return '#E8846B';
-      case 'winter':
-        return '#8795B5';
-      default:
-        return '#FFAAA5';
-    }
-  };
-
-  const themeColor = getColorByTheme();
 
   // 목적 아이콘 매핑
   const purposeIconMap: Record<string, React.ReactNode> = {
@@ -281,14 +268,15 @@ const PurposeSelection: React.FC = () => {
 
   // 목적 설명 매핑
   const purposeDescriptionMap: Record<string, string> = {
-    study: '한국에서 학업을 계획하고 있어요. 유학, 어학연수 등을 위한 정보를 제공합니다.',
-    travel: '한국 여행을 계획하고 있어요. 관광, 맛집, 교통 등 여행에 필요한 정보를 제공합니다.',
-    living: '한국에서 거주할 예정이에요. 주거, 생활, 정착에 관한 정보를 제공합니다.',
-    job: '한국에서 취업 또는 일할 계획이에요. 취업 정보와 비자, 커리어 관련 정보를 제공합니다.',
+    study: t('onboarding.purpose.study'),
+    travel: t('onboarding.purpose.travel'),
+    living: t('onboarding.purpose.living'),
+    job: t('onboarding.purpose.job'),
   };
 
   // 다음 단계로 이동
   const handleNext = () => {
+    setSelectedPurpose(null);
     if (selectedPurpose) {
       navigate(`/onboarding/${selectedPurpose}`);
     }
@@ -306,6 +294,14 @@ const PurposeSelection: React.FC = () => {
       },
     }),
   };
+
+  // onboarding 리다이렉트 시 스낵바 알림
+  React.useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.has('from')) {
+      enqueueSnackbar('상세 정보 입력을 완료해주세요', { variant: 'info', autoHideDuration: 1500 });
+    }
+  }, [location.search, enqueueSnackbar]);
 
   return (
     <Box
@@ -333,7 +329,7 @@ const PurposeSelection: React.FC = () => {
               height: `${150 + i * 100}px`,
               top: `${Math.random() * 80}%`,
               left: `${Math.random() * 80}%`,
-              border: `1px solid ${alpha(themeColor, 0.03)}`,
+              border: `1px solid rgba(255, 255, 255, 0.03)`,
               opacity: 0.3 - i * 0.04,
             }}
           />
@@ -353,7 +349,7 @@ const PurposeSelection: React.FC = () => {
               letterSpacing: '-0.02em',
             }}
           >
-            어떤 목적으로 한국에 방문하시나요?
+            {t('onboarding.purpose.welcome')}
           </Typography>
           <Typography
             variant="subtitle1"
@@ -368,7 +364,7 @@ const PurposeSelection: React.FC = () => {
               opacity: 0.85,
             }}
           >
-            가장 적합한 옵션을 선택하면 맞춤형 정보를 제공해드립니다
+            {t('onboarding.purpose.description')}
           </Typography>
         </Box>
 
@@ -394,46 +390,17 @@ const PurposeSelection: React.FC = () => {
                 id={category.id}
                 name={category.name}
                 selected={selectedPurpose === category.id}
-                onClick={() => setSelectedPurpose(category.id)}
+                onClick={() => {
+                  setSelectedPurpose(category.id);
+                  navigate(`/onboarding/${category.id}`);
+                }}
                 icon={purposeIconMap[category.id]}
                 description={purposeDescriptionMap[category.id]}
-                themeColor={themeColor}
+                themeColor={category.id}
                 imageSrc={purposeImageMap[category.id]}
               />
             </Box>
           ))}
-        </Box>
-
-        <Box sx={{ mt: 6, textAlign: 'center' }}>
-          <Button
-            variant="contained"
-            size="large"
-            disabled={!selectedPurpose}
-            onClick={handleNext}
-            sx={{
-              bgcolor: themeColor,
-              color: 'white',
-              px: { xs: 4, md: 5 },
-              py: { xs: 1.3, md: 1.5 },
-              borderRadius: '50px',
-              fontWeight: 600,
-              fontSize: { xs: '1rem', md: '1.1rem' },
-              boxShadow: `0 6px 16px ${alpha(themeColor, 0.25)}`,
-              textTransform: 'none',
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                bgcolor: alpha(themeColor, 0.9),
-                boxShadow: `0 8px 20px ${alpha(themeColor, 0.35)}`,
-                transform: 'translateY(-2px)',
-              },
-              '&.Mui-disabled': {
-                bgcolor: alpha(theme.palette.grey[300], 0.7),
-                color: theme.palette.grey[500],
-              },
-            }}
-          >
-            {selectedPurpose ? '계속하기' : '목적을 선택해주세요'}
-          </Button>
         </Box>
       </Container>
     </Box>

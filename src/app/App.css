@@ -3,7 +3,8 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
-  overflow-y: auto;
+  overflow-y: visible !important;
+  overflow-x: visible !important;
 }
 
 /* 전체 앱 컨테이너 스타일 */
@@ -23,6 +24,7 @@ body {
     sans-serif;
   /*overflow-y: auto;*/
   position: relative;
+  background: transparent !important;
 }
 
 /* 메인 콘텐츠 영역 스타일 */
@@ -36,6 +38,27 @@ body {
   /*margin-top: 64px;  헤더 높이만큼 여백 추가 */
   /*margin-bottom: 120px; /* 푸터 높이만큼 여백 추가 */
   z-index: 1;
+  background: transparent !important;
+  border-radius: 0 !important;
+}
+
+/* 모바일 최적화 */
+@media (max-width: 768px) {
+  .main-content {
+    min-height: calc(100vh - 56px - 100px); /* 모바일 헤더와 푸터 높이 조정 */
+    padding: 0.25rem 0;
+  }
+
+  .app-container {
+    font-size: 14px; /* 모바일에서 기본 폰트 크기 조정 */
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    min-height: calc(100vh - 56px - 80px);
+    padding: 0.125rem 0;
+  }
 }
 
 /* 봄 테마 색상 변수 */
@@ -46,30 +69,58 @@ body {
   --spring-purple: rgba(123, 31, 162, 0.8);
   --spring-cream: rgba(255, 250, 240, 1);
   --spring-shadow: rgba(255, 170, 165, 0.2);
+  /* 인풋 테마별 border 색상 변수 */
+  --input-border: var(--spring-pink);
+  --input-border-focus: var(--spring-pink-dark);
+  /* 버튼 테마별 그림자 색상 변수 */
+  --button-shadow: rgba(255, 170, 165, 0.2);
+  /* 스크롤바 테마별 색상 변수 */
+  --scrollbar: var(--spring-pink);
+  --scrollbar-hover: var(--spring-pink-dark);
+  --scrollbar-track: var(--spring-pink-light);
+}
+
+body.theme-hanji {
+  --input-border: #bfa46f;
+  --input-border-focus: #a67c52;
+  --button-shadow: rgba(191, 164, 111, 0.18);
+  --scrollbar: #bfa46f75;
+  --scrollbar-hover: #a67c528e;
+  --scrollbar-track: #f9f6f1;
+}
+body.theme-professional {
+  --input-border: #607d8b;
+  --input-border-focus: #37474f;
+  --button-shadow: rgba(96, 125, 139, 0.18);
+  --scrollbar: #607d8b91;
+  --scrollbar-hover: #37474f82;
+  --scrollbar-track: #e3eaf1;
+  overflow-y: visible;
 }
 
 /* 스크롤바 스타일링 */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 0px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--spring-pink);
+  background: var(--scrollbar);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--spring-pink-dark);
+  width: 10px;
+  background: var(--scrollbar-hover);
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--spring-pink-light);
+  background: var(--scrollbar-track);
 }
 
 /* 봄 테마 텍스트 선택 색상 */
 ::selection {
-  background-color: var(--spring-pink);
-  color: white;
+  background-color: #f3f3f3;
+  color: #7d7d7d;
 }
 
 /* 글로벌 애니메이션 정의 */
@@ -99,7 +150,7 @@ body {
 .MuiButton-root {
   border-radius: 8px !important;
   text-transform: none !important;
-  box-shadow: 0 4px 8px var(--spring-shadow) !important;
+  box-shadow: 0 4px 8px var(--button-shadow) !important;
   transition: all 0.3s ease !important;
 }
 
@@ -107,10 +158,24 @@ body {
   background-color: var(--spring-pink) !important;
   color: white !important;
 }
+body.theme-hanji .MuiButton-contained {
+  background-color: #f9f6f1 !important;
+  color: #4b3a1a !important;
+}
+body.theme-professional .MuiButton-contained {
+  background-color: #f5f7fa !important;
+  color: #37474f !important;
+}
 
 .MuiButton-contained:hover {
   background-color: var(--spring-pink-dark) !important;
   transform: translateY(-2px);
+}
+body.theme-hanji .MuiButton-contained:hover {
+  background-color: #f3e9d2 !important;
+}
+body.theme-professional .MuiButton-contained:hover {
+  background-color: #e3eaf1 !important;
 }
 
 .MuiTextField-root .MuiOutlinedInput-root {
@@ -118,11 +183,11 @@ body {
 }
 
 .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
-  border-color: var(--spring-pink) !important;
+  border-color: var(--input-border) !important;
 }
 
 .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
-  border-color: var(--spring-pink-dark) !important;
+  border-color: var(--input-border-focus) !important;
   border-width: 2px;
 }
 
@@ -157,6 +222,7 @@ body {
   display: flex;
   flex-direction: column;
   transition: filter 0.3s ease;
+  background: transparent !important;
 }
 
 .app-content.dimmed {
@@ -166,7 +232,7 @@ body {
 
 /* Modal styles */
 .modal-open {
-  overflow: hidden;
+  /*background: transparent !important;*/
 }
 
 /* Modal toggle button styles */
@@ -191,4 +257,38 @@ body {
 }
 .modal-toggle-img:hover {
   transform: scale(1.2);
+}
+
+/* Eumi fade-in-up animation */
+.eumi-fade-in-up {
+  opacity: 0;
+  transform: translateY(40px) scale(0.9);
+  transition:
+    opacity 0.5s,
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.eumi-fade-in-up.eumi-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1.08);
+}
+
+/* Eumi hover floating animation */
+@keyframes eumi-float {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+.eumi-hover-float:hover {
+  animation: eumi-float 1.2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+.MuiContainer-root {
+  background: transparent !important;
+  border-radius: 0 !important;
 }

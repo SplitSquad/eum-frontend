@@ -5,6 +5,7 @@ import Community from '@/tests/unit/componentPageTest/testPages/Community';
 import Debate from '@/tests/unit/componentPageTest/testPages/Debate';
 import Info from '@/tests/unit/componentPageTest/testPages/Info';
 import MyPage from '@/tests/unit/componentPageTest/testPages/MyPage';
+import AdminPage from '@/tests/unit/componentPageTest/testPages/AdminPage';
 import NotFound from '../testPages/NotFound';
 import LoadingOverLay from '@/components/feedback/LoadingOverLay';
 import Login from '@/tests/unit/componentPageTest/testPages/Login';
@@ -31,6 +32,7 @@ const TestAppRoutes = () => {
         <Route path="/info" element={<Info />} />
         <Route path="/ai-assistant" element={<AiAssistant />} />
         <Route path="/mypage" element={<MyPage />} />
+        <Route path="/adminpage" element={<AdminPage />} />
         <Route path="/*" element={<NotFound />} />
         <Route path="/community/write" element={<PostArticle />} />
         <Route path="/community/groups" element={<CommunityGroup />} />
