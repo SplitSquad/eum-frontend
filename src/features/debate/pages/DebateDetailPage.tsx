@@ -1521,6 +1521,7 @@ const DebateDetailPage: React.FC = () => {
 
   return (
     <DebateLayout
+      hideBottomImg={true}
       sidebar={
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           <VoteButtonGroup>

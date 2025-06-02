@@ -1025,7 +1025,7 @@ const ProGroupListPage: React.FC = () => {
                 </h2>
               </div>
 
-              {/* 중앙: 커뮤니티 타입 전환 버튼 - 더 예쁘게 */}
+              {/* 중앙: 커뮤니티 타입 전환 버튼 - 더 예쁘게 
               <div
                 style={{
                   display: 'flex',
@@ -1078,7 +1078,7 @@ const ProGroupListPage: React.FC = () => {
                 >
                   {t('common.communicationBoard')}
                 </button>
-              </div>
+              </div>*/}
 
               {/* 오른쪽: 글쓰기 버튼과 정렬 드롭다운 */}
               <div
@@ -1090,6 +1090,23 @@ const ProGroupListPage: React.FC = () => {
                   justifyContent: 'flex-end',
                 }}
               >
+                <button
+                  style={{
+                    ...proButton,
+                    padding: '6px 16px',
+                    fontSize: 14,
+                    background: '#222',
+                    color: '#fff',
+                    border: '1.5px solid #222',
+                    borderRadius: 6,
+                    margin: 0,
+                    fontWeight: 700,
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+                  }}
+                  onClick={handleNavigateToBoard}
+                >
+                  {t('common.communicationBoard')}
+                </button>
                 <button
                   onClick={handleCreatePost}
                   style={{
