@@ -60,7 +60,6 @@ import { widgetPaperBase, widgetGradients } from './theme/dashboardWidgetTheme';
 import { setUserLocation as saveUserLocation } from '@/shared/utils/Agentic_state';
 import { useMypageStore } from '../../features/mypage/store/mypageStore';
 import { useTranslation } from '../../shared/i18n';
-import { setUserLocation as saveUserLocation } from '@/shared/utils/Agentic_state';
 
 declare global {
   interface Window {
@@ -966,14 +965,10 @@ const KakaoMapWidget: React.FC = () => {
         async position => {
           const { latitude, longitude } = position.coords;
           console.log('사용자 위치 확인됨:', latitude, longitude);
-          // 🧠 상태 저장
-          saveUserLocation({ latitude, longitude });
 
           // 🧠 상태 저장
           saveUserLocation({ latitude, longitude });
           // 컴포넌트 상태 업데이트
-          setUserLocation({ latitude, longitude });
-
           setUserLocation({ latitude, longitude });
 
           try {
