@@ -20,6 +20,10 @@ type Message = {
     distance: string;
   }[];
   post?: string;
+  calendar_add?: string;
+  calendar_edit?: string;
+  calendar_delete?: string;
+  calendar_check?: string;
 };
 
 // 타입 추가
@@ -115,8 +119,17 @@ export default function ModalContent({ adjustKey, btnRect }: ModalContentProps) 
           console.error('위치 결과 파싱 실패:', err);
         }
         setMessages(msgs => [...msgs, { id: nextId + 1, sender: 'bot', location: parsedLocation }]);
-      } else if (state == 'post_state') {
-        setMessages(msgs => [...msgs, { id: nextId + 1, sender: 'bot', post: response }]);
+      } else if (state == 'calendar_check_state') {
+        setMessages(msgs => [...msgs, { id: nextId + 1, sender: 'bot', calendar_check: response }]);
+      } else if (state == 'calendar_delete') {
+        setMessages(msgs => [
+          ...msgs,
+          { id: nextId + 1, sender: 'bot', calendar_delete: response },
+        ]);
+      } else if (state == 'calendar_general_add') {
+        setMessages(msgs => [...msgs, { id: nextId + 1, sender: 'bot', calendar_add: response }]);
+      } else if (state == 'calendar_general_edit') {
+        setMessages(msgs => [...msgs, { id: nextId + 1, sender: 'bot', calendar_edit: response }]);
       } else if (state == 'location_category') {
         setMessages(msgs => [...msgs, { id: nextId + 1, sender: 'bot', Amenities: response }]);
       } else if (state === 'event_state' || state === 'job_search_state') {
@@ -203,6 +216,153 @@ export default function ModalContent({ adjustKey, btnRect }: ModalContentProps) 
                     }
                   })}
                 </div>
+              ) : m.calendar_check ? (
+                (() => {
+                  type CalendarEvent = {
+                    summary: string;
+                    description?: string;
+                    start: { dateTime: string; timeZone?: string };
+                    end: { dateTime: string; timeZone?: string };
+                  };
+
+                  let events: CalendarEvent[] = [];
+
+                  try {
+                    events = JSON.parse(m.calendar_check);
+                  } catch (err) {
+                    console.error('calendar_check 파싱 실패:', err);
+                    return <div className="text-red-600">⛔ 일정을 불러오는 데 실패했습니다.</div>;
+                  }
+
+                  return (
+                    <div className="space-y-3">
+                      <div className="text-sm font-medium text-indigo-600 mb-1">📅 전체 일정</div>
+                      {events.map((event, index) => (
+                        <div key={index} className="border rounded-lg p-4 shadow-sm bg-white">
+                          <div className="text-lg font-semibold text-blue-600">{event.summary}</div>
+                          <div className="text-sm text-gray-500 mb-1">
+                            {event.description && event.description !== 'N/A'
+                              ? event.description
+                              : '설명 없음'}
+                          </div>
+                          <div className="text-sm">
+                            🕒 <span className="font-medium">시작:</span>{' '}
+                            {new Date(event.start.dateTime).toLocaleString('ko-KR')}
+                          </div>
+                          <div className="text-sm">
+                            🕓 <span className="font-medium">종료:</span>{' '}
+                            {new Date(event.end.dateTime).toLocaleString('ko-KR')}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()
+              ) : m.calendar_delete ? (
+                (() => {
+                  let event;
+                  try {
+                    const fixed = m.calendar_delete.replace(/'/g, '"');
+                    event = JSON.parse(fixed);
+                  } catch (err) {
+                    console.error('calendar_delete 파싱 실패:', err);
+                    return <div className="text-red-600">⛔ 삭제된 일정을 불러올 수 없습니다.</div>;
+                  }
+
+                  return (
+                    <div className="border rounded-lg p-4 mb-2 shadow-sm bg-white opacity-60">
+                      <div className="text-sm font-medium text-red-600 mb-2">
+                        🗑️ 일정이 삭제되었습니다.
+                      </div>
+                      <div className="text-lg font-semibold text-gray-700 line-through">
+                        {event.summary}
+                      </div>
+                      <div className="text-sm text-gray-500 mb-1 line-through">
+                        {event.description}
+                      </div>
+                      <div className="text-sm line-through">
+                        🕒 <span className="font-medium">시작:</span>{' '}
+                        {new Date(event.startDateTime).toLocaleString('ko-KR')}
+                      </div>
+                      <div className="text-sm line-through">
+                        🕓 <span className="font-medium">종료:</span>{' '}
+                        {new Date(event.endDateTime).toLocaleString('ko-KR')}
+                      </div>
+                    </div>
+                  );
+                })()
+              ) : m.calendar_add ? (
+                (() => {
+                  let event;
+                  try {
+                    // 문자열에 작은따옴표가 있어서 JSON.parse 전에 큰따옴표로 변환
+                    const fixed = m.calendar_add.replace(/'/g, '"');
+                    event = JSON.parse(fixed);
+                  } catch (err) {
+                    console.error('calendar_add 파싱 실패:', err);
+                    return <div className="text-red-600">⛔ 일정 정보를 불러올 수 없습니다.</div>;
+                  }
+
+                  return (
+                    <div className="border rounded-lg p-4 mb-2 shadow-sm bg-white">
+                      <div className="text-sm font-medium text-green-600 mb-2">
+                        ✅ 일정이 성공적으로 추가되었습니다.
+                      </div>
+                      <div className="text-lg font-semibold text-blue-600">{event.summary}</div>
+                      <div className="text-sm text-gray-500 mb-1">{event.description}</div>
+                      {event.location && (
+                        <div className="text-sm">
+                          📍 <span className="font-medium">장소:</span>{' '}
+                          {event.location || '장소 없음'}
+                        </div>
+                      )}
+                      <div className="text-sm">
+                        🕒 <span className="font-medium">시작:</span>{' '}
+                        {new Date(event.startDateTime).toLocaleString('ko-KR')}
+                      </div>
+                      <div className="text-sm">
+                        🕓 <span className="font-medium">종료:</span>{' '}
+                        {new Date(event.endDateTime).toLocaleString('ko-KR')}
+                      </div>
+                    </div>
+                  );
+                })()
+              ) : m.calendar_edit ? (
+                (() => {
+                  let event;
+                  try {
+                    // 작은따옴표 → 큰따옴표로 변환하여 JSON 파싱
+                    const fixed = m.calendar_edit.replace(/'/g, '"');
+                    event = JSON.parse(fixed);
+                  } catch (err) {
+                    console.error('calendar_edit 파싱 실패:', err);
+                    return <div className="text-red-600">⛔ 수정된 일정을 불러올 수 없습니다.</div>;
+                  }
+
+                  return (
+                    <div className="border rounded-lg p-4 mb-2 shadow-sm bg-white">
+                      <div className="text-sm font-medium text-yellow-600 mb-2">
+                        ✏️ 일정이 성공적으로 수정되었습니다.
+                      </div>
+                      <div className="text-lg font-semibold text-blue-600">{event.summary}</div>
+                      <div className="text-sm text-gray-500 mb-1">{event.description}</div>
+                      {event.location && (
+                        <div className="text-sm">
+                          📍 <span className="font-medium">장소:</span>{' '}
+                          {event.location || '장소 없음'}
+                        </div>
+                      )}
+                      <div className="text-sm">
+                        🕒 <span className="font-medium">시작:</span>{' '}
+                        {new Date(event.startDateTime).toLocaleString('ko-KR')}
+                      </div>
+                      <div className="text-sm">
+                        🕓 <span className="font-medium">종료:</span>{' '}
+                        {new Date(event.endDateTime).toLocaleString('ko-KR')}
+                      </div>
+                    </div>
+                  );
+                })()
               ) : m.location ? (
                 <ul className="space-y-2">
                   {Array.isArray(m.location) &&
