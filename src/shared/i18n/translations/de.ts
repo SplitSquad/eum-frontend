@@ -1923,12 +1923,6 @@ const de = {
       },
     },
   },
-  ai: {
-    modal: {
-      askHelp: 'Womit kann ich Ihnen helfen? (z.B. Termin erstellen, Beitrag verfassen usw.)',
-      loadingAnswer: 'Antwort wird verfasst...',
-    },
-  },
 };
 
 export default de;

@@ -1900,12 +1900,6 @@ const zh = {
       },
     },
   },
-  ai: {
-    modal: {
-      askHelp: '我能帮您什么？（例如：创建日程、撰写帖子等）',
-      loadingAnswer: '正在回答...',
-    },
-  },
 };
 
 export default zh;

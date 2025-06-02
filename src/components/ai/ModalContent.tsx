@@ -2,7 +2,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { callAgentic } from '@/shared/utils/Agentic';
 import { useModalStore } from '@/shared/store/ModalStore';
-import { useTranslation } from '@/shared/i18n';
 // import { callJobAgent, processCoverLetterResponse } from '@/shared/utils/JobAgent';
 // import { CoverLetterState } from '@/types/CoverLetterTypes';
 
@@ -34,12 +33,11 @@ interface ModalContentProps {
 }
 
 export default function ModalContent({ adjustKey, btnRect }: ModalContentProps) {
-  const { t } = useTranslation();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: Date.now(),
       sender: 'bot',
-      text: t('chatbot.askHelp'),
+      text: '무엇을 도와드릴까요? (예: 일정 작성, 게시글 작성 등)',
     },
   ]);
   const [loading, setLoading] = useState(false);
@@ -431,7 +429,7 @@ export default function ModalContent({ adjustKey, btnRect }: ModalContentProps) 
         ))}
         {loading && (
           <div className="sticky bottom-0 w-full text-center py-2 bg-white/70">
-            <span className="text-gray-500">{t('ai.modal.loadingAnswer')}</span>
+            <span className="text-gray-500">답변 중...</span>
           </div>
         )}
       </div>

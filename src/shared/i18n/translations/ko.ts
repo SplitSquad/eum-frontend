@@ -2267,10 +2267,6 @@ const ko = {
       },
     },
   },
-  chatbot: {
-    askHelp: '무엇을 도와드릴까요? (예: 일정 작성, 게시글 작성 등)',
-    loadingAnswer: '답변 중...',
-  },
 };
 
 export default ko;

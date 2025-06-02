@@ -36,6 +36,9 @@ let activeRequest: Promise<void> | null = null;
 let pageCache: Record<string, { data: any; timestamp: number }> = {};
 // 마지막 요청을 추적하기 위한 변수
 let lastRequestId = 0;
+// 로딩 상태 안전장치 - 무한 로딩 방지
+let loadingStartTime = 0;
+const MAX_LOADING_TIME = 10000; // 10초 최대 로딩 시간
 
 // 게시글 관련 상태 타입
 interface PostState {
@@ -570,10 +573,23 @@ export const usePostStore = create<PostState & PostActions>()(
             }
           }
 
-          // 로딩 상태 설정 - 페이지 이동은 빠르게 처리되어야 해서 지연 적용
-          let loadingTimeout: any = null;
+          // 로딩 상태 설정 (무한 로딩 방지 안전장치 포함)
+          let loadingTimeout: NodeJS.Timeout | null = null;
+          
+          // 로딩 시작 시간 기록
+          loadingStartTime = Date.now();
+          
+          // 로딩 상태 안전장치 - 최대 로딩 시간 후 강제 종료
+          const loadingSafetyTimeout = setTimeout(() => {
+            console.warn('[WARNING] 로딩이 너무 오래 걸림. 강제 종료.');
+            set({ 
+              postLoading: false, 
+              postError: '데이터를 불러오는 중 문제가 발생했습니다.' 
+            });
+            activeRequest = null;
+            loadingStartTime = 0;
+          }, MAX_LOADING_TIME);
 
-          // 언어 변경으로 인한 새로고침인 경우 로딩 상태를 부드럽게 처리
           if (isLanguageRefresh) {
             console.log('[DEBUG] 언어 변경 새로고침 - 기존 데이터 유지하며 백그라운드 로딩');
             // 기존 데이터를 유지하면서 백그라운드에서 로딩
@@ -712,19 +728,24 @@ export const usePostStore = create<PostState & PostActions>()(
                   loadingTimeout = null;
                 }
 
+                // 안전장치 타임아웃도 정리
+                if (loadingSafetyTimeout) {
+                  clearTimeout(loadingSafetyTimeout);
+                }
+                loadingStartTime = 0;
+
                 // 언어 변경으로 인한 요청인 경우 기존 데이터 유지
                 if (isLanguageRefresh) {
-                  console.log('[DEBUG] 언어 변경 중 API 에러 - 기존 데이터 유지');
+                  console.log('[DEBUG] 언어 변경 중 전체 에러 - 기존 데이터 유지');
                   set({
                     postLoading: false,
-                    postError: null, // 에러 메시지도 표시하지 않음
+                    postError: null,
                   });
                 } else {
-                  // 일반적인 에러인 경우에만 빈 배열로 설정
                   set({
                     postLoading: false,
-                    postError: '게시글을 불러올 수 없습니다.',
-                    posts: [], // 에러 시 빈 목록으로 설정
+                    postError: '게시글을 불러오는 중 오류가 발생했습니다.',
+                    posts: [],
                   });
                 }
 
@@ -743,6 +764,12 @@ export const usePostStore = create<PostState & PostActions>()(
                   clearTimeout(loadingTimeout);
                   loadingTimeout = null;
                 }
+
+                // 안전장치 타임아웃도 정리
+                if (loadingSafetyTimeout) {
+                  clearTimeout(loadingSafetyTimeout);
+                }
+                loadingStartTime = 0;
 
                 // 언어 변경으로 인한 요청인 경우 기존 데이터 유지
                 if (isLanguageRefresh) {
@@ -810,6 +837,12 @@ export const usePostStore = create<PostState & PostActions>()(
                 loadingTimeout = null;
               }
 
+              // 안전장치 타임아웃도 정리
+              if (loadingSafetyTimeout) {
+                clearTimeout(loadingSafetyTimeout);
+              }
+              loadingStartTime = 0;
+
               // 상태 업데이트 (페이지 정보 항상 정확하게 계산)
               set({
                 posts: mappedPosts,
@@ -840,6 +873,12 @@ export const usePostStore = create<PostState & PostActions>()(
                 clearTimeout(loadingTimeout);
                 loadingTimeout = null;
               }
+
+              // 안전장치 타임아웃도 정리
+              if (loadingSafetyTimeout) {
+                clearTimeout(loadingSafetyTimeout);
+              }
+              loadingStartTime = 0;
 
               // 언어 변경으로 인한 요청인 경우 기존 데이터 유지
               if (isLanguageRefresh) {
@@ -889,6 +928,7 @@ export const usePostStore = create<PostState & PostActions>()(
 
           // 진행 중인 요청 추적 제거
           activeRequest = null;
+          loadingStartTime = 0;
         }
       },
 
@@ -1181,24 +1221,45 @@ export const usePostStore = create<PostState & PostActions>()(
       },
 
       resetPostsState: () => {
+        console.log('[DEBUG] resetPostsState 호출 - 모든 상태 초기화');
+        
+        // 진행 중인 요청 취소
+        activeRequest = null;
+        loadingStartTime = 0;
+        
+        // 캐시 초기화
+        lastFetchTimestamp = 0;
+        lastFetchedFilter = null;
+        pageCache = {};
+        
         set({
           posts: [],
-          postLoading: false,
+          postLoading: false, // 로딩 상태 강제 종료
           postError: null,
+          currentPost: null,
           postPageInfo: {
             page: 0,
             size: 6,
             totalElements: 0,
             totalPages: 0,
           },
-          searchActive: false, // 검색 상태도 초기화
+          // 검색 상태도 초기화
+          searchActive: false,
           searchTerm: '',
           searchType: '',
+          searchStates: {
+            '자유': {
+              active: false,
+              term: '',
+              type: '',
+            },
+            '모임': {
+              active: false,
+              term: '',
+              type: '',
+            },
+          },
         });
-
-        // 캐시 초기화
-        lastFetchTimestamp = 0;
-        lastFetchedFilter = null;
       },
 
       resetState: () => {
