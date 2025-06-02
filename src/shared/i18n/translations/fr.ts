@@ -75,7 +75,8 @@ const fr = {
 
   welcome: {
     title: 'Bienvenue sur EUM',
-    description: `Nous vous aidons à vivre en Corée en toute sérénité et confort.\nToutes les informations et services essentiels pour votre adaptation sont réunis ici.\nDès votre arrivée en Corée, nous serons un ami fidèle à vos côtés !`,
+    description:
+      'EUM est une plateforme pour la communication et la coopération entre des personnes de différents pays.',
   },
   common: {
     home: 'Accueil',
@@ -108,13 +109,6 @@ const fr = {
   },
   nav: {
     accountSettings: 'Paramètres du compte',
-  },
-  accessDenied: {
-    title: 'Accès refusé',
-    description:
-      "Vous n'avez pas la permission d'accéder à cette page. Veuillez retourner à l'accueil ou contacter le support.",
-    goHome: "Retour à l'accueil",
-    contact: 'Contacter le support',
   },
   auth: {
     loginWithGoogle: 'Se connecter avec Google',
@@ -661,18 +655,9 @@ const fr = {
           },
         },
         overcast: {
-          reading: {
-            title: 'Lecture',
-            description: 'Lisez des livres dans une atmosphère calme',
-          },
-          cooking: {
-            title: 'Cuisine',
-            description: 'Essayez de nouvelles recettes à la maison',
-          },
-          movie: {
-            title: 'Regarder des Films',
-            description: 'Profitez des films confortablement à la maison',
-          },
+          1: "Couvert aujourd'hui. Que diriez-vous d'activités intérieures ?",
+          2: 'Les jours nuageux sont parfaits pour lire à la maison.',
+          3: "Attention aux niveaux d'humidité car cela affecte le confort.",
         },
         rain: {
           indoorCafe: {
@@ -814,17 +799,17 @@ const fr = {
       },
     },
     community: {
-      title: 'Flux Communauté',
+      title: 'EUM Hub Communauté',
       noPost: 'Aucune publication',
       viewMore: 'Voir Plus',
     },
     debate: {
-      title: 'Flux Débat',
+      title: 'EUM Place de Débat',
       noDebate: 'Aucun débat',
       viewMore: 'Voir Plus',
     },
     info: {
-      title: "Flux d'Information",
+      title: 'EUM Centre Info',
       noInfo: 'Aucune information',
       viewMore: 'Voir Plus',
     },
@@ -922,24 +907,10 @@ const fr = {
     editPost: 'Modifier le Post',
     create: 'Créer',
     edit: 'Modifier',
-    fileUpload: {
-      fileUpload: 'Pièce jointe',
-      imageHint: '💡 Les images seront prévisualisées pour un contrôle facile',
-      imageHint2:
-        'Les images sont prévisualisées ✨\nMax 10Mo, tous types de fichiers pris en charge',
-      editModeWarning:
-        '⚠️ Ajouter de nouveaux fichiers supprimera toutes les pièces jointes existantes',
-      dragOrClick: '📁 Faites glisser ou cliquez pour télécharger des fichiers',
-      editModeDragOrClick:
-        '⚠️ Ajouter de nouveaux fichiers (tous les fichiers existants seront supprimés)',
-      editModeHint:
-        'Sélectionner de nouveaux fichiers supprimera toutes les pièces jointes existantes\nVeuillez choisir avec soin',
-      newImage: 'Nouvelles images ({count})',
-      newFile: 'Nouvelles pièces jointes ({count})',
-      existingImage: 'Images existantes ({count})',
-      existingFile: 'Pièces jointes existantes ({count})',
-    },
-    selectedFiles: 'Fichiers sélectionnés',
+    fileUpload: 'Téléchargement de Fichier',
+    dragAndDropOrClickToUpload: 'Glissez et déposez les fichiers ici ou cliquez pour télécharger',
+    max10MBImageAndDocumentFiles: 'Max 10MB, fichiers image et document supportés',
+    selectedFiles: 'Fichiers Sélectionnés',
     existingAttachedFiles: 'Fichiers Joints Existants',
     newImages: 'Nouvelles Images',
     newAttachments: 'Nouvelles Pièces Jointes',
@@ -1167,7 +1138,6 @@ const fr = {
             'Vous avez des modifications non enregistrées. Voulez-vous quitter cette page?',
         },
       },
-      hideOriginal: "Masquer l'original",
     },
     comments: {
       title: 'Commentaires',
@@ -1445,49 +1415,98 @@ const fr = {
       },
     },
     imageGallery: {
-      title: "Galerie d'images recommandées",
+      title: 'EUM Galerie',
       search: {
         placeholder: 'Rechercher des images (ex: Séoul, océan, nourriture)',
         button: 'Rechercher',
       },
       actions: {
-        like: "J'aime",
+        like: 'J\'aime',
         download: 'Télécharger',
         view: 'Voir',
       },
       info: {
         photographer: 'Par',
-        poweredBy: "Fourni par l'API Pexels",
+        poweredBy: 'Fourni par l\'API Pexels',
       },
       messages: {
         loading: 'Chargement des images...',
-        error: 'Échec du chargement des images',
+        error: 'Erreur lors du chargement des images',
         noResults: 'Aucun résultat de recherche',
-        apiKeyMissing: "Clé API Pexels non configurée. Images d'exemple affichées.",
+        apiKeyMissing: 'Clé API Pexels non configurée. Images d\'exemple affichées.',
+      },
+      images: {
+        seoul_tower: 'Tour de Séoul',
+        hanok_village: 'Village Hanok',
+        busan_haeundae: 'Plage Haeundae de Busan',
+        gyeongbokgung: 'Palais Gyeongbokgung',
+        jeju_seongsan: 'Pic Seongsan de Jeju',
+        hangang_night: 'Vue nocturne de la rivière Han',
+        korean_temple: 'Temple traditionnel coréen',
+        korean_market: 'Marché traditionnel coréen',
+        korean_food: 'Cuisine coréenne',
+        korean_cherry_blossom: 'Fleurs de cerisier coréennes',
+      },
+      tags: {
+        seoul: 'Séoul',
+        landmark: 'Monument',
+        traditional: 'Traditionnel',
+        hanok: 'Hanok',
+        busan: 'Busan',
+        beach: 'Plage',
+        palace: 'Palais',
+        jeju: 'Jeju',
+        nature: 'Nature',
+        night: 'Vue nocturne',
+        temple: 'Temple',
+        market: 'Marché',
+        culture: 'Culture',
+        food: 'Nourriture',
+        korean_cuisine: 'Cuisine coréenne',
+        spring: 'Printemps',
+        cherry_blossom: 'Fleur de cerisier',
       },
     },
     youtubeGallery: {
-      title: 'Galerie vidéo recommandée',
+      title: 'EUM Studio',
       search: {
         placeholder: 'Rechercher des vidéos (ex: voyage, nourriture, musique)',
         button: 'Rechercher',
       },
       actions: {
-        like: "J'aime",
+        like: 'J\'aime',
         play: 'Lire',
         close: 'Fermer',
       },
       info: {
         views: 'vues',
         channel: 'Chaîne',
-        poweredBy: "Fourni par l'API YouTube Data",
+        poweredBy: 'Fourni par l\'API YouTube Data',
       },
       messages: {
         loading: 'Chargement des vidéos...',
-        error: 'Échec du chargement des vidéos',
+        error: 'Erreur lors du chargement des vidéos',
         searchError: 'Erreur lors de la recherche de vidéos',
         noResults: 'Aucun résultat de recherche',
         apiKeyMissing: 'Clé API YouTube non configurée',
+        sampleDataInfo: 'Des vidéos recommandées sur la Corée sont affichées',
+      },
+      purposes: {
+        travel: 'Voyage',
+        residence: 'Résidence',
+        employment: 'Emploi',
+        study: 'Études',
+      },
+      tags: {
+        travel: 'Voyage',
+        tourism: 'Tourisme',
+        residence: 'Résidence',
+        living: 'Vie',
+        employment: 'Emploi',
+        job: 'Travail',
+        study: 'Étude',
+        university: 'Université',
+        korea: 'Corée',
       },
     },
   },
@@ -1547,9 +1566,12 @@ const fr = {
     next: 'Suivant',
   },
   debate: {
-    title: 'Débat sur les Sujets Brûlants',
+    showOriginal: "Voir l'original",
+    returnOriginal: "Retour à l'original",
+    noDebates: 'Aucun débat en cours pour le moment. Soyez le premier à lancer un sujet !',
+    title: 'Débat sur les sujets brûlants',
     description:
-      "Rejoignez la discussion sur les sujets sociaux les plus brûlants d'aujourd'hui et partagez vos diverses opinions.",
+      'Participez à la discussion sur les sujets de société les plus brûlants du moment et partagez vos opinions variées.',
     categories: {
       title: 'Catégorie',
       all: 'Tous',
@@ -1589,11 +1611,15 @@ const fr = {
     proOpinion: 'Opinion Pour',
     conOpinion: 'Opinion Contre',
     comment: {
-      empty: 'Pas encore de commentaires. Soyez le premier à commenter !',
-      add: 'Ajouter un Commentaire',
-      newest: 'Plus Récents',
-      oldest: 'Plus Anciens',
-      mostLiked: 'Plus Aimés',
+      placeholder: 'Entrez votre commentaire',
+      pro: 'Pour',
+      con: 'Contre',
+      none: 'Aucun',
+      empty: 'Pas de commentaires pour le moment. Soyez le premier à commenter !',
+      add: 'Ajouter un commentaire',
+      newest: 'Les plus récents',
+      oldest: 'Les plus anciens',
+      mostLiked: 'Les plus appréciés',
       reply: 'Répondre',
       order: 'Trier',
       cancel: 'Annuler',
@@ -1638,8 +1664,12 @@ const fr = {
       write: 'Écrire',
       viewAll: 'Voir tout',
       bookmark: 'Marque-page',
+      bookmarked: 'Enregistré',
       share: 'Partager',
+      shareAction: 'Partager',
       print: 'Imprimer',
+      printAction: 'Imprimer',
+      scrollToTop: 'Haut',
     },
     content: {
       allInfo: 'Toutes les informations',
@@ -1651,8 +1681,8 @@ const fr = {
       createdAt: 'Créé',
     },
     sidebar: {
-      popularInfo: 'Informations populaires',
-      emergencyContacts: "Contacts d'urgence",
+      popularInfo: '🔥 Informations populaires',
+      emergencyContacts: "🆘 Contacts d'urgence",
       emergency: {
         title: 'Urgence',
         subtitle: 'Incendie, urgence médicale',
@@ -1723,7 +1753,6 @@ const fr = {
     title: 'Assistant de Vie en Corée',
     subtitle: 'Guide de Vie en Corée avec Expert IA',
     greeting: 'Bonjour ! Je suis un expert IA dans le domaine {{category}}.',
-    matchingMessage: "Recherche d'un expert IA pour vous. Veuillez patienter.",
     categories: {
       all: '🌏 Tout',
       visa: '📑 Visa/Légal',
@@ -1734,7 +1763,7 @@ const fr = {
       life: '👨‍👩‍👧 Vie Quotidienne',
     },
     sidebar: {
-      title: 'Guide par Catégories',
+      title: '📚 Guide par Catégories',
       autoSelectInfo: 'Les catégories sont automatiquement sélectionnées selon vos questions',
     },
     chat: {
@@ -1743,7 +1772,7 @@ const fr = {
       placeholder: "N'hésitez pas à poser toute question...",
       send: 'Envoyer',
       sending: 'Envoi en cours...',
-      loading: "En attente de la réponse de l'expert...",
+      loading: 'Préparation de la réponse...',
       initialMessage: 'Comment puis-je vous aider ?',
       aiExpert: 'Expert IA',
       justNow: "À l'instant",

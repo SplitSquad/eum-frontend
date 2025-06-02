@@ -72,7 +72,8 @@ const es = {
 
   welcome: {
     title: 'BienvenidoEUM',
-    description: `Te ayudamos a vivir en Corea cómodamente y sin preocupaciones.\nToda la información y los servicios esenciales para adaptarte están reunidos en un solo lugar.\nDesde el momento en que pises Corea, seremos ese amigo confiable a tu lado.`,
+    description:
+      'EUM es una platafo a rma para la comunicación y cooperación entre personas de diferentes países.',
   },
   common: {
     home: 'Inicio',
@@ -105,13 +106,6 @@ const es = {
   },
   nav: {
     accountSettings: 'Configuración de cuenta',
-  },
-  accessDenied: {
-    title: 'Acceso denegado',
-    description:
-      'No tienes permiso para acceder a esta página. Por favor, vuelve a la página principal o contacta con soporte.',
-    goHome: 'Ir a inicio',
-    contact: 'Contactar soporte',
   },
   auth: {
     loginWithGoogle: 'Iniciar sesión con Google',
@@ -772,17 +766,17 @@ const es = {
       noEvents: 'No hay eventos programados',
     },
     community: {
-      title: 'Feed de Comunidad',
+      title: 'EUM Hub Comunidad',
       noPost: 'No hay publicaciones',
       viewMore: 'Ver Más',
     },
     debate: {
-      title: 'Feed de Debate',
+      title: 'EUM Plaza de Debate',
       noDebate: 'No hay debates',
       viewMore: 'Ver Más',
     },
     info: {
-      title: 'Feed de Información',
+      title: 'EUM Centro Info',
       noInfo: 'No hay información',
       viewMore: 'Ver Más',
     },
@@ -1019,24 +1013,10 @@ const es = {
     editPost: 'Editar Publicación',
     create: 'Crear',
     edit: 'Editar',
-    fileUpload: {
-      fileUpload: 'Adjuntar archivo',
-      imageHint: '💡 Las imágenes se mostrarán en vista previa para facilitar la comprobación',
-      imageHint2:
-        'Las imágenes se muestran en vista previa ✨\nMáx 10MB, todos los tipos de archivos admitidos',
-      editModeWarning:
-        '⚠️ Agregar nuevos archivos eliminará todos los archivos adjuntos existentes',
-      dragOrClick: '📁 Arrastra o haz clic para subir archivos',
-      editModeDragOrClick:
-        '⚠️ Agregar nuevos archivos (todos los archivos existentes serán eliminados)',
-      editModeHint:
-        'Seleccionar nuevos archivos eliminará todos los archivos adjuntos existentes\nPor favor, elige con cuidado',
-      newImage: 'Nuevas imágenes ({count})',
-      newFile: 'Nuevos archivos adjuntos ({count})',
-      existingImage: 'Imágenes existentes ({count})',
-      existingFile: 'Archivos adjuntos existentes ({count})',
-    },
-    selectedFiles: 'Archivos seleccionados',
+    fileUpload: 'Subir Archivo',
+    dragAndDropOrClickToUpload: 'Arrastra y suelta archivos aquí o haz clic para subir',
+    max10MBImageAndDocumentFiles: 'Máx 10MB, archivos de imagen y documento soportados',
+    selectedFiles: 'Archivos Seleccionados',
     existingAttachedFiles: 'Archivos Adjuntos Existentes',
     newImages: 'Nuevas Imágenes',
     newAttachments: 'Nuevos Archivos Adjuntos',
@@ -1275,7 +1255,6 @@ const es = {
           unsavedChanges: 'Tiene cambios sin guardar. ¿Desea salir de esta página?',
         },
       },
-      hideOriginal: 'Ocultar original',
     },
     comments: {
       title: 'Comentarios',
@@ -1549,7 +1528,7 @@ const es = {
       },
     },
     imageGallery: {
-      title: 'Galería de imágenes recomendadas',
+      title: 'EUM Galería',
       search: {
         placeholder: 'Buscar imágenes (ej: Seúl, océano, comida)',
         button: 'Buscar',
@@ -1566,14 +1545,45 @@ const es = {
       messages: {
         loading: 'Cargando imágenes...',
         error: 'Error al cargar imágenes',
-        noResults: 'No hay resultados de búsqueda',
-        apiKeyMissing: 'Clave API de Pexels no configurada. Se muestran imágenes de ejemplo.',
+        noResults: 'Sin resultados de búsqueda',
+        apiKeyMissing: 'Clave API de Pexels no configurada. Se muestran imágenes de muestra.',
+      },
+      images: {
+        seoul_tower: 'Torre de Seúl',
+        hanok_village: 'Pueblo Hanok',
+        busan_haeundae: 'Playa Haeundae de Busan',
+        gyeongbokgung: 'Palacio Gyeongbokgung',
+        jeju_seongsan: 'Pico Seongsan de Jeju',
+        hangang_night: 'Vista nocturna del río Han',
+        korean_temple: 'Templo tradicional coreano',
+        korean_market: 'Mercado tradicional coreano',
+        korean_food: 'Comida coreana',
+        korean_cherry_blossom: 'Flores de cerezo coreanas',
+      },
+      tags: {
+        seoul: 'Seúl',
+        landmark: 'Punto de referencia',
+        traditional: 'Tradicional',
+        hanok: 'Hanok',
+        busan: 'Busan',
+        beach: 'Playa',
+        palace: 'Palacio',
+        jeju: 'Jeju',
+        nature: 'Naturaleza',
+        night: 'Vista nocturna',
+        temple: 'Templo',
+        market: 'Mercado',
+        culture: 'Cultura',
+        food: 'Comida',
+        korean_cuisine: 'Cocina coreana',
+        spring: 'Primavera',
+        cherry_blossom: 'Flor de cerezo',
       },
     },
     youtubeGallery: {
-      title: 'Galería de videos recomendados',
+      title: 'EUM Estudio',
       search: {
-        placeholder: 'Buscar videos (ej: viajes, comida, música)',
+        placeholder: 'Buscar videos (ej: viaje, comida, música)',
         button: 'Buscar',
       },
       actions: {
@@ -1590,8 +1600,26 @@ const es = {
         loading: 'Cargando videos...',
         error: 'Error al cargar videos',
         searchError: 'Error al buscar videos',
-        noResults: 'No hay resultados de búsqueda',
+        noResults: 'Sin resultados de búsqueda',
         apiKeyMissing: 'Clave API de YouTube no configurada',
+        sampleDataInfo: 'Se muestran videos recomendados sobre Corea',
+      },
+      purposes: {
+        travel: 'Viaje',
+        residence: 'Residencia',
+        employment: 'Empleo',
+        study: 'Estudios',
+      },
+      tags: {
+        travel: 'Viaje',
+        tourism: 'Turismo',
+        residence: 'Residencia',
+        living: 'Vida',
+        employment: 'Empleo',
+        job: 'Trabajo',
+        study: 'Estudio',
+        university: 'Universidad',
+        korea: 'Corea',
       },
     },
   },
@@ -1724,7 +1752,6 @@ const es = {
     },
     specialIssues: 'Ver Todos los Temas',
     noVotesYet: 'Aún no hay votos. ¡Sé el primero en votar!',
-    noIssues: 'No hay debates registrados.',
   },
   infoPage: {
     title: 'Guía de vida en Corea',
@@ -1838,7 +1865,6 @@ const es = {
     title: 'Asistente de Vida en Corea',
     subtitle: 'Guía de Vida en Corea con Experto IA',
     greeting: '¡Hola! Soy un experto en IA en el campo de {{category}}.',
-    matchingMessage: 'Buscando un experto en IA para usted. Por favor, espere un momento.',
     categories: {
       all: '🌏 Todo',
       visa: '📑 Visa/Legal',
@@ -1849,7 +1875,7 @@ const es = {
       life: '👨‍👩‍👧 Vida Diaria',
     },
     sidebar: {
-      title: 'Guía por Categorías',
+      title: '📚 Guía por Categorías',
       autoSelectInfo: 'Las categorías se seleccionan automáticamente según sus preguntas',
     },
     chat: {
@@ -1858,7 +1884,7 @@ const es = {
       placeholder: 'Siéntase libre de preguntar cualquier cosa...',
       send: 'Enviar',
       sending: 'Enviando...',
-      loading: 'Esperando la respuesta del experto...',
+      loading: 'Preparando respuesta...',
       initialMessage: '¿Cómo puedo ayudarte?',
       aiExpert: 'Experto IA',
       justNow: 'Ahora mismo',
@@ -1922,23 +1948,6 @@ const es = {
     mypage: 'Mi página',
     logout: 'Cerrar sesión',
     adminpage: 'Página de administrador',
-  },
-  intro: {
-    slide1: {
-      title: '¡Comienza tu viaje con EUM!',
-      desc1: 'Descubre Corea paso a paso con EUM.',
-      desc2: 'Te deseamos un maravilloso nuevo viaje.',
-    },
-    slide2: {
-      title: 'Por favor, espera un momento',
-      desc1: 'EUM está preparando la mejor experiencia para ti.',
-      desc2: 'Tu increíble viaje comenzará pronto.',
-    },
-    slide3: {
-      title: '¡Bienvenido!',
-      desc1: 'Tu viaje con EUM está a punto de comenzar.',
-      desc2: 'Todo está listo para tu nueva experiencia.',
-    },
   },
 };
 

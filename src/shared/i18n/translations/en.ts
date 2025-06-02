@@ -81,7 +81,8 @@ const en = {
 
   welcome: {
     title: 'Welcome to EUM',
-    description: `We help you live comfortably and without worries in Korea.\nAll the essential information and services you need to adapt are gathered in one place.\nFrom the moment you set foot in Korea, we'll be your reliable friend by your side!`,
+    description:
+      'EUM is a platform for communication and cooperation between people from different countries.',
   },
   common: {
     authenticatedError: 'After logging in, you can access the service.',
@@ -118,18 +119,11 @@ const en = {
   nav: {
     accountSettings: 'Account Settings',
   },
-  accessDenied: {
-    title: 'Access Denied',
-    description:
-      'You do not have permission to access this page. Please return to the homepage or contact support.',
-    goHome: 'Go Home',
-    contact: 'Contact Support',
-  },
   auth: {
     loginWithGoogle: 'Login with Google',
     loginRequired: 'Login Required',
-    welcome: 'Welcome',
     accessDenied: 'Access Denied',
+    welcome: 'Welcome',
     loginDescription: 'Sign in easily with your Google account',
     loginWithGoogleButton: 'Sign in with Google',
     loginWithGeneral: 'Sign in with General Account',
@@ -811,7 +805,6 @@ const en = {
       },
     },
     specialIssues: 'View All Issues',
-    noIssues: 'No debates found.',
   },
   buttons: {
     next: 'Next',
@@ -1101,17 +1094,17 @@ const en = {
       noEvents: 'No scheduled events',
     },
     community: {
-      title: 'Community Feed',
+      title: 'EUM Community Hub',
       noPost: 'No posts available',
       viewMore: 'View More',
     },
     debate: {
-      title: 'Debate Feed',
+      title: 'EUM Discussion Plaza',
       noDebate: 'No debates available',
       viewMore: 'View More',
     },
     info: {
-      title: 'Info Feed',
+      title: 'EUM Info Center',
       noInfo: 'No information available',
       viewMore: 'View More',
     },
@@ -1208,20 +1201,9 @@ const en = {
     editPost: 'Edit Post',
     create: 'Create',
     edit: 'Edit',
-    fileUpload: {
-      fileUpload: 'File Attachment',
-      imageHint: '💡 Images will be previewed for easy checking',
-      imageHint2: 'Images are previewed ✨\nMax 10MB, all file types supported',
-      editModeWarning: '⚠️ Adding new files will delete all existing attachments',
-      dragOrClick: '📁 Drag or click to upload files',
-      editModeDragOrClick: '⚠️ Add new files (all existing files will be deleted)',
-      editModeHint:
-        'Selecting new files will delete all existing attachments\nPlease choose carefully',
-      newImage: 'New Images ({count})',
-      newFile: 'New Attachments ({count})',
-      existingImage: 'Existing Images ({count})',
-      existingFile: 'Existing Attachments ({count})',
-    },
+    fileUpload: 'File Upload',
+    dragAndDropOrClickToUpload: 'Drag and drop files here or click to upload',
+    max10MBImageAndDocumentFiles: 'Max 10MB, image and document files supported',
     selectedFiles: 'Selected Files',
     existingAttachedFiles: 'Existing Attached Files',
     newImages: 'New Images',
@@ -1459,7 +1441,6 @@ const en = {
           unsavedChanges: 'You have unsaved changes. Do you want to leave this page?',
         },
       },
-      hideOriginal: 'Hide Original',
     },
     comments: {
       title: 'Comments',
@@ -1733,7 +1714,7 @@ const en = {
       },
     },
     imageGallery: {
-      title: 'Recommended Image Gallery',
+      title: 'EUM Gallery',
       search: {
         placeholder: 'Search images (e.g., Seoul, ocean, food)',
         button: 'Search',
@@ -1753,9 +1734,40 @@ const en = {
         noResults: 'No search results',
         apiKeyMissing: 'Pexels API key not configured. Sample images are displayed.',
       },
+      images: {
+        seoul_tower: 'Seoul Tower',
+        hanok_village: 'Hanok Village',
+        busan_haeundae: 'Busan Haeundae Beach',
+        gyeongbokgung: 'Gyeongbokgung Palace',
+        jeju_seongsan: 'Jeju Seongsan Ilchulbong',
+        hangang_night: 'Han River Night View',
+        korean_temple: 'Korean Traditional Temple',
+        korean_market: 'Korean Traditional Market',
+        korean_food: 'Korean Cuisine',
+        korean_cherry_blossom: 'Korean Cherry Blossom',
+      },
+      tags: {
+        seoul: 'Seoul',
+        landmark: 'Landmark',
+        traditional: 'Traditional',
+        hanok: 'Hanok',
+        busan: 'Busan',
+        beach: 'Beach',
+        palace: 'Palace',
+        jeju: 'Jeju',
+        nature: 'Nature',
+        night: 'Night View',
+        temple: 'Temple',
+        market: 'Market',
+        culture: 'Culture',
+        food: 'Food',
+        korean_cuisine: 'Korean Cuisine',
+        spring: 'Spring',
+        cherry_blossom: 'Cherry Blossom',
+      },
     },
     youtubeGallery: {
-      title: 'Recommended Video Gallery',
+      title: 'EUM Studio',
       search: {
         placeholder: 'Search videos (e.g., travel, food, music)',
         button: 'Search',
@@ -1776,6 +1788,24 @@ const en = {
         searchError: 'Error occurred while searching videos',
         noResults: 'No search results',
         apiKeyMissing: 'YouTube API key not configured',
+        sampleDataInfo: 'Korea-related recommended videos are being displayed',
+      },
+      purposes: {
+        travel: 'Travel',
+        residence: 'Living',
+        employment: 'Employment',
+        study: 'Study Abroad',
+      },
+      tags: {
+        travel: 'Travel',
+        tourism: 'Tourism',
+        residence: 'Living',
+        living: 'Living',
+        employment: 'Employment',
+        job: 'Job',
+        study: 'Study',
+        university: 'University',
+        korea: 'Korea',
       },
     },
   },
@@ -1905,7 +1935,6 @@ const en = {
     },
     specialIssues: 'View All Issues',
     noVotesYet: 'No votes yet. Be the first to vote!',
-    noIssues: 'No debates found.',
   },
   infoPage: {
     title: 'Korea Life Guide',
@@ -1949,8 +1978,8 @@ const en = {
       createdAt: 'Created',
     },
     sidebar: {
-      popularInfo: 'Popular Information',
-      emergencyContacts: 'Emergency Contacts',
+      popularInfo: '🔥 Popular Information',
+      emergencyContacts: '🆘 Emergency Contacts',
       emergency: {
         title: 'Emergency',
         subtitle: 'Fire, Medical Emergency',
@@ -2020,7 +2049,6 @@ const en = {
     title: 'Korea Life Assistant',
     subtitle: 'Korea Life Guide with AI Expert',
     greeting: 'Hello! I am an AI expert in {{category}} field.',
-    matchingMessage: 'Matching you with an AI expert. Please wait a moment.',
     categories: {
       all: '🌏 All',
       visa: '📑 Visa/Legal',
@@ -2031,7 +2059,7 @@ const en = {
       life: '👨‍👩‍👧 Daily Life',
     },
     sidebar: {
-      title: 'Category Guide',
+      title: '📚 Category Guide',
       autoSelectInfo: 'Categories are automatically selected based on your questions',
     },
     chat: {
@@ -2040,7 +2068,7 @@ const en = {
       placeholder: 'Feel free to ask anything...',
       send: 'Send',
       sending: 'Sending...',
-      loading: "Waiting for the expert's answer...",
+      loading: 'Preparing response...',
       initialMessage: 'How can I help you?',
       aiExpert: 'AI Expert',
       justNow: 'Just now',
@@ -2102,27 +2130,10 @@ const en = {
   editModeFileUpload: '⚠️ Add New Files (All existing files will be deleted)',
   editModeFileWarning:
     'Selecting new files will delete all existing attachments\nPlease choose carefully',
-  intro: {
-    slide1: {
-      title: 'Start your journey with EUM!',
-      desc1: 'Discover Korea step by step with EUM.',
-      desc2: 'We wish you a wonderful new journey.',
-    },
-    slide2: {
-      title: 'Please wait a moment',
-      desc1: 'EUM is preparing the best experience for you.',
-      desc2: 'Your amazing journey will begin soon.',
-    },
-    slide3: {
-      title: 'Welcome!',
-      desc1: 'Your journey with EUM is about to begin.',
-      desc2: 'Everything is ready for your new experience.',
-    },
-  },
   // Home screen widgets
   home: {
     communityFeed: {
-      title: 'Community Feed',
+      title: 'EUM Community Hub',
       tabs: {
         free: 'Free',
         meeting: 'Meetings',
@@ -2167,7 +2178,7 @@ const en = {
       },
     },
     debateFeed: {
-      title: 'Debate Feed',
+      title: 'EUM Discussion Plaza',
       subtitle: 'Debate',
       statusLabels: {
         active: 'Active',
@@ -2213,7 +2224,7 @@ const en = {
       },
     },
     infoFeed: {
-      title: 'Information Feed',
+      title: 'EUM Info Center',
       subtitle: 'Information',
       difficultyLabels: {
         beginner: 'Beginner',

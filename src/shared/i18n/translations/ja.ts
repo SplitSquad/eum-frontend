@@ -732,17 +732,17 @@ const ja = {
       noEvents: '予定がありません',
     },
     community: {
-      title: 'コミュニティフィード',
+      title: 'EUMコミュニティハブ',
       noPost: '投稿がありません',
       viewMore: 'もっと見る',
     },
     debate: {
-      title: '討論フィード',
+      title: 'EUM討論広場',
       noDebate: '討論がありません',
       viewMore: 'もっと見る',
     },
     info: {
-      title: '情報フィード',
+      title: 'EUM情報センター',
       noInfo: '情報がありません',
       viewMore: 'もっと見る',
     },
@@ -1393,6 +1393,7 @@ const ja = {
         searchError: '動画検索中にエラーが発生しました',
         noResults: '検索結果がありません',
         apiKeyMissing: 'YouTube APIキーが設定されていません',
+        sampleDataInfo: '韓国関連のおすすめ動画が表示されています',
       },
     },
   },
@@ -1750,7 +1751,7 @@ const ja = {
   // ホーム画面ウィジェット
   home: {
     communityFeed: {
-      title: 'コミュニティフィード',
+      title: 'EUMコミュニティハブ',
       tabs: {
         free: '自由',
         meeting: '集まり',
@@ -1795,7 +1796,7 @@ const ja = {
       },
     },
     debateFeed: {
-      title: '討論フィード',
+      title: 'EUM討論広場',
       subtitle: '討論',
       statusLabels: {
         active: '進行中',
@@ -1841,7 +1842,7 @@ const ja = {
       },
     },
     infoFeed: {
-      title: '情報フィード',
+      title: 'EUM情報センター',
       subtitle: '情報',
       difficultyLabels: {
         beginner: '初級',

@@ -38,15 +38,11 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
-import {
-  widgetPaperBase,
-  widgetGradients,
-  widgetCardBase,
-  widgetChipBase,
-} from './theme/dashboardWidgetTheme';
+import { widgetPaperBase, widgetGradients, widgetCardBase, widgetChipBase } from './theme/dashboardWidgetTheme';
 import infoApi from '../../features/info/api/infoApi';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../../shared/i18n';
+import { useLanguageStore } from '../../features/theme/store/languageStore';
 
 // 정보 콘텐츠 타입 정의 (API에서 받아오는 데이터 구조에 맞춤)
 interface InfoContent {
@@ -72,24 +68,24 @@ interface InfoPreferenceData {
 
 // 카테고리별 색상 매핑
 const categoryColors: Record<string, string> = {
-  교통: '#03a9f4',
+  '교통': '#03a9f4',
   '비자/법률': '#607d8b',
   '금융/세금': '#4db6ac',
-  교육: '#673ab7',
+  '교육': '#673ab7',
   '주거/부동산': '#ff9800',
   '의료/건강': '#f44336',
-  쇼핑: '#e91e63',
+  '쇼핑': '#e91e63',
   '취업/직장': '#8bc34a',
-  생활정보: '#2196f3',
+  '생활정보': '#2196f3',
   '문화/여가': '#9c27b0',
-  기타: '#757575',
+  '기타': '#757575'
 };
 
 // 난이도별 색상
 const DIFFICULTY_COLORS = {
   beginner: '#4CAF50',
   intermediate: '#FF9800',
-  advanced: '#F44336',
+  advanced: '#F44336'
 };
 
 // 콘텐츠 타입별 색상
@@ -97,175 +93,146 @@ const CONTENT_TYPE_COLORS = {
   guide: '#2196F3',
   tip: '#9C27B0',
   news: '#FF5722',
-  tutorial: '#607D8B',
+  tutorial: '#607D8B'
 };
 
 // 정보 아이템 컴포넌트
-const InfoItem = memo(
-  ({ info, onClick, t }: { info: InfoContent; onClick?: () => void; t: any }) => {
-    const difficultyColor =
-      info.difficulty === 'beginner'
-        ? '#4caf50'
-        : info.difficulty === 'intermediate'
-          ? '#ff9800'
-          : '#f44336';
-
-    return (
-      <Box
-        onClick={onClick}
-        sx={{
-          p: 2,
-          borderRadius: 2,
-          background:
-            'linear-gradient(135deg, rgba(240,253,244,0.9) 0%, rgba(243,254,246,0.95) 100%)',
-          border: '1px solid rgba(134, 239, 172, 0.3)',
-          backdropFilter: 'blur(10px)',
-          cursor: onClick ? 'pointer' : 'default',
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          '&:hover': onClick
-            ? {
-                transform: 'translateY(-4px) scale(1.02)',
-                boxShadow: '0 20px 40px rgba(76, 175, 80, 0.15), 0 8px 20px rgba(76, 175, 80, 0.1)',
-                border: '1px solid rgba(76, 175, 80, 0.4)',
-                background:
-                  'linear-gradient(135deg, rgba(240,253,244,0.95) 0%, rgba(243,254,246,1) 100%)',
-              }
-            : {},
-          mb: 2,
-          position: 'relative',
-          overflow: 'hidden',
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '3px',
-            background:
-              'linear-gradient(90deg, rgba(76, 175, 80, 0.4), rgba(76, 175, 80, 0.8), rgba(76, 175, 80, 0.4))',
-            borderRadius: '2px 2px 0 0',
-          },
-        }}
-      >
-        {/* 헤더 */}
-        <Box
-          sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, mr: 1 }}>
-            <InfoIcon sx={{ fontSize: 14, mr: 0.5, color: '#4caf50' }} />
-            <Typography variant="caption" sx={{ color: '#4caf50', fontWeight: 600, mr: 1 }}>
-              {t('home.infoFeed.subtitle')}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              {formatTimeAgo(info.createdAt, t)}
-            </Typography>
-          </Box>
-
-          <Box sx={{ display: 'flex', gap: 0.5 }}>
-            {/* 매치 점수 배지 */}
-            {info.matchScore && info.matchScore > 0 && (
-              <Chip
-                label={t(`home.infoFeed.difficultyLabels.${info.difficulty}`)}
-                size="small"
-                sx={{
-                  fontSize: '0.7rem',
-                  height: 22,
-                  bgcolor: `${difficultyColor}20`,
-                  color: difficultyColor,
-                }}
-              />
-            )}
-
+const InfoItem = memo(({ info, onClick, t }: { info: InfoContent, onClick?: () => void, t: any }) => {
+  const difficultyColor = info.difficulty === 'beginner' ? '#4caf50' : 
+                         info.difficulty === 'intermediate' ? '#ff9800' : '#f44336';
+  
+  return (
+    <Box
+      onClick={onClick}
+      sx={{
+        p: 2,
+        borderRadius: 2,
+        background: 'linear-gradient(135deg, rgba(240,253,244,0.9) 0%, rgba(243,254,246,0.95) 100%)',
+        border: '1px solid rgba(134, 239, 172, 0.3)',
+        backdropFilter: 'blur(10px)',
+        cursor: onClick ? 'pointer' : 'default',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        '&:hover': onClick ? {
+          transform: 'translateY(-4px) scale(1.02)',
+          boxShadow: '0 20px 40px rgba(76, 175, 80, 0.15), 0 8px 20px rgba(76, 175, 80, 0.1)',
+          border: '1px solid rgba(76, 175, 80, 0.4)',
+          background: 'linear-gradient(135deg, rgba(240,253,244,0.95) 0%, rgba(243,254,246,1) 100%)',
+        } : {},
+        mb: 2,
+        position: 'relative',
+        overflow: 'hidden',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '3px',
+          background: 'linear-gradient(90deg, rgba(76, 175, 80, 0.4), rgba(76, 175, 80, 0.8), rgba(76, 175, 80, 0.4))',
+          borderRadius: '2px 2px 0 0',
+        }
+      }}
+    >
+      {/* 헤더 */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, mr: 1 }}>
+          <InfoIcon sx={{ fontSize: 14, mr: 0.5, color: '#4caf50' }} />
+          <Typography variant="caption" sx={{ color: '#4caf50', fontWeight: 600, mr: 1 }}>
+            {t('home.infoFeed.subtitle')}
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            {formatTimeAgo(info.createdAt, t)}
+          </Typography>
+        </Box>
+        
+        <Box sx={{ display: 'flex', gap: 0.5 }}>
+          {/* 매치 점수 배지 */}
+          {info.matchScore && info.matchScore > 0 && (
             <Chip
-              label={t(`home.infoFeed.difficultyLabels.${info.difficulty}`)}
+              label={`${info.matchScore}%`}
               size="small"
               sx={{
                 fontSize: '0.7rem',
                 height: 22,
-                bgcolor: `${difficultyColor}20`,
-                color: difficultyColor,
+                bgcolor: info.matchScore > 90 ? 'rgba(76, 175, 80, 0.1)' : 
+                        info.matchScore > 80 ? 'rgba(33, 150, 243, 0.1)' : 'rgba(255, 152, 0, 0.1)',
+                color: info.matchScore > 90 ? '#4caf50' : 
+                       info.matchScore > 80 ? '#2196f3' : '#ff9800',
               }}
             />
-          </Box>
-
-          {/* 제목 */}
-          <Typography
-            variant="subtitle2"
-            fontWeight={600}
-            sx={{
-              mb: 1,
-              lineHeight: 1.3,
-              display: '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-            }}
-          >
-            {info.title}
-          </Typography>
-
-          {/* 작성자 정보 */}
-          {info.author && (
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-              <Avatar sx={{ width: 20, height: 20, mr: 1 }}>
-                {!info.author.includes('정보 제공자') && info.author.charAt(0)}
-              </Avatar>
-              <Typography variant="caption" color="text.secondary">
-                {info.author}
-              </Typography>
-            </Box>
           )}
-
-          {/* 평점 및 유형 */}
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
-            <Chip
-              label={
-                info.contentType === 'guide'
-                  ? '가이드'
-                  : info.contentType === 'tip'
-                    ? '팁'
-                    : info.contentType === 'news'
-                      ? '뉴스'
-                      : '튜토리얼'
-              }
-              size="small"
-              sx={{
-                fontSize: '0.65rem',
-                height: 18,
-                bgcolor: '#e8f5e9',
-                color: '#2e7d32',
-              }}
-            />
-          </Box>
-
-          {/* 하단 정보 */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <VisibilityIcon sx={{ fontSize: 14, color: 'action.active', mr: 0.3 }} />
-              <Typography variant="caption" color="text.secondary">
-                {info.views > 1000 ? `${(info.views / 1000).toFixed(1)}k` : info.views}
-              </Typography>
-            </Box>
-
-            {/* 카테고리 표시 */}
-            {info.category && (
-              <Chip
-                label={info.category}
-                size="small"
-                sx={{
-                  fontSize: '0.65rem',
-                  height: 18,
-                  bgcolor: '#e3f2fd',
-                  color: '#1976d2',
-                }}
-              />
-            )}
-          </Box>
+          
+          <Chip
+            label={t(`home.infoFeed.difficultyLabels.${info.difficulty}`)}
+            size="small"
+            sx={{
+              fontSize: '0.7rem',
+              height: 22,
+              bgcolor: `${difficultyColor}20`,
+              color: difficultyColor,
+            }}
+          />
         </Box>
       </Box>
-    );
-  }
-);
+
+      {/* 제목 */}
+      <Typography 
+        variant="subtitle2" 
+        fontWeight={600} 
+        sx={{ 
+          mb: 1, 
+          lineHeight: 1.3,
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical',
+          overflow: 'hidden',
+        }}
+      >
+        {info.title}
+      </Typography>
+
+      {/* 작성자 정보 */}
+      {info.author && (
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+          <Avatar 
+            sx={{ width: 20, height: 20, mr: 1 }}
+          >
+            {!info.author.includes('정보 제공자') && info.author.charAt(0)}
+          </Avatar>
+          <Typography variant="caption" color="text.secondary">
+            {info.author}
+          </Typography>
+        </Box>
+      )}
+
+      
+
+      {/* 하단 정보 */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <VisibilityIcon sx={{ fontSize: 14, color: 'action.active', mr: 0.3 }} />
+          <Typography variant="caption" color="text.secondary">
+            {info.views > 1000 ? `${(info.views / 1000).toFixed(1)}k` : info.views}
+          </Typography>
+        </Box>
+        
+        {/* 카테고리 표시 */}
+        {info.category && (
+          <Chip
+            label={translateInfoCategory(info.category, t)}
+            size="small"
+            sx={{
+              fontSize: '0.65rem',
+              height: 18,
+              bgcolor: '#e3f2fd',
+              color: '#1976d2',
+            }}
+          />
+        )}
+      </Box>
+    </Box>
+  );
+});
 
 // 시간 전 포맷 함수
 const formatTimeAgo = (dateString: string, t: any): string => {
@@ -297,46 +264,46 @@ const formatTimeAgo = (dateString: string, t: any): string => {
 const translateInfoTag = (tag: string, t: any): string => {
   const tagMap: Record<string, string> = {
     // 정보 카테고리
-    교육: 'infoPage.categories.education',
+    '교육': 'infoPage.categories.education',
     '금융/세금': 'infoPage.categories.finance',
     '비자/법률': 'infoPage.categories.visa',
-    쇼핑: 'infoPage.categories.shopping',
+    '쇼핑': 'infoPage.categories.shopping',
     '의료/건강': 'infoPage.categories.healthcare',
     '주거/부동산': 'infoPage.categories.housing',
     '취업/직장': 'infoPage.categories.employment',
-    교통: 'infoPage.categories.transportation',
-
+    '교통': 'infoPage.categories.transportation',
+    
     // 일반 관심 태그
-    비자: 'interestTags.visa_legal',
-    법률: 'interestTags.visa_legal',
-    금융: 'interestTags.finance_tax',
-    세금: 'interestTags.finance_tax',
-    의료: 'interestTags.healthcare',
-    건강: 'interestTags.healthcare',
-    주거: 'interestTags.housing_realestate',
-    부동산: 'interestTags.housing_realestate',
-    취업: 'interestTags.employment_workplace',
-    직장: 'interestTags.employment_workplace',
-    교통정보: 'interestTags.transportation_info',
+    '비자': 'interestTags.visa_legal',
+    '법률': 'interestTags.visa_legal',
+    '금융': 'interestTags.finance_tax',
+    '세금': 'interestTags.finance_tax',
+    '의료': 'interestTags.healthcare',
+    '건강': 'interestTags.healthcare',
+    '주거': 'interestTags.housing_realestate',
+    '부동산': 'interestTags.housing_realestate',
+    '취업': 'interestTags.employment_workplace',
+    '직장': 'interestTags.employment_workplace',
+    '교통정보': 'interestTags.transportation_info',
   };
-
+  
   return tagMap[tag] ? t(tagMap[tag]) : tag;
 };
 
 // 정보 카테고리 번역 함수
 const translateInfoCategory = (category: string, t: any): string => {
   const categoryMap: Record<string, string> = {
-    교육: 'infoPage.categories.education',
+    '교육': 'infoPage.categories.education',
     '금융/세금': 'infoPage.categories.finance',
     '비자/법률': 'infoPage.categories.visa',
-    쇼핑: 'infoPage.categories.shopping',
+    '쇼핑': 'infoPage.categories.shopping',
     '의료/건강': 'infoPage.categories.healthcare',
     '주거/부동산': 'infoPage.categories.housing',
     '취업/직장': 'infoPage.categories.employment',
-    교통: 'infoPage.categories.transportation',
-    전체: 'infoPage.categories.all',
+    '교통': 'infoPage.categories.transportation',
+    '전체': 'infoPage.categories.all',
   };
-
+  
   return categoryMap[category] ? t(categoryMap[category]) : category;
 };
 
@@ -348,11 +315,11 @@ interface InfoPreferenceModalProps {
   t: any;
 }
 
-const InfoPreferenceModal: React.FC<InfoPreferenceModalProps> = ({
-  open,
-  onClose,
+const InfoPreferenceModal: React.FC<InfoPreferenceModalProps> = ({ 
+  open, 
+  onClose, 
   preference,
-  t,
+  t
 }) => {
   return (
     <Modal
@@ -362,49 +329,45 @@ const InfoPreferenceModal: React.FC<InfoPreferenceModalProps> = ({
       BackdropComponent={Backdrop}
       BackdropProps={{
         timeout: 500,
-        sx: { backdropFilter: 'blur(4px)' },
+        sx: { backdropFilter: 'blur(4px)' }
       }}
     >
       <Fade in={open}>
-        <Box
-          sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: { xs: '95%', sm: '90%', md: 500 },
-            maxHeight: '90vh',
-            bgcolor: 'background.paper',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
-            borderRadius: 3,
-            overflow: 'hidden',
-            animation: 'modalSlideIn 0.3s ease-out',
-          }}
-        >
+        <Box sx={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: { xs: '95%', sm: '90%', md: 500 },
+          maxHeight: '90vh',
+          bgcolor: 'background.paper',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+          borderRadius: 3,
+          overflow: 'hidden',
+          animation: 'modalSlideIn 0.3s ease-out'
+        }}>
           {/* 헤더 */}
-          <Box
-            sx={{
-              background: 'linear-gradient(135deg, #4caf50 0%, #2e7d32 100%)',
-              color: 'white',
-              p: 3,
-              position: 'relative',
-            }}
-          >
-            <IconButton
-              onClick={onClose}
+          <Box sx={{ 
+            background: 'linear-gradient(135deg, #4caf50 0%, #2e7d32 100%)',
+            color: 'white',
+            p: 3,
+            position: 'relative'
+          }}>
+            <IconButton 
+              onClick={onClose} 
               size="small"
-              sx={{
+              sx={{ 
                 position: 'absolute',
                 top: 16,
                 right: 16,
                 color: 'white',
                 bgcolor: 'rgba(255,255,255,0.1)',
-                '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' },
+                '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' }
               }}
             >
               <CloseIcon />
             </IconButton>
-
+            
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <MenuBookIcon sx={{ color: 'white', mr: 1.5, fontSize: 22 }} />
               <Box>
@@ -445,8 +408,7 @@ const InfoPreferenceModal: React.FC<InfoPreferenceModalProps> = ({
                         py: 0.5,
                         fontSize: `${fontSize}rem`,
                         fontWeight: fontWeight,
-                        bgcolor:
-                          keyword.weight > 7 ? 'rgba(76, 175, 80, 0.08)' : 'rgba(0, 0, 0, 0.04)',
+                        bgcolor: keyword.weight > 7 ? 'rgba(76, 175, 80, 0.08)' : 'rgba(0, 0, 0, 0.04)',
                         color: keyword.weight > 7 ? '#4CAF50' : 'text.primary',
                         '&:hover': {
                           bgcolor: 'rgba(76, 175, 80, 0.15)',
@@ -528,20 +490,21 @@ const InfoFeedWidget: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { language } = useLanguageStore();
 
   // 정보 추천 데이터 가져오기
   const fetchInfoData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-
+    
     try {
       // 정보 추천 API 호출
       const result = await infoApi.getRecommendations();
       console.log('정보 추천 API 응답:', result);
-
+      
       const infoList = result?.informationList || [];
       const infoAnalysis = result?.analysis || {};
-
+      
       if (infoList && infoList.length > 0) {
         // 정보 데이터를 InfoContent로 변환
         const infoContents: InfoContent[] = infoList.flat().map((info: any) => {
@@ -549,10 +512,10 @@ const InfoFeedWidget: React.FC = () => {
           if (info.category && infoAnalysis[info.category]) {
             matchScore = Math.round(infoAnalysis[info.category] * 100);
           }
-
+          
           // HTML 태그 제거
           const plainContent = info.content ? info.content.replace(/<[^>]*>/g, '').trim() : '';
-
+          
           return {
             id: String(info.informationId || Math.random()),
             title: info.title || '',
@@ -563,43 +526,35 @@ const InfoFeedWidget: React.FC = () => {
             rating: 3.5 + Math.random() * 1.5, // 임시 데이터 (3.5-5.0)
             createdAt: info.createdAt || new Date().toISOString(),
             matchScore: matchScore,
-            difficulty: ['beginner', 'intermediate', 'advanced'][
-              Math.floor(Math.random() * 3)
-            ] as any,
+            difficulty: ['beginner', 'intermediate', 'advanced'][Math.floor(Math.random() * 3)] as any,
             contentType: ['guide', 'tip', 'news', 'tutorial'][Math.floor(Math.random() * 4)] as any,
-            author: info.userName || '정보 제공자',
+            author: info.userName || '정보 제공자'
           };
         });
-
+        
         setContent(infoContents.slice(0, 6)); // 최대 6개만 표시
 
         // 분석 데이터 생성
-        const categories = infoContents.reduce(
-          (acc, info) => {
-            const category = info.category || '기타';
-            acc[category] = (acc[category] || 0) + 1;
-            return acc;
-          },
-          {} as Record<string, number>
-        );
+        const categories = infoContents.reduce((acc, info) => {
+          const category = info.category || '기타';
+          acc[category] = (acc[category] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>);
 
         const totalContent = infoContents.length;
-
+        
         // 실제 API 분석 데이터 또는 계산된 데이터 사용
         let apiAnalysisData: Record<string, number> = {};
-
+        
         // API에서 분석 데이터가 있으면 사용
         if (infoAnalysis && Object.keys(infoAnalysis).length > 0) {
           apiAnalysisData = infoAnalysis;
         } else {
           // 없으면 카테고리 비율로 계산
-          apiAnalysisData = Object.entries(categories).reduce(
-            (acc, [category, count]) => {
-              acc[category] = count / totalContent;
-              return acc;
-            },
-            {} as Record<string, number>
-          );
+          apiAnalysisData = Object.entries(categories).reduce((acc, [category, count]) => {
+            acc[category] = count / totalContent;
+            return acc;
+          }, {} as Record<string, number>);
         }
 
         // 분석 데이터를 정렬하고 상위 5개 추출
@@ -608,7 +563,7 @@ const InfoFeedWidget: React.FC = () => {
             name,
             count: categories[name] || 0,
             percentage: Math.min(Math.round(value * 100), 100),
-            color: categoryColors[name] || categoryColors['기타'],
+            color: categoryColors[name] || categoryColors['기타']
           }))
           .sort((a, b) => b.percentage - a.percentage)
           .slice(0, 5);
@@ -620,13 +575,11 @@ const InfoFeedWidget: React.FC = () => {
             percent: category.percentage,
             color: category.color,
           })),
-          recommendedKeywords: sortedAnalysis
-            .map(category => ({
-              id: category.name,
-              name: category.name,
-              weight: Math.max(1, Math.min(10, Math.round(category.percentage / 10) + 1)),
-            }))
-            .slice(0, 6),
+          recommendedKeywords: sortedAnalysis.map(category => ({
+            id: category.name,
+            name: category.name,
+            weight: Math.max(1, Math.min(10, Math.round(category.percentage / 10) + 1)),
+          })).slice(0, 6)
         };
 
         setPreference(preferenceData);
@@ -640,12 +593,26 @@ const InfoFeedWidget: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []); // 무한 루프 방지를 위해 의존성 배열을 빈 배열로 설정
+  }, [language]); // language를 의존성에 추가하여 언어 변경 시 함수가 새로 생성되도록 함
 
   // 데이터 로딩
   useEffect(() => {
     fetchInfoData();
   }, [fetchInfoData]);
+
+  // 언어 변경 감지 및 데이터 새로고침
+  useEffect(() => {
+    console.log('[DEBUG] InfoFeedWidget - 언어 변경 감지:', language);
+    
+    // 커뮤니티 피드와 동일한 방식: 로딩 상태만 설정하고 fetchData가 내부적으로 처리하도록 함
+    setIsLoading(true);
+    setError(null);
+    
+    // 충분한 로딩 시간을 확보하여 부드러운 전환 보장 (커뮤니티 피드와 동일한 UX)
+    setTimeout(() => {
+      fetchInfoData();
+    }, 300); // 300ms로 늘려서 로딩 스피너가 충분히 보이도록 함
+  }, [language, fetchInfoData]);
 
   // 모달 핸들러
   const handleOpenModal = () => {
@@ -671,7 +638,7 @@ const InfoFeedWidget: React.FC = () => {
           height: '100%',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
+          justifyContent: 'center'
         }}
       >
         <CircularProgress size={40} />
@@ -692,15 +659,15 @@ const InfoFeedWidget: React.FC = () => {
           alignItems: 'center',
           justifyContent: 'center',
           textAlign: 'center',
-          p: 3,
+          p: 3
         }}
       >
         <Typography variant="body2" color="error" sx={{ mb: 2 }}>
           {error === 'FETCH_ERROR' ? t('home.infoFeed.messages.error') : error}
         </Typography>
-        <Button
-          variant="outlined"
-          size="small"
+        <Button 
+          variant="outlined" 
+          size="small" 
           onClick={handleRefresh}
           startIcon={<RefreshIcon />}
           sx={{ borderRadius: 2 }}
@@ -724,20 +691,20 @@ const InfoFeedWidget: React.FC = () => {
           transition: 'transform 0.2s ease, box-shadow 0.2s ease',
           '&:hover': {
             transform: 'translateY(-2px)',
-            boxShadow: '0 8px 25px rgba(0,0,0,0.12)',
-          },
+            boxShadow: '0 8px 25px rgba(0,0,0,0.12)'
+          }
         }}
       >
         {/* 헤더 */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Avatar
-              sx={{
-                bgcolor: 'rgba(0, 150, 136, 0.2)',
+            <Avatar 
+              sx={{ 
+                bgcolor: 'rgba(0, 150, 136, 0.2)', 
                 color: '#009688',
                 width: 32,
                 height: 32,
-                mr: 1,
+                mr: 1
               }}
             >
               <InfoIcon />
@@ -747,29 +714,29 @@ const InfoFeedWidget: React.FC = () => {
             </Typography>
           </Box>
           <Box>
-            <IconButton
+            <IconButton 
               size="small"
-              onClick={e => {
+              onClick={(e) => {
                 e.stopPropagation();
                 handleRefresh();
               }}
-              sx={{
+              sx={{ 
                 bgcolor: 'action.hover',
                 mr: 1,
-                '&:hover': { bgcolor: 'action.selected' },
+                '&:hover': { bgcolor: 'action.selected' }
               }}
             >
               <RefreshIcon fontSize="small" />
             </IconButton>
-            <IconButton
+            <IconButton 
               size="small"
-              onClick={e => {
+              onClick={(e) => {
                 e.stopPropagation();
                 handleOpenModal();
               }}
-              sx={{
+              sx={{ 
                 bgcolor: 'action.hover',
-                '&:hover': { bgcolor: 'action.selected' },
+                '&:hover': { bgcolor: 'action.selected' }
               }}
             >
               <TrendingUpIcon fontSize="small" />
@@ -783,23 +750,25 @@ const InfoFeedWidget: React.FC = () => {
             <List disablePadding>
               {content.map((info, index) => (
                 <React.Fragment key={info.id}>
-                  <InfoItem info={info} onClick={() => navigate(`/info/${info.id}`)} t={t} />
+                  <InfoItem 
+                    info={info} 
+                    onClick={() => navigate(`/info/${info.id}`)}
+                    t={t}
+                  />
                   {index < content.length - 1 && <Divider sx={{ my: 0.5 }} />}
                 </React.Fragment>
               ))}
             </List>
           ) : (
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                height: '100%',
-                textAlign: 'center',
-                py: 4,
-              }}
-            >
+            <Box sx={{ 
+              display: 'flex', 
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '100%',
+              textAlign: 'center',
+              py: 4
+            }}>
               <InfoIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
               <Typography variant="body2" color="text.secondary">
                 {t('home.infoFeed.messages.noInfos')}
@@ -811,17 +780,12 @@ const InfoFeedWidget: React.FC = () => {
         {/* 하단 요약 + 더보기 버튼 */}
         {content.length > 0 && (
           <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              textAlign="center"
-              sx={{ mb: 1, display: 'block' }}
-            >
+            <Typography variant="caption" color="text.secondary" textAlign="center" sx={{ mb: 1, display: 'block' }}>
               {t('home.infoFeed.messages.infoCount', { count: content.length.toString() })}
             </Typography>
-            <Button
-              variant="outlined"
-              size="small"
+            <Button 
+              variant="outlined" 
+              size="small" 
               sx={{ borderRadius: 2, textTransform: 'none', px: 3, width: '100%' }}
               onClick={() => navigate('/info')}
             >
@@ -844,4 +808,4 @@ const InfoFeedWidget: React.FC = () => {
   );
 };
 
-export default InfoFeedWidget;
+export default InfoFeedWidget; 
