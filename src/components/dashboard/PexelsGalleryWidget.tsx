@@ -8,17 +8,17 @@ import {
   CardContent,
   Chip,
   IconButton,
-  TextField,
-  InputAdornment,
   CircularProgress,
   Alert,
 } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ImageIcon from '@mui/icons-material/Image';
 import DownloadIcon from '@mui/icons-material/Download';
-import { env } from '@/config/env';
+import { useTranslation } from '@/shared/i18n';
+import { useLanguageStore } from '../../features/theme/store/languageStore';
+import { env } from '../../config/env';
+import axios from 'axios';
 
 interface ImageItem {
   id: string;
@@ -30,142 +30,153 @@ interface ImageItem {
   tags: string[];
 }
 
-// You can use sample data if API key is not available
-const sampleImages: ImageItem[] = [
-  {
-    id: '1',
-    src: 'https://images.pexels.com/photos/1036944/pexels-photo-1036944.jpeg?auto=compress&cs=tinysrgb&w=400',
-    alt: '남산타워',
-    photographer: 'Pexels User',
-    photographer_url: '#',
-    liked: false,
-    tags: ['서울', '랜드마크'],
-  },
-  {
-    id: '2',
-    src: 'https://images.pexels.com/photos/9506/pexels-photo-9506.jpeg?auto=compress&cs=tinysrgb&w=400',
-    alt: '한옥마을',
-    photographer: 'Pexels User',
-    photographer_url: '#',
-    liked: false,
-    tags: ['전통', '한옥'],
-  },
-  {
-    id: '3',
-    src: 'https://images.pexels.com/photos/259984/pexels-photo-259984.jpeg?auto=compress&cs=tinysrgb&w=400',
-    alt: '부산 해운대',
-    photographer: 'Pexels User',
-    photographer_url: '#',
-    liked: false,
-    tags: ['부산', '바다'],
-  },
-  {
-    id: '4',
-    src: 'https://images.pexels.com/photos/2506923/pexels-photo-2506923.jpeg?auto=compress&cs=tinysrgb&w=400',
-    alt: '경복궁',
-    photographer: 'Pexels User',
-    photographer_url: '#',
-    liked: false,
-    tags: ['서울', '궁궐'],
-  },
-  {
-    id: '5',
-    src: 'https://images.pexels.com/photos/2365457/pexels-photo-2365457.jpeg?auto=compress&cs=tinysrgb&w=400',
-    alt: '제주도 성산일출봉',
-    photographer: 'Pexels User',
-    photographer_url: '#',
-    liked: false,
-    tags: ['제주', '자연'],
-  },
-  {
-    id: '6',
-    src: 'https://images.pexels.com/photos/374074/pexels-photo-374074.jpeg?auto=compress&cs=tinysrgb&w=400',
-    alt: '한강 야경',
-    photographer: 'Pexels User',
-    photographer_url: '#',
-    liked: false,
-    tags: ['서울', '야경'],
-  },
+// 한국 명소 검색어 배열 (영어로만 구성)
+const koreanLandmarkSearchTerms = [
+  'Seoul Tower Korea',
+  'Gyeongbokgung Palace Seoul',
+  'Bukchon Hanok Village Seoul', 
+  'Jeju Island Seongsan Peak',
+  'Busan Haeundae Beach',
+  'Changdeokgung Palace Seoul',
+  'Namsan Tower Seoul',
+  'Han River Seoul night',
+  'Korean traditional temple',
+  'Dongdaemun Design Plaza Seoul',
+  'Myeongdong Seoul shopping',
+  'Hongdae Seoul district',
+  'Gangnam Seoul district',
+  'Korean cherry blossom spring',
+  'Incheon Chinatown Korea',
+  'Seoraksan National Park Korea',
+  'Korean traditional market',
+  'Lotte World Tower Seoul',
+  'Banpo Rainbow Bridge Seoul',
+  'Korean palace architecture'
 ];
 
+// 검색어에 해당하는 태그 매핑
+const searchTermTagMapping: { [key: string]: string } = {
+  'Seoul Tower Korea': 'seoul',
+  'Gyeongbokgung Palace Seoul': 'palace',
+  'Bukchon Hanok Village Seoul': 'traditional',
+  'Jeju Island Seongsan Peak': 'nature',
+  'Busan Haeundae Beach': 'beach',
+  'Changdeokgung Palace Seoul': 'palace',
+  'Namsan Tower Seoul': 'landmark',
+  'Han River Seoul night': 'night',
+  'Korean traditional temple': 'temple',
+  'Dongdaemun Design Plaza Seoul': 'landmark',
+  'Myeongdong Seoul shopping': 'seoul',
+  'Hongdae Seoul district': 'seoul',
+  'Gangnam Seoul district': 'seoul',
+  'Korean cherry blossom spring': 'spring',
+  'Incheon Chinatown Korea': 'culture',
+  'Seoraksan National Park Korea': 'nature',
+  'Korean traditional market': 'market',
+  'Lotte World Tower Seoul': 'landmark',
+  'Banpo Rainbow Bridge Seoul': 'night',
+  'Korean palace architecture': 'palace'
+};
+
+// 검색어에 해당하는 alt 키 매핑
+const searchTermAltMapping: { [key: string]: string } = {
+  'Seoul Tower Korea': 'seoul_tower',
+  'Gyeongbokgung Palace Seoul': 'gyeongbokgung',
+  'Bukchon Hanok Village Seoul': 'hanok_village',
+  'Jeju Island Seongsan Peak': 'jeju_seongsan',
+  'Busan Haeundae Beach': 'busan_haeundae',
+  'Changdeokgung Palace Seoul': 'gyeongbokgung',
+  'Namsan Tower Seoul': 'seoul_tower',
+  'Han River Seoul night': 'hangang_night',
+  'Korean traditional temple': 'korean_temple',
+  'Dongdaemun Design Plaza Seoul': 'seoul_skyline',
+  'Myeongdong Seoul shopping': 'seoul_skyline',
+  'Hongdae Seoul district': 'seoul_skyline',
+  'Gangnam Seoul district': 'seoul_skyline',
+  'Korean cherry blossom spring': 'korean_cherry_blossom',
+  'Incheon Chinatown Korea': 'korean_market',
+  'Seoraksan National Park Korea': 'korean_temple',
+  'Korean traditional market': 'korean_market',
+  'Lotte World Tower Seoul': 'seoul_tower',
+  'Banpo Rainbow Bridge Seoul': 'hangang_night',
+  'Korean palace architecture': 'gyeongbokgung'
+};
+
 const PexelsGalleryWidget: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState<string>('');
   const [images, setImages] = useState<ImageItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [apiKeyMissing, setApiKeyMissing] = useState<boolean>(false);
+  const { t } = useTranslation();
+  const { language } = useLanguageStore();
 
-  // Check if Pexels API key is available
-  const pexelsAccessKey = env.PEXELS_ACCESS_KEY;
-
-  // Fetch images from Pexels API
-  const fetchImages = async (query: string = 'korea') => {
-    // If API key is missing, use sample images
-    if (!pexelsAccessKey) {
-      setApiKeyMissing(true);
-      setImages(sampleImages);
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
+  // 랜덤 한국 명소 이미지 가져오기
+  const fetchRandomKoreanLandmarkImages = async () => {
     try {
-      const response = await fetch(
-        `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=6&orientation=landscape`,
-        {
-          headers: {
-            Authorization: pexelsAccessKey,
-          },
-        }
-      );
+      setLoading(true);
+      setError(null);
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch images from Pexels');
+      // Pexels API 키 확인
+      if (!env.PEXELS_ACCESS_KEY) {
+        setError('Pexels API 키가 설정되지 않았습니다.');
+        setLoading(false);
+        return;
       }
 
-      const data = await response.json();
+      // 랜덤하게 3개의 서로 다른 검색어 선택
+      const shuffledTerms = [...koreanLandmarkSearchTerms].sort(() => 0.5 - Math.random());
+      const selectedTerms = shuffledTerms.slice(0, 3);
 
-      const formattedImages: ImageItem[] = data.photos.map((photo: any) => ({
-        id: photo.id.toString(),
-        src: photo.src.medium,
-        alt: photo.alt || 'Pexels image',
-        photographer: photo.photographer,
-        photographer_url: photo.photographer_url,
-        liked: false,
-        tags: query
-          .split(',')
-          .map(tag => tag.trim())
-          .filter(Boolean)
-          .slice(0, 2),
-      }));
+      // 각 검색어로 이미지 하나씩 가져오기
+      const imagePromises = selectedTerms.map(async (searchTerm, index) => {
+        const response = await axios.get('https://api.pexels.com/v1/search', {
+          headers: {
+            Authorization: env.PEXELS_ACCESS_KEY,
+          },
+          params: {
+            query: searchTerm,
+            per_page: 1,
+            page: Math.floor(Math.random() * 5) + 1, // 1-5 페이지 중 랜덤
+          },
+        });
 
-      setImages(formattedImages);
+        if (response.data.photos && response.data.photos.length > 0) {
+          const photo = response.data.photos[0];
+          return {
+            id: `${photo.id}-${index}`,
+            src: photo.src.medium,
+            alt: searchTermAltMapping[searchTerm] || 'korean_landmark',
+            photographer: photo.photographer,
+            photographer_url: photo.photographer_url,
+            liked: false,
+            tags: [searchTermTagMapping[searchTerm] || 'korea'],
+          };
+        }
+        return null;
+      });
+
+      const results = await Promise.all(imagePromises);
+      const validImages = results.filter(img => img !== null) as ImageItem[];
+      
+      setImages(validImages);
     } catch (err) {
-      console.error('Error fetching images:', err);
-      setError('Failed to load images. Please try again later.');
+      console.error('Pexels API 오류:', err);
+      setError('이미지를 불러오는 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Load images on initial render
+  // 컴포넌트 마운트 시 이미지 로딩
   useEffect(() => {
-    fetchImages();
+    fetchRandomKoreanLandmarkImages();
   }, []);
 
-  // 검색어 변경 핸들러
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
-  };
-
-  // 검색 실행
-  const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (searchTerm.trim()) {
-      fetchImages(searchTerm);
+  // 언어 변경 시 새로운 이미지 로딩
+  useEffect(() => {
+    if (language) {
+      fetchRandomKoreanLandmarkImages();
     }
-  };
+  }, [language]);
 
   // 좋아요 토글
   const handleLikeToggle = (id: string) => {
@@ -177,6 +188,16 @@ const PexelsGalleryWidget: React.FC = () => {
   // 이미지 다운로드
   const handleDownload = (src: string, alt: string) => {
     window.open(src, '_blank');
+  };
+
+  // 번역된 alt 텍스트 가져오기
+  const getTranslatedAlt = (altKey: string): string => {
+    return t(`widgets.imageGallery.images.${altKey}`) || altKey;
+  };
+
+  // 번역된 태그 가져오기
+  const getTranslatedTag = (tagKey: string): string => {
+    return t(`widgets.imageGallery.tags.${tagKey}`) || tagKey;
   };
 
   return (
@@ -194,45 +215,22 @@ const PexelsGalleryWidget: React.FC = () => {
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
         <ImageIcon sx={{ mr: 1, color: 'primary.main' }} />
         <Typography variant="subtitle1" fontWeight={600}>
-          추천 이미지 갤러리
+          {t('widgets.imageGallery.title')}
         </Typography>
       </Box>
 
-      {apiKeyMissing && (
-        <Alert severity="info" sx={{ mb: 2 }}>
-          Pexels API 키가 설정되지 않았습니다. 샘플 이미지가 표시됩니다.
+      {/* 오류 메시지 */}
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
         </Alert>
       )}
-
-      {/* 검색 폼 */}
-      <Box component="form" onSubmit={handleSearchSubmit} sx={{ mb: 2 }}>
-        <TextField
-          placeholder="이미지 검색 (예: 서울, 바다, 음식 등)"
-          size="small"
-          fullWidth
-          value={searchTerm}
-          onChange={handleSearchChange}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton edge="end" type="submit">
-                  <SearchIcon />
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-        />
-      </Box>
 
       {/* 이미지 그리드 */}
       <Box sx={{ flex: 1, overflow: 'auto' }}>
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
             <CircularProgress size={40} />
-          </Box>
-        ) : error ? (
-          <Box sx={{ textAlign: 'center', p: 2, color: 'error.main' }}>
-            <Typography variant="body2">{error}</Typography>
           </Box>
         ) : (
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
@@ -311,13 +309,13 @@ const PexelsGalleryWidget: React.FC = () => {
                       variant="body2"
                       sx={{ fontWeight: 500, mb: 0.5, fontSize: '0.8rem' }}
                     >
-                      {image.alt}
+                      {getTranslatedAlt(image.alt)}
                     </Typography>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                      {image.tags.map((tag, idx) => (
+                      {image.tags.slice(0, 1).map((tag, idx) => (
                         <Chip
                           key={idx}
-                          label={tag}
+                          label={getTranslatedTag(tag)}
                           size="small"
                           sx={{
                             height: 18,
@@ -340,7 +338,7 @@ const PexelsGalleryWidget: React.FC = () => {
         sx={{ textAlign: 'center', mt: 2, pt: 1, borderTop: '1px solid', borderColor: 'divider' }}
       >
         <Typography variant="caption" color="text.secondary">
-          Powered by Pexels API
+          {t('widgets.imageGallery.info.poweredBy')}
         </Typography>
       </Box>
     </Paper>

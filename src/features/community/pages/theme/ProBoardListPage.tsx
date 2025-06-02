@@ -127,6 +127,32 @@ const ProBoardListPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const {
+    posts,
+    postLoading,
+    postError,
+    selectedCategory,
+    postPageInfo,
+    setSelectedCategory,
+    fetchPosts,
+    setPostFilter,
+    searchPosts,
+    fetchTopPosts,
+    topPosts,
+    resetPostsState,
+  } = useCommunityStore();
+
+  // 🔥 컴포넌트 마운트 즉시 이전 페이지 데이터 초기화 (헤더 네비게이션 대응)
+  React.useLayoutEffect(() => {
+    // useLayoutEffect는 DOM 변경 전에 동기적으로 실행되어 깜빡임 방지
+    const currentPosts = usePostStore.getState().posts;
+    if (currentPosts.length > 0) {
+      // 이전 페이지의 posts가 있다면 즉시 초기화
+      resetPostsState();
+      usePostStore.setState({ postLoading: true, posts: [] });
+    }
+  }, [resetPostsState]);
+
   // 상태 관리
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [showFilters, setShowFilters] = useState<boolean>(false);
@@ -222,20 +248,6 @@ const ProBoardListPage: React.FC = () => {
 
   // 현재 선택된 카테고리에 해당하는 태그 목록
   const [availableTags, setAvailableTags] = useState<string[]>([]);
-
-  const {
-    posts,
-    postLoading,
-    postError,
-    selectedCategory,
-    postPageInfo,
-    setSelectedCategory,
-    fetchPosts,
-    setPostFilter,
-    searchPosts,
-    fetchTopPosts,
-    topPosts,
-  } = useCommunityStore();
 
   // 카테고리 또는 카테고리 태그가 변경될 때 사용 가능한 태그 목록 업데이트
   useEffect(() => {
@@ -814,6 +826,20 @@ const ProBoardListPage: React.FC = () => {
     applyFilterWithSearchState(newFilter);
   };
 
+  // 페이지 전환 시 이전 데이터가 보이는 것을 방지하는 핸들러
+  const handleNavigateToGroups = () => {
+    // 1. 즉시 posts 데이터 초기화 및 로딩 상태 설정
+    resetPostsState();
+    
+    // 2. postStore에서도 로딩 상태 즉시 설정
+    usePostStore.setState({ postLoading: true, posts: [] });
+    
+    // 3. 약간의 지연 후 네비게이션 (초기화가 UI에 반영될 시간)
+    setTimeout(() => {
+      navigate('/community/groups');
+    }, 50);
+  };
+
   return (
     <div style={{ minHeight: '100vh' }}>
       {/* 헤더 텍스트 설명 */}
@@ -961,6 +987,7 @@ const ProBoardListPage: React.FC = () => {
                     : t(`community.categories.${selectedCategory}`) || selectedCategory}
                 </h2>
               </div>
+
 
               <div
                 style={{
@@ -1173,7 +1200,7 @@ const ProBoardListPage: React.FC = () => {
               }}
             >
               <button
-                onClick={() => navigate('/community/groups')}
+                onClick={handleNavigateToGroups}
                 style={{
                   ...proButton,
                   padding: '7px 0',

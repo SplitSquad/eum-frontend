@@ -822,18 +822,18 @@ const de = {
       },
     },
     community: {
-      title: 'Community-Feed',
-      noPost: 'Keine Beiträge',
+      title: 'EUM Community Hub',
+      noPost: 'Keine Beiträge verfügbar',
       viewMore: 'Mehr anzeigen',
     },
     debate: {
-      title: 'Debatte-Feed',
-      noDebate: 'Keine Debatten',
+      title: 'EUM Diskussionsplatz',
+      noDebate: 'Keine Debatten verfügbar',
       viewMore: 'Mehr anzeigen',
     },
     info: {
-      title: 'Info-Feed',
-      noInfo: 'Keine Informationen',
+      title: 'EUM Info-Zentrum',
+      noInfo: 'Keine Informationen verfügbar',
       viewMore: 'Mehr anzeigen',
     },
     gallery: {
@@ -1451,6 +1451,7 @@ const de = {
         searchError: 'Fehler bei der Videosuche',
         noResults: 'Keine Suchergebnisse',
         apiKeyMissing: 'YouTube API-Schlüssel nicht konfiguriert',
+        sampleDataInfo: 'Empfohlene Videos über Korea werden angezeigt',
       },
     },
   },
