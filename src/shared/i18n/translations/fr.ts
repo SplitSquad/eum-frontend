@@ -1414,6 +1414,8 @@ const fr = {
         myLocation: 'Ma position',
         places: 'Lieux',
       },
+     
+      },
       messages: {
         loading: 'Chargement de la carte...',
         preparing: 'Préparation...',
@@ -1547,12 +1549,9 @@ const fr = {
     next: 'Suivant',
   },
   debate: {
-    showOriginal: "Voir l'original",
-    returnOriginal: "Retour à l'original",
-    noDebates: 'Aucun débat en cours pour le moment. Soyez le premier à lancer un sujet !',
-    title: 'Débat sur les sujets brûlants',
+    title: 'Débat sur les Sujets Brûlants',
     description:
-      'Participez à la discussion sur les sujets de société les plus brûlants du moment et partagez vos opinions variées.',
+      "Rejoignez la discussion sur les sujets sociaux les plus brûlants d'aujourd'hui et partagez vos diverses opinions.",
     categories: {
       title: 'Catégorie',
       all: 'Tous',
@@ -1592,15 +1591,11 @@ const fr = {
     proOpinion: 'Opinion Pour',
     conOpinion: 'Opinion Contre',
     comment: {
-      placeholder: 'Entrez votre commentaire',
-      pro: 'Pour',
-      con: 'Contre',
-      none: 'Aucun',
-      empty: 'Pas de commentaires pour le moment. Soyez le premier à commenter !',
-      add: 'Ajouter un commentaire',
-      newest: 'Les plus récents',
-      oldest: 'Les plus anciens',
-      mostLiked: 'Les plus appréciés',
+      empty: 'Pas encore de commentaires. Soyez le premier à commenter !',
+      add: 'Ajouter un Commentaire',
+      newest: 'Plus Récents',
+      oldest: 'Plus Anciens',
+      mostLiked: 'Plus Aimés',
       reply: 'Répondre',
       order: 'Trier',
       cancel: 'Annuler',
@@ -1618,10 +1613,8 @@ const fr = {
       noReplies: 'Pas encore de réponses. Soyez le premier à répondre !',
       cancel: 'Annuler',
     },
-    specialIssue: 'Sujets spéciaux',
-    specialIssues: 'Voir tous les sujets',
-    noVotesYet: 'Aucun vote pour le moment. Soyez le premier à voter !',
-    noIssues: 'Aucun débat enregistré.',
+    specialIssues: 'Voir Tous les Sujets',
+    noVotesYet: 'Pas encore de votes. Soyez le premier à voter !',
   },
   infoPage: {
     title: 'Guide de vie en Corée',
@@ -1647,12 +1640,8 @@ const fr = {
       write: 'Écrire',
       viewAll: 'Voir tout',
       bookmark: 'Marque-page',
-      bookmarked: 'Enregistré',
       share: 'Partager',
-      shareAction: 'Partager',
       print: 'Imprimer',
-      printAction: 'Imprimer',
-      scrollToTop: 'Haut',
     },
     content: {
       allInfo: 'Toutes les informations',
@@ -1820,23 +1809,6 @@ const fr = {
     mypage: 'Ma page',
     logout: 'Déconnexion',
     adminpage: 'Page administrateur',
-  },
-  intro: {
-    slide1: {
-      title: 'Commencez votre voyage avec EUM !',
-      desc1: 'Découvrez la Corée pas à pas avec EUM.',
-      desc2: 'Nous vous souhaitons un merveilleux nouveau voyage.',
-    },
-    slide2: {
-      title: 'Veuillez patienter un instant',
-      desc1: 'EUM prépare la meilleure expérience pour vous.',
-      desc2: 'Votre incroyable voyage va bientôt commencer.',
-    },
-    slide3: {
-      title: 'Bienvenue !',
-      desc1: 'Votre voyage avec EUM est sur le point de commencer.',
-      desc2: 'Tout est prêt pour votre nouvelle expérience.',
-    },
   },
   home: {
     communityFeed: {
