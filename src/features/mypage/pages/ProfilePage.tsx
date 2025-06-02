@@ -699,7 +699,7 @@ const ProfilePage: React.FC = () => {
                       isLoading={profileUpdateLoading === 'loading'}
                       className="ml-2"
                     >
-                      {profileUpdateLoading === 'loading' ? t('mypage.save2') : t('mypage.save1')}
+                      {profileUpdateLoading === 'loading' ? t('mypage.myprofile.save2') : t('mypage.myprofile.save1')}
                     </Button>
                   </>
                 ) : (
