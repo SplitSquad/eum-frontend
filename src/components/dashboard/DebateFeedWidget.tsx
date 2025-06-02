@@ -681,13 +681,11 @@ const DebateFeedWidget: React.FC = () => {
   // 언어 변경 감지 및 데이터 새로고침
   useEffect(() => {
     console.log('[DEBUG] DebateFeedWidget - 언어 변경 감지:', language);
-
     // 언어 변경 시 즉시 로딩 상태로 전환하여 이전 데이터가 보이지 않도록 함
     setIsLoading(true);
     setDebates([]);
     setPreference(null);
     setError(null);
-
     // 다음 렌더 사이클에서 데이터 로딩하여 부드러운 전환 보장
     setTimeout(() => {
       fetchDebateData();

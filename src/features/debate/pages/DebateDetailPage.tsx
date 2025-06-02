@@ -398,7 +398,7 @@ const DebateDetailPage: React.FC = () => {
   const [userEmotion, setUserEmotion] = useState<EmotionType | null>(null);
   const [comment, setComment] = useState<string>('');
   const [stance, setStance] = useState<VoteType | null>(null);
-  
+
   // 언어 변경 추적을 위한 ref
   const previousLanguageRef = useRef(language);
   const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -406,10 +406,10 @@ const DebateDetailPage: React.FC = () => {
   // 데이터 새로고침 함수들을 useCallback으로 메모화
   const refreshDebateData = useCallback(async () => {
     if (!id) return;
-    
+
     console.log('[INFO] 토론 상세 페이지 - 데이터 새로고침 시작');
     setLanguageChanging(true);
-    
+
     try {
       await fetchDebateById(parseInt(id));
     } finally {
@@ -442,7 +442,6 @@ const DebateDetailPage: React.FC = () => {
 
   // 초기 데이터 로드 - 중복 방지 개선
   const hasInitialLoadedRef = useRef(false);
-
   useEffect(() => {
     if (id && !hasInitialLoadedRef.current) {
       hasInitialLoadedRef.current = true;
@@ -455,22 +454,20 @@ const DebateDetailPage: React.FC = () => {
     // 초기 로드가 완료된 후에만 언어 변경에 반응
     if (hasInitialLoadedRef.current && previousLanguageRef.current !== language && id && debate) {
       console.log(`[INFO] 언어 변경 감지: ${previousLanguageRef.current} → ${language}`);
-
       // 기존 타이머 취소
       if (refreshTimeoutRef.current) {
         clearTimeout(refreshTimeoutRef.current);
       }
-
       // 디바운스된 새로고침 (500ms 지연으로 증가하여 깜빡임 최소화)
       refreshTimeoutRef.current = setTimeout(() => {
         // 언어 변경 중임을 표시하지 않고 백그라운드에서 새로고침
         fetchDebateById(parseInt(id));
       }, 500);
     }
-    
+
     // 현재 언어를 이전 언어로 업데이트
     previousLanguageRef.current = language;
-    
+
     // 컴포넌트 언마운트 시 타이머 정리
     return () => {
       if (refreshTimeoutRef.current) {
@@ -493,7 +490,7 @@ const DebateDetailPage: React.FC = () => {
         setUserVote(null);
         setStance(null);
       }
-      
+
       // 웹로그 전송 - 최초 1회만
       if (!hasInitialLoadedRef.current) {
         const userId = getUserId() ?? 0;

@@ -50,7 +50,10 @@ const PURPOSE_SEARCH_QUERIES = {
 
 // API 키가 없거나 오류 발생 시 사용할 샘플 데이터 (실제 YouTube 영상 ID 사용)
 // 🎯 목적별로 6개씩 준비하여 랜덤으로 3개 선택 가능 (총 24개 고유 비디오)
-const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, language: string = 'ko'): VideoItem[] => {
+const getSampleVideosByPurpose = (
+  purpose: keyof typeof PURPOSE_SEARCH_QUERIES,
+  language: string = 'ko'
+): VideoItem[] => {
   // 언어별 비디오 제목 번역
   const videoTitles = {
     '2v8uecv5LEQ': {
@@ -64,7 +67,7 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
       ru: 'Полный Путеводитель по Сеулу 2024 - 7-дневный Маршрут',
       vi: 'Hướng Dẫn Du Lịch Seoul 2024 Hoàn Hảo - Lịch Trình 7 Ngày',
     },
-    'O5_jxkEBSZU': {
+    O5_jxkEBSZU: {
       ko: '2024 한국 여행 가이드',
       en: '2024 South Korea Travel Guide',
       ja: '2024韓国旅行ガイド',
@@ -86,18 +89,18 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
       ru: 'Путеводитель по Корее 2025 - Лучшие Места и Мероприятия',
       vi: 'Hướng Dẫn Du Lịch Hàn Quốc 2025 - Địa Điểm & Hoạt Động Tốt Nhất',
     },
-    'hx0cbc2jr90': {
+    hx0cbc2jr90: {
       ko: '2025 한국 입국 요건과 여행 준비사항',
       en: '2025 Korea Entry Requirements & Travel Preparations',
       ja: '2025年韓国入国要件と旅行準備事項',
       zh: '2025年韩国入境要求和旅行准备',
-      fr: 'Exigences d\'Entrée Corée 2025 & Préparations Voyage',
+      fr: "Exigences d'Entrée Corée 2025 & Préparations Voyage",
       es: 'Requisitos de Entrada a Corea 2025 y Preparativos de Viaje',
       de: 'Korea 2025 Einreisebestimmungen & Reisevorbereitungen',
       ru: 'Требования Въезда в Корею 2025 и Подготовка к Путешествию',
       vi: 'Yêu Cầu Nhập Cảnh Hàn Quốc 2025 & Chuẩn Bị Du Lịch',
     },
-    'kDvDk2lw72c': {
+    kDvDk2lw72c: {
       ko: '한국 문화와 관습 - 외국인이 알아야 할 것들',
       en: 'Korean Culture & Customs - What Foreigners Should Know',
       ja: '韓国文化と慣習 - 外国人が知るべきこと',
@@ -108,7 +111,7 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
       ru: 'Корейская Культура и Обычаи - Что Должны Знать Иностранцы',
       vi: 'Văn Hóa & Phong Tục Hàn Quốc - Điều Người Nước Ngoài Cần Biết',
     },
-    'ELdMLCfrNy4': {
+    ELdMLCfrNy4: {
       ko: '외국인이 놀라는 한국 문화들',
       en: 'Korean Cultures That Surprise Foreigners',
       ja: '外国人が驚く韓国文化',
@@ -157,7 +160,7 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
       en: 'Complete Apartment Hunting Guide for Foreigners in Korea',
       ja: '外国人のための韓国アパート探し完全ガイド',
       zh: '外国人在韩国找公寓完全指南',
-      fr: 'Guide Complet de Recherche d\'Appartement pour Étrangers en Corée',
+      fr: "Guide Complet de Recherche d'Appartement pour Étrangers en Corée",
       es: 'Guía Completa de Búsqueda de Apartamento para Extranjeros en Corea',
       de: 'Kompletter Wohnungssuche-Leitfaden für Ausländer in Korea',
       ru: 'Полное Руководство по Поиску Квартиры для Иностранцев в Корее',
@@ -174,7 +177,7 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
       ru: 'Полный Анализ Стоимости Жизни в Сеуле 2025',
       vi: 'Phân Tích Hoàn Toàn Chi Phí Sống ở Seoul 2025',
     },
-    'f8KgNP5qyOs': {
+    f8KgNP5qyOs: {
       ko: '한국 생활 꿀팁 모음집',
       en: 'Korea Living Tips Collection',
       ja: '韓国生活お得情報集',
@@ -185,7 +188,7 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
       ru: 'Сборник Советов для Жизни в Корее',
       vi: 'Tuyển Tập Mẹo Sống ở Hàn Quốc',
     },
-    'Rcd3faBUpAQ': {
+    Rcd3faBUpAQ: {
       ko: '한국어 학습과 TOPIK 시험 5가지 팁',
       en: '5 Tips for Korean Learning & TOPIK Test',
       ja: '韓国語学習とTOPIK試験5つのコツ',
@@ -196,29 +199,29 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
       ru: '5 Советов для Изучения Корейского и Экзамена TOPIK',
       vi: '5 Mẹo Học Tiếng Hàn & Kỳ Thi TOPIK',
     },
-    'uh2Td2D9BVo': {
+    uh2Td2D9BVo: {
       ko: 'TOPIK 시험 완전 정복 가이드',
       en: 'Ultimate Guide to Acing TOPIK Exam',
       ja: 'TOPIK試験完全攻略ガイド',
       zh: 'TOPIK考试完全攻略指南',
-      fr: 'Guide Ultime pour Réussir l\'Examen TOPIK',
+      fr: "Guide Ultime pour Réussir l'Examen TOPIK",
       es: 'Guía Definitiva para Dominar el Examen TOPIK',
       de: 'Ultimativer Leitfaden zur TOPIK Prüfung',
       ru: 'Окончательное Руководство по Сдаче Экзамена TOPIK',
       vi: 'Hướng Dẫn Chinh Phục Hoàn Toàn Kỳ Thi TOPIK',
     },
-    'EamULGaprtw': {
+    EamULGaprtw: {
       ko: 'TOPIK 6급까지 한국어 학습 여정',
       en: 'Korean Learning Journey to TOPIK Level 6',
       ja: 'TOPIK6級までの韓国語学習の道のり',
       zh: '韩语学习到TOPIK6级的历程',
-      fr: 'Parcours d\'Apprentissage du Coréen jusqu\'au TOPIK Niveau 6',
+      fr: "Parcours d'Apprentissage du Coréen jusqu'au TOPIK Niveau 6",
       es: 'Viaje de Aprendizaje de Coreano hasta TOPIK Nivel 6',
       de: 'Koreanisch Lernreise bis TOPIK Level 6',
       ru: 'Путь Изучения Корейского до TOPIK Уровня 6',
       vi: 'Hành Trình Học Tiếng Hàn đến TOPIK Cấp 6',
     },
-    'g9BA2vIvaiA': {
+    g9BA2vIvaiA: {
       ko: '6개월 만에 TOPIK 1급에서 5급까지',
       en: 'TOPIK Level 1 to 5 in 6 Months',
       ja: '6ヶ月でTOPIK1級から5級まで',
@@ -229,18 +232,18 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
       ru: 'TOPIK Уровень 1 до 5 за 6 Месяцев',
       vi: 'TOPIK Từ Cấp 1 đến 5 trong 6 Tháng',
     },
-    'tx_7pKLr1c8': {
+    tx_7pKLr1c8: {
       ko: '한국 유학 전 꼭 알아야 할 10가지',
       en: '10 Things You Must Know Before Studying in Korea',
       ja: '韓国留学前に必ず知るべき10のこと',
       zh: '韩国留学前必须知道的10件事',
-      fr: '10 Choses à Savoir Absolument Avant d\'Étudier en Corée',
+      fr: "10 Choses à Savoir Absolument Avant d'Étudier en Corée",
       es: '10 Cosas que Debes Saber Antes de Estudiar en Corea',
       de: '10 Dinge die Sie vor dem Studium in Korea Wissen Müssen',
       ru: '10 Вещей, Которые Нужно Знать Перед Учебой в Корее',
       vi: '10 Điều Bạn Phải Biết Trước Khi Du Học Hàn Quốc',
     },
-    'bZJpJ6svccA': {
+    bZJpJ6svccA: {
       ko: '한국 유학생 숙소 구하기 완전 가이드',
       en: 'Complete Guide to Finding Student Housing in Korea',
       ja: '韓国留学生宿舎探し完全ガイド',
@@ -251,29 +254,29 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
       ru: 'Полное Руководство по Поиску Студенческого Жилья в Корее',
       vi: 'Hướng Dẫn Hoàn Hảo Tìm Chỗ Ở Sinh Viên ở Hàn Quốc',
     },
-    'Yt7l_XklAg8': {
+    Yt7l_XklAg8: {
       ko: '외국인으로서 한국에서 일하는 현실',
       en: 'Reality of Working in Korea as a Foreigner',
       ja: '外国人として韓国で働く現実',
       zh: '作为外国人在韩国工作的现实',
-      fr: 'Réalité de Travailler en Corée en tant qu\'Étranger',
+      fr: "Réalité de Travailler en Corée en tant qu'Étranger",
       es: 'Realidad de Trabajar en Corea como Extranjero',
       de: 'Realität des Arbeitens in Korea als Ausländer',
       ru: 'Реальность Работы в Корее как Иностранца',
       vi: 'Thực Tế Làm Việc ở Hàn Quốc với Tư Cách Người Nước Ngoài',
     },
-    'db4YC3J1VAU': {
+    db4YC3J1VAU: {
       ko: '한국 면접 질문 답변법',
       en: 'How to Answer Korean Job Interview Questions',
       ja: '韓国面接質問の答え方',
       zh: '韩国面试问题回答技巧',
-      fr: 'Comment Répondre aux Questions d\'Entretien d\'Embauche Coréen',
+      fr: "Comment Répondre aux Questions d'Entretien d'Embauche Coréen",
       es: 'Cómo Responder Preguntas de Entrevista de Trabajo Coreana',
       de: 'Wie man Koreanische Vorstellungsgespräch Fragen Beantwortet',
       ru: 'Как Отвечать на Вопросы Корейского Собеседования',
       vi: 'Cách Trả Lời Câu Hỏi Phỏng Vấn Việc Làm Hàn Quốc',
     },
-    'VSamY6SHwRs': {
+    VSamY6SHwRs: {
       ko: '한국 취업 성공기 - E7 비자까지',
       en: 'Success Story: Getting a Job in Korea - E7 Visa Journey',
       ja: '韓国就職成功記 - E7ビザまで',
@@ -289,13 +292,13 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
       en: 'What Koreans Think About Overseas Koreans',
       ja: '韓国人が考える海外韓国人に対する認識',
       zh: '韩国人对海外韩国人的看法',
-      fr: 'Ce que les Coréens Pensent des Coréens d\'Outre-mer',
+      fr: "Ce que les Coréens Pensent des Coréens d'Outre-mer",
       es: 'Lo que los Coreanos Piensan Sobre los Coreanos en el Extranjero',
       de: 'Was Koreaner über Übersee-Koreaner Denken',
       ru: 'Что Корейцы Думают о Зарубежных Корейцах',
       vi: 'Người Hàn Quốc Nghĩ Gì Về Người Hàn Quốc Hải Ngoại',
     },
-    'PmmKNGMI9F8': {
+    PmmKNGMI9F8: {
       ko: '한국 사회 적응과 직장 문화 이해하기',
       en: 'Understanding Korean Society & Workplace Culture',
       ja: '韓国社会適応と職場文化の理解',
@@ -306,7 +309,7 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
       ru: 'Понимание Корейского Общества и Культуры Рабочего Места',
       vi: 'Hiểu Xã Hội Hàn Quốc & Văn Hóa Công Sở',
     },
-    's4QrQYg7M5Y': {
+    s4QrQYg7M5Y: {
       ko: '한국 직장인 생활과 쇼핑 문화',
       en: 'Korean Office Worker Life & Shopping Culture',
       ja: '韓国会社員生活とショッピング文化',
@@ -335,7 +338,7 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
         channelName: 'Korean Englishman',
         liked: false,
         tags: ['travel'],
-        views: '',
+        views: '조회수',
       },
       {
         id: 'O5_jxkEBSZU',
@@ -344,7 +347,7 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
         channelName: 'Travel Korea',
         liked: false,
         tags: ['tourism'],
-        views: '',
+        views: '조회수',
       },
       {
         id: '4GKwxnk0E4s',
@@ -353,7 +356,7 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
         channelName: 'Korea Tourism',
         liked: false,
         tags: ['travel'],
-        views: '',
+        views: '조회수',
       },
       {
         id: 'hx0cbc2jr90',
@@ -362,7 +365,7 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
         channelName: 'Korea Travel Updates',
         liked: false,
         tags: ['travel'],
-        views: '',
+        views: '조회수',
       },
       {
         id: 'kDvDk2lw72c',
@@ -371,7 +374,7 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
         channelName: 'Korean Culture Guide',
         liked: false,
         tags: ['tourism'],
-        views: '',
+        views: '조회수',
       },
       {
         id: 'ELdMLCfrNy4',
@@ -380,7 +383,7 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
         channelName: 'Korea Culture Shock',
         liked: false,
         tags: ['travel'],
-        views: '',
+        views: '조회수',
       },
     ],
     living: [
@@ -391,7 +394,7 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
         channelName: 'DAVE (데이브)',
         liked: false,
         tags: ['living'],
-        views: '',
+        views: '조회수',
       },
       {
         id: '3ymWhY7RLAE',
@@ -400,7 +403,7 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
         channelName: 'DAVE (데이브)',
         liked: false,
         tags: ['living'],
-        views: '',
+        views: '조회수',
       },
       {
         id: '0Fg-P67MTnk',
@@ -409,7 +412,7 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
         channelName: 'DAVE (데이브)',
         liked: false,
         tags: ['living'],
-        views: '',
+        views: '조회수',
       },
       {
         id: '5kDbfjQAA6Q',
@@ -418,7 +421,7 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
         channelName: 'Korea Housing Guide',
         liked: false,
         tags: ['residence'],
-        views: '',
+        views: '조회수',
       },
       {
         id: '81rLgi8zRhw',
@@ -427,7 +430,7 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
         channelName: 'Seoul Living Cost',
         liked: false,
         tags: ['living'],
-        views: '',
+        views: '조회수',
       },
       {
         id: 'f8KgNP5qyOs',
@@ -436,7 +439,7 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
         channelName: 'Korea Life Tips',
         liked: false,
         tags: ['residence'],
-        views: '',
+        views: '조회수',
       },
     ],
     study: [
@@ -447,7 +450,7 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
         channelName: 'Korean Study Tips',
         liked: false,
         tags: ['study'],
-        views: '',
+        views: '조회수',
       },
       {
         id: 'uh2Td2D9BVo',
@@ -456,7 +459,7 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
         channelName: 'Yonsei Language',
         liked: false,
         tags: ['study'],
-        views: '',
+        views: '조회수',
       },
       {
         id: 'EamULGaprtw',
@@ -465,7 +468,7 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
         channelName: 'SolBridge Student',
         liked: false,
         tags: ['university'],
-        views: '',
+        views: '조회수',
       },
       {
         id: 'g9BA2vIvaiA',
@@ -474,7 +477,7 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
         channelName: 'Korean Fast Track',
         liked: false,
         tags: ['study'],
-        views: '',
+        views: '조회수',
       },
       {
         id: 'tx_7pKLr1c8',
@@ -483,7 +486,7 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
         channelName: 'Study in Korea Guide',
         liked: false,
         tags: ['university'],
-        views: '',
+        views: '조회수',
       },
       {
         id: 'bZJpJ6svccA',
@@ -492,7 +495,7 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
         channelName: 'Korean Student Housing',
         liked: false,
         tags: ['study'],
-        views: '',
+        views: '조회수',
       },
     ],
     job: [
@@ -503,7 +506,7 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
         channelName: 'Korea Work Reality',
         liked: false,
         tags: ['job'],
-        views: '',
+        views: '조회수',
       },
       {
         id: 'db4YC3J1VAU',
@@ -512,7 +515,7 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
         channelName: 'Korea Interview Guide',
         liked: false,
         tags: ['job'],
-        views: '',
+        views: '조회수',
       },
       {
         id: 'VSamY6SHwRs',
@@ -521,7 +524,7 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
         channelName: 'Korea Career Success',
         liked: false,
         tags: ['work'],
-        views: '',
+        views: '조회수',
       },
       {
         id: '-WjlvfggAjE',
@@ -530,7 +533,7 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
         channelName: 'Korean Perspective',
         liked: false,
         tags: ['work'],
-        views: '',
+        views: '조회수',
       },
       {
         id: 'PmmKNGMI9F8',
@@ -539,7 +542,7 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
         channelName: 'Korea Social Integration',
         liked: false,
         tags: ['job'],
-        views: '',
+        views: '조회수',
       },
       {
         id: 's4QrQYg7M5Y',
@@ -548,7 +551,7 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
         channelName: 'Korea Work Life',
         liked: false,
         tags: ['work'],
-        views: '',
+        views: '조회수',
       },
     ],
     work: [
@@ -559,7 +562,7 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
         channelName: 'Korea Work Reality',
         liked: false,
         tags: ['job'],
-        views: '',
+        views: '조회수',
       },
       {
         id: 'db4YC3J1VAU',
@@ -568,7 +571,7 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
         channelName: 'Korea Interview Guide',
         liked: false,
         tags: ['job'],
-        views: '',
+        views: '조회수',
       },
       {
         id: 'VSamY6SHwRs',
@@ -577,7 +580,7 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
         channelName: 'Korea Career Success',
         liked: false,
         tags: ['work'],
-        views: '',
+        views: '조회수',
       },
       {
         id: '-WjlvfggAjE',
@@ -586,7 +589,7 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
         channelName: 'Korean Perspective',
         liked: false,
         tags: ['work'],
-        views: '',
+        views: '조회수',
       },
       {
         id: 'PmmKNGMI9F8',
@@ -595,7 +598,7 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
         channelName: 'Korea Social Integration',
         liked: false,
         tags: ['job'],
-        views: '',
+        views: '조회수',
       },
       {
         id: 's4QrQYg7M5Y',
@@ -604,7 +607,7 @@ const getSampleVideosByPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES, 
         channelName: 'Korea Work Life',
         liked: false,
         tags: ['work'],
-        views: '',
+        views: '조회수',
       },
     ],
   };
@@ -690,7 +693,8 @@ const YoutubeGalleryWidget: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [playingVideo, setPlayingVideo] = useState<{ id: string; title: string } | null>(null);
   const [openDialog, setOpenDialog] = useState<boolean>(false);
-  const [currentPurpose, setCurrentPurpose] = useState<keyof typeof PURPOSE_SEARCH_QUERIES>('travel');
+  const [currentPurpose, setCurrentPurpose] =
+    useState<keyof typeof PURPOSE_SEARCH_QUERIES>('travel');
   const [isUsingSampleData, setIsUsingSampleData] = useState<boolean>(false);
   const { t } = useTranslation();
   const { language } = useLanguageStore();
@@ -758,7 +762,7 @@ const YoutubeGalleryWidget: React.FC = () => {
       }
 
       const searchQuery = PURPOSE_SEARCH_QUERIES[purpose];
-      
+
       // 3. YouTube API 호출 (캐시가 없을 때만)
       console.log(`[YouTubeWidget] API 호출 시작 (${purpose}) - 캐시 없음`);
       const response = await axios.get('https://www.googleapis.com/youtube/v3/search', {
@@ -788,7 +792,7 @@ const YoutubeGalleryWidget: React.FC = () => {
 
         // 검색 결과와 통계 정보 결합
         const allVideoData = statsResponse.data.items.map((item: any) => {
-          //  포맷팅
+          // 조회수 포맷팅
           const viewCount = parseInt(item.statistics.viewCount);
           let formattedViews = '';
 
@@ -828,11 +832,13 @@ const YoutubeGalleryWidget: React.FC = () => {
         setCachedVideos(purpose, selectedVideos);
         setVideos(selectedVideos);
         setIsUsingSampleData(false);
-        console.log(`[YouTubeWidget] API 호출 성공 및 캐시 저장 (${purpose}) - ${allVideoData.length}개 중 ${selectedVideos.length}개 랜덤 선택`);
+        console.log(
+          `[YouTubeWidget] API 호출 성공 및 캐시 저장 (${purpose}) - ${allVideoData.length}개 중 ${selectedVideos.length}개 랜덤 선택`
+        );
       }
     } catch (err: any) {
       console.error('YouTube API 오류:', err);
-      
+
       // 5. API 오류 시 샘플 데이터 사용
       if (err.response?.status === 403) {
         console.log('[YouTubeWidget] API 할당량 초과로 샘플 데이터 사용');
@@ -852,10 +858,8 @@ const YoutubeGalleryWidget: React.FC = () => {
 
   // 좋아요 토글
   const handleLikeToggle = (id: string) => {
-    setVideos(prevVideos => 
-      prevVideos.map(video => 
-        video.id === id ? { ...video, liked: !video.liked } : video
-      )
+    setVideos(prevVideos =>
+      prevVideos.map(video => (video.id === id ? { ...video, liked: !video.liked } : video))
     );
   };
 
@@ -870,7 +874,7 @@ const YoutubeGalleryWidget: React.FC = () => {
   const getTranslatedPurpose = (purpose: keyof typeof PURPOSE_SEARCH_QUERIES): string => {
     const purposeTranslationMap = {
       travel: 'widgets.youtubeGallery.purposes.travel',
-      living: 'widgets.youtubeGallery.purposes.residence', 
+      living: 'widgets.youtubeGallery.purposes.residence',
       study: 'widgets.youtubeGallery.purposes.study',
       job: 'widgets.youtubeGallery.purposes.employment',
       work: 'widgets.youtubeGallery.purposes.employment',
@@ -1063,10 +1067,9 @@ const YoutubeGalleryWidget: React.FC = () => {
         sx={{ textAlign: 'center', mt: 2, pt: 1, borderTop: '1px solid', borderColor: 'divider' }}
       >
         <Typography variant="caption" color="text.secondary">
-          {isUsingSampleData 
+          {isUsingSampleData
             ? t('widgets.youtubeGallery.messages.sampleDataInfo')
-            : t('widgets.youtubeGallery.info.poweredBy')
-          }
+            : t('widgets.youtubeGallery.info.poweredBy')}
         </Typography>
       </Box>
 

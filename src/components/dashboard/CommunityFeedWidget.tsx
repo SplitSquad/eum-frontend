@@ -651,7 +651,7 @@ const CommunityPreferenceModal: React.FC<CommunityPreferenceModalProps> = ({
                         }}
                       />
                       <Typography variant="body2" fontWeight={500}>
-                        #{index + 1} {translateCommunityCategory(category.name, t)}
+                        #{index + 1} {translateCommunityTag(category.name, t)}
                       </Typography>
                     </Box>
                     <Typography variant="body2" fontWeight={600} color={category.color}>
