@@ -848,7 +848,7 @@ const ProBoardListPage: React.FC = () => {
         </div>
       </div>
 
-      {/* 커뮤니티 타입 전환 버튼 - Pro 테마용 */}
+      {/* 커뮤니티 타입 전환 버튼 - Pro 테마용 
       <div
         style={{
           borderBottom: '1.5px solid #e5e7eb',
@@ -917,7 +917,7 @@ const ProBoardListPage: React.FC = () => {
             </button>
           </div>
         </div>
-      </div>
+      </div>*/}
 
       {/* 메인 레이아웃 (ProInfoList와 동일) */}
       <div
@@ -958,7 +958,6 @@ const ProBoardListPage: React.FC = () => {
                   ? t('infoPage.content.allInfo')
                   : t(`community.categories.${selectedCategory}`) || selectedCategory}
               </h2>
-              {/* 글쓰기 버튼 왼쪽, 정렬 드롭다운 오른쪽, 둘 다 오른쪽 정렬 */}
               <div
                 style={{
                   display: 'flex',
@@ -968,6 +967,15 @@ const ProBoardListPage: React.FC = () => {
                   justifyContent: 'flex-end',
                 }}
               >
+                {/* 총 게시글 Typography를 글쓰기 버튼 왼쪽에 배치 */}
+                <Typography
+                  variant="subtitle2"
+                  sx={{ color: '#222', fontWeight: 700, fontSize: 15, mr: 1 }}
+                >
+                  {t('community.messages.totalPosts', {
+                    count: postPageInfo.totalElements.toString(),
+                  })}
+                </Typography>
                 <button
                   onClick={handleCreatePost}
                   style={{
@@ -1145,12 +1153,12 @@ const ProBoardListPage: React.FC = () => {
               paddingLeft: 16,
             }}
           >
-            {/* 총 게시글 개수 박스 */}
+            {/* 소그룹 모임으로 가는 버튼을 기존 총 게시글 개수 박스 자리에 추가 (작고 자연스럽게) */}
             <Paper
               elevation={0}
               sx={{
                 mb: 1,
-                p: 2,
+                p: 1.5,
                 bgcolor: 'rgba(255,255,255,0.95)',
                 borderRadius: '12px',
                 border: '1.5px solid #e5e7eb',
@@ -1160,11 +1168,35 @@ const ProBoardListPage: React.FC = () => {
                 marginBottom: 0,
               }}
             >
-              <Typography variant="subtitle2" sx={{ color: '#222', fontWeight: 700, fontSize: 18 }}>
-                {t('community.messages.totalPosts', {
-                  count: postPageInfo.totalElements.toString(),
-                })}
-              </Typography>
+              <button
+                onClick={() => navigate('/community/groups')}
+                style={{
+                  ...proButton,
+                  padding: '7px 0',
+                  fontSize: 15,
+                  width: '100%',
+                  borderRadius: 8,
+                  border: 'none',
+                  backgroundColor: '#f7f7f7',
+                  color: '#333',
+                  fontWeight: 600,
+                  margin: 0,
+                  boxShadow: 'none',
+                  transition: 'background 0.2s, color 0.2s',
+                  outline: 'none',
+                  cursor: 'pointer',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.backgroundColor = 'rgba(34, 34, 34, 0.07)';
+                  e.currentTarget.style.color = '#111';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.backgroundColor = '#f7f7f7';
+                  e.currentTarget.style.color = '#333';
+                }}
+              >
+                {t('common.smallGroups')}
+              </button>
             </Paper>
 
             {/* 필터/검색 영역 */}
@@ -1360,45 +1392,49 @@ const ProBoardListPage: React.FC = () => {
                   </ToggleButtonGroup>
 
                   {/* 카테고리에 따른 태그 선택 */}
-                  <Typography
-                    variant="subtitle2"
-                    gutterBottom
-                    sx={{ fontWeight: 600, color: '#222', mt: 2 }}
-                  >
-                    {t('community.filters.tags')}
-                  </Typography>
-                  <Box
-                    key={`tags-${selectedCategory}-${selectedTags.length}`}
-                    sx={{
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      gap: 1,
-                      mt: 1,
-                    }}
-                  >
-                    {availableTags.map(tag => (
-                      <Chip
-                        key={`${tag}-${selectedTags.includes(tag)}`}
-                        label={tag}
-                        onClick={() => handleTagSelect(tag)}
-                        color={selectedTags.includes(tag) ? 'primary' : 'default'}
-                        variant={selectedTags.includes(tag) ? 'filled' : 'outlined'}
+                  {selectedCategory && selectedCategory !== '전체' && (
+                    <>
+                      <Typography
+                        variant="subtitle2"
+                        gutterBottom
+                        sx={{ fontWeight: 600, color: '#222', mt: 2 }}
+                      >
+                        {t('community.filters.tags')}
+                      </Typography>
+                      <Box
+                        key={`tags-${selectedCategory}-${selectedTags.length}`}
                         sx={{
-                          borderRadius: '16px',
-                          borderColor: selectedTags.includes(tag) ? '#222' : '#e5e7eb',
-                          backgroundColor: selectedTags.includes(tag)
-                            ? 'rgba(226, 225, 225, 0.2)'
-                            : 'transparent',
-                          color: selectedTags.includes(tag) ? '#222' : '#222',
-                          '&:hover': {
-                            backgroundColor: selectedTags.includes(tag)
-                              ? 'rgba(226, 225, 225, 0.3)'
-                              : 'rgba(226, 225, 225, 0.2)',
-                          },
+                          display: 'flex',
+                          flexWrap: 'wrap',
+                          gap: 1,
+                          mt: 1,
                         }}
-                      />
-                    ))}
-                  </Box>
+                      >
+                        {availableTags.map(tag => (
+                          <Chip
+                            key={`${tag}-${selectedTags.includes(tag)}`}
+                            label={tag}
+                            onClick={() => handleTagSelect(tag)}
+                            color={selectedTags.includes(tag) ? 'primary' : 'default'}
+                            variant={selectedTags.includes(tag) ? 'filled' : 'outlined'}
+                            sx={{
+                              borderRadius: '16px',
+                              borderColor: selectedTags.includes(tag) ? '#222' : '#e5e7eb',
+                              backgroundColor: selectedTags.includes(tag)
+                                ? 'rgba(226, 225, 225, 0.2)'
+                                : 'transparent',
+                              color: selectedTags.includes(tag) ? '#222' : '#222',
+                              '&:hover': {
+                                backgroundColor: selectedTags.includes(tag)
+                                  ? 'rgba(226, 225, 225, 0.3)'
+                                  : 'rgba(226, 225, 225, 0.2)',
+                              },
+                            }}
+                          />
+                        ))}
+                      </Box>
+                    </>
+                  )}
                 </Box>
               </Box>
             </Paper>

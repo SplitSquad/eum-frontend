@@ -69,15 +69,15 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
     borderRadius: theme.spacing(1.5),
     transition: 'all 0.3s ease',
     '&:hover .MuiOutlinedInput-notchedOutline': {
-      borderColor: alpha(theme.palette.primary.main, 0.5),
+      borderColor: '#bdbdbd',
     },
     '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-      borderColor: theme.palette.primary.main,
+      borderColor: '#636363',
       borderWidth: '2px',
     },
   },
   '& .MuiInputLabel-outlined.Mui-focused': {
-    color: theme.palette.primary.main,
+    color: '#636363',
   },
   '& .MuiInputBase-input': {
     padding: theme.spacing(1.5, 2),
@@ -589,9 +589,7 @@ const TravelProfile: React.FC = () => {
                 label={t('onboarding.travel.country')}
                 value={formData.nationality}
                 onChange={value => setFormData(prev => ({ ...prev, nationality: value }))}
-                fullWidth
               />
-
               <StyledTextField
                 select
                 label={t('onboarding.travel.uiLanguage')}

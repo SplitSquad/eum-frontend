@@ -28,7 +28,8 @@ import { send } from 'process';
 import { useTranslation } from '@/shared/i18n';
 import { set } from 'date-fns';
 import { setupDebateLanguageChangeListener } from '@/features/debate/store/debateStore';
-
+import bottomImg from '@/assets/icons/common/bottom.png';
+import bagImg from '@/assets/icons/common/보따리.png';
 // 스타일 컴포넌트
 const CategoryItem = styled(ListItemButton)(({ theme }) => ({
   padding: '12px 16px',
@@ -433,7 +434,8 @@ const DebateListPage: React.FC = () => {
     <DebateListContainer>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
         <Typography variant="h6" fontWeight={600}>
-          {categoryMappings[selectedCategory]?.display || t('debate.categories.all')} {t('debate.name')}
+          {categoryMappings[selectedCategory]?.display || t('debate.categories.all')}{' '}
+          {t('debate.name')}
         </Typography>
       </Box>
 

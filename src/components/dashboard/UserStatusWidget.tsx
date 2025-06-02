@@ -113,7 +113,7 @@ declare global {
 const UserStatusWidget: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useAuthStore();
-  
+
   // 마이페이지 스토어 사용 - level 정보 포함
   const {
     profile,
@@ -127,7 +127,7 @@ const UserStatusWidget: React.FC = () => {
     fetchMyDebates,
     fetchMyBookmarks,
   } = useMypageStore();
-  
+
   // 사용자 정보 상태
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [userPreference, setUserPreference] = useState<UserPreference | null>(null);
@@ -136,7 +136,7 @@ const UserStatusWidget: React.FC = () => {
   const [activityStreak, setActivityStreak] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // 날씨 정보 상태 추가
   const [weatherInfo, setWeatherInfo] = useState<WeatherInfo>({
     current: '맑음',
@@ -147,7 +147,7 @@ const UserStatusWidget: React.FC = () => {
       { day: '모레', icon: '🌧️', temp: 22, minTemp: 18, maxTemp: 26, precipitationProbability: 70 },
     ],
   });
-  
+
   // 위치 정보 상태 추가
   const [userLocation, setUserLocation] = useState<{
     latitude: number;
@@ -166,11 +166,11 @@ const UserStatusWidget: React.FC = () => {
   const debatesCount = debates?.content?.length || 0;
   const bookmarksCount = bookmarks?.content?.length || 0;
   const totalActivities = postsCount + commentsCount + debatesCount + bookmarksCount;
-  
+
   const userLevel = Math.min(Math.floor(totalActivities / 5) + 1, 10); // 최대 10레벨 (마이페이지와 동일)
   const nextLevel = userLevel + 1;
   const userExp = userLevel >= 10 ? 100 : ((totalActivities % 5) / 5) * 100; // 다음 레벨까지의 진행률
-  
+
   // 레벨별 칭호 시스템
   const getUserTitle = (level: number): { title: string; color: string; icon: string } => {
     const titles = {
@@ -187,7 +187,7 @@ const UserStatusWidget: React.FC = () => {
     };
     return titles[level as keyof typeof titles] || titles[1];
   };
-  
+
   const userTitle = getUserTitle(userLevel);
 
   // 현재 시간 상태 (실시간 업데이트)
@@ -207,19 +207,22 @@ const UserStatusWidget: React.FC = () => {
 
   // 실시간 날씨 업데이트 useEffect 추가
   useEffect(() => {
-    const weatherTimer = setInterval(async () => {
-      try {
-        const weather = await WeatherService.getWeatherInfo(
-          userLocation.latitude,
-          userLocation.longitude,
-          userLocation.address
-        );
-        setWeatherInfo(weather);
-        console.log('날씨 정보 실시간 업데이트:', weather);
-      } catch (error) {
-        console.log('실시간 날씨 업데이트 실패:', error);
-      }
-    }, 30 * 60 * 1000); // 30분마다 날씨 업데이트
+    const weatherTimer = setInterval(
+      async () => {
+        try {
+          const weather = await WeatherService.getWeatherInfo(
+            userLocation.latitude,
+            userLocation.longitude,
+            userLocation.address
+          );
+          setWeatherInfo(weather);
+          console.log('날씨 정보 실시간 업데이트:', weather);
+        } catch (error) {
+          console.log('실시간 날씨 업데이트 실패:', error);
+        }
+      },
+      30 * 60 * 1000
+    ); // 30분마다 날씨 업데이트
 
     return () => {
       clearInterval(weatherTimer);
@@ -239,7 +242,12 @@ const UserStatusWidget: React.FC = () => {
   };
 
   // 사용자 뱃지 생성 함수 (마이페이지와 동일한 로직)
-  const generateUserBadges = (postsCount: number, commentsCount: number, debatesCount: number, bookmarksCount: number): UserBadge[] => {
+  const generateUserBadges = (
+    postsCount: number,
+    commentsCount: number,
+    debatesCount: number,
+    bookmarksCount: number
+  ): UserBadge[] => {
     const totalActivities = postsCount + commentsCount + debatesCount;
     const badges: UserBadge[] = [];
 
@@ -395,11 +403,13 @@ const UserStatusWidget: React.FC = () => {
     }
 
     // 날짜별로 그룹화 (YYYY-MM-DD 형식)
-    const activityDates = [...new Set(
-      allActivities.map(activity => 
-        new Date(activity.date).toISOString().split('T')[0]
-      )
-    )].sort().reverse(); // 최신순 정렬
+    const activityDates = [
+      ...new Set(
+        allActivities.map(activity => new Date(activity.date).toISOString().split('T')[0])
+      ),
+    ]
+      .sort()
+      .reverse(); // 최신순 정렬
 
     if (activityDates.length === 0) return 0;
 
@@ -410,7 +420,7 @@ const UserStatusWidget: React.FC = () => {
 
     for (let i = 0; i < activityDates.length; i++) {
       const checkDate = currentDate.toISOString().split('T')[0];
-      
+
       if (activityDates.includes(checkDate)) {
         streak++;
         currentDate.setDate(currentDate.getDate() - 1); // 하루 전으로
@@ -436,7 +446,7 @@ const UserStatusWidget: React.FC = () => {
           UserService.getProfile(),
           UserService.getPreference(),
         ]);
-        
+
         setUserProfile(userProfileData);
         setUserPreference(preference);
 
@@ -448,14 +458,14 @@ const UserStatusWidget: React.FC = () => {
         // 위치 및 날씨 정보 로딩 (카카오맵 방식)
         try {
           const position = await WeatherService.getCurrentPosition();
-          
+
           // 카카오맵 API로 상세 주소 가져오기
           await new Promise<void>((resolve, reject) => {
             if (window.kakao && window.kakao.maps) {
               resolve();
               return;
             }
-            
+
             const script = document.createElement('script');
             script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${env.KAKAO_MAP_API_KEY}&libraries=services&autoload=false`;
             script.onload = () => {
@@ -464,18 +474,18 @@ const UserStatusWidget: React.FC = () => {
             script.onerror = reject;
             document.head.appendChild(script);
           });
-          
+
           const geocoder = new window.kakao.maps.services.Geocoder();
-          const detailedAddress = await new Promise<string>((resolve) => {
-              geocoder.coord2RegionCode(
-                position.longitude,
-                position.latitude,
-                (result: any, status: any) => {
+          const detailedAddress = await new Promise<string>(resolve => {
+            geocoder.coord2RegionCode(
+              position.longitude,
+              position.latitude,
+              (result: any, status: any) => {
                 if (status === window.kakao.maps.services.Status.OK && result[0]) {
                   const city = result[0].region_1depth_name;
                   const district = result[0].region_2depth_name;
                   const dong = result[0].region_3depth_name || '';
-                  
+
                   // 상세 주소 포맷팅
                   let formattedAddress = '';
                   if (dong) {
@@ -486,37 +496,37 @@ const UserStatusWidget: React.FC = () => {
                       // 숫자를 제거하되 '동' 부분은 유지 (목2동 -> 목동)
                       const cleanDong = dong.replace(/(\D+)(\d+)(동)/, '$1$3');
                       formattedAddress = `${city} ${district} ${cleanDong}`;
-                      } else {
-                      formattedAddress = `${city} ${district} ${dong}`;
-                      }
                     } else {
-                    formattedAddress = `${city} ${district}`;
+                      formattedAddress = `${city} ${district} ${dong}`;
                     }
-                  
-                  resolve(formattedAddress);
                   } else {
-                  resolve('현재 위치');
+                    formattedAddress = `${city} ${district}`;
                   }
+
+                  resolve(formattedAddress);
+                } else {
+                  resolve('현재 위치');
                 }
-              );
-            });
-          
+              }
+            );
+          });
+
           // 날씨 정보도 함께 가져오기
           const weather = await WeatherService.getWeatherInfo(
             position.latitude,
             position.longitude,
             detailedAddress
           );
-          
+
           setWeatherInfo({
             ...weather,
-            location: detailedAddress // 상세 주소로 설정
+            location: detailedAddress, // 상세 주소로 설정
           });
-          
+
           setUserLocation({
             latitude: position.latitude,
             longitude: position.longitude,
-            address: detailedAddress
+            address: detailedAddress,
           });
         } catch (error) {
           console.log('위치/날씨 정보 로딩 실패:', error);
@@ -532,7 +542,6 @@ const UserStatusWidget: React.FC = () => {
             fetchMyBookmarks(),
           ]);
         }
-
       } catch (error) {
         console.error('사용자 데이터 로딩 실패:', error);
         setError('사용자 정보를 불러오는 중 오류가 발생했습니다.');
@@ -542,7 +551,15 @@ const UserStatusWidget: React.FC = () => {
     };
 
     fetchUserData();
-  }, [user, profile, fetchProfile, fetchMyPosts, fetchMyComments, fetchMyDebates, fetchMyBookmarks]);
+  }, [
+    user,
+    profile,
+    fetchProfile,
+    fetchMyPosts,
+    fetchMyComments,
+    fetchMyDebates,
+    fetchMyBookmarks,
+  ]);
 
   // 마이페이지 데이터가 변경될 때 분석 데이터 업데이트
   useEffect(() => {
@@ -552,7 +569,7 @@ const UserStatusWidget: React.FC = () => {
       const commentsCount = comments?.content?.length || 0;
       const debatesCount = debates?.content?.length || 0;
       const bookmarksCount = bookmarks?.content?.length || 0;
-      
+
       const badges = generateUserBadges(postsCount, commentsCount, debatesCount, bookmarksCount);
       setUserBadges(badges);
 
@@ -638,8 +655,8 @@ const UserStatusWidget: React.FC = () => {
           '@keyframes pulse': {
             '0%': { transform: 'scale(1)', opacity: 0.4 },
             '50%': { transform: 'scale(1.1)', opacity: 0.6 },
-            '100%': { transform: 'scale(1)', opacity: 0.4 }
-          }
+            '100%': { transform: 'scale(1)', opacity: 0.4 },
+          },
         }}
       />
 
@@ -676,7 +693,14 @@ const UserStatusWidget: React.FC = () => {
           </Box>
 
           <Box sx={{ flex: 1 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                mb: 0.5,
+              }}
+            >
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <Typography variant="h6" sx={{ fontWeight: 700, mr: 1, fontSize: '1rem' }}>
                   {profile?.name || userProfile?.name || '사용자'}
@@ -707,17 +731,23 @@ const UserStatusWidget: React.FC = () => {
                   }}
                 />
               </Box>
-              
+
               {/* 현재 시간 표시 */}
               <Box sx={{ display: 'flex', alignItems: 'center', ml: 1 }}>
                 <AccessTimeIcon sx={{ fontSize: 12, mr: 0.5, color: 'text.secondary' }} />
-                <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.secondary', fontWeight: 500 }}>
+                <Typography
+                  variant="caption"
+                  sx={{ fontSize: '0.7rem', color: 'text.secondary', fontWeight: 500 }}
+                >
                   {formattedTime}
                 </Typography>
               </Box>
             </Box>
 
-            <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5, color: userTitle.color, fontSize: '0.85rem' }}>
+            <Typography
+              variant="subtitle2"
+              sx={{ fontWeight: 600, mb: 0.5, color: userTitle.color, fontSize: '0.85rem' }}
+            >
               {getGreeting()}, {userTitle.title}!
             </Typography>
 
@@ -734,7 +764,7 @@ const UserStatusWidget: React.FC = () => {
                     '& .MuiLinearProgress-bar': {
                       background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
                       borderRadius: 2,
-                    }
+                    },
                   }}
                 />
               </Box>
@@ -742,11 +772,14 @@ const UserStatusWidget: React.FC = () => {
                 {userExp}%
               </Typography>
             </Box>
-            
+
             {/* 다음 칭호 정보 */}
             {userLevel < 10 && (
-              <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary', mt: 0.3, display: 'block' }}>
-                다음 칭호: {getUserTitle(nextLevel).icon} {getUserTitle(nextLevel).title} 
+              <Typography
+                variant="caption"
+                sx={{ fontSize: '0.65rem', color: 'text.secondary', mt: 0.3, display: 'block' }}
+              >
+                다음 칭호: {getUserTitle(nextLevel).icon} {getUserTitle(nextLevel).title}
                 <span style={{ color: getUserTitle(nextLevel).color, fontWeight: 600 }}>
                   ({5 - (totalActivities % 5)}개 활동 남음)
                 </span>
@@ -757,7 +790,6 @@ const UserStatusWidget: React.FC = () => {
 
         {/* 메인 콘텐츠 영역 - 2열 레이아웃 */}
         <Box sx={{ flex: 1, display: 'flex', gap: 1.5, minHeight: 0 }}>
-          
           {/* 왼쪽: 연속활동/뱃지 + 달성뱃지 + 최근활동 */}
           <Box sx={{ flex: 1.2, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
             {/* 연속활동 & 뱃지 통계 */}
@@ -781,22 +813,29 @@ const UserStatusWidget: React.FC = () => {
                     left: '-100%',
                     width: '100%',
                     height: '100%',
-                    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+                    background:
+                      'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
                     animation: 'shimmer 2s infinite',
                     '@keyframes shimmer': {
                       '0%': { left: '-100%' },
-                      '100%': { left: '100%' }
-                    }
-                  }
+                      '100%': { left: '100%' },
+                    },
+                  },
                 }}
               >
                 <LocalFireDepartmentIcon sx={{ fontSize: 14, mb: 0.3 }} />
-                <Typography variant="h6" fontWeight={700} sx={{ fontSize: '0.9rem', lineHeight: 1 }}>
+                <Typography
+                  variant="h6"
+                  fontWeight={700}
+                  sx={{ fontSize: '0.9rem', lineHeight: 1 }}
+                >
                   {activityStreak}일
                 </Typography>
-                <Typography variant="caption" sx={{ fontSize: '0.6rem', opacity: 0.9 }}>연속활동</Typography>
+                <Typography variant="caption" sx={{ fontSize: '0.6rem', opacity: 0.9 }}>
+                  연속활동
+                </Typography>
               </Box>
-              
+
               <Box
                 sx={{
                   flex: 1,
@@ -816,16 +855,23 @@ const UserStatusWidget: React.FC = () => {
                     left: '-100%',
                     width: '100%',
                     height: '100%',
-                    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+                    background:
+                      'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
                     animation: 'shimmer 2s infinite 1s',
-                  }
+                  },
                 }}
               >
                 <StarIcon sx={{ fontSize: 14, mb: 0.3 }} />
-                <Typography variant="h6" fontWeight={700} sx={{ fontSize: '0.9rem', lineHeight: 1 }}>
+                <Typography
+                  variant="h6"
+                  fontWeight={700}
+                  sx={{ fontSize: '0.9rem', lineHeight: 1 }}
+                >
                   {userBadges.filter(b => b.unlocked).length}개
                 </Typography>
-                <Typography variant="caption" sx={{ fontSize: '0.6rem', opacity: 0.9 }}>뱃지</Typography>
+                <Typography variant="caption" sx={{ fontSize: '0.6rem', opacity: 0.9 }}>
+                  뱃지
+                </Typography>
               </Box>
             </Box>
 
@@ -833,7 +879,13 @@ const UserStatusWidget: React.FC = () => {
             <Box sx={{ mb: 0.5 }}>
               <Typography
                 variant="subtitle2"
-                sx={{ fontWeight: 700, mb: 0.5, display: 'flex', alignItems: 'center', fontSize: '0.8rem' }}
+                sx={{
+                  fontWeight: 700,
+                  mb: 0.5,
+                  display: 'flex',
+                  alignItems: 'center',
+                  fontSize: '0.8rem',
+                }}
               >
                 <EmojiEventsIcon sx={{ fontSize: 12, mr: 0.5 }} />
                 달성 뱃지
@@ -867,7 +919,13 @@ const UserStatusWidget: React.FC = () => {
             <Box sx={{ flex: 1, minHeight: 0 }}>
               <Typography
                 variant="subtitle2"
-                sx={{ fontWeight: 700, mb: 0.5, display: 'flex', alignItems: 'center', fontSize: '0.8rem' }}
+                sx={{
+                  fontWeight: 700,
+                  mb: 0.5,
+                  display: 'flex',
+                  alignItems: 'center',
+                  fontSize: '0.8rem',
+                }}
               >
                 <NotificationsActiveIcon sx={{ fontSize: 12, mr: 0.5 }} />
                 최근 활동
@@ -892,15 +950,15 @@ const UserStatusWidget: React.FC = () => {
                         <Typography variant="body2" fontWeight={500} sx={{ fontSize: '0.75rem' }}>
                           {activity.title}
                         </Typography>
-                        <Typography 
-                          variant="caption" 
-                          color="text.secondary" 
-                          sx={{ 
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{
                             fontSize: '0.65rem',
                             display: 'block',
                             whiteSpace: 'nowrap',
                             overflow: 'hidden',
-                            textOverflow: 'ellipsis'
+                            textOverflow: 'ellipsis',
                           }}
                         >
                           {activity.description.length > 25
@@ -911,7 +969,12 @@ const UserStatusWidget: React.FC = () => {
                     </Box>
                   ))
                 ) : (
-                  <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ py: 1.5, fontSize: '0.75rem' }}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    textAlign="center"
+                    sx={{ py: 1.5, fontSize: '0.75rem' }}
+                  >
                     아직 활동이 없습니다.
                   </Typography>
                 )}
@@ -925,7 +988,13 @@ const UserStatusWidget: React.FC = () => {
             <Box sx={{ mb: 1.5 }}>
               <Typography
                 variant="subtitle2"
-                sx={{ fontWeight: 700, mb: 1, display: 'flex', alignItems: 'center', fontSize: '0.8rem' }}
+                sx={{
+                  fontWeight: 700,
+                  mb: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  fontSize: '0.8rem',
+                }}
               >
                 <WbSunnyIcon sx={{ fontSize: 12, mr: 0.5 }} />
                 날씨 정보
@@ -948,9 +1017,13 @@ const UserStatusWidget: React.FC = () => {
                 <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
                   {weatherInfo.current}
                 </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mt: 0.3 }}>
+                <Box
+                  sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mt: 0.3 }}
+                >
                   <LocationOnIcon sx={{ fontSize: 10, mr: 0.3 }} />
-                  <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>{weatherInfo.location}</Typography>
+                  <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+                    {weatherInfo.location}
+                  </Typography>
                 </Box>
               </Box>
 
@@ -971,27 +1044,41 @@ const UserStatusWidget: React.FC = () => {
                       {day.day}
                     </Typography>
                     <Typography sx={{ fontSize: '1rem', my: 0.3 }}>{day.icon}</Typography>
-                    
+
                     {/* 최저/최고 기온 표시 */}
                     {day.minTemp && day.maxTemp ? (
                       <Box>
-                        <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'primary.main', fontWeight: 600 }}>
+                        <Typography
+                          variant="caption"
+                          sx={{ fontSize: '0.65rem', color: 'primary.main', fontWeight: 600 }}
+                        >
                           {day.maxTemp}°
                         </Typography>
-                        <Typography variant="caption" sx={{ fontSize: '0.6rem', color: 'text.secondary', mx: 0.3 }}>
+                        <Typography
+                          variant="caption"
+                          sx={{ fontSize: '0.6rem', color: 'text.secondary', mx: 0.3 }}
+                        >
                           /
                         </Typography>
-                        <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary' }}>
+                        <Typography
+                          variant="caption"
+                          sx={{ fontSize: '0.65rem', color: 'text.secondary' }}
+                        >
                           {day.minTemp}°
                         </Typography>
                       </Box>
                     ) : (
-                      <Typography variant="caption" sx={{ fontSize: '0.7rem' }}>{day.temp}°</Typography>
+                      <Typography variant="caption" sx={{ fontSize: '0.7rem' }}>
+                        {day.temp}°
+                      </Typography>
                     )}
-                    
+
                     {/* 강수확률 표시 */}
                     {day.precipitationProbability && day.precipitationProbability > 0 && (
-                      <Typography variant="caption" sx={{ fontSize: '0.6rem', color: 'info.main', display: 'block', mt: 0.2 }}>
+                      <Typography
+                        variant="caption"
+                        sx={{ fontSize: '0.6rem', color: 'info.main', display: 'block', mt: 0.2 }}
+                      >
                         💧{day.precipitationProbability}%
                       </Typography>
                     )}
@@ -1004,17 +1091,23 @@ const UserStatusWidget: React.FC = () => {
             <Box sx={{ flex: 1, minHeight: 0 }}>
               <Typography
                 variant="subtitle2"
-                sx={{ fontWeight: 700, mb: 1, display: 'flex', alignItems: 'center', fontSize: '0.8rem' }}
+                sx={{
+                  fontWeight: 700,
+                  mb: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  fontSize: '0.8rem',
+                }}
               >
                 <StarIcon sx={{ fontSize: 12, mr: 0.5 }} />
                 오늘의 추천
               </Typography>
-              <Box 
-                sx={{ 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  gap: 0.6, 
-                  maxHeight: '100%', 
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 0.6,
+                  maxHeight: '100%',
                   overflowY: 'auto',
                   overflowX: 'hidden',
                   '&::-webkit-scrollbar': {
@@ -1030,7 +1123,7 @@ const UserStatusWidget: React.FC = () => {
                   },
                   '&::-webkit-scrollbar-thumb:hover': {
                     background: 'rgba(0,0,0,0.3)',
-                  }
+                  },
                 }}
               >
                 {getWeatherBasedRecommendations(weatherInfo.current, t).map((rec, index) => (
@@ -1046,7 +1139,7 @@ const UserStatusWidget: React.FC = () => {
                       cursor: 'pointer',
                       '&:hover': {
                         transform: 'scale(1.02)',
-                      }
+                      },
                     }}
                   >
                     <Typography sx={{ fontSize: '0.9rem', mr: 1 }}>{rec.icon}</Typography>
@@ -1054,15 +1147,15 @@ const UserStatusWidget: React.FC = () => {
                       <Typography variant="body2" fontWeight={500} sx={{ fontSize: '0.75rem' }}>
                         {rec.title}
                       </Typography>
-                      <Typography 
-                        variant="caption" 
-                        color="text.secondary" 
-                        sx={{ 
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{
                           fontSize: '0.65rem',
                           display: 'block',
                           whiteSpace: 'nowrap',
                           overflow: 'hidden',
-                          textOverflow: 'ellipsis'
+                          textOverflow: 'ellipsis',
                         }}
                       >
                         {rec.description}
@@ -1104,39 +1197,130 @@ const getWeatherBasedRecommendations = (
 }> => {
   const recommendations = {
     맑음: [
-      { icon: '🌳', title: '공원 산책', description: '좋은 날씨에 야외 활동을 즐겨보세요', bgColor: 'rgba(76, 175, 80, 0.1)' },
-      { icon: '📸', title: '사진 촬영', description: '맑은 하늘과 함께 인생샷을 남겨보세요', bgColor: 'rgba(33, 150, 243, 0.1)' },
-      { icon: '🚴', title: '자전거 라이딩', description: '시원한 바람과 함께 라이딩을 즐겨보세요', bgColor: 'rgba(255, 152, 0, 0.1)' },
+      {
+        icon: '🌳',
+        title: '공원 산책',
+        description: '좋은 날씨에 야외 활동을 즐겨보세요',
+        bgColor: 'rgba(76, 175, 80, 0.1)',
+      },
+      {
+        icon: '📸',
+        title: '사진 촬영',
+        description: '맑은 하늘과 함께 인생샷을 남겨보세요',
+        bgColor: 'rgba(33, 150, 243, 0.1)',
+      },
+      {
+        icon: '🚴',
+        title: '자전거 라이딩',
+        description: '시원한 바람과 함께 라이딩을 즐겨보세요',
+        bgColor: 'rgba(255, 152, 0, 0.1)',
+      },
     ],
     구름: [
-      { icon: '☕', title: '카페 탐방', description: '분위기 좋은 카페에서 여유를 즐겨보세요', bgColor: 'rgba(121, 85, 72, 0.1)' },
-      { icon: '🛍️', title: '쇼핑', description: '실내에서 편안하게 쇼핑을 즐겨보세요', bgColor: 'rgba(233, 30, 99, 0.1)' },
-      { icon: '🎨', title: '전시 관람', description: '박물관이나 갤러리를 방문해보세요', bgColor: 'rgba(156, 39, 176, 0.1)' },
+      {
+        icon: '☕',
+        title: '카페 탐방',
+        description: '분위기 좋은 카페에서 여유를 즐겨보세요',
+        bgColor: 'rgba(121, 85, 72, 0.1)',
+      },
+      {
+        icon: '🛍️',
+        title: '쇼핑',
+        description: '실내에서 편안하게 쇼핑을 즐겨보세요',
+        bgColor: 'rgba(233, 30, 99, 0.1)',
+      },
+      {
+        icon: '🎨',
+        title: '전시 관람',
+        description: '박물관이나 갤러리를 방문해보세요',
+        bgColor: 'rgba(156, 39, 176, 0.1)',
+      },
     ],
     흐림: [
-      { icon: '📚', title: '독서', description: '조용한 분위기에서 책을 읽어보세요', bgColor: 'rgba(96, 125, 139, 0.1)' },
-      { icon: '🍲', title: '요리', description: '집에서 새로운 요리에 도전해보세요', bgColor: 'rgba(255, 87, 34, 0.1)' },
-      { icon: '🎬', title: '영화 감상', description: '집에서 편안하게 영화를 즐겨보세요', bgColor: 'rgba(63, 81, 181, 0.1)' },
+      {
+        icon: '📚',
+        title: '독서',
+        description: '조용한 분위기에서 책을 읽어보세요',
+        bgColor: 'rgba(96, 125, 139, 0.1)',
+      },
+      {
+        icon: '🍲',
+        title: '요리',
+        description: '집에서 새로운 요리에 도전해보세요',
+        bgColor: 'rgba(255, 87, 34, 0.1)',
+      },
+      {
+        icon: '🎬',
+        title: '영화 감상',
+        description: '집에서 편안하게 영화를 즐겨보세요',
+        bgColor: 'rgba(63, 81, 181, 0.1)',
+      },
     ],
     비: [
-      { icon: '☕', title: '실내 카페', description: '빗소리와 함께 따뜻한 음료를 즐겨보세요', bgColor: 'rgba(121, 85, 72, 0.1)' },
-      { icon: '📖', title: '실내 독서', description: '비 오는 날엔 책과 함께 시간을 보내보세요', bgColor: 'rgba(96, 125, 139, 0.1)' },
-      { icon: '🛋️', title: '휴식', description: '집에서 편안하게 휴식을 취해보세요', bgColor: 'rgba(158, 158, 158, 0.1)' },
+      {
+        icon: '☕',
+        title: '실내 카페',
+        description: '빗소리와 함께 따뜻한 음료를 즐겨보세요',
+        bgColor: 'rgba(121, 85, 72, 0.1)',
+      },
+      {
+        icon: '📖',
+        title: '실내 독서',
+        description: '비 오는 날엔 책과 함께 시간을 보내보세요',
+        bgColor: 'rgba(96, 125, 139, 0.1)',
+      },
+      {
+        icon: '🛋️',
+        title: '휴식',
+        description: '집에서 편안하게 휴식을 취해보세요',
+        bgColor: 'rgba(158, 158, 158, 0.1)',
+      },
     ],
     눈: [
-      { icon: '⛄', title: '눈 구경', description: '아름다운 설경을 감상해보세요', bgColor: 'rgba(0, 188, 212, 0.1)' },
-      { icon: '🏠', title: '실내 활동', description: '따뜻한 실내에서 시간을 보내세요', bgColor: 'rgba(255, 152, 0, 0.1)' },
-      { icon: '🍫', title: '따뜻한 음료', description: '핫초콜릿으로 몸을 따뜻하게 하세요', bgColor: 'rgba(121, 85, 72, 0.1)' },
+      {
+        icon: '⛄',
+        title: '눈 구경',
+        description: '아름다운 설경을 감상해보세요',
+        bgColor: 'rgba(0, 188, 212, 0.1)',
+      },
+      {
+        icon: '🏠',
+        title: '실내 활동',
+        description: '따뜻한 실내에서 시간을 보내세요',
+        bgColor: 'rgba(255, 152, 0, 0.1)',
+      },
+      {
+        icon: '🍫',
+        title: '따뜻한 음료',
+        description: '핫초콜릿으로 몸을 따뜻하게 하세요',
+        bgColor: 'rgba(121, 85, 72, 0.1)',
+      },
     ],
     안개: [
-      { icon: '🚗', title: '안전 운전', description: '시야가 흐릴 때는 조심히 이동하세요', bgColor: 'rgba(158, 158, 158, 0.1)' },
-      { icon: '🏠', title: '실내 활동', description: '실내에서 안전하게 시간을 보내세요', bgColor: 'rgba(255, 152, 0, 0.1)' },
-      { icon: '📱', title: '온라인 활동', description: '집에서 온라인 콘텐츠를 즐겨보세요', bgColor: 'rgba(33, 150, 243, 0.1)' },
+      {
+        icon: '🚗',
+        title: '안전 운전',
+        description: '시야가 흐릴 때는 조심히 이동하세요',
+        bgColor: 'rgba(158, 158, 158, 0.1)',
+      },
+      {
+        icon: '🏠',
+        title: '실내 활동',
+        description: '실내에서 안전하게 시간을 보내세요',
+        bgColor: 'rgba(255, 152, 0, 0.1)',
+      },
+      {
+        icon: '📱',
+        title: '온라인 활동',
+        description: '집에서 온라인 콘텐츠를 즐겨보세요',
+        bgColor: 'rgba(33, 150, 243, 0.1)',
+      },
     ],
   };
 
-  const weatherRecs = recommendations[weatherStatus as keyof typeof recommendations] || recommendations['맑음'];
-  
+  const weatherRecs =
+    recommendations[weatherStatus as keyof typeof recommendations] || recommendations['맑음'];
+
   // 랜덤하게 섞어서 반환
   return [...weatherRecs].sort(() => Math.random() - 0.5);
 };

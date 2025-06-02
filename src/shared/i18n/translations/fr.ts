@@ -695,10 +695,24 @@ const fr = {
     editPost: 'Modifier le Post',
     create: 'Créer',
     edit: 'Modifier',
-    fileUpload: 'Téléchargement de Fichier',
-    dragAndDropOrClickToUpload: 'Glissez et déposez les fichiers ici ou cliquez pour télécharger',
-    max10MBImageAndDocumentFiles: 'Max 10MB, fichiers image et document supportés',
-    selectedFiles: 'Fichiers Sélectionnés',
+    fileUpload: {
+      fileUpload: 'Pièce jointe',
+      imageHint: '💡 Les images seront prévisualisées pour un contrôle facile',
+      imageHint2:
+        'Les images sont prévisualisées ✨\nMax 10Mo, tous types de fichiers pris en charge',
+      editModeWarning:
+        '⚠️ Ajouter de nouveaux fichiers supprimera toutes les pièces jointes existantes',
+      dragOrClick: '📁 Faites glisser ou cliquez pour télécharger des fichiers',
+      editModeDragOrClick:
+        '⚠️ Ajouter de nouveaux fichiers (tous les fichiers existants seront supprimés)',
+      editModeHint:
+        'Sélectionner de nouveaux fichiers supprimera toutes les pièces jointes existantes\nVeuillez choisir avec soin',
+      newImage: 'Nouvelles images ({count})',
+      newFile: 'Nouvelles pièces jointes ({count})',
+      existingImage: 'Images existantes ({count})',
+      existingFile: 'Pièces jointes existantes ({count})',
+    },
+    selectedFiles: 'Fichiers sélectionnés',
     existingAttachedFiles: 'Fichiers Joints Existants',
     newImages: 'Nouvelles Images',
     newAttachments: 'Nouvelles Pièces Jointes',
@@ -1289,6 +1303,7 @@ const fr = {
     specialIssue: 'Sujets spéciaux',
     specialIssues: 'Voir tous les sujets',
     noVotesYet: 'Aucun vote pour le moment. Soyez le premier à voter !',
+    noIssues: 'Aucun débat enregistré.',
   },
   infoPage: {
     title: 'Guide de vie en Corée',
@@ -1327,8 +1342,8 @@ const fr = {
       createdAt: 'Créé',
     },
     sidebar: {
-      popularInfo: '🔥 Informations populaires',
-      emergencyContacts: "🆘 Contacts d'urgence",
+      popularInfo: 'Informations populaires',
+      emergencyContacts: "Contacts d'urgence",
       emergency: {
         title: 'Urgence',
         subtitle: 'Incendie, urgence médicale',
@@ -1399,6 +1414,7 @@ const fr = {
     title: 'Assistant de Vie en Corée',
     subtitle: 'Guide de Vie en Corée avec Expert IA',
     greeting: 'Bonjour ! Je suis un expert IA dans le domaine {{category}}.',
+    matchingMessage: "Recherche d'un expert IA pour vous. Veuillez patienter.",
     categories: {
       all: '🌏 Tout',
       visa: '📑 Visa/Légal',
@@ -1409,7 +1425,7 @@ const fr = {
       life: '👨‍👩‍👧 Vie Quotidienne',
     },
     sidebar: {
-      title: '📚 Guide par Catégories',
+      title: 'Guide par Catégories',
       autoSelectInfo: 'Les catégories sont automatiquement sélectionnées selon vos questions',
     },
     chat: {
@@ -1418,7 +1434,7 @@ const fr = {
       placeholder: "N'hésitez pas à poser toute question...",
       send: 'Envoyer',
       sending: 'Envoi en cours...',
-      loading: 'Préparation de la réponse...',
+      loading: "En attente de la réponse de l'expert...",
       initialMessage: 'Comment puis-je vous aider ?',
       aiExpert: 'Expert IA',
       justNow: "À l'instant",
@@ -1482,6 +1498,23 @@ const fr = {
     mypage: 'Ma page',
     logout: 'Déconnexion',
     adminpage: 'Page administrateur',
+  },
+  intro: {
+    slide1: {
+      title: 'Commencez votre voyage avec EUM !',
+      desc1: 'Découvrez la Corée pas à pas avec EUM.',
+      desc2: 'Nous vous souhaitons un merveilleux nouveau voyage.',
+    },
+    slide2: {
+      title: 'Veuillez patienter un instant',
+      desc1: 'EUM prépare la meilleure expérience pour vous.',
+      desc2: 'Votre incroyable voyage va bientôt commencer.',
+    },
+    slide3: {
+      title: 'Bienvenue !',
+      desc1: 'Votre voyage avec EUM est sur le point de commencer.',
+      desc2: 'Tout est prêt pour votre nouvelle expérience.',
+    },
   },
 };
 

@@ -1,7 +1,6 @@
 import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { Box, Container } from '@mui/material';
 import useAuthStore from '../features/auth/store/authStore';
-import { useThemeStore } from '../features/theme/store/themeStore';
 
 // 컴포넌트 가져오기
 import UserStatusWidget from '../components/dashboard/UserStatusWidget';
@@ -25,7 +24,6 @@ import FloatingPurposeBalls from '../components/dashboard/FloatingPurposeBalls';
 const Home: React.FC = () => {
   const { isAuthenticated, user } = useAuthStore();
   const isOnBoardDone = user?.isOnBoardDone;
-  const { season } = useThemeStore();
 
   // 세 번째 행 위젯 랜덤 배치 (매번 페이지 로드 시 랜덤하게 배치)
   const thirdRowWidgets = useMemo(() => {

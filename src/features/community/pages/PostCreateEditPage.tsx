@@ -85,10 +85,10 @@ const ContentPaper = styled(Paper)(({ theme }) => ({
   position: 'relative',
   zIndex: 1,
   borderRadius: '16px',
-  boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
-  border: '1px solid rgba(255, 170, 165, 0.5)',
-  background: 'rgba(255, 255, 255, 0.9)',
-  backdropFilter: 'blur(8px)',
+  boxShadow: '0 8px 16px rgba(60,60,60,0.08)',
+  border: '1px solid #e0e0e0',
+  background: 'rgba(245, 245, 245, 0.97)',
+  backdropFilter: 'blur(6px)',
 }));
 
 const FormBox = styled(Box)(({ theme }) => ({
@@ -100,20 +100,20 @@ const FormBox = styled(Box)(({ theme }) => ({
 
 const StyledButton = styled(Button)(({ theme }) => ({
   marginTop: theme.spacing(2),
-  backgroundColor: 'rgba(255, 170, 165, 0.8)',
-  color: '#7b1fa2',
+  backgroundColor: '#444',
+  color: '#fff',
   '&:hover': {
-    backgroundColor: 'rgba(255, 107, 107, 0.7)',
+    backgroundColor: '#222',
   },
   borderRadius: '8px',
   padding: '10px 20px',
   fontWeight: 'bold',
-  boxShadow: '0 4px 8px rgba(255, 170, 165, 0.3)',
+  boxShadow: '0 4px 8px rgba(60,60,60,0.10)',
   transition: 'all 0.3s ease',
 }));
 
 const PageTitle = styled(Typography)(({ theme }) => ({
-  color: '#7b1fa2',
+  color: '#333',
   fontWeight: 'bold',
   marginBottom: theme.spacing(2),
   position: 'relative',
@@ -124,7 +124,7 @@ const PageTitle = styled(Typography)(({ theme }) => ({
     left: 0,
     width: '100px',
     height: '3px',
-    background: 'linear-gradient(90deg, rgba(255, 170, 165, 0.8), rgba(206, 147, 216, 0.8))',
+    background: 'linear-gradient(90deg, #bdbdbd, #e0e0e0)',
     borderRadius: '10px',
   },
 }));
@@ -135,15 +135,15 @@ const FileUploadBox = styled(Box)(({ theme }) => ({
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
-  border: '2px dashed rgba(255, 170, 165, 0.5)',
+  border: '2px dashed #bdbdbd',
   borderRadius: '12px',
   padding: theme.spacing(3),
   cursor: 'pointer',
   transition: 'background-color 0.3s, border-color 0.3s',
-  backgroundColor: 'rgba(255, 240, 240, 0.2)',
+  backgroundColor: '#f5f5f5',
   '&:hover': {
-    backgroundColor: 'rgba(255, 240, 240, 0.5)',
-    borderColor: 'rgba(255, 107, 107, 0.7)',
+    backgroundColor: '#ededed',
+    borderColor: '#757575',
   },
   height: '180px',
 }));
@@ -691,23 +691,24 @@ const PostCreateEditPage: React.FC = () => {
               error={!!errors.title}
               helperText={errors.title}
               sx={{
+                backgroundColor: '#fff',
                 '& .MuiOutlinedInput-root': {
                   borderRadius: '12px',
                   '& fieldset': {
-                    borderColor: 'rgba(255, 170, 165, 0.5)',
+                    borderColor: '#bdbdbd',
                   },
                   '&:hover fieldset': {
-                    borderColor: 'rgba(255, 107, 107, 0.7)',
+                    borderColor: '#757575',
                   },
                   '&.Mui-focused fieldset': {
-                    borderColor: 'rgba(255, 107, 107, 0.7)',
+                    borderColor: '#333',
                   },
                 },
               }}
             />
 
             {/* 게시글 타입 선택 (자유/모임) - 수정 모드에서는 비활성화 */}
-            <FormControl sx={{ minWidth: 200 }}>
+            <FormControl sx={{ minWidth: 200, backgroundColor: '#fff', borderRadius: '12px' }}>
               <InputLabel id="post-type-label">{t('community.posts.form.postType')}</InputLabel>
               <Select
                 labelId="post-type-label"
@@ -717,15 +718,16 @@ const PostCreateEditPage: React.FC = () => {
                 label={t('community.posts.form.postType')}
                 disabled={isEditMode}
                 sx={{
+                  backgroundColor: '#fff',
                   borderRadius: '12px',
                   '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'rgba(255, 170, 165, 0.5)',
+                    borderColor: '#bdbdbd',
                   },
                   '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'rgba(255, 107, 107, 0.7)',
+                    borderColor: '#757575',
                   },
                   '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'rgba(255, 107, 107, 0.7)',
+                    borderColor: '#333',
                   },
                 }}
               >
@@ -744,7 +746,7 @@ const PostCreateEditPage: React.FC = () => {
 
             {/* 게시글 타입이 '모임'일 때만 지역 선택 표시 */}
             {formData.postType === '모임' && (
-              <FormControl fullWidth sx={{ mt: 2 }}>
+              <FormControl fullWidth sx={{ mt: 2, backgroundColor: '#fff', borderRadius: '12px' }}>
                 <InputLabel>지역</InputLabel>
                 <RegionSelector onChange={handleRegionChange} />
                 <FormHelperText>모임이 진행될 지역을 선택하세요</FormHelperText>
@@ -752,7 +754,12 @@ const PostCreateEditPage: React.FC = () => {
             )}
 
             {/* 카테고리 선택 - 수정 모드에서는 비활성화 */}
-            <FormControl fullWidth variant="outlined" margin="normal">
+            <FormControl
+              fullWidth
+              variant="outlined"
+              margin="normal"
+              sx={{ backgroundColor: '#fff', borderRadius: '12px' }}
+            >
               <InputLabel id="category-label">{t('community.posts.form.category')}</InputLabel>
               <Select
                 labelId="category-label"
@@ -764,15 +771,16 @@ const PostCreateEditPage: React.FC = () => {
                 required
                 disabled={isEditMode}
                 sx={{
-                  bgcolor: 'white',
+                  backgroundColor: '#fff',
+                  borderRadius: '12px',
                   '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'rgba(255, 170, 165, 0.5)',
+                    borderColor: '#bdbdbd',
                   },
                   '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'rgba(255, 107, 107, 0.7)',
+                    borderColor: '#757575',
                   },
                   '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'rgba(255, 107, 107, 0.9)',
+                    borderColor: '#333',
                   },
                 }}
               >
@@ -791,7 +799,12 @@ const PostCreateEditPage: React.FC = () => {
 
             {/* 소분류(태그) 선택 - 수정 모드에서는 비활성화 */}
             {formData.category && !isEditMode && (
-              <FormControl fullWidth variant="outlined" margin="normal">
+              <FormControl
+                fullWidth
+                variant="outlined"
+                margin="normal"
+                sx={{ backgroundColor: '#fff', borderRadius: '12px' }}
+              >
                 <InputLabel id="subtags-label">{t('community.posts.form.tags')}</InputLabel>
                 <Select
                   labelId="subtags-label"
@@ -824,15 +837,16 @@ const PostCreateEditPage: React.FC = () => {
                   )}
                   MenuProps={MenuProps}
                   sx={{
-                    bgcolor: 'white',
+                    backgroundColor: '#fff',
+                    borderRadius: '12px',
                     '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'rgba(255, 170, 165, 0.5)',
+                      borderColor: '#bdbdbd',
                     },
                     '&:hover .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'rgba(255, 107, 107, 0.7)',
+                      borderColor: '#757575',
                     },
                     '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'rgba(255, 107, 107, 0.9)',
+                      borderColor: '#333',
                     },
                   }}
                 >
@@ -896,16 +910,17 @@ const PostCreateEditPage: React.FC = () => {
               error={!!errors.content}
               helperText={errors.content}
               sx={{
+                backgroundColor: '#fff',
                 '& .MuiOutlinedInput-root': {
                   borderRadius: '12px',
                   '& fieldset': {
-                    borderColor: 'rgba(255, 170, 165, 0.5)',
+                    borderColor: '#bdbdbd',
                   },
                   '&:hover fieldset': {
-                    borderColor: 'rgba(255, 107, 107, 0.7)',
+                    borderColor: '#757575',
                   },
                   '&.Mui-focused fieldset': {
-                    borderColor: 'rgba(255, 107, 107, 0.7)',
+                    borderColor: '#333',
                   },
                 },
               }}
@@ -914,7 +929,7 @@ const PostCreateEditPage: React.FC = () => {
             {/* 파일 업로드 영역 */}
             <Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                <Typography variant="subtitle1">{t('community.fileUpload')}</Typography>
+                <Typography variant="subtitle1">{t('community.fileUpload.fileUpload')}</Typography>
                 {!isEditMode && (
                   <Typography
                     variant="caption"
@@ -927,7 +942,7 @@ const PostCreateEditPage: React.FC = () => {
                       border: '1px solid rgba(33, 150, 243, 0.2)',
                     }}
                   >
-                    💡 이미지는 미리보기로 표시되어 내용을 쉽게 확인할 수 있습니다
+                    {t('community.fileUpload.imageHint')}
                   </Typography>
                 )}
                 {isEditMode && (
@@ -943,22 +958,22 @@ const PostCreateEditPage: React.FC = () => {
                       fontWeight: 500,
                     }}
                   >
-                    ⚠️ 새 파일 추가 시 기존 파일 모두 삭제됨
+                    {t('community.fileUpload.editModeWarning')}
                   </Typography>
                 )}
               </Box>
 
-              <FileUploadBox onClick={handleUploadBoxClick}>
+              <FileUploadBox onClick={handleUploadBoxClick} sx={{ backgroundColor: '#fff' }}>
                 <CloudUploadIcon sx={{ fontSize: 40, color: 'rgba(255, 107, 107, 0.7)', mb: 1 }} />
                 <Typography variant="body1" gutterBottom sx={{ fontWeight: 500 }}>
                   {isEditMode
-                    ? '⚠️ 새 파일 추가 (기존 파일 모두 삭제됨)'
-                    : '📁 파일을 드래그하거나 클릭하여 업로드'}
+                    ? t('community.fileUpload.editModeDragOrClick')
+                    : t('community.fileUpload.dragOrClick')}
                 </Typography>
                 <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
                   {isEditMode
-                    ? '새 파일을 선택하면 기존 첨부파일이 모두 삭제됩니다\n신중하게 선택해주세요'
-                    : '이미지는 미리보기로 표시됩니다 ✨\n최대 10MB, 모든 파일 형식 지원'}
+                    ? t('community.fileUpload.editModeHint')
+                    : t('community.fileUpload.imageHint2')}
                 </Typography>
                 <VisuallyHiddenInput
                   type="file"
@@ -991,7 +1006,9 @@ const PostCreateEditPage: React.FC = () => {
                         {imageFiles.length > 0 && (
                           <Box mb={nonImageFiles.length > 0 ? 3 : 2}>
                             <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-                              새 이미지 ({imageFiles.length}개)
+                              {t('community.fileUpload.newImage', {
+                                count: imageFiles.length.toString(),
+                              })}
                             </Typography>
                             <Box
                               sx={{
@@ -1118,7 +1135,9 @@ const PostCreateEditPage: React.FC = () => {
                         {nonImageFiles.length > 0 && (
                           <Box>
                             <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-                              새 첨부파일 ({nonImageFiles.length}개)
+                              {t('community.fileUpload.newFile', {
+                                count: nonImageFiles.length.toString(),
+                              })}
                             </Typography>
                             <List disablePadding sx={{ bgcolor: '#e8f5e8', borderRadius: 2, p: 1 }}>
                               {nonImageFiles.map((file, index) => {
@@ -1219,7 +1238,9 @@ const PostCreateEditPage: React.FC = () => {
                         {imageFiles.length > 0 && (
                           <Box mb={nonImageFiles.length > 0 ? 3 : 2}>
                             <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-                              기존 이미지 ({imageFiles.length}개)
+                              {t('community.fileUpload.existingImage', {
+                                count: imageFiles.length.toString(),
+                              })}
                             </Typography>
                             <Box
                               sx={{
@@ -1372,7 +1393,9 @@ const PostCreateEditPage: React.FC = () => {
                         {nonImageFiles.length > 0 && (
                           <Box>
                             <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-                              기존 첨부파일 ({nonImageFiles.length}개)
+                              {t('community.fileUpload.existingFile', {
+                                count: nonImageFiles.length.toString(),
+                              })}
                             </Typography>
                             <List disablePadding sx={{ bgcolor: '#f9f9f9', borderRadius: 2, p: 1 }}>
                               {nonImageFiles.map((file, index) => (
@@ -1383,10 +1406,10 @@ const PostCreateEditPage: React.FC = () => {
                                       edge="end"
                                       onClick={() => handleExistingFileRemove(file.id)}
                                       sx={{
-                                        color: 'rgba(244, 67, 54, 0.7)',
+                                        color: 'rgba(175, 175, 175, 0.9)',
                                         '&:hover': {
-                                          color: 'rgba(244, 67, 54, 0.9)',
-                                          backgroundColor: 'rgba(244, 67, 54, 0.1)',
+                                          color: 'rgba(175, 175, 175, 0.9)',
+                                          backgroundColor: 'rgba(175, 175, 175, 0.1)',
                                         },
                                       }}
                                     >
@@ -1408,7 +1431,7 @@ const PostCreateEditPage: React.FC = () => {
                                 >
                                   <ListItemIcon>
                                     <InsertDriveFileIcon
-                                      sx={{ color: 'rgba(255, 107, 107, 0.7)' }}
+                                      sx={{ color: 'rgba(171, 171, 171, 0.7)' }}
                                     />
                                   </ListItemIcon>
                                   <ListItemText
@@ -1419,10 +1442,10 @@ const PostCreateEditPage: React.FC = () => {
                                         target="_blank"
                                         sx={{
                                           textDecoration: 'none',
-                                          color: 'rgba(255, 107, 107, 0.8)',
+                                          color: 'rgba(171, 171, 171, 0.8)',
                                           fontWeight: 500,
                                           '&:hover': {
-                                            color: 'rgba(255, 107, 107, 1)',
+                                            color: 'rgba(171, 171, 171, 1)',
                                             textDecoration: 'underline',
                                           },
                                         }}
@@ -1446,32 +1469,54 @@ const PostCreateEditPage: React.FC = () => {
             {/* 제출 및 취소 버튼 */}
             <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 2 }}>
               <Button
-                variant="outlined"
                 onClick={handleCancel}
                 sx={{
-                  borderColor: '#FFAAA5',
-                  color: '#666',
-                  '&:hover': {
-                    borderColor: '#FF9999',
-                    backgroundColor: 'rgba(255, 240, 240, 0.2)',
-                  },
+                  backgroundColor: '#e0e0e0',
+                  color: '#333',
                   borderRadius: '8px',
+                  fontWeight: 'bold',
+                  padding: '10px 20px',
+                  boxShadow: '0 2px 6px rgba(60,60,60,0.08)',
+                  transition: 'all 0.2s',
+                  height: 44,
+                  '&:hover': {
+                    backgroundColor: '#bdbdbd',
+                  },
+                  '&:focus': {
+                    outline: '2px solid #757575',
+                  },
                 }}
               >
                 {t('common.cancel')}
               </Button>
-              <StyledButton
+              <Button
                 type="submit"
-                variant="contained"
                 disabled={isSaving}
-                startIcon={isSaving ? <CircularProgress size={20} sx={{ color: 'white' }} /> : null}
+                startIcon={isSaving ? <CircularProgress size={20} sx={{ color: '#333' }} /> : null}
+                sx={{
+                  backgroundColor: '#bdbdbd',
+                  color: '#222',
+                  borderRadius: '8px',
+                  fontWeight: 'bold',
+                  padding: '10px 20px',
+                  boxShadow: '0 2px 6px rgba(60,60,60,0.08)',
+                  transition: 'all 0.2s',
+                  height: 44,
+                  '&:hover': {
+                    backgroundColor: '#757575',
+                    color: '#fff',
+                  },
+                  '&:focus': {
+                    outline: '2px solid #757575',
+                  },
+                }}
               >
                 {isSaving
                   ? t('common.saving')
                   : isEditMode
                     ? t('community.edit')
                     : t('community.create')}
-              </StyledButton>
+              </Button>
             </Box>
           </FormBox>
         </form>

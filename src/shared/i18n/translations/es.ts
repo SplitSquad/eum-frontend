@@ -699,10 +699,24 @@ const es = {
     editPost: 'Editar Publicación',
     create: 'Crear',
     edit: 'Editar',
-    fileUpload: 'Subir Archivo',
-    dragAndDropOrClickToUpload: 'Arrastra y suelta archivos aquí o haz clic para subir',
-    max10MBImageAndDocumentFiles: 'Máx 10MB, archivos de imagen y documento soportados',
-    selectedFiles: 'Archivos Seleccionados',
+    fileUpload: {
+      fileUpload: 'Adjuntar archivo',
+      imageHint: '💡 Las imágenes se mostrarán en vista previa para facilitar la comprobación',
+      imageHint2:
+        'Las imágenes se muestran en vista previa ✨\nMáx 10MB, todos los tipos de archivos admitidos',
+      editModeWarning:
+        '⚠️ Agregar nuevos archivos eliminará todos los archivos adjuntos existentes',
+      dragOrClick: '📁 Arrastra o haz clic para subir archivos',
+      editModeDragOrClick:
+        '⚠️ Agregar nuevos archivos (todos los archivos existentes serán eliminados)',
+      editModeHint:
+        'Seleccionar nuevos archivos eliminará todos los archivos adjuntos existentes\nPor favor, elige con cuidado',
+      newImage: 'Nuevas imágenes ({count})',
+      newFile: 'Nuevos archivos adjuntos ({count})',
+      existingImage: 'Imágenes existentes ({count})',
+      existingFile: 'Archivos adjuntos existentes ({count})',
+    },
+    selectedFiles: 'Archivos seleccionados',
     existingAttachedFiles: 'Archivos Adjuntos Existentes',
     newImages: 'Nuevas Imágenes',
     newAttachments: 'Nuevos Archivos Adjuntos',
@@ -1294,6 +1308,7 @@ const es = {
     },
     specialIssues: 'Ver todos los temas',
     noVotesYet: 'Aún no hay votos. ¡Sé el primero en votar!',
+    noIssues: 'No hay debates registrados.',
   },
   infoPage: {
     title: 'Guía de vida en Corea',
@@ -1403,6 +1418,7 @@ const es = {
     title: 'Asistente de Vida en Corea',
     subtitle: 'Guía de Vida en Corea con Experto IA',
     greeting: '¡Hola! Soy un experto en IA en el campo de {{category}}.',
+    matchingMessage: 'Buscando un experto en IA para usted. Por favor, espere un momento.',
     categories: {
       all: '🌏 Todo',
       visa: '📑 Visa/Legal',
@@ -1413,7 +1429,7 @@ const es = {
       life: '👨‍👩‍👧 Vida Diaria',
     },
     sidebar: {
-      title: '📚 Guía por Categorías',
+      title: 'Guía por Categorías',
       autoSelectInfo: 'Las categorías se seleccionan automáticamente según sus preguntas',
     },
     chat: {
@@ -1422,7 +1438,7 @@ const es = {
       placeholder: 'Siéntase libre de preguntar cualquier cosa...',
       send: 'Enviar',
       sending: 'Enviando...',
-      loading: 'Preparando respuesta...',
+      loading: 'Esperando la respuesta del experto...',
       initialMessage: '¿Cómo puedo ayudarte?',
       aiExpert: 'Experto IA',
       justNow: 'Ahora mismo',
@@ -1486,6 +1502,23 @@ const es = {
     mypage: 'Mi página',
     logout: 'Cerrar sesión',
     adminpage: 'Página de administrador',
+  },
+  intro: {
+    slide1: {
+      title: '¡Comienza tu viaje con EUM!',
+      desc1: 'Descubre Corea paso a paso con EUM.',
+      desc2: 'Te deseamos un maravilloso nuevo viaje.',
+    },
+    slide2: {
+      title: 'Por favor, espera un momento',
+      desc1: 'EUM está preparando la mejor experiencia para ti.',
+      desc2: 'Tu increíble viaje comenzará pronto.',
+    },
+    slide3: {
+      title: '¡Bienvenido!',
+      desc1: 'Tu viaje con EUM está a punto de comenzar.',
+      desc2: 'Todo está listo para tu nueva experiencia.',
+    },
   },
 };
 

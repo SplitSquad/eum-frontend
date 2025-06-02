@@ -15,6 +15,7 @@ import {
   TextField as MuiTextField,
   TextFieldProps,
   alpha,
+  InputAdornment,
 } from '@mui/material';
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -92,8 +93,6 @@ const SignUpInputs = ({
   setConfirmPassword,
   name,
   setName,
-  birthday,
-  setBirthday,
   phone,
   setPhone,
   errors = {},
@@ -107,8 +106,6 @@ const SignUpInputs = ({
   setConfirmPassword: (v: string) => void;
   name: string;
   setName: (v: string) => void;
-  birthday: string;
-  setBirthday: (v: string) => void;
   phone: string;
   setPhone: (v: string) => void;
   errors?: InputErrors;
@@ -211,21 +208,6 @@ const SignUpInputs = ({
         required
         error={!!errors.name}
         helperText={errors.name || ''}
-      />
-      <StyledTextField
-        label={t('signup.birthday')}
-        variant="outlined"
-        value={birthday}
-        onChange={e => {
-          setBirthday(e.target.value);
-          if (errors.birthday) errors.birthday = '';
-        }}
-        fullWidth
-        autoComplete="birthday"
-        placeholder={t('signup.birthdayPlaceholder')}
-        required
-        error={!!errors.birthday}
-        helperText={errors.birthday || ''}
       />
       <StyledTextField
         label={t('signup.phone')}
@@ -419,7 +401,7 @@ const SignUpPage: React.FC = () => {
                 variant="h4"
                 sx={{
                   fontWeight: 700,
-                  color: '#FF9999',
+                  color: '#c0c0c0',
                   fontFamily: '"Roboto", "Noto Sans KR", sans-serif',
                 }}
               >
@@ -455,12 +437,30 @@ const SignUpPage: React.FC = () => {
                 setConfirmPassword={v => handleInputChange('confirmPassword', v)}
                 name={name}
                 setName={v => handleInputChange('name', v)}
-                birthday={birthday}
-                setBirthday={v => handleInputChange('birthday', v)}
                 phone={phone}
                 setPhone={v => handleInputChange('phone', v)}
                 errors={inputErrors}
                 t={t}
+              />
+              <StyledTextField
+                label={t('signup.birthday')}
+                name="birthday"
+                type="date"
+                value={birthday}
+                onChange={e => handleInputChange('birthday', e.target.value)}
+                fullWidth
+                color="primary"
+                InputLabelProps={{ shrink: true }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <CalendarTodayIcon />
+                    </InputAdornment>
+                  ),
+                }}
+                required
+                error={!!inputErrors.birthday}
+                helperText={inputErrors.birthday || ''}
               />
               <Box sx={{ display: 'flex', gap: 2, mt: 2, justifyContent: 'flex-end' }}>
                 <CancelButton onClick={() => navigate('/google-login')} colors={colors} t={t} />
@@ -471,6 +471,18 @@ const SignUpPage: React.FC = () => {
             <Box mt={4}>
               <Typography variant="caption" color="textSecondary">
                 {t('signup.termsAgreement')}
+              </Typography>
+            </Box>
+            <Box>
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  mb: 1,
+                  color: 'text.secondary',
+                  fontWeight: 500,
+                }}
+              >
+                {t('onboarding.worker.schedule.startDateLabel')}
               </Typography>
             </Box>
           </LoginCard>

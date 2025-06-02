@@ -8,7 +8,6 @@ import {
   useTheme,
 } from '@mui/material';
 import React from 'react';
-import { useThemeStore } from '../../../theme/store/themeStore';
 import { useTranslation } from '@/shared/i18n';
 
 interface EmergencyInfoFormProps {

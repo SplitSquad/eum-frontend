@@ -38,12 +38,13 @@ const MotionCard = styled(motion.div)(({ theme }) => ({
 
 const StyledCard = styled(Card)(({ theme }) => ({
   borderRadius: theme.spacing(3),
-  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.08)',
+  boxShadow: '0 8px 24px rgba(80, 80, 90, 0.08)',
   overflow: 'hidden',
   height: '100%',
   transition: 'all 0.3s ease',
   position: 'relative',
-  border: '1px solid rgba(230, 230, 230, 0.7)',
+  border: '1px solid #e0e0e0',
+  background: '#fafbfc',
 }));
 
 const CardOverlay = styled(Box)(({ theme }) => ({
@@ -52,7 +53,7 @@ const CardOverlay = styled(Box)(({ theme }) => ({
   left: 0,
   right: 0,
   bottom: 0,
-  background: 'linear-gradient(180deg, rgba(0,0,0,0) 60%, rgba(0,0,0,0.4) 100%)',
+  background: 'linear-gradient(180deg, rgba(0,0,0,0) 60%, rgba(0,0,0,0.04) 100%)',
   zIndex: 1,
   opacity: 0,
   transition: 'opacity 0.3s ease',
@@ -67,6 +68,8 @@ const IconWrapper = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   marginBottom: theme.spacing(3),
   transition: 'all 0.3s ease',
+  background: '#e0e0e0',
+  color: '#636363',
 }));
 
 const PurposeCard: React.FC<{
@@ -97,11 +100,11 @@ const PurposeCard: React.FC<{
       <StyledCard
         elevation={selected ? 4 : 0}
         sx={{
-          border: selected ? `1px solid ${themeColor}` : '1px solid rgba(230, 230, 230, 0.7)',
+          border: selected ? '1px solid #636363' : '1px solid #e0e0e0',
           '&:hover': {
-            boxShadow: '0 12px 28px rgba(0, 0, 0, 0.1)',
+            boxShadow: '0 12px 28px #bdbdbd',
           },
-          background: imageSrc ? `url(${imageSrc})` : 'transparent',
+          background: imageSrc ? `url(${imageSrc})` : '#fafbfc',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
@@ -117,9 +120,7 @@ const PurposeCard: React.FC<{
             padding: { xs: 3, md: 4 },
             position: 'relative',
             zIndex: 2,
-            backgroundColor: imageSrc
-              ? alpha(theme.palette.background.paper, 0.85)
-              : theme.palette.background.paper,
+            backgroundColor: '#fafbfc',
           }}
         >
           <Box
@@ -132,14 +133,14 @@ const PurposeCard: React.FC<{
               bottom: 0,
               opacity: 0,
               transition: 'opacity 0.3s ease',
-              background: `linear-gradient(135deg, ${alpha(themeColor, 0.05)} 0%, ${alpha(themeColor, 0.1)} 100%)`,
+              background: '#e0e0e0',
             }}
           />
 
           <IconWrapper
             sx={{
-              backgroundColor: selected ? themeColor : alpha(themeColor, 0.1),
-              color: selected ? 'white' : themeColor,
+              backgroundColor: selected ? '#636363' : '#e0e0e0',
+              color: selected ? 'white' : '#636363',
               transform: selected ? 'scale(1.1)' : 'scale(1)',
               width: 70,
               height: 70,
@@ -152,7 +153,7 @@ const PurposeCard: React.FC<{
             sx={{
               width: '100%',
               textAlign: 'center',
-              padding: theme.spacing(2, 1, 1),
+              padding: 2,
             }}
           >
             <Typography
@@ -161,7 +162,7 @@ const PurposeCard: React.FC<{
               fontWeight="600"
               gutterBottom
               sx={{
-                color: selected ? themeColor : 'text.primary',
+                color: selected ? '#636363' : 'text.primary',
                 transition: 'color 0.3s ease',
                 fontSize: { xs: '1.3rem', md: '1.5rem' },
                 letterSpacing: '-0.01em',
@@ -196,11 +197,11 @@ const PurposeCard: React.FC<{
                 size="small"
                 endIcon={<ArrowForwardIcon />}
                 sx={{
-                  borderColor: themeColor,
-                  color: themeColor,
+                  borderColor: '#636363',
+                  color: '#636363',
                   '&:hover': {
-                    borderColor: themeColor,
-                    backgroundColor: alpha(themeColor, 0.1),
+                    borderColor: '#636363',
+                    backgroundColor: '#e0e0e0',
                   },
                   fontWeight: 600,
                   borderRadius: '50px',
@@ -256,19 +257,6 @@ const PurposeSelection: React.FC = () => {
   const location = useLocation();
 
   const [selectedPurpose, setSelectedPurpose] = useState<string | null>(null);
-
-  // 계절에 따른 색상 가져오기
-  const getColorByTheme = () => {
-    switch (season) {
-      case 'spring':
-        return '#FFAAA5';
-
-      default:
-        return '#FFAAA5';
-    }
-  };
-
-  const themeColor = getColorByTheme();
 
   // 목적 아이콘 매핑
   const purposeIconMap: Record<string, React.ReactNode> = {
@@ -341,7 +329,7 @@ const PurposeSelection: React.FC = () => {
               height: `${150 + i * 100}px`,
               top: `${Math.random() * 80}%`,
               left: `${Math.random() * 80}%`,
-              border: `1px solid ${alpha(themeColor, 0.03)}`,
+              border: `1px solid rgba(255, 255, 255, 0.03)`,
               opacity: 0.3 - i * 0.04,
             }}
           />
@@ -408,7 +396,7 @@ const PurposeSelection: React.FC = () => {
                 }}
                 icon={purposeIconMap[category.id]}
                 description={purposeDescriptionMap[category.id]}
-                themeColor={themeColor}
+                themeColor={category.id}
                 imageSrc={purposeImageMap[category.id]}
               />
             </Box>

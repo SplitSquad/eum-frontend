@@ -48,15 +48,18 @@ import FamilyRestroomIcon from '@mui/icons-material/FamilyRestroom';
 import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { useTranslation } from '@/shared/i18n';
+import CountrySelector from '@/shared/components/CountrySelector';
 
 const { t } = useTranslation();
 // 스타일링된 컴포넌트
 const StyledPaper = styled(Paper)(({ theme }) => ({
   borderRadius: theme.spacing(3),
-  boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
+  boxShadow: '0 10px 40px rgba(80, 80, 90, 0.08)',
   overflow: 'hidden',
   transition: 'all 0.3s ease',
   position: 'relative',
+  background: '#fafbfc',
+  border: '1px solid #e0e0e0',
 }));
 
 const StyledTextField = styled(TextField)(({ theme }) => ({
@@ -79,32 +82,29 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
   },
 }));
 
-const GradientButton = styled(Button)(
-  ({ theme, gradientcolors }: { theme: Theme; gradientcolors?: string }) => ({
-    background:
-      gradientcolors ||
-      `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${alpha(theme.palette.primary.main, 0.8)} 100%)`,
-    color: '#fff',
-    fontWeight: 600,
-    padding: theme.spacing(1.2, 3),
-    borderRadius: theme.spacing(6),
-    boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
-    '&:hover': {
-      boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
-    },
-  })
-);
+const GradientButton = styled(Button)(({ theme }) => ({
+  background: '#636363',
+  color: '#fff',
+  fontWeight: 600,
+  padding: theme.spacing(1.2, 3),
+  borderRadius: theme.spacing(6),
+  boxShadow: '0 4px 15px #e0e0e0',
+  '&:hover': {
+    boxShadow: '0 6px 20px #bdbdbd',
+    background: '#888',
+  },
+}));
 
-const StepIcon = styled(Box)(({ theme, color = '#1976d2' }: { theme: Theme; color?: string }) => ({
+const StepIcon = styled(Box)(({ theme }) => ({
   width: 50,
   height: 50,
   borderRadius: '50%',
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
-  background: `linear-gradient(135deg, ${color} 0%, ${alpha(color, 0.8)} 100%)`,
-  boxShadow: `0 4px 15px ${alpha(color, 0.3)}`,
-  color: 'white',
+  background: '#e0e0e0',
+  boxShadow: '0 4px 15px #bdbdbd',
+  color: '#636363',
   margin: '0 auto',
   fontSize: '1.5rem',
 }));
@@ -544,7 +544,6 @@ const LivingProfile: React.FC = () => {
                 mb: 2,
               }}
             >
-
               <FormControl component="fieldset" fullWidth>
                 <FormLabel
                   id="gender-label"
@@ -581,7 +580,6 @@ const LivingProfile: React.FC = () => {
                 </RadioGroup>
               </FormControl>
 
-
               <StyledTextField
                 label={t('onboarding.living.form.age')}
                 name="age"
@@ -590,7 +588,6 @@ const LivingProfile: React.FC = () => {
                 fullWidth
                 type="number"
               />
-
             </Box>
 
             <Box
@@ -600,16 +597,12 @@ const LivingProfile: React.FC = () => {
                 gap: 3,
               }}
             >
-
-              <StyledTextField
+              <CountrySelector
                 label={t('onboarding.living.form.nationality')}
-                name="nationality"
                 value={formData.nationality}
-                onChange={handleInputChange}
+                onChange={value => setFormData(prev => ({ ...prev, nationality: value }))}
                 fullWidth
               />
-
-
 
               <StyledTextField
                 select

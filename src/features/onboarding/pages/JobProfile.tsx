@@ -19,7 +19,6 @@ import {
   Container,
   InputAdornment,
   Avatar,
-  alpha,
   styled,
   Button,
   IconButton,
@@ -48,6 +47,7 @@ import VisaIcon from '@mui/icons-material/DocumentScanner';
 import PaymentsIcon from '@mui/icons-material/Payments';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { useTranslation } from '@/shared/i18n';
+import CountrySelector from '@/shared/components/CountrySelector';
 
 // 번역을 위한 useTranslation 훅
 const { t } = useTranslation();
@@ -55,10 +55,12 @@ const { t } = useTranslation();
 // 스타일링된 컴포넌트
 const StyledPaper = styled(Paper)(({ theme }) => ({
   borderRadius: theme.spacing(3),
-  boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
+  boxShadow: '0 10px 40px rgba(80, 80, 90, 0.08)',
   overflow: 'hidden',
   transition: 'all 0.3s ease',
   position: 'relative',
+  background: '#fafbfc',
+  border: '1px solid #e0e0e0',
 }));
 
 const StyledTextField = styled(TextField)(({ theme }) => ({
@@ -66,47 +68,44 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
     borderRadius: theme.spacing(1.5),
     transition: 'all 0.3s ease',
     '&:hover .MuiOutlinedInput-notchedOutline': {
-      borderColor: alpha(theme.palette.primary.main, 0.5),
+      borderColor: '#bdbdbd',
     },
     '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-      borderColor: theme.palette.primary.main,
+      borderColor: '#636363',
       borderWidth: '2px',
     },
   },
   '& .MuiInputLabel-outlined.Mui-focused': {
-    color: theme.palette.primary.main,
+    color: '#636363',
   },
   '& .MuiInputBase-input': {
     padding: theme.spacing(1.5, 2),
   },
 }));
 
-const GradientButton = styled(Button)(
-  ({ theme, gradientcolors }: { theme: Theme; gradientcolors?: string }) => ({
-    background:
-      gradientcolors ||
-      `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${alpha(theme.palette.primary.main, 0.8)} 100%)`,
-    color: '#fff',
-    fontWeight: 600,
-    padding: theme.spacing(1.2, 3),
-    borderRadius: theme.spacing(6),
-    boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
-    '&:hover': {
-      boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
-    },
-  })
-);
+const GradientButton = styled(Button)(({ theme }) => ({
+  background: '#636363',
+  color: '#fff',
+  fontWeight: 600,
+  padding: theme.spacing(1.2, 3),
+  borderRadius: theme.spacing(6),
+  boxShadow: '0 4px 15px #e0e0e0',
+  '&:hover': {
+    boxShadow: '0 6px 20px #bdbdbd',
+    background: '#888',
+  },
+}));
 
-const StepIcon = styled(Box)(({ theme, color = '#1976d2' }: { theme: Theme; color?: string }) => ({
+const StepIcon = styled(Box)(({ theme }) => ({
   width: 50,
   height: 50,
   borderRadius: '50%',
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
-  background: `linear-gradient(135deg, ${color} 0%, ${alpha(color, 0.8)} 100%)`,
-  boxShadow: `0 4px 15px ${alpha(color, 0.3)}`,
-  color: 'white',
+  background: '#e0e0e0',
+  boxShadow: '0 4px 15px #bdbdbd',
+  color: '#636363',
   margin: '0 auto',
   fontSize: '1.5rem',
 }));
@@ -299,19 +298,6 @@ const JobProfile: React.FC = () => {
     interests: [],
   });
 
-  // 계절에 따른 색상 가져오기
-  const getColorByTheme = () => {
-    switch (season) {
-      case 'spring':
-        return '#FFAAA5';
-
-      default:
-        return '#FFAAA5';
-    }
-  };
-
-  const primaryColor = getColorByTheme();
-
   // 스텝 라벨 정의
   const stepLabels = [
     t('onboarding.job.steps.profile'),
@@ -501,8 +487,8 @@ const JobProfile: React.FC = () => {
             <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
               <Avatar
                 sx={{
-                  bgcolor: alpha(primaryColor, 0.2),
-                  color: primaryColor,
+                  bgcolor: '#e0e0e0',
+                  color: '#636363',
                   width: 48,
                   height: 48,
                   mr: 2,
@@ -523,7 +509,6 @@ const JobProfile: React.FC = () => {
                 mb: 2,
               }}
             >
-
               {/* <StyledTextField
                 label={t('onboarding.worker.form.name')}
                 name="name"
@@ -535,12 +520,11 @@ const JobProfile: React.FC = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <PersonIcon sx={{ color: alpha(primaryColor, 0.7) }} />
+                      <PersonIcon sx={{ color: '#bdbdbd' }} />
                     </InputAdornment>
                   ),
                 }}
               /> */}
-
 
               <Box>
                 <FormControl component="fieldset" fullWidth>
@@ -548,7 +532,7 @@ const JobProfile: React.FC = () => {
                     id="gender-label"
                     sx={{
                       color: 'text.secondary',
-                      '&.Mui-focused': { color: primaryColor },
+                      '&.Mui-focused': { color: '#636363' },
                       mb: 1,
                     }}
                   >
@@ -566,8 +550,8 @@ const JobProfile: React.FC = () => {
                       control={
                         <Radio
                           sx={{
-                            color: theme.palette.grey[400],
-                            '&.Mui-checked': { color: primaryColor },
+                            color: '#bdbdbd',
+                            '&.Mui-checked': { color: '#636363' },
                           }}
                         />
                       }
@@ -578,8 +562,8 @@ const JobProfile: React.FC = () => {
                       control={
                         <Radio
                           sx={{
-                            color: theme.palette.grey[400],
-                            '&.Mui-checked': { color: primaryColor },
+                            color: '#bdbdbd',
+                            '&.Mui-checked': { color: '#636363' },
                           }}
                         />
                       }
@@ -590,8 +574,8 @@ const JobProfile: React.FC = () => {
                       control={
                         <Radio
                           sx={{
-                            color: theme.palette.grey[400],
-                            '&.Mui-checked': { color: primaryColor },
+                            color: '#bdbdbd',
+                            '&.Mui-checked': { color: '#636363' },
                           }}
                         />
                       }
@@ -610,7 +594,6 @@ const JobProfile: React.FC = () => {
                 color="primary"
                 type="number"
               />
-
             </Box>
 
             <Box
@@ -620,14 +603,11 @@ const JobProfile: React.FC = () => {
                 gap: 3,
               }}
             >
-
-              <StyledTextField
+              <CountrySelector
                 label={t('onboarding.worker.form.nationality')}
-                name="nationality"
                 value={formData.nationality}
-                onChange={handleInputChange}
+                onChange={value => setFormData(prev => ({ ...prev, nationality: value }))}
                 fullWidth
-                color="primary"
               />
 
               <StyledTextField
@@ -642,7 +622,7 @@ const JobProfile: React.FC = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <TranslateIcon sx={{ color: alpha(primaryColor, 0.7) }} />
+                      <TranslateIcon sx={{ color: '#bdbdbd' }} />
                     </InputAdornment>
                   ),
                 }}
@@ -663,8 +643,8 @@ const JobProfile: React.FC = () => {
             <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
               <Avatar
                 sx={{
-                  bgcolor: alpha(primaryColor, 0.2),
-                  color: primaryColor,
+                  bgcolor: '#e0e0e0',
+                  color: '#636363',
                   width: 48,
                   height: 48,
                   mr: 2,
@@ -691,7 +671,7 @@ const JobProfile: React.FC = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <WorkIcon sx={{ color: alpha(primaryColor, 0.7) }} />
+                      <WorkIcon sx={{ color: '#bdbdbd' }} />
                     </InputAdornment>
                   ),
                 }}
@@ -716,7 +696,7 @@ const JobProfile: React.FC = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <BusinessIcon sx={{ color: alpha(primaryColor, 0.7) }} />
+                      <BusinessIcon sx={{ color: '#bdbdbd' }} />
                     </InputAdornment>
                   ),
                 }}
@@ -751,7 +731,7 @@ const JobProfile: React.FC = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <WorkIcon sx={{ color: alpha(primaryColor, 0.7) }} />
+                      <WorkIcon sx={{ color: '#bdbdbd' }} />
                     </InputAdornment>
                   ),
                 }}
@@ -770,7 +750,7 @@ const JobProfile: React.FC = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <VisaIcon sx={{ color: alpha(primaryColor, 0.7) }} />
+                      <VisaIcon sx={{ color: '#bdbdbd' }} />
                     </InputAdornment>
                   ),
                 }}
@@ -791,8 +771,8 @@ const JobProfile: React.FC = () => {
             <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
               <Avatar
                 sx={{
-                  bgcolor: alpha(primaryColor, 0.2),
-                  color: primaryColor,
+                  bgcolor: '#e0e0e0',
+                  color: '#636363',
                   width: 48,
                   height: 48,
                   mr: 2,
@@ -829,7 +809,7 @@ const JobProfile: React.FC = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <CalendarTodayIcon sx={{ color: alpha(primaryColor, 0.7) }} />
+                      <CalendarTodayIcon sx={{ color: '#bdbdbd' }} />
                     </InputAdornment>
                   ),
                 }}
@@ -883,7 +863,7 @@ const JobProfile: React.FC = () => {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <CalendarTodayIcon sx={{ color: alpha(primaryColor, 0.7) }} />
+                        <CalendarTodayIcon sx={{ color: '#bdbdbd' }} />
                       </InputAdornment>
                     ),
                   }}
@@ -913,7 +893,7 @@ const JobProfile: React.FC = () => {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <CalendarTodayIcon sx={{ color: alpha(primaryColor, 0.7) }} />
+                        <CalendarTodayIcon sx={{ color: '#bdbdbd' }} />
                       </InputAdornment>
                     ),
                   }}
@@ -943,7 +923,7 @@ const JobProfile: React.FC = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <CalendarTodayIcon sx={{ color: alpha(primaryColor, 0.7) }} />
+                      <CalendarTodayIcon sx={{ color: '#bdbdbd' }} />
                     </InputAdornment>
                   ),
                 }}
@@ -974,8 +954,8 @@ const JobProfile: React.FC = () => {
             <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
               <Avatar
                 sx={{
-                  bgcolor: alpha(primaryColor, 0.2),
-                  color: primaryColor,
+                  bgcolor: '#e0e0e0',
+                  color: '#636363',
                   width: 48,
                   height: 48,
                   mr: 2,
@@ -1016,14 +996,14 @@ const JobProfile: React.FC = () => {
                       label={option}
                       {...getTagProps({ index })}
                       sx={{
-                        backgroundColor: alpha(primaryColor, 0.1),
-                        color: primaryColor,
+                        backgroundColor: '#e0e0e0',
+                        color: '#636363',
                         borderRadius: '16px',
-                        border: `1px solid ${alpha(primaryColor, 0.3)}`,
+                        border: '1px solid #bdbdbd',
                         '& .MuiChip-deleteIcon': {
-                          color: primaryColor,
+                          color: '#636363',
                           '&:hover': {
-                            color: alpha(primaryColor, 0.7),
+                            color: '#bdbdbd',
                           },
                         },
                       }}
@@ -1041,7 +1021,7 @@ const JobProfile: React.FC = () => {
                       startAdornment: (
                         <>
                           <InputAdornment position="start">
-                            <LocationOnIcon sx={{ color: alpha(primaryColor, 0.7) }} />
+                            <LocationOnIcon sx={{ color: '#bdbdbd' }} />
                           </InputAdornment>
                           {params.InputProps.startAdornment}
                         </>
@@ -1074,7 +1054,7 @@ const JobProfile: React.FC = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <PaymentsIcon sx={{ color: alpha(primaryColor, 0.7) }} />
+                      <PaymentsIcon sx={{ color: '#bdbdbd' }} />
                     </InputAdornment>
                   ),
                 }}
@@ -1145,13 +1125,13 @@ const JobProfile: React.FC = () => {
                   alignItems: 'center',
                   background:
                     isActive || isCompleted
-                      ? `linear-gradient(135deg, ${primaryColor} 0%, ${alpha(primaryColor, 0.8)} 100%)`
-                      : theme.palette.grey[200],
-                  boxShadow: isActive ? `0 4px 12px ${alpha(primaryColor, 0.3)}` : 'none',
+                      ? 'linear-gradient(135deg, #636363 0%, #888 100%)'
+                      : '#e0e0e0',
+                  boxShadow: isActive ? '0 4px 12px #bdbdbd' : 'none',
                   mb: 1,
                   transition: 'all 0.3s ease',
                   transform: isActive ? 'scale(1.1)' : 'scale(1)',
-                  color: isActive || isCompleted ? 'white' : theme.palette.grey[500],
+                  color: isActive || isCompleted ? 'white' : '#636363',
                 }}
               >
                 {isCompleted ? (
@@ -1166,7 +1146,7 @@ const JobProfile: React.FC = () => {
                 sx={{
                   fontSize: isMobile ? '0.7rem' : '0.75rem',
                   fontWeight: isActive ? 600 : 400,
-                  color: isActive ? primaryColor : 'text.secondary',
+                  color: isActive ? '#636363' : 'text.secondary',
                   textAlign: 'center',
                   lineHeight: 1.2,
                   width: isMobile ? 60 : 70,
@@ -1213,7 +1193,7 @@ const JobProfile: React.FC = () => {
         position: 'relative',
         py: 4,
         px: 2,
-        background: `linear-gradient(135deg, ${alpha(primaryColor, 0.02)} 0%, ${alpha(primaryColor, 0.05)} 100%)`,
+        background: 'linear-gradient(135deg, #e0e0e0 0%, #fafbfc 100%)',
       }}
     >
       {/* 배경 애니메이션 */}
@@ -1229,7 +1209,7 @@ const JobProfile: React.FC = () => {
               height: `${150 + i * 100}px`,
               top: `${Math.random() * 80}%`,
               left: `${Math.random() * 80}%`,
-              border: `1px solid ${alpha(primaryColor, 0.03)}`,
+              border: `1px solid #bdbdbd`,
               opacity: 0.3 - i * 0.04,
             }}
           />
@@ -1251,7 +1231,7 @@ const JobProfile: React.FC = () => {
             sx={{
               mr: 2,
               color: 'text.secondary',
-              '&:hover': { color: primaryColor },
+              '&:hover': { color: '#636363' },
             }}
           >
             <ArrowBackIcon />
@@ -1310,14 +1290,14 @@ const JobProfile: React.FC = () => {
             onClick={handleBack}
             startIcon={<ArrowBackIcon />}
             sx={{
-              borderColor: alpha(theme.palette.grey[400], 0.5),
+              borderColor: '#bdbdbd',
               color: 'text.secondary',
               px: 3,
               py: 1,
               borderRadius: '50px',
               '&:hover': {
-                borderColor: alpha(theme.palette.grey[600], 0.5),
-                backgroundColor: alpha(theme.palette.grey[100], 0.5),
+                borderColor: '#888',
+                backgroundColor: '#e0e0e0',
               },
               textTransform: 'none',
             }}
@@ -1331,16 +1311,16 @@ const JobProfile: React.FC = () => {
             endIcon={<ArrowForwardIcon />}
             disabled={isNextDisabled() || isSubmitting}
             sx={{
-              bgcolor: primaryColor,
+              bgcolor: '#636363',
               color: 'white',
               px: { xs: 3, md: 4 },
               py: 1,
               borderRadius: '50px',
               fontWeight: 600,
-              boxShadow: `0 6px 16px ${alpha(primaryColor, 0.25)}`,
+              boxShadow: '0 6px 16px #bdbdbd',
               '&:hover': {
-                bgcolor: alpha(primaryColor, 0.9),
-                boxShadow: `0 8px 20px ${alpha(primaryColor, 0.35)}`,
+                bgcolor: '#888',
+                boxShadow: '0 8px 20px #bdbdbd',
                 transform: 'translateY(-2px)',
               },
               textTransform: 'none',

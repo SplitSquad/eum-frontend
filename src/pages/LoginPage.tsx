@@ -16,7 +16,6 @@ import useAuthStore from '../features/auth/store/authStore';
 import LoginButton from '../features/auth/components/LoginButton';
 import { useSnackbar } from 'notistack';
 import { useTranslation } from '@/shared/i18n';
-import { useThemeStore } from '@/features/theme/store/themeStore';
 import { seasonalColors } from '@/components/layout/springTheme';
 
 const TransparentSnackbar = styled('div')<{ color: string }>(({ color }) => ({
@@ -79,8 +78,7 @@ const LoginPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [qs] = useSearchParams();
   const { enqueueSnackbar } = useSnackbar();
-  const season = useThemeStore(state => state.season);
-  const colors = seasonalColors[season] || seasonalColors.spring;
+  const colors = seasonalColors.professional;
 
   // 이미 로그인되어 있으면 메인 페이지로 리디렉션
   useEffect(() => {

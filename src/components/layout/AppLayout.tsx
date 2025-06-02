@@ -7,7 +7,7 @@ import ModalContent from '@/components/ai/ModalContent';
 import { useModalStore } from '@/shared/store/ModalStore';
 import useAuthStore from '@/features/auth/store/authStore';
 import React, { useRef, useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import eum2Image from '@/assets/images/characters/이음이.png';
 import '../../app/App.css';
 import { Container } from '@mui/material';
@@ -20,6 +20,7 @@ export default function AppLayout() {
   const btnRef = useRef<HTMLImageElement>(null);
   const { isHeaderVisible, isModalVisible } = useLayoutVisibility();
   const [modalAdjustKey, setModalAdjustKey] = useState(0);
+  const location = useLocation();
 
   // 기존의 updateVisibility, useEffect 등은 필요에 따라 커스텀 훅으로 분리 가능
   // 여기서는 간단히 유지
@@ -40,6 +41,13 @@ export default function AppLayout() {
       openModal(<ModalContent btnRect={rect} />, { x: 0, y: 0 });
     }
   };
+
+  React.useEffect(() => {
+    if (isModalOpen) {
+      handleModalClose();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
 
   return (
     <div className={`app-container ${isModalOpen ? 'modal-open' : ''}`}>

@@ -18,7 +18,6 @@ import { loginUser } from '../api/authApi';
 import Loading from '@/pages/Loading';
 import { useTranslation } from '@/shared/i18n';
 import { seasonalColors } from '@/components/layout/springTheme';
-import { useThemeStore } from '@/features/theme/store/themeStore';
 
 // 로그인 카드 스타일
 const LoginCard = styled(Paper)<{ colors: typeof seasonalColors.spring }>`
@@ -147,8 +146,7 @@ const LoginPage: React.FC = () => {
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const season = useThemeStore(state => state.season);
-  const colors = seasonalColors[season] || seasonalColors.spring;
+  const colors = seasonalColors.proffesional;
 
   const handleLoginClick = async () => {
     setLoading(true);

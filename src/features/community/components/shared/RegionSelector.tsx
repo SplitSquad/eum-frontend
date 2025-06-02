@@ -13,7 +13,6 @@ import {
 } from '@mui/material';
 import { useRegionStore } from '../../store/regionStore';
 import { regionTree } from '@/constants/regionTree';
-import { useThemeStore } from '@/features/theme/store/themeStore';
 import { seasonalColors } from '@/components/layout/springTheme';
 
 interface RegionSelectorProps {
@@ -24,8 +23,7 @@ interface RegionSelectorProps {
 const RegionSelector: React.FC<RegionSelectorProps> = ({ onChange }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const season = useThemeStore(state => state.season);
-  const colors = seasonalColors[season] || seasonalColors.spring;
+  const colors = seasonalColors.professional;
   const {
     selectedCity,
     selectedDistrict,

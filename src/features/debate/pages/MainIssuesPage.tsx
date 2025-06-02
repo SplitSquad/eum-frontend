@@ -28,6 +28,7 @@ import { formatDate } from '../utils/dateUtils';
 
 import { useTranslation } from '@/shared/i18n';
 import { useLanguageStore } from '@/features/theme/store/languageStore';
+import bagImg from '@/assets/icons/common/보따리.png';
 
 // 스타일 컴포넌트
 const CategoryItem = styled(ListItemButton)(({ theme }) => ({
@@ -369,11 +370,11 @@ const CategorySidebar: React.FC<{
               if (key === 'all') {
                 navigate('/debate/list');
               } else {
-                navigate('/debate/list', { 
-                  state: { 
+                navigate('/debate/list', {
+                  state: {
                     category: key,
-                    apiCategory: apiCategory 
-                  } 
+                    apiCategory: apiCategory,
+                  },
                 });
               }
             }}
@@ -735,6 +736,7 @@ const MainIssuesPage: React.FC = () => {
     return (
       <IssueSection>
         <IssueTitleWrapper>
+          <img src={bagImg} alt="logo" style={{ height: 22, width: 22, objectFit: 'contain' }} />
           <IssueSectionTitle variant="h5">{t('debate.todayIssue')}</IssueSectionTitle>
         </IssueTitleWrapper>
 
@@ -767,7 +769,7 @@ const MainIssuesPage: React.FC = () => {
             }}
           >
             <Typography sx={{ fontWeight: 'bold', color: '#888' }}>
-              등록된 토론이 없습니다.
+              {t('debate.noIssues')}
             </Typography>
           </Paper>
         )}
@@ -780,6 +782,7 @@ const MainIssuesPage: React.FC = () => {
     return (
       <IssueSection>
         <IssueTitleWrapper>
+          <img src={bagImg} alt="logo" style={{ height: 22, width: 22, objectFit: 'contain' }} />
           <IssueSectionTitle variant="h5">{t('debate.mostHotIssue')}</IssueSectionTitle>
         </IssueTitleWrapper>
 
@@ -812,7 +815,7 @@ const MainIssuesPage: React.FC = () => {
             }}
           >
             <Typography sx={{ fontWeight: 'bold', color: '#888' }}>
-              등록된 토론이 없습니다.
+              {t('debate.noIssues')}
             </Typography>
           </Paper>
         )}
@@ -825,6 +828,7 @@ const MainIssuesPage: React.FC = () => {
     return (
       <IssueSection>
         <IssueTitleWrapper>
+          <img src={bagImg} alt="logo" style={{ height: 22, width: 22, objectFit: 'contain' }} />
           <IssueSectionTitle variant="h5">{t('debate.halfAndHalfIssue')}</IssueSectionTitle>
         </IssueTitleWrapper>
 
@@ -857,7 +861,7 @@ const MainIssuesPage: React.FC = () => {
             }}
           >
             <Typography sx={{ fontWeight: 'bold', color: '#888' }}>
-              등록된 토론이 없습니다.
+              {t('debate.noIssues')}
             </Typography>
           </Paper>
         )}
@@ -930,7 +934,7 @@ const MainIssuesPage: React.FC = () => {
                 }}
               >
                 <Typography sx={{ fontWeight: 'bold', color: '#888' }}>
-                  {categoryMappings[selectedCategory].display} {t('debate.noIssues')}
+                  {t('debate.noIssues')}
                 </Typography>
               </Paper>
             ) : (

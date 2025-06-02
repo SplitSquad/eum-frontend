@@ -3,7 +3,6 @@ import { Button, CircularProgress } from '@mui/material';
 import styled from '@emotion/styled';
 import GoogleIcon from '@mui/icons-material/Google';
 import { getGoogleAuthUrl } from '../api/authApi'; // 실제 구글 로그인 API
-import { useThemeStore } from '@/features/theme/store/themeStore';
 import { seasonalColors } from '@/components/layout/springTheme';
 
 const BlossomWrapper = styled.div<{ season: string }>`
@@ -76,8 +75,7 @@ const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
   buttonText = '구글로 계속하기',
 }) => {
   const [loading, setLoading] = useState<boolean>(false);
-  const season = useThemeStore(state => state.season);
-  const colors = seasonalColors[season] || seasonalColors.spring;
+  const colors = seasonalColors.prrofessional;
 
   // 실제 구글 로그인 처리 함수
   const handleGoogleLogin = async () => {
@@ -104,18 +102,16 @@ const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
   };
 
   return (
-    <BlossomWrapper season={season}>
-      <ThemedButton
-        variant="contained"
-        startIcon={!loading && <GoogleIcon />}
-        onClick={handleGoogleLogin}
-        disabled={loading}
-        fullWidth
-        colors={colors}
-      >
-        {loading ? <CircularProgress size={24} color="inherit" /> : buttonText}
-      </ThemedButton>
-    </BlossomWrapper>
+    <ThemedButton
+      variant="contained"
+      startIcon={!loading && <GoogleIcon />}
+      onClick={handleGoogleLogin}
+      disabled={loading}
+      fullWidth
+      colors={colors}
+    >
+      {loading ? <CircularProgress size={24} color="inherit" /> : buttonText}
+    </ThemedButton>
   );
 };
 

@@ -25,7 +25,6 @@ interface CountrySelectorProps {
   value: string;
   onChange: (countryCode: string, countryName: string) => void;
   label?: string;
-  placeholder?: string;
   required?: boolean;
   error?: boolean;
   helperText?: string;
@@ -41,7 +40,6 @@ const CountrySelector: React.FC<CountrySelectorProps> = ({
   value,
   onChange,
   label = '국가 선택',
-  placeholder = '국가를 선택해주세요',
   required = false,
   error = false,
   helperText,
@@ -58,15 +56,15 @@ const CountrySelector: React.FC<CountrySelectorProps> = ({
   // 현재 선택된 국가 정보
   const selectedCountry = useMemo(() => {
     if (!value) return null;
-    
+
     // 국가 코드로 먼저 찾기
     let country = getCountryByCode(value);
-    
+
     // 국가명으로 찾기
     if (!country) {
       country = getCountryByName(value);
     }
-    
+
     return country;
   }, [value]);
 
@@ -78,7 +76,7 @@ const CountrySelector: React.FC<CountrySelectorProps> = ({
   // 표시할 국가 목록 구성
   const displayCountries = useMemo(() => {
     const countries = filteredCountries;
-    
+
     if (!showRegions && !showPopular) {
       return countries;
     }
@@ -99,10 +97,8 @@ const CountrySelector: React.FC<CountrySelectorProps> = ({
     // 지역별 국가 섹션
     if (showRegions) {
       Object.entries(COUNTRIES_BY_REGION).forEach(([region, regionCountries]) => {
-        const availableCountries = regionCountries.filter(country => 
-          countries.includes(country)
-        );
-        
+        const availableCountries = regionCountries.filter(country => countries.includes(country));
+
         if (availableCountries.length > 0) {
           result.push({ type: 'header', label: region });
           availableCountries.forEach(country => {
@@ -147,7 +143,6 @@ const CountrySelector: React.FC<CountrySelectorProps> = ({
       helperText={helperText}
       variant={variant}
       size={size}
-      placeholder={placeholder}
       SelectProps={{
         displayEmpty: true,
         open: isOpen,
@@ -156,20 +151,17 @@ const CountrySelector: React.FC<CountrySelectorProps> = ({
           setIsOpen(false);
           setSearchQuery('');
         },
-        renderValue: (selected) => {
+        renderValue: selected => {
           if (!selected || !selectedCountry) {
             return (
               <Box sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary' }}>
                 <PublicIcon sx={{ mr: 1, fontSize: '1.2rem' }} />
-                {placeholder}
               </Box>
             );
           }
           return (
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <span style={{ marginRight: 8, fontSize: '1.2rem' }}>
-                {selectedCountry.flag}
-              </span>
+              <span style={{ marginRight: 8, fontSize: '1.2rem' }}>{selectedCountry.flag}</span>
               {selectedCountry.name}
             </Box>
           );
@@ -191,9 +183,7 @@ const CountrySelector: React.FC<CountrySelectorProps> = ({
             <span style={{ fontSize: '1.2rem' }}>{selectedCountry.flag}</span>
           </InputAdornment>
         ) : (
-          <InputAdornment position="start">
-            <PublicIcon />
-          </InputAdornment>
+          <InputAdornment position="start"></InputAdornment>
         ),
       }}
     >
@@ -202,7 +192,6 @@ const CountrySelector: React.FC<CountrySelectorProps> = ({
         <Box sx={{ p: 1, position: 'sticky', top: 0, bgcolor: 'background.paper', zIndex: 1 }}>
           <TextField
             size="small"
-            placeholder="국가 검색..."
             value={searchQuery}
             onChange={handleSearchChange}
             fullWidth
@@ -213,7 +202,7 @@ const CountrySelector: React.FC<CountrySelectorProps> = ({
                 </InputAdornment>
               ),
             }}
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
           />
         </Box>
       )}
@@ -235,7 +224,7 @@ const CountrySelector: React.FC<CountrySelectorProps> = ({
         } else {
           const country = item as Country;
           const isSelected = selectedCountry?.code === country.code;
-          
+
           return (
             <MenuItem
               key={country.code}
@@ -258,9 +247,7 @@ const CountrySelector: React.FC<CountrySelectorProps> = ({
                 },
               }}
             >
-              <span style={{ fontSize: '1.2rem', minWidth: '24px' }}>
-                {country.flag}
-              </span>
+              <span style={{ fontSize: '1.2rem', minWidth: '24px' }}>{country.flag}</span>
               <Box sx={{ flex: 1 }}>
                 <Typography variant="body2" sx={{ fontWeight: isSelected ? 600 : 400 }}>
                   {country.name}
@@ -287,7 +274,11 @@ const CountrySelector: React.FC<CountrySelectorProps> = ({
       {/* 검색 결과 없음 */}
       {filteredCountries.length === 0 && searchQuery && (
         <MenuItem disabled>
-          <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', width: '100%' }}>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ textAlign: 'center', width: '100%' }}
+          >
             '{searchQuery}'에 대한 검색 결과가 없습니다.
           </Typography>
         </MenuItem>
@@ -296,4 +287,4 @@ const CountrySelector: React.FC<CountrySelectorProps> = ({
   );
 };
 
-export default CountrySelector; 
+export default CountrySelector;

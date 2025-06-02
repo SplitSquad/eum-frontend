@@ -54,7 +54,7 @@ import { PostType } from '../../types-folder';
 import { useRegionStore } from '../../store/regionStore';
 import { useTranslation } from '@/shared/i18n';
 import { useLanguageStore } from '@/features/theme/store/languageStore';
-
+import flowerImg from '@/assets/icons/common/연꽃.png';
 /**
  * 게시글 목록 페이지 컴포넌트
  * 커뮤니티의 게시글 목록을 표시하고 필터링, 검색 기능 제공
@@ -171,7 +171,7 @@ const ProGroupListPage: React.FC = () => {
   };
 
   // 카테고리별 태그 매핑 - useState로 관리하여 언어 변경 시 자동 업데이트
-  const [categoryTags, setCategoryTags] = useState<{[key: string]: string[]}>({
+  const [categoryTags, setCategoryTags] = useState<{ [key: string]: string[] }>({
     travel: [],
     living: [],
     study: [],
@@ -246,7 +246,7 @@ const ProGroupListPage: React.FC = () => {
       setAvailableTags(newAvailableTags);
       console.log('[DEBUG] ProGroup 카테고리/언어 변경으로 태그 목록 업데이트:', {
         카테고리: selectedCategory,
-        새태그목록: newAvailableTags
+        새태그목록: newAvailableTags,
       });
     } else {
       setAvailableTags([]);
@@ -261,7 +261,7 @@ const ProGroupListPage: React.FC = () => {
     // localStorage에서 소모임 전용 검색 상태 복구
     const savedState = localStorage.getItem('proGroupSearch');
     const saved = savedState ? JSON.parse(savedState) : {};
-    
+
     return {
       category: queryParams.get('category') || saved.category || t('community.filters.all'),
       location: queryParams.get('location') || saved.location || t('community.filters.all'),
@@ -284,7 +284,7 @@ const ProGroupListPage: React.FC = () => {
       tag: filter.tag,
       sortBy: filter.sortBy,
       selectedTags: selectedTags, // 태그 상태도 저장
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
     localStorage.setItem('proGroupSearch', JSON.stringify(searchState));
   };
@@ -312,13 +312,13 @@ const ProGroupListPage: React.FC = () => {
       try {
         const saved = JSON.parse(savedState);
         // 1시간 이내의 검색 상태만 복구
-        if (saved.timestamp && (Date.now() - saved.timestamp) < 60 * 60 * 1000) {
+        if (saved.timestamp && Date.now() - saved.timestamp < 60 * 60 * 1000) {
           if (saved.isSearchMode && saved.searchTerm) {
             setSearchTerm(saved.searchTerm);
             setSearchType(saved.searchType || t('community.searchType.titleContent'));
             setIsSearchMode(true);
             console.log('[DEBUG] 소모임 검색 상태 복구:', saved);
-            
+
             // postStore에도 소모임 검색 상태 설정
             const postStore = usePostStore.getState();
             postStore.searchStates['모임'] = {
@@ -327,9 +327,14 @@ const ProGroupListPage: React.FC = () => {
               type: saved.searchType || t('community.searchType.titleContent'),
             };
           }
-          
+
           // 🔥 소모임 전용 태그 상태만 복구 (검색 상태가 활성화된 경우에만)
-          if (saved.isSearchMode && saved.selectedTags && Array.isArray(saved.selectedTags) && saved.selectedTags.length > 0) {
+          if (
+            saved.isSearchMode &&
+            saved.selectedTags &&
+            Array.isArray(saved.selectedTags) &&
+            saved.selectedTags.length > 0
+          ) {
             console.log('[DEBUG] 소모임 검색 모드 - 태그 상태 복구:', saved.selectedTags);
             setSelectedTags(saved.selectedTags);
           }
@@ -352,9 +357,13 @@ const ProGroupListPage: React.FC = () => {
       console.log('[DEBUG] postStore에서 소모임 검색 상태 복구:', storeSearchState);
     } else {
       // 소모임이 아닌 다른 postType의 검색 상태가 활성화되어 있다면 초기화
-      const otherPostTypes = Object.keys(usePostStore.getState().searchStates).filter(pt => pt !== '모임');
-      const hasOtherActiveSearch = otherPostTypes.some(pt => usePostStore.getState().searchStates[pt].active);
-      
+      const otherPostTypes = Object.keys(usePostStore.getState().searchStates).filter(
+        pt => pt !== '모임'
+      );
+      const hasOtherActiveSearch = otherPostTypes.some(
+        pt => usePostStore.getState().searchStates[pt].active
+      );
+
       if (hasOtherActiveSearch) {
         console.log('[DEBUG] 다른 postType의 검색 상태 감지, 소모임 검색 상태 초기화');
         // 소모임 검색 상태만 초기화
@@ -449,7 +458,7 @@ const ProGroupListPage: React.FC = () => {
             setSearchTerm('');
             setSelectedTags([]); // 태그 상태도 초기화
             saveSearchState('', searchType, false); // 검색 상태 초기화
-            
+
             // postStore에서도 소모임 검색 상태 초기화
             const postStore = usePostStore.getState();
             postStore.searchStates['모임'] = {
@@ -457,7 +466,7 @@ const ProGroupListPage: React.FC = () => {
               term: '',
               type: '',
             };
-            
+
             fetchPosts({
               ...filter,
               page: 0,
@@ -526,9 +535,9 @@ const ProGroupListPage: React.FC = () => {
         tag: updatedFilter.tag,
         sort: updatedFilter.sortBy === 'popular' ? 'views,desc' : 'createdAt,desc',
       };
-      
+
       console.log('[DEBUG] 검색 API 파라미터:', searchOptions);
-      
+
       try {
         const postApi = usePostStore.getState();
         postApi.searchPosts(searchTerm, searchType, searchOptions);
@@ -585,7 +594,7 @@ const ProGroupListPage: React.FC = () => {
 
     let newSelectedTags: string[];
     let originalTagNames: string[];
-    
+
     if (selectedTags.includes(tag)) {
       // 이미 선택된 태그면 제거
       newSelectedTags = selectedTags.filter(t => t !== tag);
@@ -600,9 +609,9 @@ const ProGroupListPage: React.FC = () => {
 
     setSelectedTags(newSelectedTags);
 
-    console.log('[DEBUG] 태그 변환:', { 
-      번역태그들: newSelectedTags, 
-      원본태그들: originalTagNames 
+    console.log('[DEBUG] 태그 변환:', {
+      번역태그들: newSelectedTags,
+      원본태그들: originalTagNames,
     });
 
     // 필터 업데이트 - 원본 태그명들로 설정
@@ -627,7 +636,7 @@ const ProGroupListPage: React.FC = () => {
       console.log('검색어가 비어있음');
       setIsSearchMode(false);
       saveSearchState('', searchType, false); // 검색 상태 초기화
-      
+
       // postStore에서도 소모임 검색 상태 초기화
       const postStore = usePostStore.getState();
       postStore.searchStates['모임'] = {
@@ -635,7 +644,7 @@ const ProGroupListPage: React.FC = () => {
         term: '',
         type: '',
       };
-      
+
       fetchPosts({ ...filter, page: 0, resetSearch: true });
       return;
     }
@@ -663,7 +672,7 @@ const ProGroupListPage: React.FC = () => {
     // 검색 모드 활성화
     setIsSearchMode(true);
     saveSearchState(searchTerm, searchType, true); // 검색 상태 저장
-    
+
     // postStore에도 소모임 검색 상태 설정
     const postStore = usePostStore.getState();
     postStore.searchStates['모임'] = {
@@ -740,14 +749,14 @@ const ProGroupListPage: React.FC = () => {
   ) => {
     const region = [city, district, neighborhood].filter(Boolean).join(' ');
     console.log('[DEBUG] 지역 변경:', { city, district, neighborhood, region });
-    
+
     // 필터 업데이트
     const newFilter = {
       ...filter,
       location: region || '전체',
       page: 0,
     };
-    
+
     // 검색 상태 고려하여 필터 적용
     applyFilterWithSearchState(newFilter);
   };
@@ -872,7 +881,7 @@ const ProGroupListPage: React.FC = () => {
         </div>
       </div>
 
-      {/* 커뮤니티 타입 전환 버튼 - Pro 테마용 */}
+      {/* 커뮤니티 타입 전환 버튼 - Pro 테마용 
       <div
         style={{
           borderBottom: '1.5px solid #e5e7eb',
@@ -941,7 +950,7 @@ const ProGroupListPage: React.FC = () => {
             </button>
           </div>
         </div>
-      </div>
+      </div>*/}
 
       <div
         style={{
@@ -975,6 +984,9 @@ const ProGroupListPage: React.FC = () => {
               />*/}
               <h2
                 style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
                   fontSize: 22,
                   fontWeight: 700,
                   color: '#111',
@@ -982,6 +994,11 @@ const ProGroupListPage: React.FC = () => {
                   margin: 0,
                 }}
               >
+                <img
+                  src={flowerImg}
+                  alt="logo"
+                  style={{ height: 22, width: 22, objectFit: 'contain', verticalAlign: 'middle' }}
+                />
                 {selectedCategory === '전체'
                   ? t('infoPage.content.allInfo')
                   : t(`community.categories.${selectedCategory}`) || selectedCategory}
@@ -997,6 +1014,22 @@ const ProGroupListPage: React.FC = () => {
                   justifyContent: 'flex-end',
                 }}
               >
+                {/* 자유 게시판 이동 버튼 - 글쓰기 왼쪽 */}
+                <button
+                  onClick={() => navigate('/community/board')}
+                  style={{
+                    ...proButton,
+                    padding: '6px 16px',
+                    fontSize: 14,
+                    background: '#f3f4f6',
+                    color: '#222',
+                    border: '1.5px solid #e5e7eb',
+                    borderRadius: 6,
+                    margin: 0,
+                  }}
+                >
+                  {t('common.communicationBoard')}
+                </button>
                 <button
                   onClick={handleCreatePost}
                   style={{
@@ -1227,7 +1260,7 @@ const ProGroupListPage: React.FC = () => {
               setSearchTerm('');
               setSelectedTags([]); // 태그 상태도 초기화
               saveSearchState('', searchType, false); // 검색 상태 초기화
-              
+
               // postStore에서도 소모임 검색 상태 초기화
               const postStore = usePostStore.getState();
               postStore.searchStates['모임'] = {
@@ -1235,7 +1268,7 @@ const ProGroupListPage: React.FC = () => {
                 term: '',
                 type: '',
               };
-              
+
               fetchPosts({
                 ...filter,
                 page: 0,
@@ -1281,7 +1314,7 @@ const ProGroupListPage: React.FC = () => {
               setSearchTerm('');
               setSelectedTags([]); // 태그 상태도 초기화
               saveSearchState('', searchType, false); // 검색 상태 초기화
-              
+
               // postStore에서도 소모임 검색 상태 초기화
               const postStore = usePostStore.getState();
               postStore.searchStates['모임'] = {
@@ -1289,7 +1322,7 @@ const ProGroupListPage: React.FC = () => {
                 term: '',
                 type: '',
               };
-              
+
               fetchPosts({
                 ...filter,
                 page: 0,
