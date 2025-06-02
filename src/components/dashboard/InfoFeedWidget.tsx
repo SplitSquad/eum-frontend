@@ -165,19 +165,13 @@ const InfoItem = memo(
             {/* 매치 점수 배지 */}
             {info.matchScore && info.matchScore > 0 && (
               <Chip
-                label={`${info.matchScore}%`}
+                label={t(`home.infoFeed.difficultyLabels.${info.difficulty}`)}
                 size="small"
                 sx={{
                   fontSize: '0.7rem',
                   height: 22,
-                  bgcolor:
-                    info.matchScore > 90
-                      ? 'rgba(76, 175, 80, 0.1)'
-                      : info.matchScore > 80
-                        ? 'rgba(33, 150, 243, 0.1)'
-                        : 'rgba(255, 152, 0, 0.1)',
-                  color:
-                    info.matchScore > 90 ? '#4caf50' : info.matchScore > 80 ? '#2196f3' : '#ff9800',
+                  bgcolor: `${difficultyColor}20`,
+                  color: difficultyColor,
                 }}
               />
             )}
@@ -193,58 +187,80 @@ const InfoItem = memo(
               }}
             />
           </Box>
-        </Box>
 
-        {/* 제목 */}
-        <Typography
-          variant="subtitle2"
-          fontWeight={600}
-          sx={{
-            mb: 1,
-            lineHeight: 1.3,
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-          }}
-        >
-          {info.title}
-        </Typography>
+          {/* 제목 */}
+          <Typography
+            variant="subtitle2"
+            fontWeight={600}
+            sx={{
+              mb: 1,
+              lineHeight: 1.3,
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+            }}
+          >
+            {info.title}
+          </Typography>
 
-        {/* 작성자 정보 */}
-        {info.author && (
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-            <Avatar sx={{ width: 20, height: 20, mr: 1 }}>
-              {!info.author.includes('정보 제공자') && info.author.charAt(0)}
-            </Avatar>
-            <Typography variant="caption" color="text.secondary">
-              {info.author}
-            </Typography>
-          </Box>
-        )}
+          {/* 작성자 정보 */}
+          {info.author && (
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+              <Avatar sx={{ width: 20, height: 20, mr: 1 }}>
+                {!info.author.includes('정보 제공자') && info.author.charAt(0)}
+              </Avatar>
+              <Typography variant="caption" color="text.secondary">
+                {info.author}
+              </Typography>
+            </Box>
+          )}
 
-        {/* 하단 정보 */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <VisibilityIcon sx={{ fontSize: 14, color: 'action.active', mr: 0.3 }} />
-            <Typography variant="caption" color="text.secondary">
-              {info.views > 1000 ? `${(info.views / 1000).toFixed(1)}k` : info.views}
-            </Typography>
-          </Box>
-
-          {/* 카테고리 표시 */}
-          {info.category && (
+          {/* 평점 및 유형 */}
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
             <Chip
-              label={translateInfoCategory(info.category, t)}
+              label={
+                info.contentType === 'guide'
+                  ? '가이드'
+                  : info.contentType === 'tip'
+                    ? '팁'
+                    : info.contentType === 'news'
+                      ? '뉴스'
+                      : '튜토리얼'
+              }
               size="small"
               sx={{
                 fontSize: '0.65rem',
                 height: 18,
-                bgcolor: '#e3f2fd',
-                color: '#1976d2',
+                bgcolor: '#e8f5e9',
+                color: '#2e7d32',
               }}
             />
-          )}
+          </Box>
+
+          {/* 하단 정보 */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <VisibilityIcon sx={{ fontSize: 14, color: 'action.active', mr: 0.3 }} />
+              <Typography variant="caption" color="text.secondary">
+                {info.views > 1000 ? `${(info.views / 1000).toFixed(1)}k` : info.views}
+              </Typography>
+            </Box>
+
+            {/* 카테고리 표시 */}
+            {info.category && (
+              <Chip
+                label={info.category}
+                size="small"
+                sx={{
+                  fontSize: '0.65rem',
+                  height: 18,
+                  bgcolor: '#e3f2fd',
+                  color: '#1976d2',
+                }}
+              />
+            )}
+          </Box>
         </Box>
       </Box>
     );
