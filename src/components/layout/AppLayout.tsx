@@ -34,13 +34,11 @@ export default function AppLayout() {
       closeModal();
     } else if (btnRef.current) {
       const rect = btnRef.current.getBoundingClientRect();
-      const scrollX = window.scrollX;
-      const scrollY = window.scrollY;
-      const offset = 8;
       const MODAL_WIDTH = 350;
-      let x = rect.left - offset - MODAL_WIDTH + scrollX;
-      const y = rect.top + scrollY - 400;
-      if (x < 0) x = rect.right + offset + scrollX;
+      const MODAL_HEIGHT = 400;
+      // fixed 요소이므로 scrollX, scrollY를 더하지 않음
+      const x = rect.left - MODAL_WIDTH;
+      const y = rect.top - MODAL_HEIGHT;
       openModal(<ModalContent />, { x, y });
     }
   };

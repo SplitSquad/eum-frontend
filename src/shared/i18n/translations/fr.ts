@@ -1525,19 +1525,19 @@ const fr = {
         button: 'Rechercher',
       },
       actions: {
-        like: 'J\'aime',
+        like: "J'aime",
         download: 'Télécharger',
         view: 'Voir',
       },
       info: {
         photographer: 'Par',
-        poweredBy: 'Fourni par l\'API Pexels',
+        poweredBy: "Fourni par l'API Pexels",
       },
       messages: {
         loading: 'Chargement des images...',
         error: 'Erreur lors du chargement des images',
         noResults: 'Aucun résultat de recherche',
-        apiKeyMissing: 'Clé API Pexels non configurée. Images d\'exemple affichées.',
+        apiKeyMissing: "Clé API Pexels non configurée. Images d'exemple affichées.",
       },
       images: {
         seoul_tower: 'Tour de Séoul',
@@ -1578,14 +1578,14 @@ const fr = {
         button: 'Rechercher',
       },
       actions: {
-        like: 'J\'aime',
+        like: "J'aime",
         play: 'Lire',
         close: 'Fermer',
       },
       info: {
         views: 'vues',
         channel: 'Chaîne',
-        poweredBy: 'Fourni par l\'API YouTube Data',
+        poweredBy: "Fourni par l'API YouTube Data",
       },
       messages: {
         loading: 'Chargement des vidéos...',
@@ -1785,7 +1785,7 @@ const fr = {
       createdAt: 'Créé',
     },
     sidebar: {
-      popularInfo: '🔥 Informations populaires',
+      popularInfo: 'Informations populaires',
       emergencyContacts: "🆘 Contacts d'urgence",
       emergency: {
         title: 'Urgence',
@@ -2079,6 +2079,37 @@ const fr = {
         },
       },
     },
+  },
+  ai: {
+    modal: {
+      askHelp: 'Comment puis-je vous aider ? (ex : créer un planning, rédiger un post, etc.)',
+      loadingAnswer: 'Réponse en cours...',
+    },
+  },
+  chatbot: {
+    askHelp: 'Comment puis-je vous aider ? (ex : créer un planning, rédiger un post, etc.)',
+    loadingAnswer: 'Réponse en cours...',
+    errorMessage: 'Une erreur est survenue lors de la réponse.',
+    downloadImg: "Télécharger l'image",
+    errorCalender: '⛔ Échec du chargement du planning.',
+    schedule: '📅 Tous les plannings',
+    noDescription: 'Pas de description',
+    startDate: 'Début :',
+    endDate: 'Fin :',
+    deleteSchedule: '🗑️ Le planning a été supprimé.',
+    errorDelete: '⛔ Impossible de charger le planning supprimé.',
+    failSchedule: '⛔ Impossible de charger les informations du planning.',
+    successSchedule: '✅ Planning ajouté avec succès.',
+    location: 'Lieu :',
+    noLocation: 'Aucun lieu',
+    failEdit: '⛔ Impossible de charger le planning modifié.',
+    successEdit: '✏️ Planning modifié avec succès.',
+    address: '📍 Adresse :',
+    phone: '📞 Téléphone :',
+    distance: '📏 Distance :',
+    openPdf: '📄 Ouvrir le PDF',
+    placeHolder: 'Saisissez votre question ou demande...',
+    send: 'Envoyer',
   },
 };
 

@@ -806,10 +806,11 @@ const ProGroupListPage: React.FC = () => {
   const handleNavigateToBoard = () => {
     // 1. 즉시 posts 데이터 초기화 및 로딩 상태 설정
     resetPostsState();
-    
+
     // 2. postStore에서도 로딩 상태 즉시 설정
     usePostStore.setState({ postLoading: true, posts: [] });
-    
+
+  
     // 3. 모든 상태 즉시 초기화
     setSelectedCategory('전체');
     setSelectedTags([]);
@@ -1033,7 +1034,7 @@ const ProGroupListPage: React.FC = () => {
               paddingRight: 32,
             }}
           >
-            {/* 카테고리/아이콘 영역과 커뮤니티 타입 전환 버튼 통합 */}
+            {/* 카테고리/아이콘 영역과 커뮤니티 타입 전환 버튼 통합*/}
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
               {/* 왼쪽: 카테고리 아이콘과 텍스트 */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -1057,7 +1058,7 @@ const ProGroupListPage: React.FC = () => {
                 </h2>
               </div>
 
-              {/* 중앙: 커뮤니티 타입 전환 버튼 - 더 예쁘게 */}
+              {/* 중앙: 커뮤니티 타입 전환 버튼 - 더 예쁘게 
               <div
                 style={{
                   display: 'flex',
@@ -1110,7 +1111,7 @@ const ProGroupListPage: React.FC = () => {
                 >
                   {t('common.communicationBoard')}
                 </button>
-              </div>
+              </div>*/}
 
               {/* 오른쪽: 글쓰기 버튼과 정렬 드롭다운 */}
               <div
@@ -1122,6 +1123,23 @@ const ProGroupListPage: React.FC = () => {
                   justifyContent: 'flex-end',
                 }}
               >
+                <button
+                  style={{
+                    ...proButton,
+                    padding: '6px 16px',
+                    fontSize: 14,
+                    background: '#222',
+                    color: '#fff',
+                    border: '1.5px solid #222',
+                    borderRadius: 6,
+                    margin: 0,
+                    fontWeight: 700,
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+                  }}
+                  onClick={handleNavigateToBoard}
+                >
+                  {t('common.communicationBoard')}
+                </button>
                 <button
                   onClick={handleCreatePost}
                   style={{
@@ -1248,7 +1266,7 @@ const ProGroupListPage: React.FC = () => {
                         {t('community.filters.tags')}
                       </Typography>
                       <Box
-                        key={`proGroupTags-${selectedCategory}-${selectedTags.length}-${Date.now() % 1000}`}
+                        key={`tags-${selectedCategory}-${selectedTags.length}`}
                         sx={{
                           display: 'flex',
                           flexWrap: 'wrap',
@@ -1258,7 +1276,7 @@ const ProGroupListPage: React.FC = () => {
                       >
                         {availableTags.map(tag => (
                           <Chip
-                            key={`proGroupTag-${tag}-${selectedTags.includes(tag) ? 'selected' : 'unselected'}`}
+                            key={`${tag}-${selectedTags.includes(tag)}`}
                             label={tag}
                             onClick={isTagActive ? () => handleTagSelect(tag) : undefined}
                             color={selectedTags.includes(tag) ? 'primary' : 'default'}
@@ -1293,7 +1311,6 @@ const ProGroupListPage: React.FC = () => {
           </div>
         </div>
       </div>
-      {/* 상단 필터링 및 검색 영역 */}
 
       {/* 로딩 상태 표시 */}
       {postLoading ? (

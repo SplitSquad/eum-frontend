@@ -442,7 +442,7 @@ const DebateDetailPage: React.FC = () => {
 
   // 초기 데이터 로드 - 중복 방지 개선
   const hasInitialLoadedRef = useRef(false);
-  
+
   useEffect(() => {
     if (id && !hasInitialLoadedRef.current) {
       hasInitialLoadedRef.current = true;
@@ -455,12 +455,12 @@ const DebateDetailPage: React.FC = () => {
     // 초기 로드가 완료된 후에만 언어 변경에 반응
     if (hasInitialLoadedRef.current && previousLanguageRef.current !== language && id && debate) {
       console.log(`[INFO] 언어 변경 감지: ${previousLanguageRef.current} → ${language}`);
-      
+
       // 기존 타이머 취소
       if (refreshTimeoutRef.current) {
         clearTimeout(refreshTimeoutRef.current);
       }
-      
+
       // 디바운스된 새로고침 (500ms 지연으로 증가하여 깜빡임 최소화)
       refreshTimeoutRef.current = setTimeout(() => {
         // 언어 변경 중임을 표시하지 않고 백그라운드에서 새로고침
@@ -1486,6 +1486,7 @@ const DebateDetailPage: React.FC = () => {
 
   return (
     <DebateLayout
+      hideBottomImg={true}
       sidebar={
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           <VoteButtonGroup>

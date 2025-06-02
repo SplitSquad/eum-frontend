@@ -1989,6 +1989,38 @@ const ja = {
       },
     },
   },
+  ai: {
+    modal: {
+      askHelp: 'どのようにお手伝いできますか？（例：スケジュール作成、投稿作成など）',
+      loadingAnswer: '回答中...',
+    },
+  },
+  chatbot: {
+    askHelp: 'どのようにお手伝いできますか？（例：スケジュール作成、投稿作成など）',
+    loadingAnswer: '回答中...',
+    errorMessage: '応答中にエラーが発生しました。',
+    downloadImg: '画像をダウンロード',
+    errorCalender: '⛔ スケジュールの読み込みに失敗しました。',
+    schedule: '📅 全てのスケジュール',
+    noDescription: '説明なし',
+    startDate: '開始:',
+    endDate: '終了:',
+    deleteSchedule: '🗑️ スケジュールが削除されました。',
+    errorDelete: '⛔ 削除されたスケジュールを読み込めません。',
+    failSchedule: '⛔ スケジュール情報を読み込めません。',
+    successSchedule: '✅ スケジュールが正常に追加されました。',
+    location: '場所:',
+    noLocation: '場所なし',
+    failEdit: '⛔ 編集されたスケジュールを読み込めません。',
+    successEdit: '✏️ スケジュールが正常に編集されました。',
+    address: '📍 住所:',
+    phone: '📞 電話番号:',
+    distance: '📏 距離:',
+    openPdf: '📄 PDFを開く',
+    placeHolder: '質問やリクエストを入力してください...',
+    send: '送信',
+  },
+
 };
 
 export default ja;

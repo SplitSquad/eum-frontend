@@ -2026,6 +2026,38 @@ const de = {
       },
     },
   },
+  ai: {
+    modal: {
+      askHelp: 'Womit kann ich Ihnen helfen? (z.B. Termin erstellen, Beitrag verfassen usw.)',
+      loadingAnswer: 'Antwort wird verfasst...',
+    },
+  },
+  chatbot: {
+    askHelp: 'Wie kann ich Ihnen helfen? (z.B. Termin erstellen, Beitrag verfassen usw.)',
+    loadingAnswer: 'Antwort wird verfasst...',
+    errorMessage: 'Beim Antworten ist ein Fehler aufgetreten.',
+    downloadImg: 'Bild herunterladen',
+    errorCalender: '⛔ Laden des Kalenders fehlgeschlagen.',
+    schedule: '📅 Alle Termine',
+    noDescription: 'Keine Beschreibung',
+    startDate: 'Start:',
+    endDate: 'Ende:',
+    deleteSchedule: '🗑️ Termin wurde gelöscht.',
+    errorDelete: '⛔ Gelöschten Termin kann nicht geladen werden.',
+    failSchedule: '⛔ Termin-Informationen können nicht geladen werden.',
+    successSchedule: '✅ Termin erfolgreich hinzugefügt.',
+    location: 'Ort:',
+    noLocation: 'Kein Ort',
+    failEdit: '⛔ Bearbeiteter Termin kann nicht geladen werden.',
+    successEdit: '✏️ Termin erfolgreich bearbeitet.',
+    address: '📍 Adresse:',
+    phone: '📞 Telefon:',
+    distance: '📏 Entfernung:',
+    openPdf: '📄 PDF öffnen',
+    placeHolder: 'Bitte geben Sie Ihre Frage oder Anfrage ein...',
+    send: 'Senden',
+  },
+
 };
 
 export default de;

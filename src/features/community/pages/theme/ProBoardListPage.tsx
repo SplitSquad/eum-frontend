@@ -857,9 +857,10 @@ const ProBoardListPage: React.FC = () => {
   const handleNavigateToGroups = () => {
     // 1. 즉시 posts 데이터 초기화 및 로딩 상태 설정
     resetPostsState();
-    
+
     // 2. postStore에서도 로딩 상태 즉시 설정
     usePostStore.setState({ postLoading: true, posts: [] });
+
     
     // 3. 모든 상태 즉시 초기화
     setSelectedCategory('전체');
@@ -1020,7 +1021,7 @@ const ProBoardListPage: React.FC = () => {
                 </h2>
               </div>
 
-              {/* 중앙: 커뮤니티 타입 전환 버튼 - 더 예쁘게 */}
+              {/* 중앙: 커뮤니티 타입 전환 버튼 - 더 예쁘게 
               <div
                 style={{
                   display: 'flex',
@@ -1073,7 +1074,7 @@ const ProBoardListPage: React.FC = () => {
                 >
                   {t('common.communicationBoard')}
                 </button>
-              </div>
+              </div>*/}
 
               {/* 오른쪽: 총 게시글과 글쓰기 버튼, 정렬 드롭다운 */}
               <div
