@@ -34,7 +34,11 @@ interface ImageItem {
 const koreanLandmarkSearchTerms = [
   'Seoul Tower Korea',
   'Gyeongbokgung Palace Seoul',
+<<<<<<< HEAD
+  'Bukchon Hanok Village Seoul',
+=======
   'Bukchon Hanok Village Seoul', 
+>>>>>>> 57f1f84457d00dd586dd493648ec554e4e092912
   'Jeju Island Seongsan Peak',
   'Busan Haeundae Beach',
   'Changdeokgung Palace Seoul',
@@ -51,7 +55,11 @@ const koreanLandmarkSearchTerms = [
   'Korean traditional market',
   'Lotte World Tower Seoul',
   'Banpo Rainbow Bridge Seoul',
+<<<<<<< HEAD
+  'Korean palace architecture',
+=======
   'Korean palace architecture'
+>>>>>>> 57f1f84457d00dd586dd493648ec554e4e092912
 ];
 
 // 검색어에 해당하는 태그 매핑
@@ -75,7 +83,11 @@ const searchTermTagMapping: { [key: string]: string } = {
   'Korean traditional market': 'market',
   'Lotte World Tower Seoul': 'landmark',
   'Banpo Rainbow Bridge Seoul': 'night',
+<<<<<<< HEAD
+  'Korean palace architecture': 'palace',
+=======
   'Korean palace architecture': 'palace'
+>>>>>>> 57f1f84457d00dd586dd493648ec554e4e092912
 };
 
 // 검색어에 해당하는 alt 키 매핑
@@ -99,7 +111,11 @@ const searchTermAltMapping: { [key: string]: string } = {
   'Korean traditional market': 'korean_market',
   'Lotte World Tower Seoul': 'seoul_tower',
   'Banpo Rainbow Bridge Seoul': 'hangang_night',
+<<<<<<< HEAD
+  'Korean palace architecture': 'gyeongbokgung',
+=======
   'Korean palace architecture': 'gyeongbokgung'
+>>>>>>> 57f1f84457d00dd586dd493648ec554e4e092912
 };
 
 const PexelsGalleryWidget: React.FC = () => {
@@ -156,7 +172,11 @@ const PexelsGalleryWidget: React.FC = () => {
 
       const results = await Promise.all(imagePromises);
       const validImages = results.filter(img => img !== null) as ImageItem[];
+<<<<<<< HEAD
+
+=======
       
+>>>>>>> 57f1f84457d00dd586dd493648ec554e4e092912
       setImages(validImages);
     } catch (err) {
       console.error('Pexels API 오류:', err);

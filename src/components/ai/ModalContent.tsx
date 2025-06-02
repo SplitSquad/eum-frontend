@@ -34,14 +34,8 @@ interface ModalContentProps {
 }
 
 export default function ModalContent({ adjustKey, btnRect }: ModalContentProps) {
-  const { t } = useTranslation();
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: Date.now(),
-      sender: 'bot',
-      text: t('chatbot.askHelp'),
-    },
-  ]);
+  const { t, language } = useTranslation();
+  const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -67,25 +61,20 @@ export default function ModalContent({ adjustKey, btnRect }: ModalContentProps) 
   };
 
   useEffect(() => {
+    setMessages([
+      {
+        id: Date.now(),
+        sender: 'bot',
+        text: t('chatbot.askHelp'),
+      },
+    ]);
+  }, [language]);
+
+  useEffect(() => {
     if (listRef.current) {
       listRef.current.scrollTop = listRef.current.scrollHeight;
     }
   }, [messages, loading]);
-
-  // 모달 위치 보정: 모달의 오른쪽 아래가 btnRect의 왼쪽 위와 겹치도록
-  useEffect(() => {
-    if (modalRef.current && btnRect) {
-      const modalWidth = modalRef.current.offsetWidth;
-      const modalHeight = modalRef.current.offsetHeight;
-      const x = btnRect.left - modalWidth;
-      const y = btnRect.top - modalHeight;
-      const w: any = window;
-      if (w.__lastModalPos?.x === x && w.__lastModalPos?.y === y) return;
-      w.__lastModalPos = { x, y };
-      openModal(content, { x, y });
-    }
-    // eslint-disable-next-line
-  }, [btnRect]);
 
   const sendMessage = async (msgText?: string) => {
     const text = (msgText ?? input).trim();
@@ -150,13 +139,13 @@ export default function ModalContent({ adjustKey, btnRect }: ModalContentProps) 
           { id: nextId + 2, sender: 'bot', imageUrl: url },
         ]);
       } else {
-        // 👉 bot 메시지 추가
+        // �� bot 메시지 추가
         setMessages(msgs => [...msgs, { id: nextId + 1, sender: 'bot', text: response }]);
       }
     } catch {
       setMessages(msgs => [
         ...msgs,
-        { id: nextId + 2, sender: 'bot', text: '응답 중 오류가 발생했습니다.' },
+        { id: nextId + 2, sender: 'bot', text: t('chatbot.errorMessage') },
       ]);
     } finally {
       setLoading(false);
@@ -187,7 +176,7 @@ export default function ModalContent({ adjustKey, btnRect }: ModalContentProps) 
                       rel="noopener noreferrer"
                       className="text-sm text-blue-600 underline"
                     >
-                      이미지 다운로드
+                      {t('chatbot.downloadImg')}
                     </a>
                   </>
                 ) : (
@@ -197,7 +186,7 @@ export default function ModalContent({ adjustKey, btnRect }: ModalContentProps) 
                       onClick={() => downloadImage(m.imageUrl!)}
                       className="text-sm text-blue-600 underline"
                     >
-                      이미지 다운로드
+                      {t('chatbot.downloadImg')}
                     </button>
                   </>
                 )
@@ -233,26 +222,28 @@ export default function ModalContent({ adjustKey, btnRect }: ModalContentProps) 
                     events = JSON.parse(m.calendar_check);
                   } catch (err) {
                     console.error('calendar_check 파싱 실패:', err);
-                    return <div className="text-red-600">⛔ 일정을 불러오는 데 실패했습니다.</div>;
+                    return <div className="text-red-600">{t('chatbot.errorCalender')}</div>;
                   }
 
                   return (
                     <div className="space-y-3">
-                      <div className="text-sm font-medium text-indigo-600 mb-1">📅 전체 일정</div>
+                      <div className="text-sm font-medium text-indigo-600 mb-1">
+                        {t('chatbot.schedule')}
+                      </div>
                       {events.map((event, index) => (
                         <div key={index} className="border rounded-lg p-4 shadow-sm bg-white">
                           <div className="text-lg font-semibold text-blue-600">{event.summary}</div>
                           <div className="text-sm text-gray-500 mb-1">
                             {event.description && event.description !== 'N/A'
                               ? event.description
-                              : '설명 없음'}
+                              : t('chatbot.noDescription')}
                           </div>
                           <div className="text-sm">
-                            🕒 <span className="font-medium">시작:</span>{' '}
+                            🕒 <span className="font-medium">{t('chatbot.startDate')}</span>{' '}
                             {new Date(event.start.dateTime).toLocaleString('ko-KR')}
                           </div>
                           <div className="text-sm">
-                            🕓 <span className="font-medium">종료:</span>{' '}
+                            🕓 <span className="font-medium">{t('chatbot.endDate')}</span>{' '}
                             {new Date(event.end.dateTime).toLocaleString('ko-KR')}
                           </div>
                         </div>
@@ -268,13 +259,13 @@ export default function ModalContent({ adjustKey, btnRect }: ModalContentProps) 
                     event = JSON.parse(fixed);
                   } catch (err) {
                     console.error('calendar_delete 파싱 실패:', err);
-                    return <div className="text-red-600">⛔ 삭제된 일정을 불러올 수 없습니다.</div>;
+                    return <div className="text-red-600">{t('chatbot.errorDelete')}</div>;
                   }
 
                   return (
                     <div className="border rounded-lg p-4 mb-2 shadow-sm bg-white opacity-60">
                       <div className="text-sm font-medium text-red-600 mb-2">
-                        🗑️ 일정이 삭제되었습니다.
+                        🗑️ {t('chatbot.deleteSchedule')}
                       </div>
                       <div className="text-lg font-semibold text-gray-700 line-through">
                         {event.summary}
@@ -283,11 +274,11 @@ export default function ModalContent({ adjustKey, btnRect }: ModalContentProps) 
                         {event.description}
                       </div>
                       <div className="text-sm line-through">
-                        🕒 <span className="font-medium">시작:</span>{' '}
+                        🕒 <span className="font-medium">{t('chatbot.startDate')}</span>{' '}
                         {new Date(event.startDateTime).toLocaleString('ko-KR')}
                       </div>
                       <div className="text-sm line-through">
-                        🕓 <span className="font-medium">종료:</span>{' '}
+                        🕓 <span className="font-medium">{t('chatbot.endDate')}</span>{' '}
                         {new Date(event.endDateTime).toLocaleString('ko-KR')}
                       </div>
                     </div>
@@ -302,28 +293,28 @@ export default function ModalContent({ adjustKey, btnRect }: ModalContentProps) 
                     event = JSON.parse(fixed);
                   } catch (err) {
                     console.error('calendar_add 파싱 실패:', err);
-                    return <div className="text-red-600">⛔ 일정 정보를 불러올 수 없습니다.</div>;
+                    return <div className="text-red-600">{t('chatbot.failSchedule')}</div>;
                   }
 
                   return (
                     <div className="border rounded-lg p-4 mb-2 shadow-sm bg-white">
                       <div className="text-sm font-medium text-green-600 mb-2">
-                        ✅ 일정이 성공적으로 추가되었습니다.
+                        ✅ {t('chatbot.successSchedule')}
                       </div>
                       <div className="text-lg font-semibold text-blue-600">{event.summary}</div>
                       <div className="text-sm text-gray-500 mb-1">{event.description}</div>
                       {event.location && (
                         <div className="text-sm">
-                          📍 <span className="font-medium">장소:</span>{' '}
-                          {event.location || '장소 없음'}
+                          📍 <span className="font-medium">{t('chatbot.location')}</span>{' '}
+                          {event.location || t('chatbot.noLocation')}
                         </div>
                       )}
                       <div className="text-sm">
-                        🕒 <span className="font-medium">시작:</span>{' '}
+                        🕒 <span className="font-medium">{t('chatbot.startDate')}</span>{' '}
                         {new Date(event.startDateTime).toLocaleString('ko-KR')}
                       </div>
                       <div className="text-sm">
-                        🕓 <span className="font-medium">종료:</span>{' '}
+                        🕓 <span className="font-medium">{t('chatbot.endDate')}</span>{' '}
                         {new Date(event.endDateTime).toLocaleString('ko-KR')}
                       </div>
                     </div>
@@ -338,28 +329,28 @@ export default function ModalContent({ adjustKey, btnRect }: ModalContentProps) 
                     event = JSON.parse(fixed);
                   } catch (err) {
                     console.error('calendar_edit 파싱 실패:', err);
-                    return <div className="text-red-600">⛔ 수정된 일정을 불러올 수 없습니다.</div>;
+                    return <div className="text-red-600">{t('chatbot.failEdit')}</div>;
                   }
 
                   return (
                     <div className="border rounded-lg p-4 mb-2 shadow-sm bg-white">
                       <div className="text-sm font-medium text-yellow-600 mb-2">
-                        ✏️ 일정이 성공적으로 수정되었습니다.
+                        {t('chatbot.successEdit')}
                       </div>
                       <div className="text-lg font-semibold text-blue-600">{event.summary}</div>
                       <div className="text-sm text-gray-500 mb-1">{event.description}</div>
                       {event.location && (
                         <div className="text-sm">
-                          📍 <span className="font-medium">장소:</span>{' '}
-                          {event.location || '장소 없음'}
+                          📍 <span className="font-medium">{t('chatbot.location')}</span>{' '}
+                          {event.location || t('chatbot.noLocation')}
                         </div>
                       )}
                       <div className="text-sm">
-                        🕒 <span className="font-medium">시작:</span>{' '}
+                        🕒 <span className="font-medium">{t('chatbot.startDate')}</span>{' '}
                         {new Date(event.startDateTime).toLocaleString('ko-KR')}
                       </div>
                       <div className="text-sm">
-                        🕓 <span className="font-medium">종료:</span>{' '}
+                        🕓 <span className="font-medium">{t('chatbot.endDate')}</span>{' '}
                         {new Date(event.endDateTime).toLocaleString('ko-KR')}
                       </div>
                     </div>
@@ -371,9 +362,15 @@ export default function ModalContent({ adjustKey, btnRect }: ModalContentProps) 
                     m.location.map((item, index) => (
                       <li key={index} className="text-sm text-gray-800">
                         <div className="font-semibold text-base">{item.place_name}</div>
-                        <div>📍 주소: {item.address_name}</div>
-                        <div>📞 전화번호: {item.phone ? item.phone : '없음'}</div>
-                        <div>📏 거리: {item.distance}m</div>
+                        <div>
+                          {t('chatbot.address')}: {item.address_name}
+                        </div>
+                        <div>
+                          {t('chatbot.phone')}: {item.phone ? item.phone : '없음'}
+                        </div>
+                        <div>
+                          {t('chatbot.distance')}: {item.distance}m
+                        </div>
                       </li>
                     ))}
                 </ul>
@@ -405,7 +402,7 @@ export default function ModalContent({ adjustKey, btnRect }: ModalContentProps) 
                   rel="noopener noreferrer"
                   className="text-sm text-indigo-600 underline"
                 >
-                  📄 PDF 파일 열기
+                  {t('chatbot.openPdf')}
                 </a>
               ) : m.search ? (
                 <ul className="space-y-1">
@@ -444,14 +441,14 @@ export default function ModalContent({ adjustKey, btnRect }: ModalContentProps) 
           onKeyDown={e => e.key === 'Enter' && !loading && sendMessage()}
           disabled={loading}
           className="flex-1 px-3 py-1 bg-white border rounded-lg focus:outline-none focus:ring disabled:opacity-50"
-          placeholder="질문이나 요청을 입력하세요..."
+          placeholder={t('chatbot.placeHolder')}
         />
         <button
           onClick={() => sendMessage()}
           disabled={loading}
           className="ml-2 px-4 py-1 bg-indigo-600 text-white rounded-lg disabled:opacity-50"
         >
-          전송
+          {t('chatbot.send')}
         </button>
       </div>
     </div>

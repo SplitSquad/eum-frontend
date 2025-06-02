@@ -160,6 +160,71 @@ const InfoItem = memo(({ info, onClick, t }: { info: InfoContent, onClick?: () =
                        info.matchScore > 80 ? '#2196f3' : '#ff9800',
               }}
             />
+<<<<<<< HEAD
+          </Box>
+
+          {/* 제목 */}
+          <Typography
+            variant="subtitle2"
+            fontWeight={600}
+            sx={{
+              mb: 1,
+              lineHeight: 1.3,
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+            }}
+          >
+            {info.title}
+          </Typography>
+
+          {/* 평점 및 유형 */}
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
+            <Chip
+              label={
+                info.contentType === 'guide'
+                  ? '가이드'
+                  : info.contentType === 'tip'
+                    ? '팁'
+                    : info.contentType === 'news'
+                      ? '뉴스'
+                      : '튜토리얼'
+              }
+              size="small"
+              sx={{
+                fontSize: '0.65rem',
+                height: 18,
+                bgcolor: '#e8f5e9',
+                color: '#2e7d32',
+              }}
+            />
+          </Box>
+
+          {/* 하단 정보 */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <VisibilityIcon sx={{ fontSize: 14, color: 'action.active', mr: 0.3 }} />
+              <Typography variant="caption" color="text.secondary">
+                {info.views > 1000 ? `${(info.views / 1000).toFixed(1)}k` : info.views}
+              </Typography>
+            </Box>
+
+            {/* 카테고리 표시 */}
+            {info.category && (
+              <Chip
+                label={info.category}
+                size="small"
+                sx={{
+                  fontSize: '0.65rem',
+                  height: 18,
+                  bgcolor: '#e3f2fd',
+                  color: '#1976d2',
+                }}
+              />
+            )}
+          </Box>
+=======
           )}
           
           <Chip
@@ -172,7 +237,22 @@ const InfoItem = memo(({ info, onClick, t }: { info: InfoContent, onClick?: () =
               color: difficultyColor,
             }}
           />
+>>>>>>> 57f1f84457d00dd586dd493648ec554e4e092912
         </Box>
+
+        {/* 카테고리 표시 */}
+        {info.category && (
+          <Chip
+            label={translateInfoCategory(info.category, t)}
+            size="small"
+            sx={{
+              fontSize: '0.65rem',
+              height: 18,
+              bgcolor: '#e3f2fd',
+              color: '#1976d2',
+            }}
+          />
+        )}
       </Box>
 
       {/* 제목 */}
@@ -603,11 +683,19 @@ const InfoFeedWidget: React.FC = () => {
   // 언어 변경 감지 및 데이터 새로고침
   useEffect(() => {
     console.log('[DEBUG] InfoFeedWidget - 언어 변경 감지:', language);
+<<<<<<< HEAD
+
+    // 커뮤니티 피드와 동일한 방식: 로딩 상태만 설정하고 fetchData가 내부적으로 처리하도록 함
+    setIsLoading(true);
+    setError(null);
+
+=======
     
     // 커뮤니티 피드와 동일한 방식: 로딩 상태만 설정하고 fetchData가 내부적으로 처리하도록 함
     setIsLoading(true);
     setError(null);
     
+>>>>>>> 57f1f84457d00dd586dd493648ec554e4e092912
     // 충분한 로딩 시간을 확보하여 부드러운 전환 보장 (커뮤니티 피드와 동일한 UX)
     setTimeout(() => {
       fetchInfoData();

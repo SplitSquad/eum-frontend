@@ -1949,6 +1949,56 @@ const es = {
     logout: 'Cerrar sesión',
     adminpage: 'Página de administrador',
   },
+  intro: {
+    slide1: {
+      title: '¡Comienza tu viaje con EUM!',
+      desc1: 'Descubre Corea paso a paso con EUM.',
+      desc2: 'Te deseamos un maravilloso nuevo viaje.',
+    },
+    slide2: {
+      title: 'Por favor, espera un momento',
+      desc1: 'EUM está preparando la mejor experiencia para ti.',
+      desc2: 'Tu increíble viaje comenzará pronto.',
+    },
+    slide3: {
+      title: '¡Bienvenido!',
+      desc1: 'Tu viaje con EUM está a punto de comenzar.',
+      desc2: 'Todo está listo para tu nueva experiencia.',
+    },
+  },
+  ai: {
+    modal: {
+      askHelp:
+        '¿En qué puedo ayudarte? (por ejemplo: crear un horario, escribir una publicación, etc.)',
+      loadingAnswer: 'Respondiendo...',
+    },
+  },
+  chatbot: {
+    askHelp:
+      '¿En qué puedo ayudarte? (por ejemplo: crear un horario, escribir una publicación, etc.)',
+    loadingAnswer: 'Respondiendo...',
+    errorMessage: 'Ocurrió un error al responder.',
+    downloadImg: 'Descargar imagen',
+    errorCalender: '⛔ Error al cargar el horario.',
+    schedule: '📅 Todos los horarios',
+    noDescription: 'Sin descripción',
+    startDate: 'Inicio:',
+    endDate: 'Fin:',
+    deleteSchedule: '🗑️ El horario ha sido eliminado.',
+    errorDelete: '⛔ No se puede cargar el horario eliminado.',
+    failSchedule: '⛔ No se puede cargar la información del horario.',
+    successSchedule: '✅ Horario añadido con éxito.',
+    location: 'Ubicación:',
+    noLocation: 'Sin ubicación',
+    failEdit: '⛔ No se puede cargar el horario editado.',
+    successEdit: '✏️ Horario editado con éxito.',
+    address: '📍 Dirección:',
+    phone: '📞 Teléfono:',
+    distance: '📏 Distancia:',
+    openPdf: '📄 Abrir PDF',
+    placeHolder: 'Ingrese su pregunta o solicitud...',
+    send: 'Enviar',
+  },
 };
 
 export default es;

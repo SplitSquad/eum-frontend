@@ -779,10 +779,10 @@ const ProGroupListPage: React.FC = () => {
   const handleNavigateToBoard = () => {
     // 1. 즉시 posts 데이터 초기화 및 로딩 상태 설정
     resetPostsState();
-    
+
     // 2. postStore에서도 로딩 상태 즉시 설정
     usePostStore.setState({ postLoading: true, posts: [] });
-    
+
     // 3. 약간의 지연 후 네비게이션 (초기화가 UI에 반영될 시간)
     setTimeout(() => {
       navigate('/community/board');
@@ -1003,7 +1003,29 @@ const ProGroupListPage: React.FC = () => {
           >
             {/* 카테고리/아이콘 영역과 커뮤니티 타입 전환 버튼 통합*/}
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
+              {/* 왼쪽: 카테고리 아이콘과 텍스트 */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <img
+                  src={flowerImg}
+                  alt="logo"
+                  style={{ height: 22, width: 22, objectFit: 'contain', verticalAlign: 'middle' }}
+                />
+                <h2
+                  style={{
+                    fontSize: 22,
+                    fontWeight: 700,
+                    color: '#111',
+                    fontFamily: proCard.fontFamily,
+                    margin: 0,
+                  }}
+                >
+                  {selectedCategory === '전체'
+                    ? t('infoPage.content.allInfo')
+                    : t(`community.categories.${selectedCategory}`) || selectedCategory}
+                </h2>
+              </div>
 
+              {/* 중앙: 커뮤니티 타입 전환 버튼 - 더 예쁘게 */}
               <div
                 style={{
                   display: 'flex',

@@ -830,10 +830,10 @@ const ProBoardListPage: React.FC = () => {
   const handleNavigateToGroups = () => {
     // 1. 즉시 posts 데이터 초기화 및 로딩 상태 설정
     resetPostsState();
-    
+
     // 2. postStore에서도 로딩 상태 즉시 설정
     usePostStore.setState({ postLoading: true, posts: [] });
-    
+
     // 3. 약간의 지연 후 네비게이션 (초기화가 UI에 반영될 시간)
     setTimeout(() => {
       navigate('/community/groups');
@@ -988,7 +988,62 @@ const ProBoardListPage: React.FC = () => {
                 </h2>
               </div>
 
+              {/* 중앙: 커뮤니티 타입 전환 버튼 - 더 예쁘게 
+              <div
+                style={{
+                  display: 'flex',
+                  border: '1.5px solid #222',
+                  borderRadius: '25px',
+                  overflow: 'hidden',
+                  backgroundColor: '#fff',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                }}
+              >
+                <button
+                  onClick={handleNavigateToGroups}
+                  style={{
+                    ...proButton,
+                    margin: 0,
+                    padding: '12px 24px',
+                    borderRadius: 0,
+                    border: 'none',
+                    backgroundColor: 'transparent',
+                    fontSize: '1rem',
+                    fontWeight: 700,
+                    color: '#666',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.backgroundColor = 'rgba(34, 34, 34, 0.1)';
+                    e.currentTarget.style.color = '#222';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = '#666';
+                  }}
+                >
+                  {t('common.smallGroups')}
+                </button>
+                <button
+                  style={{
+                    ...proButton,
+                    margin: 0,
+                    padding: '12px 24px',
+                    borderRadius: 0,
+                    border: 'none',
+                    backgroundColor: '#222',
+                    fontSize: '1rem',
+                    fontWeight: 700,
+                    color: '#fff',
+                    cursor: 'default',
+                  }}
+                >
+                  {t('common.communicationBoard')}
+                </button>
+              </div>*/}
 
+              {/* 오른쪽: 총 게시글과 글쓰기 버튼, 정렬 드롭다운 */}
               <div
                 style={{
                   display: 'flex',
