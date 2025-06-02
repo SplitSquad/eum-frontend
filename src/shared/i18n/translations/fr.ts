@@ -1414,8 +1414,6 @@ const fr = {
         myLocation: 'Ma position',
         places: 'Lieux',
       },
-     
-      },
       messages: {
         loading: 'Chargement de la carte...',
         preparing: 'Préparation...',
