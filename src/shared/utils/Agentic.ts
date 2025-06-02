@@ -52,7 +52,7 @@ export async function callAgentic(
 
   console.log('[body] ', body);
 
-  const res = await fetch('http://localhost:8000/api/v1/agentic', {
+  const res = await fetch('https://api.eum-friends.com/api/v1/agentic', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
