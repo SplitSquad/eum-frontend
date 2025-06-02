@@ -532,10 +532,18 @@ function Header({ isVisible = true, notifications }: HeaderProps) {
   useEffect(() => {
     // 토큰이 있는지 확인
     console.log('token:', token);
-    if (token) {
+    if (token && isAuthenticated) {
       loadUser();
     }
-  }, [token]);
+  }, [token, isAuthenticated, loadUser]);
+
+  // 컴포넌트 마운트 시 사용자 정보 로드 (새로고침 시 즉시 반영)
+  useEffect(() => {
+    const storedToken = localStorage.getItem('auth_token');
+    if (storedToken && !user?.profileImagePath) {
+      loadUser();
+    }
+  }, [user?.profileImagePath, loadUser]);
 
   // 상태 관리
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);

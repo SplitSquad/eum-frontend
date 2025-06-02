@@ -3,6 +3,7 @@ import { PageLayout, InfoCard, FormField, StyledInput, StyledSelect, Button } fr
 import styled from '@emotion/styled';
 import { useAuthStore } from '../../auth/store/authStore';
 import { useMypageStore } from '../store/mypageStore';
+import { useTranslation } from '@/shared/i18n';
 import {
   Dialog,
   DialogTitle,
@@ -181,6 +182,7 @@ const SettingsPage: React.FC = () => {
   };
 
   // 선택 설정 변경 핸들러
+  const { t } = useTranslation();
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
     setSettings({
@@ -193,13 +195,13 @@ const SettingsPage: React.FC = () => {
   const handleSave = () => {
     console.log('설정 저장:', settings);
     // TODO: API 호출로 설정 저장
-    alert('설정이 저장되었습니다.');
+    alert(t('settings.settingsave'));
   };
 
   // 회원탈퇴 처리
   const handleWithdraw = async () => {
-    if (confirmText !== '회원탈퇴') {
-      setWithdrawError('확인 텍스트를 정확히 입력해주세요.');
+    if (confirmText !== t('settings.delete1')) {
+      setWithdrawError(t('settings.deletecheck'));
       return;
     }
 
@@ -233,7 +235,7 @@ const SettingsPage: React.FC = () => {
         error.response?.data?.message ||
         error.response?.data?.error ||
         error.message ||
-        '회원탈퇴 처리에 실패했습니다.';
+        t('settings.deletefail');
 
       setWithdrawError(errorMessage);
     } finally {
@@ -241,27 +243,28 @@ const SettingsPage: React.FC = () => {
     }
   };
 
+
   return (
-    <PageLayout title="설정">
+    <PageLayout title= {t('settings.setting')}>
       <PageContainer>
-        <InfoCard title="계정 관리">
+        <InfoCard title={t('settings.title')}>
           <SettingItem>
-            <FormField label="이메일 주소" htmlFor="email">
+            <FormField label={t('settings.email')} htmlFor="email">
               <StyledInput
                 id="email"
                 type="email"
-                placeholder="이메일 주소"
+                placeholder={t('settings.emailaddress')}
                 disabled
                 value={profile?.email || user?.email || ''}
               />
-              <SettingDescription>이메일 주소는 현재 변경할 수 없습니다.</SettingDescription>
+              <SettingDescription>{t('settings.emailno')}</SettingDescription>
             </FormField>
           </SettingItem>
 
           <DangerZone>
-            <DangerTitle>회원탈퇴</DangerTitle>
+            <DangerTitle>{t('settings.delete1')}</DangerTitle>
             <DangerDescription>
-              계정을 영구적으로 삭제합니다. 이 작업은 되돌릴 수 없으며, 모든 데이터가 삭제됩니다.
+            {t('settings.delete2')}
             </DangerDescription>
             <ActionButtonContainer>
               <DangerButton
@@ -270,7 +273,7 @@ const SettingsPage: React.FC = () => {
                 onClick={() => setWithdrawDialogOpen(true)}
                 disabled={withdrawLoading}
               >
-                회원탈퇴
+                {t('settings.delete1')}
               </DangerButton>
             </ActionButtonContainer>
           </DangerZone>
@@ -284,27 +287,27 @@ const SettingsPage: React.FC = () => {
           fullWidth
         >
           <DialogTitle sx={{ color: '#dc3545', fontWeight: 600 }}>
-            정말로 회원탈퇴를 하시겠습니까?
+          {t('settings.deletecheck1')}
           </DialogTitle>
           <DialogContent>
             <DialogContentText sx={{ mb: 2 }}>
-              이 작업은 되돌릴 수 없습니다. 계정과 모든 데이터가 영구적으로 삭제됩니다:
+            {t('settings.deletecheck2')}
             </DialogContentText>
             <DialogContentText sx={{ mb: 2, color: '#dc3545' }}>
-              • 프로필 정보 및 설정
+              {t('settings.deletecheck3')}
               <br />
-              • 작성한 게시글 및 댓글
+              {t('settings.deletecheck4')}
               <br />
-              • 북마크 및 활동 기록
-              <br />• 모든 개인 데이터
+              {t('settings.deletecheck5')}
+              <br />{t('settings.deletecheck6')}
             </DialogContentText>
             <DialogContentText sx={{ mb: 2, fontWeight: 600 }}>
-              계속하려면 아래에 "회원탈퇴"를 정확히 입력해주세요:
+            {t('settings.deletecheck7')}
             </DialogContentText>
             <StyledInput
               value={confirmText}
               onChange={e => setConfirmText(e.target.value)}
-              placeholder="회원탈퇴"
+              placeholder={t('settings.delete1')}
               disabled={withdrawLoading}
               style={{ width: '100%' }}
             />
@@ -324,14 +327,14 @@ const SettingsPage: React.FC = () => {
               variant="outline"
               disabled={withdrawLoading}
             >
-              취소
+              {t('settings.cancel')}
             </Button>
             <DangerButton
               onClick={handleWithdraw}
-              disabled={withdrawLoading || confirmText !== '회원탈퇴'}
+              disabled={withdrawLoading || confirmText !== t('settings.delete1')}
               isLoading={withdrawLoading}
             >
-              {withdrawLoading ? '처리 중...' : '회원탈퇴'}
+              {withdrawLoading ? '처리 중...' : t('settings.delete1')}
             </DangerButton>
           </DialogActions>
         </StyledDialog>
@@ -344,7 +347,7 @@ const SettingsPage: React.FC = () => {
           anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         >
           <Alert severity="success" sx={{ width: '100%' }}>
-            회원탈퇴가 완료되었습니다. 로그인 페이지로 이동합니다.
+          {t('settings.deletecheck8')}
           </Alert>
         </Snackbar>
       </PageContainer>
