@@ -815,7 +815,7 @@ export default function InfoListPage() {
                 marginBottom: 12,
                 display: 'grid',
                 gridTemplateColumns: 'repeat(4, 1fr)',
-                gap: 4,
+                gap: 10,
                 position: 'relative',
               }}
             >

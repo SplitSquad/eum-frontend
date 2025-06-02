@@ -168,15 +168,14 @@ interface JobProfileData {
 }
 
 // UI 언어 옵션
-const SUPPORTED_LANGUAGES = [
-  { code: 'ko', name: '한국어', flag: '🇰🇷' },
-  { code: 'en', name: 'English', flag: '🇺🇸' },
-  { code: 'ja', name: '日本語', flag: '🇯🇵' },
-  { code: 'zh', name: '中文', flag: '🇨🇳' },
-  { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
-  { code: 'fr', name: 'Français', flag: '🇫🇷' },
-  { code: 'es', name: 'Español', flag: '🇪🇸' },
-  { code: 'ru', name: 'Русский', flag: '🇷🇺' },
+const uiLanguageOptions = [
+  { code: 'ko', name: '한국어' },
+  { code: 'en', name: 'English' },
+  { code: 'zh', name: '中文' },
+  { code: 'ja', name: '日本語' },
+  { code: 'vi', name: 'Tiếng Việt' },
+  { code: 'th', name: 'ภาษาไทย' },
+  { code: 'id', name: 'Bahasa Indonesia' },
 ];
 
 // 직업 분야 옵션
@@ -628,7 +627,7 @@ const JobProfile: React.FC = () => {
                   ),
                 }}
               >
-                {SUPPORTED_LANGUAGES.map(option => (
+                {uiLanguageOptions.map(option => (
                   <MenuItem key={option.code} value={option.code}>
                     {option.name}
                   </MenuItem>

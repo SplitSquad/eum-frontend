@@ -152,8 +152,6 @@ const ReplyButton = styled(Button)(({ theme }) => ({
 const ReplyListContainer = styled(Box)(({ theme }) => ({
   marginTop: theme.spacing(1),
   paddingLeft: theme.spacing(2),
-  paddingBottom: theme.spacing(1),
-  paddingRight: theme.spacing(2),
 }));
 
 const ReactionButton = styled(Button)(({ theme }) => ({

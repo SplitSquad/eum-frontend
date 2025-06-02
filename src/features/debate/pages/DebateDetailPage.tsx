@@ -344,10 +344,9 @@ const CommentItem = styled(ListItem)(({ theme }) => ({
 }));
 
 const ChartContainer = styled(Box)(({ theme }) => ({
-  height: 240,
+  height: 160,
   marginTop: theme.spacing(2),
   marginBottom: theme.spacing(2),
-  paddingBottom: theme.spacing(2),
 }));
 
 // Enhanced Debate type based on usage in this component
@@ -399,7 +398,7 @@ const DebateDetailPage: React.FC = () => {
   const [userEmotion, setUserEmotion] = useState<EmotionType | null>(null);
   const [comment, setComment] = useState<string>('');
   const [stance, setStance] = useState<VoteType | null>(null);
-
+  
   // 언어 변경 추적을 위한 ref
   const previousLanguageRef = useRef(language);
   const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -407,10 +406,10 @@ const DebateDetailPage: React.FC = () => {
   // 데이터 새로고침 함수들을 useCallback으로 메모화
   const refreshDebateData = useCallback(async () => {
     if (!id) return;
-
+    
     console.log('[INFO] 토론 상세 페이지 - 데이터 새로고침 시작');
     setLanguageChanging(true);
-
+    
     try {
       await fetchDebateById(parseInt(id));
     } finally {
@@ -443,6 +442,7 @@ const DebateDetailPage: React.FC = () => {
 
   // 초기 데이터 로드 - 중복 방지 개선
   const hasInitialLoadedRef = useRef(false);
+
   useEffect(() => {
     if (id && !hasInitialLoadedRef.current) {
       hasInitialLoadedRef.current = true;
@@ -455,20 +455,22 @@ const DebateDetailPage: React.FC = () => {
     // 초기 로드가 완료된 후에만 언어 변경에 반응
     if (hasInitialLoadedRef.current && previousLanguageRef.current !== language && id && debate) {
       console.log(`[INFO] 언어 변경 감지: ${previousLanguageRef.current} → ${language}`);
+
       // 기존 타이머 취소
       if (refreshTimeoutRef.current) {
         clearTimeout(refreshTimeoutRef.current);
       }
+
       // 디바운스된 새로고침 (500ms 지연으로 증가하여 깜빡임 최소화)
       refreshTimeoutRef.current = setTimeout(() => {
         // 언어 변경 중임을 표시하지 않고 백그라운드에서 새로고침
         fetchDebateById(parseInt(id));
       }, 500);
     }
-
+    
     // 현재 언어를 이전 언어로 업데이트
     previousLanguageRef.current = language;
-
+    
     // 컴포넌트 언마운트 시 타이머 정리
     return () => {
       if (refreshTimeoutRef.current) {
@@ -491,7 +493,7 @@ const DebateDetailPage: React.FC = () => {
         setUserVote(null);
         setStance(null);
       }
-
+      
       // 웹로그 전송 - 최초 1회만
       if (!hasInitialLoadedRef.current) {
         const userId = getUserId() ?? 0;
@@ -1350,7 +1352,7 @@ const DebateDetailPage: React.FC = () => {
               {t('debate.totalVotes')}: {totalVotes}
             </Typography>
             <ChartContainer>
-              <ResponsiveContainer width="100%" height={220}>
+              <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={chartData}
@@ -1367,13 +1369,7 @@ const DebateDetailPage: React.FC = () => {
                     ))}
                   </Pie>
                   <Tooltip />
-                  <Legend
-                    verticalAlign="bottom"
-                    align="center"
-                    wrapperStyle={{
-                      fontSize: 12,
-                    }}
-                  />
+                  <Legend />
                 </PieChart>
               </ResponsiveContainer>
             </ChartContainer>
@@ -1427,71 +1423,40 @@ const DebateDetailPage: React.FC = () => {
                   <Box
                     sx={{
                       width: '100%',
-                      minWidth: 0,
                       height: '24px',
                       borderRadius: '12px',
                       overflow: 'hidden',
                       background: '#f0f0f0',
-                      minHeight: 16,
-                      maxHeight: 28,
-                      position: 'relative',
-                      display: 'flex',
-                      alignItems: 'center',
+                      minWidth: 0,
                     }}
                   >
                     <Box
                       sx={{
                         width: `${Math.round(stat.percentage)}%`,
-                        minWidth: 0,
                         height: '100%',
                         backgroundColor: color,
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: stat.percentage > 20 ? 'center' : 'flex-end',
-                        minHeight: 16,
-                        maxHeight: 28,
-                        transition: 'width 0.3s',
-                        position: 'relative',
+                        justifyContent: 'center',
+                        minWidth: 0,
                       }}
                     >
-                      {stat.percentage > 20 && (
+                      {stat.percentage > 15 && (
                         <Typography
                           variant="caption"
                           color="white"
                           fontWeight="bold"
                           sx={{
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
+                            whiteSpace: 'normal',
+                            wordBreak: 'break-all',
                             textAlign: 'center',
                             width: '100%',
-                            fontSize: 13,
-                            zIndex: 2,
                           }}
                         >
                           {Math.round(stat.percentage)}%
                         </Typography>
                       )}
                     </Box>
-                    {/* bar가 좁을 때는 바 오른쪽에 표시 */}
-                    {stat.percentage <= 20 && (
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        fontWeight="bold"
-                        sx={{
-                          position: 'absolute',
-                          right: 8,
-                          fontSize: 13,
-                          zIndex: 2,
-                          background: 'rgba(255,255,255,0.7)',
-                          px: 0.5,
-                          borderRadius: 1,
-                        }}
-                      >
-                        {Math.round(stat.percentage)}%
-                      </Typography>
-                    )}
                   </Box>
                 </Box>
                 <Typography
