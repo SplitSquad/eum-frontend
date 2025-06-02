@@ -54,7 +54,7 @@ import { PostType } from '../../types-folder';
 import { useRegionStore } from '../../store/regionStore';
 import { useTranslation } from '@/shared/i18n';
 import { useLanguageStore } from '@/features/theme/store/languageStore';
-
+import flowerImg from '@/assets/icons/common/연꽃.png';
 /**
  * 게시글 목록 페이지 컴포넌트
  * 커뮤니티의 게시글 목록을 표시하고 필터링, 검색 기능 제공
@@ -881,6 +881,77 @@ const ProGroupListPage: React.FC = () => {
         </div>
       </div>
 
+      {/* 커뮤니티 타입 전환 버튼 - Pro 테마용 
+      <div
+        style={{
+          borderBottom: '1.5px solid #e5e7eb',
+          paddingBottom: '24px',
+        }}
+      >
+        <div
+          style={{
+            maxWidth: 1120,
+            margin: '0 auto',
+            display: 'flex',
+            justifyContent: 'center',
+            paddingTop: '12px',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              border: '1.5px solid #222',
+              borderRadius: '50px',
+              overflow: 'hidden',
+              backgroundColor: '#fff',
+            }}
+          >
+            <button
+              style={{
+                ...proButton,
+                margin: 0,
+                padding: '12px 32px',
+                borderRadius: 0,
+                border: 'none',
+                backgroundColor: '#222',
+                fontSize: '1.1rem',
+                fontWeight: 700,
+                color: '#fff',
+                cursor: 'default',
+              }}
+            >
+              {t('common.smallGroups')}
+            </button>
+            <button
+              onClick={() => navigate('/community/board')}
+              style={{
+                ...proButton,
+                margin: 0,
+                padding: '12px 32px',
+                borderRadius: 0,
+                border: 'none',
+                backgroundColor: 'transparent',
+                fontSize: '1.1rem',
+                fontWeight: 700,
+                color: '#666',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.backgroundColor = 'rgba(34, 34, 34, 0.1)';
+                e.currentTarget.style.color = '#222';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = '#666';
+              }}
+            >
+              {t('common.communicationBoard')}
+            </button>
+          </div>
+        </div>
+      </div>*/}
+
       <div
         style={{
           maxWidth: 1120,
@@ -932,52 +1003,25 @@ const ProGroupListPage: React.FC = () => {
               <div
                 style={{
                   display: 'flex',
-                  border: '1.5px solid #222',
-                  borderRadius: '25px',
-                  overflow: 'hidden',
-                  backgroundColor: '#fff',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                  alignItems: 'center',
+                  gap: 8,
+                  fontSize: 22,
+                  fontWeight: 700,
+                  color: '#111',
+                  fontFamily: proCard.fontFamily,
+                  margin: 0,
                 }}
               >
-                <button
-                  style={{
-                    padding: '8px 20px',
-                    border: 'none',
-                    backgroundColor: '#222',
-                    fontSize: '0.9rem',
-                    fontWeight: 600,
-                    color: '#fff',
-                    cursor: 'default',
-                    fontFamily: proCard.fontFamily,
-                  }}
-                >
-                  📱 {t('community.groups.title')}
-                </button>
-                <button
-                  onClick={() => navigate('/community/board')}
-                  style={{
-                    padding: '8px 20px',
-                    border: 'none',
-                    backgroundColor: 'transparent',
-                    fontSize: '0.9rem',
-                    fontWeight: 600,
-                    color: '#666',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    fontFamily: proCard.fontFamily,
-                  }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.backgroundColor = 'rgba(34, 34, 34, 0.08)';
-                    e.currentTarget.style.color = '#222';
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                    e.currentTarget.style.color = '#666';
-                  }}
-                >
-                  💬 {t('community.board.title')}
-                </button>
+                <img
+                  src={flowerImg}
+                  alt="logo"
+                  style={{ height: 22, width: 22, objectFit: 'contain', verticalAlign: 'middle' }}
+                />
+                {selectedCategory === '전체'
+                  ? t('infoPage.content.allInfo')
+                  : t(`community.categories.${selectedCategory}`) || selectedCategory}
               </div>
+              {/* 글쓰기 버튼 왼쪽, 정렬 드롭다운 오른쪽, 둘 다 오른쪽 정렬 */}
 
               {/* 오른쪽: 글쓰기 버튼과 정렬 드롭다운 */}
               <div
@@ -989,6 +1033,22 @@ const ProGroupListPage: React.FC = () => {
                   justifyContent: 'flex-end',
                 }}
               >
+                {/* 자유 게시판 이동 버튼 - 글쓰기 왼쪽 */}
+                <button
+                  onClick={() => navigate('/community/board')}
+                  style={{
+                    ...proButton,
+                    padding: '6px 16px',
+                    fontSize: 14,
+                    background: '#f3f4f6',
+                    color: '#222',
+                    border: '1.5px solid #e5e7eb',
+                    borderRadius: 6,
+                    margin: 0,
+                  }}
+                >
+                  {t('common.communicationBoard')}
+                </button>
                 <button
                   onClick={handleCreatePost}
                   style={{

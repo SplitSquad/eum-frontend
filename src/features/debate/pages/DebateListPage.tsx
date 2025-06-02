@@ -28,7 +28,6 @@ import { send } from 'process';
 import { useTranslation } from '@/shared/i18n';
 import { useLanguageStore } from '@/features/theme/store/languageStore';
 import { set } from 'date-fns';
-
 // 스타일 컴포넌트
 const CategoryItem = styled(ListItemButton)(({ theme }) => ({
   padding: '12px 16px',
@@ -356,7 +355,7 @@ const DebateListPage: React.FC = () => {
   const refreshDebateList = useCallback(async () => {
     console.log('[INFO] 토론 리스트 페이지 - 데이터 새로고침 시작');
     setLanguageChanging(true);
-    
+
     try {
       const apiCategory = categoryMappings[selectedCategory]?.code || '';
       await fetchDebates(currentPage, 5, apiCategory);
@@ -377,19 +376,19 @@ const DebateListPage: React.FC = () => {
     // 초기 로드가 아닌 경우에만 새로고침
     if (previousLanguageRef.current !== language) {
       console.log(`[INFO] 언어 변경 감지: ${previousLanguageRef.current} → ${language}`);
-      
+
       // 기존 타이머 취소
       if (refreshTimeoutRef.current) {
         clearTimeout(refreshTimeoutRef.current);
       }
-      
+
       // 디바운스된 새로고침 (200ms 지연)
       refreshTimeoutRef.current = setTimeout(refreshDebateList, 200);
     }
-    
+
     // 현재 언어를 이전 언어로 업데이트
     previousLanguageRef.current = language;
-    
+
     // 컴포넌트 언마운트 시 타이머 정리
     return () => {
       if (refreshTimeoutRef.current) {

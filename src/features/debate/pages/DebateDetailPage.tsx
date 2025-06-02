@@ -1402,11 +1402,24 @@ const DebateDetailPage: React.FC = () => {
               countryColors[stat.countryCode as keyof typeof countryColors] ||
               countryColors.default;
             return (
-              <CountryStatItem key={index}>
-                <CountryFlag>
+              <CountryStatItem
+                key={index}
+                sx={{
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
+                  gap: 1,
+                  padding: theme => theme.spacing(1, 1.5),
+                  minWidth: 0,
+                  width: '100%',
+                  boxSizing: 'border-box',
+                }}
+              >
+                <CountryFlag
+                  sx={{ minWidth: 0, flexShrink: 0, flexWrap: 'wrap', wordBreak: 'break-all' }}
+                >
                   <FlagDisplay nation={stat.countryCode} size="small" showName={true} />
                 </CountryFlag>
-                <Box sx={{ flex: 1, ml: 1, mr: 1 }}>
+                <Box sx={{ flex: 1, ml: 1, mr: 1, minWidth: 0 }}>
                   <Box
                     sx={{
                       width: '100%',
@@ -1414,29 +1427,50 @@ const DebateDetailPage: React.FC = () => {
                       borderRadius: '12px',
                       overflow: 'hidden',
                       background: '#f0f0f0',
+                      minWidth: 0,
                     }}
                   >
                     <Box
                       sx={{
-                        width: `${stat.percentage}%`,
+                        width: `${Math.round(stat.percentage)}%`,
                         height: '100%',
                         backgroundColor: color,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
+                        minWidth: 0,
                       }}
                     >
                       {stat.percentage > 15 && (
-                        <Typography variant="caption" color="white" fontWeight="bold">
-                          {stat.percentage}%
+                        <Typography
+                          variant="caption"
+                          color="white"
+                          fontWeight="bold"
+                          sx={{
+                            whiteSpace: 'normal',
+                            wordBreak: 'break-all',
+                            textAlign: 'center',
+                            width: '100%',
+                          }}
+                        >
+                          {Math.round(stat.percentage)}%
                         </Typography>
                       )}
                     </Box>
                   </Box>
                 </Box>
-                <Typography variant="body2" sx={{ minWidth: '60px', textAlign: 'right' }}>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    minWidth: 0,
+                    textAlign: 'right',
+                    wordBreak: 'break-all',
+                    whiteSpace: 'normal',
+                    flexShrink: 0,
+                  }}
+                >
                   {stat.count}
-                  {t('debate.ppl')} ({stat.percentage}%)
+                  {t('debate.ppl')} ({Math.round(stat.percentage)}%)
                 </Typography>
               </CountryStatItem>
             );

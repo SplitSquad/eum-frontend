@@ -232,7 +232,7 @@ body.theme-professional .MuiButton-contained:hover {
 
 /* Modal styles */
 .modal-open {
-  overflow: hidden;
+  /*background: transparent !important;*/
 }
 
 /* Modal toggle button styles */

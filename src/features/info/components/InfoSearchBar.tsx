@@ -21,7 +21,6 @@ const InfoSearchBar: React.FC<InfoSearchBarProps> = ({
       <div className="flex flex-1 border border-gray-300 rounded-lg overflow-hidden">
         <input
           type="text"
-          placeholder={t('community.posts.enterTitle')}
           value={inputValue}
           onChange={e => onInputChange(e.target.value)}
           className="flex-1 h-10 px-4 focus:outline-none"

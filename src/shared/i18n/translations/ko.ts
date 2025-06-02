@@ -85,7 +85,7 @@ const ko = {
 
   welcome: {
     title: 'EUM에 오신 것을 환영합니다',
-    description: 'EUM은 다른 나라의 사람들이 소통하고 협력하는 플랫폼입니다.',
+    description: `한국에 오신 여러분이 걱정 없이 편하게 생활할 수 있도록 도와드려요.\n현지 적응까지 꼭 필요한 정보와 서비스를 한곳에 담았습니다.\n처음 한국 땅을 밟는 순간부터, 든든한 친구가 되어 곁에서 함께할게요!`,
   },
   login: {
     welcome: '환영합니다',
@@ -1231,9 +1231,19 @@ const ko = {
     category: '카테고리',
     region: '지역',
     subTags: '세부 태그',
-    fileUpload: '파일 첨부',
-    dragAndDropOrClickToUpload: '파일을 여기에 끌어다 놓거나 클릭하여 업로드하세요',
-    max10MBImageAndDocumentFiles: '최대 10MB, 이미지 및 문서 파일 지원',
+    fileUpload: {
+      fileUpload: '파일 첨부',
+      imageHint: '💡 이미지는 미리보기로 표시되어 내용을 쉽게 확인할 수 있습니다',
+      imageHint2: '이미지는 미리보기로 표시됩니다 ✨\n최대 10MB, 모든 파일 형식 지원',
+      editModeWarning: '⚠️ 새 파일 추가 시 기존 파일 모두 삭제됨',
+      dragOrClick: '📁 파일을 드래그하거나 클릭하여 업로드',
+      editModeDragOrClick: '⚠️ 새 파일 추가 (기존 파일 모두 삭제됨)',
+      editModeHint: '새 파일을 선택하면 기존 첨부파일이 모두 삭제됩니다\n신중하게 선택해주세요',
+      newImage: '새 이미지 ({count}개)',
+      newFile: '새 첨부파일 ({count}개)',
+      existingImage: '기존 이미지 ({count}개)',
+      existingFile: '기존 첨부파일 ({count}개)',
+    },
     selectedFiles: '선택된 파일',
     existingAttachedFiles: '기존 첨부 파일',
     newImages: '새 이미지',
@@ -1934,6 +1944,7 @@ const ko = {
     specialIssue: '특별 이슈',
     specialIssues: '이슈 모아보기',
     noVotesYet: '아직 투표가 없습니다. 첫 투표를 해보세요!',
+    noIssues: '등록된 토론이 없습니다.',
   },
   infoPage: {
     title: '한국생활 가이드',
@@ -2047,6 +2058,7 @@ const ko = {
     title: '한국생활 도우미',
     subtitle: 'AI 전문가와 함께하는 한국생활 길잡이',
     greeting: '안녕하세요! {{category}} 분야의 AI 전문가입니다.',
+    matchingMessage: 'AI 전문가를 매칭 중입니다. 잠시만 기다려 주세요.',
     categories: {
       all: '🌏 전체',
       visa: '📑 체류자격/비자',
@@ -2057,7 +2069,7 @@ const ko = {
       life: '👨‍👩‍👧 일상생활',
     },
     sidebar: {
-      title: '📚 분야별 안내',
+      title: '분야별 안내',
       autoSelectInfo: '질문하시면 자동으로 분야가 선택됩니다',
     },
     chat: {
@@ -2066,7 +2078,7 @@ const ko = {
       placeholder: '궁금한 것을 자유롭게 물어보세요...',
       send: '전송',
       sending: '전송 중...',
-      loading: '답변을 준비하고 있습니다...',
+      loading: '전문가의 답변을 기다리는 중입니다',
       initialMessage: '무엇을 도와드릴까요?',
       aiExpert: 'AI 전문가',
       justNow: '방금 전',
@@ -2075,6 +2087,30 @@ const ko = {
       responseError: '응답 중 오류가 발생했습니다.',
       networkError: '네트워크 연결을 확인해주세요.',
       loginRequired: '로그인이 필요한 기능입니다.',
+    },
+  },
+  accessDenied: {
+    title: '접근 권한이 없습니다',
+    description:
+      '이 페이지에 접근할 수 있는 권한이 없습니다. 홈페이지로 돌아가거나 관리자에게 문의하세요.',
+    goHome: '홈으로 이동',
+    contact: '고객센터',
+  },
+  intro: {
+    slide1: {
+      title: 'EUM과 함께 여정을 시작하세요!',
+      desc1: 'EUM과 함께 한 걸음씩 한국을 알아가세요.',
+      desc2: '멋진 새로운 여정을 응원합니다.',
+    },
+    slide2: {
+      title: '잠시만 기다려주세요',
+      desc1: 'EUM이 최고의 경험을 준비하고 있습니다.',
+      desc2: '곧 멋진 여정이 시작됩니다.',
+    },
+    slide3: {
+      title: '환영합니다!',
+      desc1: 'EUM과 함께하는 여정이 곧 시작됩니다.',
+      desc2: '새로운 경험을 위한 모든 준비가 완료되었습니다.',
     },
   },
   // 홈 화면 위젯들

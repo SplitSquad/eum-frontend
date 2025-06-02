@@ -13,8 +13,6 @@ import styled from '@emotion/styled';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useTranslation } from '@/shared/i18n';
 
-const { t } = useTranslation();
-
 // 봄 테마 스타일
 const SpringThemedAccordion = styled(Accordion)`
   background: rgba(255, 255, 255, 0.9);
@@ -87,6 +85,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
   onChange,
   maxSelection = 1, // 태그 수 1개로 제한
 }) => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [expanded, setExpanded] = useState<string | false>('travel');

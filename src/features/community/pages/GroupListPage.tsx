@@ -738,7 +738,6 @@ const GroupListPage: React.FC = () => {
 
           {/* 검색창 */}
           <TextField
-            placeholder="게시글 검색..."
             variant="outlined"
             size="small"
             value={searchTerm}

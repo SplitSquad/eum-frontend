@@ -81,8 +81,7 @@ const en = {
 
   welcome: {
     title: 'Welcome to EUM',
-    description:
-      'EUM is a platform for communication and cooperation between people from different countries.',
+    description: `We help you live comfortably and without worries in Korea.\nAll the essential information and services you need to adapt are gathered in one place.\nFrom the moment you set foot in Korea, we'll be your reliable friend by your side!`,
   },
   common: {
     authenticatedError: 'After logging in, you can access the service.',
@@ -119,11 +118,18 @@ const en = {
   nav: {
     accountSettings: 'Account Settings',
   },
+  accessDenied: {
+    title: 'Access Denied',
+    description:
+      'You do not have permission to access this page. Please return to the homepage or contact support.',
+    goHome: 'Go Home',
+    contact: 'Contact Support',
+  },
   auth: {
     loginWithGoogle: 'Login with Google',
     loginRequired: 'Login Required',
-    accessDenied: 'Access Denied',
     welcome: 'Welcome',
+    accessDenied: 'Access Denied',
     loginDescription: 'Sign in easily with your Google account',
     loginWithGoogleButton: 'Sign in with Google',
     loginWithGeneral: 'Sign in with General Account',
@@ -805,6 +811,7 @@ const en = {
       },
     },
     specialIssues: 'View All Issues',
+    noIssues: 'No debates found.',
   },
   buttons: {
     next: 'Next',
@@ -1201,9 +1208,20 @@ const en = {
     editPost: 'Edit Post',
     create: 'Create',
     edit: 'Edit',
-    fileUpload: 'File Upload',
-    dragAndDropOrClickToUpload: 'Drag and drop files here or click to upload',
-    max10MBImageAndDocumentFiles: 'Max 10MB, image and document files supported',
+    fileUpload: {
+      fileUpload: 'File Attachment',
+      imageHint: '💡 Images will be previewed for easy checking',
+      imageHint2: 'Images are previewed ✨\nMax 10MB, all file types supported',
+      editModeWarning: '⚠️ Adding new files will delete all existing attachments',
+      dragOrClick: '📁 Drag or click to upload files',
+      editModeDragOrClick: '⚠️ Add new files (all existing files will be deleted)',
+      editModeHint:
+        'Selecting new files will delete all existing attachments\nPlease choose carefully',
+      newImage: 'New Images ({count})',
+      newFile: 'New Attachments ({count})',
+      existingImage: 'Existing Images ({count})',
+      existingFile: 'Existing Attachments ({count})',
+    },
     selectedFiles: 'Selected Files',
     existingAttachedFiles: 'Existing Attached Files',
     newImages: 'New Images',
@@ -1441,6 +1459,7 @@ const en = {
           unsavedChanges: 'You have unsaved changes. Do you want to leave this page?',
         },
       },
+      hideOriginal: 'Hide Original',
     },
     comments: {
       title: 'Comments',
@@ -1886,6 +1905,7 @@ const en = {
     },
     specialIssues: 'View All Issues',
     noVotesYet: 'No votes yet. Be the first to vote!',
+    noIssues: 'No debates found.',
   },
   infoPage: {
     title: 'Korea Life Guide',
@@ -1929,8 +1949,8 @@ const en = {
       createdAt: 'Created',
     },
     sidebar: {
-      popularInfo: '🔥 Popular Information',
-      emergencyContacts: '🆘 Emergency Contacts',
+      popularInfo: 'Popular Information',
+      emergencyContacts: 'Emergency Contacts',
       emergency: {
         title: 'Emergency',
         subtitle: 'Fire, Medical Emergency',
@@ -2000,6 +2020,7 @@ const en = {
     title: 'Korea Life Assistant',
     subtitle: 'Korea Life Guide with AI Expert',
     greeting: 'Hello! I am an AI expert in {{category}} field.',
+    matchingMessage: 'Matching you with an AI expert. Please wait a moment.',
     categories: {
       all: '🌏 All',
       visa: '📑 Visa/Legal',
@@ -2010,7 +2031,7 @@ const en = {
       life: '👨‍👩‍👧 Daily Life',
     },
     sidebar: {
-      title: '📚 Category Guide',
+      title: 'Category Guide',
       autoSelectInfo: 'Categories are automatically selected based on your questions',
     },
     chat: {
@@ -2019,7 +2040,7 @@ const en = {
       placeholder: 'Feel free to ask anything...',
       send: 'Send',
       sending: 'Sending...',
-      loading: 'Preparing response...',
+      loading: "Waiting for the expert's answer...",
       initialMessage: 'How can I help you?',
       aiExpert: 'AI Expert',
       justNow: 'Just now',
@@ -2081,6 +2102,23 @@ const en = {
   editModeFileUpload: '⚠️ Add New Files (All existing files will be deleted)',
   editModeFileWarning:
     'Selecting new files will delete all existing attachments\nPlease choose carefully',
+  intro: {
+    slide1: {
+      title: 'Start your journey with EUM!',
+      desc1: 'Discover Korea step by step with EUM.',
+      desc2: 'We wish you a wonderful new journey.',
+    },
+    slide2: {
+      title: 'Please wait a moment',
+      desc1: 'EUM is preparing the best experience for you.',
+      desc2: 'Your amazing journey will begin soon.',
+    },
+    slide3: {
+      title: 'Welcome!',
+      desc1: 'Your journey with EUM is about to begin.',
+      desc2: 'Everything is ready for your new experience.',
+    },
+  },
   // Home screen widgets
   home: {
     communityFeed: {

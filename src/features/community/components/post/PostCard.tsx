@@ -24,7 +24,6 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 //import PersonIcon from '@mui/icons-material/Person';
 import { ko } from 'date-fns/locale';
 import { useTranslation } from '../../../../shared/i18n';
-import { useThemeStore } from '@/features/theme/store/themeStore';
 import visitDefaultImg from '@/assets/images/patterns/visitdefault.jpg';
 
 /**-----------------------------------웹로그 관련------------------------------------ **/
@@ -490,13 +489,14 @@ const PostContentDynamic = styled(Typography, {
 const TicketCardContainer = styled('div')({
   display: 'flex',
   flexDirection: 'row',
-  background: 'rgba(245,245,245,0.7)',
+  background: 'rgba(245, 245, 245, 0.14)',
   borderRadius: '20px',
   overflow: 'visible',
   minHeight: 180,
   position: 'relative',
   border: 'none',
   boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
+  backdropFilter: 'blur(4px)',
 });
 
 const TicketMain = styled('div')({
@@ -587,7 +587,6 @@ const PostCard: React.FC<PostCardProps> = ({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const season = useThemeStore(state => state.season);
 
   // 태그 번역 함수
   const translateTag = (tagName: string): string => {
@@ -618,7 +617,7 @@ const PostCard: React.FC<PostCardProps> = ({
 
   const handleCardClick = async () => {
     const uid = getUserId() || 0;
-    
+
     // 게시글 목록에서 상세 페이지로 이동함을 표시
     sessionStorage.setItem('fromPostList', 'true');
 
@@ -639,7 +638,7 @@ const PostCard: React.FC<PostCardProps> = ({
         Event: 'click',
         Content: {
           title: post.title,
-          postId: post.postId
+          postId: post.postId,
         },
         Timestamp: new Date().toISOString(),
       }),
@@ -666,7 +665,7 @@ const PostCard: React.FC<PostCardProps> = ({
               variant="h6"
               sx={{ mb: 0, flexShrink: 0 }}
               isGroup={isGroup}
-              season={season}
+              season={'professional'}
             >
               {post.title}
             </PostTitleDynamic>
@@ -734,7 +733,7 @@ const PostCard: React.FC<PostCardProps> = ({
   }
   // 그룹/기존 카드 스타일
   return (
-    <StyledCardDynamic isGroup={isGroup} season={season}>
+    <StyledCardDynamic isGroup={isGroup} season={'professional'}>
       {/* 게시글 이미지 */}
       {!hideImage && (
         <CardMediaWrapper onClick={handleCardClick}>
@@ -761,7 +760,7 @@ const PostCard: React.FC<PostCardProps> = ({
             variant="h6"
             sx={{ mb: 0, flexShrink: 0 }}
             isGroup={isGroup}
-            season={season}
+            season={'professional'}
           >
             {post.title}
           </PostTitleDynamic>
@@ -773,7 +772,7 @@ const PostCard: React.FC<PostCardProps> = ({
             </AuthorName>
           </AuthorContainer>
         </Box>
-        <PostContentDynamic variant="body2" isGroup={isGroup} season={season}>
+        <PostContentDynamic variant="body2" isGroup={isGroup} season={'professional'}>
           {post.content}
         </PostContentDynamic>
         {/* 태그 표시 */}

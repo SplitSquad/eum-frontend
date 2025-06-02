@@ -51,15 +51,15 @@ import useAuthStore from '../../features/auth/store/authStore';
 const formatToKoreanTimezone = (date: Date): string => {
   // 한국 시간대(UTC+9)로 변환해서 ISO 문자열 반환
   const offset = 9 * 60; // 한국 시간대 오프셋 (분 단위)
-  const utc = date.getTime() + (date.getTimezoneOffset() * 60000); // UTC 시간 (밀리초)
-  const koreanTime = new Date(utc + (offset * 60000)); // 한국 시간
+  const utc = date.getTime() + date.getTimezoneOffset() * 60000; // UTC 시간 (밀리초)
+  const koreanTime = new Date(utc + offset * 60000); // 한국 시간
   return koreanTime.toISOString();
 };
 
 const CalendarWidget: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useAuthStore(); // Auth 스토어에서 사용자 정보 가져오기
-  
+
   const [hoveredDate, setHoveredDate] = useState<number | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState('');
@@ -70,21 +70,21 @@ const CalendarWidget: React.FC = () => {
   const [isGoogleConnected, setIsGoogleConnected] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
-  
+
   // 접기/펴기 상태 추가
   const [isCollapsed, setIsCollapsed] = useState(true);
-  
+
   // 페이지네이션 상태 추가
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 3;
-  
+
   // Auth 스토어에서 사용자 정보를 통해 OAuth 사용자 확인
   const isOAuthUser = user?.email?.includes('@gmail.com') || false;
-  
+
   // 초기값 설정 시 한국 시간대로 변환
   const startDate = new Date();
   const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
-  
+
   const [newEvent, setNewEvent] = useState<GoogleCalendarEventRequest>({
     summary: '',
     location: '',
@@ -155,7 +155,7 @@ const CalendarWidget: React.FC = () => {
   // 캘린더 이벤트 가져오기
   const fetchEvents = async () => {
     if (!isOAuthUser) return;
-    
+
     setIsLoading(true);
     try {
       const calendarEvents = await CalendarService.getEvents();
@@ -174,9 +174,9 @@ const CalendarWidget: React.FC = () => {
 
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
-    
+
     const date = new Date(year, month, day);
-    
+
     if (isNaN(date.getTime())) return [];
 
     const localDateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -187,9 +187,9 @@ const CalendarWidget: React.FC = () => {
       try {
         const eventDate = new Date(event.start.dateTime);
         if (isNaN(eventDate.getTime())) return false;
-        
+
         const eventDateString = `${eventDate.getFullYear()}-${String(eventDate.getMonth() + 1).padStart(2, '0')}-${String(eventDate.getDate()).padStart(2, '0')}`;
-        
+
         return eventDateString === localDateString;
       } catch (error) {
         console.error('Invalid date in event:', event);
@@ -256,7 +256,7 @@ const CalendarWidget: React.FC = () => {
   // 이벤트 생성 또는 수정 열기
   const openEventDialog = (event?: CalendarEvent) => {
     if (!isOAuthUser) return;
-    
+
     if (event) {
       setSelectedEvent(event);
       setNewEvent({
@@ -284,7 +284,7 @@ const CalendarWidget: React.FC = () => {
   // 이벤트 저장
   const saveEvent = async () => {
     if (!isOAuthUser) return;
-    
+
     setIsLoading(true);
     try {
       if (selectedEvent) {
@@ -432,14 +432,16 @@ const CalendarWidget: React.FC = () => {
         background: 'linear-gradient(to right, #fff, #fafafa)',
         overflow: 'hidden',
         position: 'relative',
-        ...(isCollapsed ? {
-          height: 'auto',
-          minHeight: 60,
-          maxHeight: 60
-        } : {
-          height: '100%',
-          minHeight: 'auto'
-        }),
+        ...(isCollapsed
+          ? {
+              height: 'auto',
+              minHeight: 60,
+              maxHeight: 60,
+            }
+          : {
+              height: '100%',
+              minHeight: 'auto',
+            }),
         display: 'flex',
         flexDirection: 'column',
       }}
@@ -793,14 +795,21 @@ const CalendarWidget: React.FC = () => {
                                   <Box sx={{ p: 0.5 }}>
                                     {dayEvents.map(event => (
                                       <Box key={event.id} sx={{ mb: 0.5 }}>
-                                        <Typography variant="caption" fontWeight={600} display="block">
+                                        <Typography
+                                          variant="caption"
+                                          fontWeight={600}
+                                          display="block"
+                                        >
                                           {event.summary}
                                         </Typography>
                                         <Typography variant="caption" color="inherit">
-                                          {new Date(event.start.dateTime).toLocaleTimeString('ko-KR', {
-                                            hour: '2-digit',
-                                            minute: '2-digit',
-                                          })}
+                                          {new Date(event.start.dateTime).toLocaleTimeString(
+                                            'ko-KR',
+                                            {
+                                              hour: '2-digit',
+                                              minute: '2-digit',
+                                            }
+                                          )}
                                         </Typography>
                                       </Box>
                                     ))}
@@ -811,7 +820,13 @@ const CalendarWidget: React.FC = () => {
                                 open={true}
                               >
                                 <Box
-                                  sx={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+                                  sx={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    right: 0,
+                                    bottom: 0,
+                                  }}
                                 />
                               </Tooltip>
                             )}
@@ -826,7 +841,12 @@ const CalendarWidget: React.FC = () => {
               {/* 우측: 이벤트 목록 */}
               <Box sx={{ flex: { xs: '1', md: '2' }, display: 'flex', flexDirection: 'column' }}>
                 <Box
-                  sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    mb: 2,
+                  }}
                 >
                   <Typography variant="subtitle1" fontWeight={600}>
                     {t('calendar.events.upcomingEvents')}
@@ -1170,7 +1190,9 @@ const CalendarWidget: React.FC = () => {
           },
         }}
       >
-        <DialogTitle>{selectedEvent ? t('calendar.events.eventEditTitle') : t('calendar.events.newEventTitle')}</DialogTitle>
+        <DialogTitle>
+          {selectedEvent ? t('calendar.events.eventEditTitle') : t('calendar.events.newEventTitle')}
+        </DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
             <TextField

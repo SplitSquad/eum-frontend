@@ -163,8 +163,24 @@ axiosInstance.interceptors.response.use(
 
       // 401 Unauthorized - 인증 실패/토큰 만료 처리
       if (status === 401 && originalRequest) {
-        // 토큰 갱신 API가 아닌 경우에만 갱신 시도
+        // 게스트 허용 페이지라면 리다이렉트하지 않음
+        const guestAllowedPaths = [
+          '/home',
+          '/404',
+          '/access-denied',
+          '/google-login',
+          '/login',
+          '/signup',
+        ];
+        const isGuestAllowed = guestAllowedPaths.some(path =>
+          window.location.pathname.startsWith(path)
+        );
+
         if (requestUrl !== '/auth/refresh' && !isRefreshing) {
+          if (isGuestAllowed) {
+            // 게스트 페이지에서는 리다이렉트하지 않고 에러만 반환
+            return Promise.reject(error);
+          }
           // 토큰 갱신 중 플래그 설정
           isRefreshing = true;
 
@@ -244,6 +260,10 @@ axiosInstance.interceptors.response.use(
       // 403 Forbidden - 권한 없음
       else if (status === 403) {
         console.error(`권한 오류 (403): ${requestUrl} - 해당 요청에 대한 권한이 없습니다.`, data);
+        // 403 에러 발생 시 access-denied로 이동 (이미 그 페이지가 아니라면)
+        if (!window.location.pathname.includes('/access-denied')) {
+          window.location.href = '/access-denied';
+        }
       }
 
       // 404 Not Found - 리소스 없음

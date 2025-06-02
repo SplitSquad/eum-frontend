@@ -6,8 +6,8 @@ import Modal from '@/components/ai/Modal';
 import ModalContent from '@/components/ai/ModalContent';
 import { useModalStore } from '@/shared/store/ModalStore';
 import useAuthStore from '@/features/auth/store/authStore';
-import React, { useRef } from 'react';
-import { Outlet } from 'react-router-dom';
+import React, { useRef, useState } from 'react';
+import { Outlet, useLocation } from 'react-router-dom';
 import eum2Image from '@/assets/images/characters/이음이.png';
 import '../../app/App.css';
 import { Container } from '@mui/material';
@@ -19,6 +19,8 @@ export default function AppLayout() {
   const { isAuthenticated, loadUser } = useAuthStore();
   const btnRef = useRef<HTMLImageElement>(null);
   const { isHeaderVisible, isModalVisible } = useLayoutVisibility();
+  const [modalAdjustKey, setModalAdjustKey] = useState(0);
+  const location = useLocation();
 
   // 기존의 updateVisibility, useEffect 등은 필요에 따라 커스텀 훅으로 분리 가능
   // 여기서는 간단히 유지
@@ -43,6 +45,13 @@ export default function AppLayout() {
     }
   };
 
+  React.useEffect(() => {
+    if (isModalOpen) {
+      handleModalClose();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
+
   return (
     <div className={`app-container ${isModalOpen ? 'modal-open' : ''}`}>
       {/* 모달 */}
@@ -51,7 +60,7 @@ export default function AppLayout() {
           {content ?? <ModalContent />}
         </Modal>
       )}
-      <div className={`app-content ${isModalOpen ? 'dimmed' : ''}`}>
+      <div className={`app-content`}>
         <Header isVisible={isHeaderVisible} />
         <SeasonalBackground>
           <main className="main-content">
@@ -96,12 +105,6 @@ export default function AppLayout() {
           )}
         </SeasonalBackground>
         <Footer />
-        {/* 오버레이 radius 제거용 스타일 */}
-        <style>{`
-          .dimmed {
-            border-radius: 0 !important;
-          }
-        `}</style>
       </div>
       <FloatingNavigator isHeaderVisible={isHeaderVisible} />
     </div>

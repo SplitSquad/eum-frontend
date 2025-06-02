@@ -28,6 +28,7 @@ import { formatDate } from '../utils/dateUtils';
 
 import { useTranslation } from '@/shared/i18n';
 import { useLanguageStore } from '@/features/theme/store/languageStore';
+import bagImg from '@/assets/icons/common/보따리.png';
 
 // 스타일 컴포넌트
 const CategoryItem = styled(ListItemButton)(({ theme }) => ({
@@ -461,10 +462,10 @@ const MainIssuesPage: React.FC = () => {
   const refreshSpecialIssues = useCallback(async () => {
     console.log('[INFO] 메인 이슈 페이지 - 특별 이슈 데이터 새로고침 시작');
     setLanguageChanging(true);
-    
+
     try {
       await fetchSpecialIssues();
-      
+
       // 현재 선택된 카테고리가 있으면 해당 카테고리의 토론 목록도 새로고침
       if (selectedCategory !== 'all') {
         const apiCategory = categoryMappings[selectedCategory]?.code || '';
@@ -487,19 +488,19 @@ const MainIssuesPage: React.FC = () => {
     // 초기 로드가 아닌 경우에만 새로고침
     if (previousLanguageRef.current !== language) {
       console.log(`[INFO] 언어 변경 감지: ${previousLanguageRef.current} → ${language}`);
-      
+
       // 기존 타이머 취소
       if (refreshTimeoutRef.current) {
         clearTimeout(refreshTimeoutRef.current);
       }
-      
+
       // 디바운스된 새로고침 (200ms 지연)
       refreshTimeoutRef.current = setTimeout(refreshSpecialIssues, 200);
     }
-    
+
     // 현재 언어를 이전 언어로 업데이트
     previousLanguageRef.current = language;
-    
+
     // 컴포넌트 언마운트 시 타이머 정리
     return () => {
       if (refreshTimeoutRef.current) {
@@ -758,6 +759,7 @@ const MainIssuesPage: React.FC = () => {
     return (
       <IssueSection>
         <IssueTitleWrapper>
+          <img src={bagImg} alt="logo" style={{ height: 22, width: 22, objectFit: 'contain' }} />
           <IssueSectionTitle variant="h5">{t('debate.todayIssue')}</IssueSectionTitle>
         </IssueTitleWrapper>
 
@@ -779,7 +781,7 @@ const MainIssuesPage: React.FC = () => {
             }}
           >
             <Typography sx={{ fontWeight: 'bold', color: '#888' }}>
-              {t('debate.noDebates')}
+              {t('debate.noIssues')}
             </Typography>
           </Paper>
         )}
@@ -792,6 +794,7 @@ const MainIssuesPage: React.FC = () => {
     return (
       <IssueSection>
         <IssueTitleWrapper>
+          <img src={bagImg} alt="logo" style={{ height: 22, width: 22, objectFit: 'contain' }} />
           <IssueSectionTitle variant="h5">{t('debate.mostHotIssue')}</IssueSectionTitle>
         </IssueTitleWrapper>
 
@@ -813,7 +816,7 @@ const MainIssuesPage: React.FC = () => {
             }}
           >
             <Typography sx={{ fontWeight: 'bold', color: '#888' }}>
-              {t('debate.noDebates')}
+              {t('debate.noIssues')}
             </Typography>
           </Paper>
         )}
@@ -826,6 +829,7 @@ const MainIssuesPage: React.FC = () => {
     return (
       <IssueSection>
         <IssueTitleWrapper>
+          <img src={bagImg} alt="logo" style={{ height: 22, width: 22, objectFit: 'contain' }} />
           <IssueSectionTitle variant="h5">{t('debate.halfAndHalfIssue')}</IssueSectionTitle>
         </IssueTitleWrapper>
 
@@ -847,7 +851,7 @@ const MainIssuesPage: React.FC = () => {
             }}
           >
             <Typography sx={{ fontWeight: 'bold', color: '#888' }}>
-              {t('debate.noDebates')}
+              {t('debate.noIssues')}
             </Typography>
           </Paper>
         )}
@@ -920,7 +924,7 @@ const MainIssuesPage: React.FC = () => {
                 }}
               >
                 <Typography sx={{ fontWeight: 'bold', color: '#888' }}>
-                  {categoryMappings[selectedCategory].display} {t('debate.noIssues')}
+                  {t('debate.noIssues')}
                 </Typography>
               </Paper>
             ) : (
@@ -948,16 +952,16 @@ const MainIssuesPage: React.FC = () => {
       }
     >
       {isLanguageChanging && (
-        <Box 
-          sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: 1, 
-            mb: 2, 
-            p: 2, 
-            borderRadius: 1, 
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            mb: 2,
+            p: 2,
+            borderRadius: 1,
             bgcolor: 'rgba(255, 255, 255, 0.8)',
-            backdropFilter: 'blur(4px)'
+            backdropFilter: 'blur(4px)',
           }}
         >
           <CircularProgress size={20} />

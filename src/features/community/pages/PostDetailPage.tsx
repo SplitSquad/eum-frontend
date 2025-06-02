@@ -800,7 +800,7 @@ const PostDetailPage: React.FC = () => {
           {/* 게시글 제목 및 정보 */}
           <Box mb={3}>
             <Typography variant="h4" fontWeight="bold" gutterBottom>
-              {post.title}
+              {showOriginal && originTitle !== null ? originTitle : post.title}
             </Typography>
             <Box display="flex" alignItems="center" mb={1}>
               <Avatar alt={post.userName} sx={{ width: 32, height: 32, mr: 1 }} />
@@ -842,9 +842,7 @@ const PostDetailPage: React.FC = () => {
               size="small"
               onClick={toggleOriginalView}
             >
-              {showOriginal
-                ? t('community.posts.returnOriginal')
-                : t('community.posts.showOriginal')}
+              {showOriginal ? t('community.posts.hideOriginal') : t('community.posts.showOriginal')}
             </Button>
           </Box>
 
@@ -860,7 +858,6 @@ const PostDetailPage: React.FC = () => {
             {/* 첨부파일 표시 (있는 경우) */}
             {post.files && post.files.length > 0 && (
               <Box mt={3}>
-
                 {/* 이미지 파일과 일반 파일 분리 */}
                 {(() => {
                   const imageFiles = post.files.filter((file: any) => {
@@ -1016,7 +1013,6 @@ const PostDetailPage: React.FC = () => {
                       {/* 일반 파일 목록 */}
                       {nonImageFiles.length > 0 && (
                         <Box>
-                        
                           <List dense sx={{ bgcolor: '#f9f9f9', borderRadius: 2, p: 1 }}>
                             {nonImageFiles.map((file: any, index: number) => (
                               <ListItem

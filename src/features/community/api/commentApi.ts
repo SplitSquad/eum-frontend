@@ -29,7 +29,7 @@ function convertIsStateToMyReaction(isState: string | null | undefined): Reactio
 function transformCommentData(comment: any, postId?: number): Comment {
   // 디버그 로그 추가 - 백엔드에서 받은 원본 데이터 구조 확인
   console.log('[DEBUG] 원본 댓글 데이터:', JSON.stringify(comment, null, 2));
-  
+
   // isState를 myReaction으로 변환
   const myReaction = convertIsStateToMyReaction(comment.isState);
 
@@ -38,7 +38,8 @@ function transformCommentData(comment: any, postId?: number): Comment {
     userId: comment.userId,
     nickname: comment.userName,
     profileImage: comment.userPicture || '',
-    nation: comment.nation || comment.userNation || comment.countryName || comment.countryCode || '', // 다양한 필드명 시도
+    nation:
+      comment.nation || comment.userNation || comment.countryName || comment.countryCode || '', // 다양한 필드명 시도
   };
 
   console.log('[DEBUG] 변환된 writer 객체:', JSON.stringify(writerObj, null, 2));
@@ -59,7 +60,7 @@ function transformCommentData(comment: any, postId?: number): Comment {
 function transformReplyData(reply: any, commentId?: number): Reply {
   // 디버그 로그 추가 - 백엔드에서 받은 원본 데이터 구조 확인
   console.log('[DEBUG] 원본 답글 데이터:', JSON.stringify(reply, null, 2));
-  
+
   // isState를 myReaction으로 변환
   const myReaction = convertIsStateToMyReaction(reply.isState);
 
@@ -223,36 +224,36 @@ export const CommentApi = {
     try {
       // 숫자형으로 강제 변환하여 타입 문제 방지
       const numericPostId = Number(postId);
-      
+
       // 언어 감지 - await를 제대로 처리
       const detectedLanguage = await detectLanguage(content);
-      
+
       debugLog('댓글 언어 감지 결과:', {
         content: content.substring(0, 50) + '...',
         detectedLanguage,
-        contentLength: content.length
+        contentLength: content.length,
       });
-      
+
       console.log('[DEBUG] 댓글 생성 API 요청 시작:', {
         postId: numericPostId,
         content: content.substring(0, 20) + '...',
         detectedLanguage,
-        url: COMMENTS_BASE_URL
+        url: COMMENTS_BASE_URL,
       });
-      
+
       // 현재 로그인된 사용자 정보 가져오기
       const authStore = (window as any).__AUTH_STORE__;
       const currentUser = authStore ? authStore.getState().user : null;
       const userName = currentUser?.name || '';
-      
+
       // 백엔드 API 요청 형식에 맞게 수정
       const payload = {
         postId: numericPostId,
         content,
-        language: detectedLanguage.toUpperCase(),  // 이제 await된 문자열 결과
-        anonymous: false,  // 익명 댓글 명시적으로 비활성화 - 항상 실명 사용
+        language: detectedLanguage.toUpperCase(), // 이제 await된 문자열 결과
+        anonymous: false, // 익명 댓글 명시적으로 비활성화 - 항상 실명 사용
       };
-      
+
       debugLog('댓글 생성 요청 페이로드:', payload);
 
       const response = await apiClient.post<Comment>(COMMENTS_BASE_URL, payload);
@@ -472,11 +473,11 @@ export const CommentApi = {
 
       // 언어 감지 - await를 제대로 처리
       const detectedLanguage = await detectLanguage(content);
-      
+
       debugLog('대댓글 언어 감지 결과:', {
         content: content.substring(0, 50) + '...',
         detectedLanguage,
-        contentLength: content.length
+        contentLength: content.length,
       });
 
       // 백엔드 API 요청 형식에 맞게 수정
@@ -506,11 +507,11 @@ export const CommentApi = {
     try {
       // 언어 감지 - await를 제대로 처리
       const detectedLanguage = await detectLanguage(content);
-      
+
       debugLog('대댓글 수정 언어 감지 결과:', {
         content: content.substring(0, 50) + '...',
         detectedLanguage,
-        contentLength: content.length
+        contentLength: content.length,
       });
 
       // 백엔드 API 요청 형식에 맞게 수정

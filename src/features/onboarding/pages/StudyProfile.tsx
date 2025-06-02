@@ -47,6 +47,7 @@ import VisaIcon from '@mui/icons-material/DocumentScanner';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { useTranslation } from '@/shared/i18n';
+import CountrySelector from '@/shared/components/CountrySelector';
 
 // 스타일링된 컴포넌트
 const StyledPaper = styled(Paper)(({ theme }) => ({
@@ -516,7 +517,6 @@ const StudyProfile: React.FC = () => {
                 mb: 2,
               }}
             >
-
               <Box>
                 <FormControl component="fieldset" fullWidth>
                   <FormLabel
@@ -585,7 +585,6 @@ const StudyProfile: React.FC = () => {
                 color="primary"
                 type="number"
               />
-
             </Box>
 
             <Box
@@ -595,20 +594,15 @@ const StudyProfile: React.FC = () => {
                 gap: 3,
               }}
             >
-              <StyledTextField
-                select
-
+              <CountrySelector
                 label={t('onboarding.study.form.nationality')}
-                name="nationality"
                 value={formData.nationality}
-                onChange={handleInputChange}
+                onChange={value => setFormData(prev => ({ ...prev, nationality: value }))}
                 fullWidth
-                color="primary"
               />
 
               <StyledTextField
                 select
-
                 label={t('onboarding.study.form.uiLanguage')}
                 name="uiLanguage"
                 value={formData.uiLanguage}

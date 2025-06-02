@@ -59,6 +59,7 @@ import { env } from '../../config/env';
 import { widgetPaperBase, widgetGradients } from './theme/dashboardWidgetTheme';
 import { useMypageStore } from '../../features/mypage/store/mypageStore';
 import { useTranslation } from '../../shared/i18n';
+import { setUserLocation as saveUserLocation } from '@/shared/utils/Agentic_state';
 
 declare global {
   interface Window {
@@ -82,21 +83,208 @@ interface Place {
 // 사용자 목적 타입
 type UserPurpose = 'travel' | 'work' | 'residence' | 'study';
 
+// 목적별 카테고리 정의
+const PURPOSE_CATEGORIES = {
+  travel: [
+    {
+      id: 'tourist',
+      name: '관광명소',
+      icon: <TravelExploreIcon fontSize="small" />,
+      keyword: '관광',
+      color: '#2196F3',
+    },
+    {
+      id: 'restaurant',
+      name: '맛집',
+      icon: <RestaurantIcon fontSize="small" />,
+      keyword: '맛집',
+      color: '#FF5722',
+    },
+    {
+      id: 'cafe',
+      name: '카페',
+      icon: <LocalCafeIcon fontSize="small" />,
+      keyword: '카페',
+      color: '#795548',
+    },
+    {
+      id: 'culture',
+      name: '문화시설',
+      icon: <TheaterComedyIcon fontSize="small" />,
+      keyword: '박물관',
+      color: '#9C27B0',
+    },
+    {
+      id: 'transport',
+      name: '교통',
+      icon: <TransportIcon fontSize="small" />,
+      keyword: '지하철역',
+      color: '#4CAF50',
+    },
+    {
+      id: 'hotel',
+      name: '숙박',
+      icon: <HotelIcon fontSize="small" />,
+      keyword: '호텔',
+      color: '#FF9800',
+    },
+  ],
+  work: [
+    {
+      id: 'business',
+      name: '사무공간',
+      icon: <BusinessIcon fontSize="small" />,
+      keyword: '사무실',
+      color: '#3F51B5',
+    },
+    {
+      id: 'bank',
+      name: '은행',
+      icon: <AccountBalanceIcon fontSize="small" />,
+      keyword: '은행',
+      color: '#607D8B',
+    },
+    {
+      id: 'restaurant',
+      name: '식당',
+      icon: <RestaurantIcon fontSize="small" />,
+      keyword: '식당',
+      color: '#FF5722',
+    },
+    {
+      id: 'cafe',
+      name: '카페',
+      icon: <LocalCafeIcon fontSize="small" />,
+      keyword: '카페',
+      color: '#795548',
+    },
+    {
+      id: 'transport',
+      name: '교통',
+      icon: <TransportIcon fontSize="small" />,
+      keyword: '지하철역',
+      color: '#4CAF50',
+    },
+    {
+      id: 'government',
+      name: '관공서',
+      icon: <AccountBalanceIcon fontSize="small" />,
+      keyword: '구청',
+      color: '#009688',
+    },
+  ],
+  residence: [
+    {
+      id: 'market',
+      name: '마트/시장',
+      icon: <BusinessIcon fontSize="small" />,
+      keyword: '마트',
+      color: '#4CAF50',
+    },
+    {
+      id: 'hospital',
+      name: '병원',
+      icon: <LocalHospitalIcon fontSize="small" />,
+      keyword: '병원',
+      color: '#F44336',
+    },
+    {
+      id: 'bank',
+      name: '은행',
+      icon: <AccountBalanceIcon fontSize="small" />,
+      keyword: '은행',
+      color: '#607D8B',
+    },
+    {
+      id: 'restaurant',
+      name: '식당',
+      icon: <RestaurantIcon fontSize="small" />,
+      keyword: '식당',
+      color: '#FF5722',
+    },
+    {
+      id: 'transport',
+      name: '교통',
+      icon: <TransportIcon fontSize="small" />,
+      keyword: '지하철역',
+      color: '#4CAF50',
+    },
+    {
+      id: 'government',
+      name: '관공서',
+      icon: <AccountBalanceIcon fontSize="small" />,
+      keyword: '주민센터',
+      color: '#009688',
+    },
+  ],
+  study: [
+    {
+      id: 'university',
+      name: '대학교',
+      icon: <SchoolIcon fontSize="small" />,
+      keyword: '대학교',
+      color: '#673AB7',
+    },
+    {
+      id: 'library',
+      name: '도서관',
+      icon: <SchoolIcon fontSize="small" />,
+      keyword: '도서관',
+      color: '#009688',
+    },
+    {
+      id: 'cafe',
+      name: '스터디카페',
+      icon: <LocalCafeIcon fontSize="small" />,
+      keyword: '스터디카페',
+      color: '#795548',
+    },
+    {
+      id: 'restaurant',
+      name: '식당',
+      icon: <RestaurantIcon fontSize="small" />,
+      keyword: '식당',
+      color: '#FF5722',
+    },
+    {
+      id: 'transport',
+      name: '교통',
+      icon: <TransportIcon fontSize="small" />,
+      keyword: '지하철역',
+      color: '#4CAF50',
+    },
+    {
+      id: 'language',
+      name: '학원',
+      icon: <SchoolIcon fontSize="small" />,
+      keyword: '어학원',
+      color: '#FF9800',
+    },
+  ],
+};
+
+const PURPOSE_INFO = {
+  travel: { icon: <TravelExploreIcon />, color: '#2196F3', label: '여행', defaultSearch: '관광' },
+  work: { icon: <WorkIcon />, color: '#FF9800', label: '취업', defaultSearch: '사무실' },
+  residence: { icon: <HomeIcon />, color: '#4CAF50', label: '거주', defaultSearch: '마트' },
+  study: { icon: <SchoolIcon />, color: '#9C27B0', label: '유학', defaultSearch: '대학교' },
+};
+
 // 목적 매핑 함수 추가
 const mapVisitPurposeToUserPurpose = (visitPurpose?: string): UserPurpose => {
   if (!visitPurpose) return 'travel';
-  
+
   const purposeMap: Record<string, UserPurpose> = {
-    'Travel': 'travel',
-    'Study': 'study', 
-    'Work': 'work',
-    'Living': 'residence',
-    'travel': 'travel',
-    'study': 'study',
-    'work': 'work',
-    'living': 'residence',
-    'residence': 'residence',
-    'job': 'work'
+    Travel: 'travel',
+    Study: 'study',
+    Work: 'work',
+    Living: 'residence',
+    travel: 'travel',
+    study: 'study',
+    work: 'work',
+    living: 'residence',
+    residence: 'residence',
+    job: 'work',
   };
 
   return purposeMap[visitPurpose] || 'travel';
@@ -104,49 +292,219 @@ const mapVisitPurposeToUserPurpose = (visitPurpose?: string): UserPurpose => {
 
 const KakaoMapWidget: React.FC = () => {
   const { t } = useTranslation();
-  
-  // 목적별 카테고리 정의 - useMemo로 번역 키 사용
-  const PURPOSE_CATEGORIES = useMemo(() => ({
-    travel: [
-      { id: 'tourist', name: t('widgets.kakaoMap.categories.tourist'), icon: <TravelExploreIcon fontSize="small" />, keyword: '관광', color: '#2196F3' },
-      { id: 'restaurant', name: t('widgets.kakaoMap.categories.restaurant'), icon: <RestaurantIcon fontSize="small" />, keyword: '맛집', color: '#FF5722' },
-      { id: 'cafe', name: t('widgets.kakaoMap.categories.cafe'), icon: <LocalCafeIcon fontSize="small" />, keyword: '카페', color: '#795548' },
-      { id: 'culture', name: t('widgets.kakaoMap.categories.culture'), icon: <TheaterComedyIcon fontSize="small" />, keyword: '문화시설', color: '#9C27B0' },
-      { id: 'transport', name: t('widgets.kakaoMap.categories.transport'), icon: <TransportIcon fontSize="small" />, keyword: '지하철역', color: '#4CAF50' },
-      { id: 'hotel', name: t('widgets.kakaoMap.categories.hotel'), icon: <HotelIcon fontSize="small" />, keyword: '호텔', color: '#FF9800' }
-    ],
-    work: [
-      { id: 'business', name: t('widgets.kakaoMap.categories.business'), icon: <BusinessIcon fontSize="small" />, keyword: '사무실', color: '#3F51B5' },
-      { id: 'bank', name: t('widgets.kakaoMap.categories.bank'), icon: <AccountBalanceIcon fontSize="small" />, keyword: '은행', color: '#607D8B' },
-      { id: 'restaurant', name: t('widgets.kakaoMap.categories.restaurant'), icon: <RestaurantIcon fontSize="small" />, keyword: '맛집', color: '#FF5722' },
-      { id: 'cafe', name: t('widgets.kakaoMap.categories.cafe'), icon: <LocalCafeIcon fontSize="small" />, keyword: '카페', color: '#795548' },
-      { id: 'transport', name: t('widgets.kakaoMap.categories.transport'), icon: <TransportIcon fontSize="small" />, keyword: '지하철역', color: '#4CAF50' },
-      { id: 'government', name: t('widgets.kakaoMap.categories.government'), icon: <AccountBalanceIcon fontSize="small" />, keyword: '구청', color: '#009688' }
-    ],
-    residence: [
-      { id: 'market', name: t('widgets.kakaoMap.categories.market'), icon: <BusinessIcon fontSize="small" />, keyword: '마트', color: '#4CAF50' },
-      { id: 'hospital', name: t('widgets.kakaoMap.categories.hospital'), icon: <LocalHospitalIcon fontSize="small" />, keyword: '병원', color: '#F44336' },
-      { id: 'bank', name: t('widgets.kakaoMap.categories.bank'), icon: <AccountBalanceIcon fontSize="small" />, keyword: '은행', color: '#607D8B' },
-      { id: 'restaurant', name: t('widgets.kakaoMap.categories.restaurant'), icon: <RestaurantIcon fontSize="small" />, keyword: '맛집', color: '#FF5722' },
-      { id: 'transport', name: t('widgets.kakaoMap.categories.transport'), icon: <TransportIcon fontSize="small" />, keyword: '지하철역', color: '#4CAF50' },
-      { id: 'government', name: t('widgets.kakaoMap.categories.government'), icon: <AccountBalanceIcon fontSize="small" />, keyword: '구청', color: '#009688' }
-    ],
-    study: [
-      { id: 'university', name: t('widgets.kakaoMap.categories.university'), icon: <SchoolIcon fontSize="small" />, keyword: '대학교', color: '#673AB7' },
-      { id: 'library', name: t('widgets.kakaoMap.categories.library'), icon: <SchoolIcon fontSize="small" />, keyword: '도서관', color: '#009688' },
-      { id: 'cafe', name: t('widgets.kakaoMap.categories.cafe'), icon: <LocalCafeIcon fontSize="small" />, keyword: '카페', color: '#795548' },
-      { id: 'restaurant', name: t('widgets.kakaoMap.categories.restaurant'), icon: <RestaurantIcon fontSize="small" />, keyword: '맛집', color: '#FF5722' },
-      { id: 'transport', name: t('widgets.kakaoMap.categories.transport'), icon: <TransportIcon fontSize="small" />, keyword: '지하철역', color: '#4CAF50' },
-      { id: 'language', name: t('widgets.kakaoMap.categories.language'), icon: <SchoolIcon fontSize="small" />, keyword: '어학원', color: '#FF9800' }
-    ]
-  }), [t]);
 
-  const PURPOSE_INFO = useMemo(() => ({
-    travel: { icon: <TravelExploreIcon />, color: '#2196F3', label: t('widgets.kakaoMap.purposeLabels.travel'), defaultSearch: '관광' },
-    work: { icon: <WorkIcon />, color: '#FF9800', label: t('widgets.kakaoMap.purposeLabels.work'), defaultSearch: '사무실' },
-    residence: { icon: <HomeIcon />, color: '#4CAF50', label: t('widgets.kakaoMap.purposeLabels.residence'), defaultSearch: '마트' },
-    study: { icon: <SchoolIcon />, color: '#9C27B0', label: t('widgets.kakaoMap.purposeLabels.study'), defaultSearch: '대학교' }
-  }), [t]);
+  // 목적별 카테고리 정의 - useMemo로 번역 키 사용
+  const PURPOSE_CATEGORIES = useMemo(
+    () => ({
+      travel: [
+        {
+          id: 'tourist',
+          name: t('widgets.kakaoMap.categories.tourist'),
+          icon: <TravelExploreIcon fontSize="small" />,
+          keyword: '관광',
+          color: '#2196F3',
+        },
+        {
+          id: 'restaurant',
+          name: t('widgets.kakaoMap.categories.restaurant'),
+          icon: <RestaurantIcon fontSize="small" />,
+          keyword: '맛집',
+          color: '#FF5722',
+        },
+        {
+          id: 'cafe',
+          name: t('widgets.kakaoMap.categories.cafe'),
+          icon: <LocalCafeIcon fontSize="small" />,
+          keyword: '카페',
+          color: '#795548',
+        },
+        {
+          id: 'culture',
+          name: t('widgets.kakaoMap.categories.culture'),
+          icon: <TheaterComedyIcon fontSize="small" />,
+          keyword: '문화시설',
+          color: '#9C27B0',
+        },
+        {
+          id: 'transport',
+          name: t('widgets.kakaoMap.categories.transport'),
+          icon: <TransportIcon fontSize="small" />,
+          keyword: '지하철역',
+          color: '#4CAF50',
+        },
+        {
+          id: 'hotel',
+          name: t('widgets.kakaoMap.categories.hotel'),
+          icon: <HotelIcon fontSize="small" />,
+          keyword: '호텔',
+          color: '#FF9800',
+        },
+      ],
+      work: [
+        {
+          id: 'business',
+          name: t('widgets.kakaoMap.categories.business'),
+          icon: <BusinessIcon fontSize="small" />,
+          keyword: '사무실',
+          color: '#3F51B5',
+        },
+        {
+          id: 'bank',
+          name: t('widgets.kakaoMap.categories.bank'),
+          icon: <AccountBalanceIcon fontSize="small" />,
+          keyword: '은행',
+          color: '#607D8B',
+        },
+        {
+          id: 'restaurant',
+          name: t('widgets.kakaoMap.categories.restaurant'),
+          icon: <RestaurantIcon fontSize="small" />,
+          keyword: '맛집',
+          color: '#FF5722',
+        },
+        {
+          id: 'cafe',
+          name: t('widgets.kakaoMap.categories.cafe'),
+          icon: <LocalCafeIcon fontSize="small" />,
+          keyword: '카페',
+          color: '#795548',
+        },
+        {
+          id: 'transport',
+          name: t('widgets.kakaoMap.categories.transport'),
+          icon: <TransportIcon fontSize="small" />,
+          keyword: '지하철역',
+          color: '#4CAF50',
+        },
+        {
+          id: 'government',
+          name: t('widgets.kakaoMap.categories.government'),
+          icon: <AccountBalanceIcon fontSize="small" />,
+          keyword: '구청',
+          color: '#009688',
+        },
+      ],
+      residence: [
+        {
+          id: 'market',
+          name: t('widgets.kakaoMap.categories.market'),
+          icon: <BusinessIcon fontSize="small" />,
+          keyword: '마트',
+          color: '#4CAF50',
+        },
+        {
+          id: 'hospital',
+          name: t('widgets.kakaoMap.categories.hospital'),
+          icon: <LocalHospitalIcon fontSize="small" />,
+          keyword: '병원',
+          color: '#F44336',
+        },
+        {
+          id: 'bank',
+          name: t('widgets.kakaoMap.categories.bank'),
+          icon: <AccountBalanceIcon fontSize="small" />,
+          keyword: '은행',
+          color: '#607D8B',
+        },
+        {
+          id: 'restaurant',
+          name: t('widgets.kakaoMap.categories.restaurant'),
+          icon: <RestaurantIcon fontSize="small" />,
+          keyword: '맛집',
+          color: '#FF5722',
+        },
+        {
+          id: 'transport',
+          name: t('widgets.kakaoMap.categories.transport'),
+          icon: <TransportIcon fontSize="small" />,
+          keyword: '지하철역',
+          color: '#4CAF50',
+        },
+        {
+          id: 'government',
+          name: t('widgets.kakaoMap.categories.government'),
+          icon: <AccountBalanceIcon fontSize="small" />,
+          keyword: '구청',
+          color: '#009688',
+        },
+      ],
+      study: [
+        {
+          id: 'university',
+          name: t('widgets.kakaoMap.categories.university'),
+          icon: <SchoolIcon fontSize="small" />,
+          keyword: '대학교',
+          color: '#673AB7',
+        },
+        {
+          id: 'library',
+          name: t('widgets.kakaoMap.categories.library'),
+          icon: <SchoolIcon fontSize="small" />,
+          keyword: '도서관',
+          color: '#009688',
+        },
+        {
+          id: 'cafe',
+          name: t('widgets.kakaoMap.categories.cafe'),
+          icon: <LocalCafeIcon fontSize="small" />,
+          keyword: '카페',
+          color: '#795548',
+        },
+        {
+          id: 'restaurant',
+          name: t('widgets.kakaoMap.categories.restaurant'),
+          icon: <RestaurantIcon fontSize="small" />,
+          keyword: '맛집',
+          color: '#FF5722',
+        },
+        {
+          id: 'transport',
+          name: t('widgets.kakaoMap.categories.transport'),
+          icon: <TransportIcon fontSize="small" />,
+          keyword: '지하철역',
+          color: '#4CAF50',
+        },
+        {
+          id: 'language',
+          name: t('widgets.kakaoMap.categories.language'),
+          icon: <SchoolIcon fontSize="small" />,
+          keyword: '어학원',
+          color: '#FF9800',
+        },
+      ],
+    }),
+    [t]
+  );
+
+  const PURPOSE_INFO = useMemo(
+    () => ({
+      travel: {
+        icon: <TravelExploreIcon />,
+        color: '#2196F3',
+        label: t('widgets.kakaoMap.purposeLabels.travel'),
+        defaultSearch: '관광',
+      },
+      work: {
+        icon: <WorkIcon />,
+        color: '#FF9800',
+        label: t('widgets.kakaoMap.purposeLabels.work'),
+        defaultSearch: '사무실',
+      },
+      residence: {
+        icon: <HomeIcon />,
+        color: '#4CAF50',
+        label: t('widgets.kakaoMap.purposeLabels.residence'),
+        defaultSearch: '마트',
+      },
+      study: {
+        icon: <SchoolIcon />,
+        color: '#9C27B0',
+        label: t('widgets.kakaoMap.purposeLabels.study'),
+        defaultSearch: '대학교',
+      },
+    }),
+    [t]
+  );
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const fullMapContainerRef = useRef<HTMLDivElement>(null);
@@ -174,7 +532,7 @@ const KakaoMapWidget: React.FC = () => {
 
   // 마이페이지 스토어에서 프로필 정보 가져오기
   const { profile, fetchProfile } = useMypageStore();
-  
+
   // 사용자 목적 상태 - 마이페이지 프로필에서 가져오기
   const [userPurpose, setUserPurpose] = useState<UserPurpose | null>(null);
 
@@ -195,7 +553,9 @@ const KakaoMapWidget: React.FC = () => {
   }, [profile, fetchProfile]);
 
   // 현재 카테고리들 - 사용자 목적이 설정된 경우에만
-  const currentCategories = userPurpose ? PURPOSE_CATEGORIES[userPurpose] : PURPOSE_CATEGORIES.travel;
+  const currentCategories = userPurpose
+    ? PURPOSE_CATEGORIES[userPurpose]
+    : PURPOSE_CATEGORIES.travel;
   const purposeInfo = userPurpose ? PURPOSE_INFO[userPurpose] : PURPOSE_INFO.travel;
 
   // 지도 타입 상태 추가 (전체화면 지도용)
@@ -215,7 +575,13 @@ const KakaoMapWidget: React.FC = () => {
       setTimeout(() => {
         // searchNearbyPlaces를 직접 호출하는 대신 필요한 경우에만 호출하도록 수정
         if (typeof searchNearbyPlaces === 'function') {
-          searchNearbyPlaces(map, window.kakao.maps, userLocation.latitude, userLocation.longitude, '');
+          searchNearbyPlaces(
+            map,
+            window.kakao.maps,
+            userLocation.latitude,
+            userLocation.longitude,
+            ''
+          );
         }
       }, 500);
     }
@@ -225,15 +591,18 @@ const KakaoMapWidget: React.FC = () => {
   useEffect(() => {
     if (map && userLocation && window.kakao && window.kakao.maps) {
       console.log('사용자 위치 변경으로 인한 지도 중심 재조정:', userLocation);
-      const userLatLng = new window.kakao.maps.LatLng(userLocation.latitude, userLocation.longitude);
-      
+      const userLatLng = new window.kakao.maps.LatLng(
+        userLocation.latitude,
+        userLocation.longitude
+      );
+
       // 지도 중심 이동
       map.setCenter(userLatLng);
       map.setLevel(5);
-      
+
       // 사용자 마커 재생성 (위치가 변경될 때마다 확실히 표시)
       createUserMarker(map, window.kakao.maps, userLocation.latitude, userLocation.longitude);
-      
+
       // 지연 후 재조정 (지도 렌더링 완료 후)
       setTimeout(() => {
         map.setCenter(userLatLng);
@@ -315,7 +684,7 @@ const KakaoMapWidget: React.FC = () => {
         mapContainerRef.current.style.minHeight = '300px'; // 최소 높이를 450px에서 300px로 감소
         // 리플로우 유도
         mapContainerRef.current.getBoundingClientRect();
-        
+
         // 크기 설정 후 잠시 대기
         await new Promise(resolve => setTimeout(resolve, 100));
       }
@@ -340,12 +709,15 @@ const KakaoMapWidget: React.FC = () => {
       // 사용자 위치 요청
       if (window.kakao && window.kakao.maps) {
         getUserLocation(mapInstance, window.kakao.maps);
-        
+
         // 지도 타일 로드 완료 후 중심 위치 재조정
         window.kakao.maps.event.addListener(mapInstance, 'tilesloaded', () => {
           console.log('지도 타일 로드 완료 - 중심 위치 재조정');
           if (userLocation) {
-            const userLatLng = new window.kakao.maps.LatLng(userLocation.latitude, userLocation.longitude);
+            const userLatLng = new window.kakao.maps.LatLng(
+              userLocation.latitude,
+              userLocation.longitude
+            );
             mapInstance.setCenter(userLatLng);
           }
         });
@@ -596,6 +968,8 @@ const KakaoMapWidget: React.FC = () => {
         async position => {
           const { latitude, longitude } = position.coords;
           console.log('사용자 위치 확인됨:', latitude, longitude);
+          // 🧠 상태 저장
+          saveUserLocation({ latitude, longitude });
 
           setUserLocation({ latitude, longitude });
 
@@ -611,7 +985,7 @@ const KakaoMapWidget: React.FC = () => {
             setTimeout(() => {
               mapInstance.setCenter(userLatLng);
               mapInstance.setLevel(5);
-              
+
               // 지도가 완전히 로드된 후 한 번 더 중심점 보정
               setTimeout(() => {
                 mapInstance.setCenter(userLatLng);
@@ -639,7 +1013,9 @@ const KakaoMapWidget: React.FC = () => {
         },
         error => {
           console.error('위치 정보 가져오기 실패:', error.code, error.message);
-          setError(`${t('widgets.kakaoMap.messages.locationError')} (${t('common.error')}: ${error.code})`);
+          setError(
+            `${t('widgets.kakaoMap.messages.locationError')} (${t('common.error')}: ${error.code})`
+          );
         }
       );
     } else {
@@ -706,8 +1082,7 @@ const KakaoMapWidget: React.FC = () => {
         // 사용자 위치 인포윈도우 표시
         try {
           const infowindow = new kakaoMaps.InfoWindow({
-            content:
-              `<div style="padding:5px;font-size:12px;color:#0078ff;font-weight:bold;">${t('widgets.kakaoMap.location.myLocation')}</div>`,
+            content: `<div style="padding:5px;font-size:12px;color:#0078ff;font-weight:bold;">${t('widgets.kakaoMap.location.myLocation')}</div>`,
             zIndex: 11,
           });
           infowindow.open(mapInstance, userMarkerInstance);
@@ -868,7 +1243,7 @@ const KakaoMapWidget: React.FC = () => {
         });
 
         setPlaces(newPlaces);
-        
+
         // 장소 검색 후 사용자 마커 재생성 (사용자 마커가 지워지는 것을 방지)
         if (userLocation && mapInstance && kakaoMaps) {
           createUserMarker(mapInstance, kakaoMaps, userLocation.latitude, userLocation.longitude);
@@ -905,13 +1280,19 @@ const KakaoMapWidget: React.FC = () => {
     } else {
       // 목적별 기본 카테고리 검색
       const defaultCategory = currentCategories[0]; // 첫 번째 카테고리를 기본으로 사용
-      console.log('사용자 목적:', userPurpose, '기본 카테고리:', defaultCategory.id, defaultCategory.name);
-      
+      console.log(
+        '사용자 목적:',
+        userPurpose,
+        '기본 카테고리:',
+        defaultCategory.id,
+        defaultCategory.name
+      );
+
       // 현재 검색 카테고리 설정
       setCurrentSearchCategory(`${purposeInfo.label} > ${defaultCategory.name}`);
-      
+
       let categoryCode = '';
-      
+
       // 카테고리 ID에 따른 카카오맵 코드 매핑
       switch (defaultCategory.id) {
         case 'cafe':
@@ -969,7 +1350,7 @@ const KakaoMapWidget: React.FC = () => {
         default:
           categoryCode = 'FD6'; // 기본값은 음식점
       }
-      
+
       placesService.categorySearch(categoryCode, placesSearchCB, {
         location: new kakaoMaps.LatLng(lat, lng),
         radius: 3000,
@@ -1068,7 +1449,7 @@ const KakaoMapWidget: React.FC = () => {
           });
 
           setPlaces(newPlaces);
-          
+
           // 카테고리 검색 후 사용자 마커 재생성 (사용자 마커가 지워지는 것을 방지)
           if (userLocation && map && kakaoMaps) {
             createUserMarker(map, kakaoMaps, userLocation.latitude, userLocation.longitude);
@@ -1154,7 +1535,13 @@ const KakaoMapWidget: React.FC = () => {
       default:
         // 키워드 검색으로 대체
         if (userLocation && map) {
-          searchNearbyPlaces(map, window.kakao.maps, userLocation.latitude, userLocation.longitude, category.keyword);
+          searchNearbyPlaces(
+            map,
+            window.kakao.maps,
+            userLocation.latitude,
+            userLocation.longitude,
+            category.keyword
+          );
         }
         return;
     }
@@ -1172,7 +1559,7 @@ const KakaoMapWidget: React.FC = () => {
     const userLatLng = new kakaoMaps.LatLng(userLocation.latitude, userLocation.longitude);
     map.setCenter(userLatLng);
     map.setLevel(5);
-    
+
     // 약간의 지연 후 중심점 재설정 (확실한 이동)
     setTimeout(() => {
       map.setCenter(userLatLng);
@@ -1291,13 +1678,13 @@ const KakaoMapWidget: React.FC = () => {
     >
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Avatar 
-            sx={{ 
-              bgcolor: `${purposeInfo.color}20`, 
+          <Avatar
+            sx={{
+              bgcolor: `${purposeInfo.color}20`,
               color: purposeInfo.color,
               width: 28,
               height: 28,
-              mr: 1
+              mr: 1,
             }}
           >
             {purposeInfo.icon}
@@ -1312,10 +1699,10 @@ const KakaoMapWidget: React.FC = () => {
           <IconButton
             size="small"
             onClick={() => setIsPlacesModalOpen(true)}
-            sx={{ 
-              bgcolor: '#f0f0f0', 
+            sx={{
+              bgcolor: '#f0f0f0',
               '&:hover': { bgcolor: '#e0e0e0' },
-              position: 'relative'
+              position: 'relative',
             }}
             title={t('widgets.kakaoMap.tooltips.nearbyPlaces')}
           >
@@ -1335,7 +1722,7 @@ const KakaoMapWidget: React.FC = () => {
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontSize: '0.7rem',
-                  fontWeight: 'bold'
+                  fontWeight: 'bold',
                 }}
               >
                 {places.length}
@@ -1417,21 +1804,21 @@ const KakaoMapWidget: React.FC = () => {
         >
           {/* 현재 검색 카테고리 표시 */}
           {currentSearchCategory && (
-            <Typography 
-              variant="caption" 
-              color="text.secondary" 
-              sx={{ 
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{
                 bgcolor: 'rgba(25, 118, 210, 0.08)',
                 px: 1,
                 py: 0.5,
                 borderRadius: 1,
-                fontSize: '0.75rem'
+                fontSize: '0.75rem',
               }}
             >
               📍 {currentSearchCategory}
             </Typography>
           )}
-          
+
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <Box
@@ -1726,16 +2113,20 @@ const KakaoMapWidget: React.FC = () => {
             }}
           >
             <Box
-              sx={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                alignItems: 'center', 
-                mb: 2 
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                mb: 2,
               }}
             >
               <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
                 <CategoryIcon sx={{ mr: 1 }} />
-                {places.length > 0 ? t('widgets.kakaoMap.modal.nearbyPlacesWithCount', { count: places.length.toString() }) : t('widgets.kakaoMap.modal.recommendPlaces')}
+                {places.length > 0
+                  ? t('widgets.kakaoMap.modal.nearbyPlacesWithCount', {
+                      count: places.length.toString(),
+                    })
+                  : t('widgets.kakaoMap.modal.recommendPlaces')}
               </Typography>
               <IconButton onClick={() => setIsPlacesModalOpen(false)}>
                 <CloseIcon />
@@ -1744,17 +2135,17 @@ const KakaoMapWidget: React.FC = () => {
 
             {/* 현재 검색 카테고리 표시 */}
             {currentSearchCategory && (
-              <Typography 
-                variant="body2" 
-                color="text.secondary" 
-                sx={{ 
-                  mb: 2, 
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{
+                  mb: 2,
                   display: 'block',
                   bgcolor: 'rgba(25, 118, 210, 0.08)',
                   px: 2,
                   py: 1,
                   borderRadius: 1,
-                  fontSize: '0.9rem'
+                  fontSize: '0.9rem',
                 }}
               >
                 📍 {currentSearchCategory}
@@ -1805,7 +2196,9 @@ const KakaoMapWidget: React.FC = () => {
                       setIsPlacesModalOpen(false);
                     }}
                   >
-                    <PlaceIcon sx={{ color: getCategoryColor(place.category), mr: 2, fontSize: '2rem' }} />
+                    <PlaceIcon
+                      sx={{ color: getCategoryColor(place.category), mr: 2, fontSize: '2rem' }}
+                    />
                     <Box sx={{ flex: 1 }}>
                       <Typography variant="h6" fontWeight={600} sx={{ mb: 0.5 }}>
                         {place.name}
@@ -1861,22 +2254,26 @@ const KakaoMapWidget: React.FC = () => {
                   </Box>
                 ))
               ) : (
-                <Box 
-                  sx={{ 
-                    display: 'flex', 
+                <Box
+                  sx={{
+                    display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
                     py: 6,
-                    textAlign: 'center'
+                    textAlign: 'center',
                   }}
                 >
                   <SearchIcon sx={{ fontSize: '3rem', color: 'text.disabled', mb: 2 }} />
                   <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
-                    {loading ? t('widgets.kakaoMap.messages.searching') : t('widgets.kakaoMap.messages.noResults')}
+                    {loading
+                      ? t('widgets.kakaoMap.messages.searching')
+                      : t('widgets.kakaoMap.messages.noResults')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    {loading ? t('widgets.kakaoMap.messages.pleaseWait') : t('widgets.kakaoMap.messages.tryOtherCategories')}
+                    {loading
+                      ? t('widgets.kakaoMap.messages.pleaseWait')
+                      : t('widgets.kakaoMap.messages.tryOtherCategories')}
                   </Typography>
                 </Box>
               )}
@@ -1920,7 +2317,7 @@ const getCategoryBgColor = (category: string): string => {
 };
 
 const getCategoryName = (category: string): string => {
-  // 번역 함수를 사용하기 위해 컴포넌트 내부로 이동해야 하지만, 
+  // 번역 함수를 사용하기 위해 컴포넌트 내부로 이동해야 하지만,
   // 임시로 기본 매핑을 유지하고 나중에 리팩토링
   switch (category) {
     case 'cafe':

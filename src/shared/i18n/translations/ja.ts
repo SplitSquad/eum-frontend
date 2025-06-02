@@ -74,8 +74,7 @@ const ja = {
 
   welcome: {
     title: 'EUMへようこそ',
-    description:
-      'EUMは、異なる国の人々がコミュニケーションと協力を行うためのプラットフォームです。',
+    description: `韓国に来られた皆さまが安心して快適に生活できるようサポートします。\n現地適応に必要な情報とサービスをすべて一か所にまとめました。\n韓国に到着した瞬間から、心強い友としてそばでサポートします！`,
   },
 
   common: {
@@ -841,7 +840,20 @@ const ja = {
     editPost: '投稿編集',
     create: '作成',
     edit: '編集',
-    fileUpload: 'ファイルアップロード',
+    fileUpload: {
+      fileUpload: 'ファイル添付',
+      imageHint: '💡 画像はプレビューで簡単に確認できます',
+      imageHint2: '画像はプレビュー表示されます ✨\n最大10MB、すべてのファイル形式対応',
+      editModeWarning: '⚠️ 新しいファイルを追加すると既存の添付ファイルはすべて削除されます',
+      dragOrClick: '📁 ファイルをドラッグまたはクリックしてアップロード',
+      editModeDragOrClick: '⚠️ 新しいファイルを追加（既存ファイルはすべて削除されます）',
+      editModeHint:
+        '新しいファイルを選択すると既存の添付ファイルはすべて削除されます\n慎重に選択してください',
+      newImage: '新しい画像（{count}件）',
+      newFile: '新しい添付ファイル（{count}件）',
+      existingImage: '既存画像（{count}件）',
+      existingFile: '既存添付ファイル（{count}件）',
+    },
     dragAndDropOrClickToUpload: 'ファイルをここにドラッグ&ドロップまたはクリックしてアップロード',
     max10MBImageAndDocumentFiles: '最大10MB、画像およびドキュメントファイルをサポート',
     selectedFiles: '選択されたファイル',
@@ -1508,8 +1520,10 @@ const ja = {
       noReplies: '返信がありません。最初の返信を残してください！',
       cancel: 'キャンセル',
     },
-    specialIssues: 'すべてのイシューを見る',
-    noVotesYet: 'まだ投票がありません。最初の投票をしてみてください！',
+    specialIssue: '特別イシュー',
+    specialIssues: 'イシューまとめて見る',
+    noVotesYet: 'まだ投票がありません。最初の投票者になりましょう！',
+    noIssues: '登録された討論はありません。',
   },
   infoPage: {
     title: '韓国生活ガイド',
@@ -1623,6 +1637,7 @@ const ja = {
     title: '韓国生活アシスタント',
     subtitle: 'AI専門家と一緒に韓国生活ガイド',
     greeting: 'こんにちは！{{category}}分野のAI専門家です。',
+    matchingMessage: 'AI専門家をマッチング中です。しばらくお待ちください。',
     categories: {
       all: '🌏 全体',
       visa: '📑 滞在資格・ビザ',
@@ -1633,7 +1648,7 @@ const ja = {
       life: '👨‍👩‍👧 日常生活',
     },
     sidebar: {
-      title: '📚 分野別案内',
+      title: '分野別案内',
       autoSelectInfo: '質問すると自動的に分野が選択されます',
     },
     chat: {
@@ -1705,6 +1720,30 @@ const ja = {
     mypage: 'マイページ',
     logout: 'ログアウト',
     adminpage: '管理者ページ',
+  },
+  accessDenied: {
+    title: 'アクセス権限がありません',
+    description:
+      'このページにアクセスする権限がありません。ホームに戻るか、サポートにお問い合わせください。',
+    goHome: 'ホームに戻る',
+    contact: 'サポート',
+  },
+  intro: {
+    slide1: {
+      title: 'EUMで旅を始めましょう！',
+      desc1: 'EUMと一緒に一歩ずつ韓国を発見しましょう。',
+      desc2: '素晴らしい新しい旅をお祈りします。',
+    },
+    slide2: {
+      title: '少々お待ちください',
+      desc1: 'EUMが最高の体験を準備しています。',
+      desc2: '素晴らしい旅がまもなく始まります。',
+    },
+    slide3: {
+      title: 'ようこそ！',
+      desc1: 'EUMと共にする旅がまもなく始まります。',
+      desc2: '新しい体験の準備がすべて整いました。',
+    },
   },
   editModeFileWarning:
     '新しいファイルを選択すると、既存の添付ファイルがすべて削除されます\n慎重に選択してください',

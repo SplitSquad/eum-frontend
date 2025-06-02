@@ -82,8 +82,7 @@ const de = {
 
   welcome: {
     title: 'Willkommen bei EUM',
-    description:
-      'EUM ist eine Plattform für die Kommunikation und Kooperation von Menschen aus verschiedenen Ländern.',
+    description: `Wir helfen Ihnen, in Korea sorgenfrei und komfortabel zu leben.\nAlle wichtigen Informationen und Services für die Eingewöhnung finden Sie an einem Ort.\nVom ersten Moment Ihrer Ankunft in Korea sind wir als verlässlicher Freund an Ihrer Seite!`,
   },
   common: {
     home: 'Startseite',
@@ -116,6 +115,13 @@ const de = {
   },
   nav: {
     accountSettings: 'Kontoeinstellungen',
+  },
+  accessDenied: {
+    title: 'Zugriff verweigert',
+    description:
+      'Sie haben keine Berechtigung, auf diese Seite zuzugreifen. Bitte kehren Sie zur Startseite zurück oder kontaktieren Sie den Support.',
+    goHome: 'Zur Startseite',
+    contact: 'Support kontaktieren',
   },
   auth: {
     loginWithGoogle: 'Mit Google anmelden',
@@ -878,9 +884,20 @@ const de = {
     editPost: 'Beitrag Bearbeiten',
     create: 'Erstellen',
     edit: 'Bearbeiten',
-    fileUpload: 'Datei Upload',
-    dragAndDropOrClickToUpload: 'Dateien hier hinziehen oder klicken zum Hochladen',
-    max10MBImageAndDocumentFiles: 'Max 10MB, Bild- und Dokumentdateien unterstützt',
+    fileUpload: {
+      fileUpload: 'Dateianhang',
+      imageHint: '💡 Bilder werden zur einfachen Überprüfung als Vorschau angezeigt',
+      imageHint2: 'Bilder werden als Vorschau angezeigt ✨\nMax. 10MB, alle Dateitypen unterstützt',
+      editModeWarning: '⚠️ Das Hinzufügen neuer Dateien löscht alle vorhandenen Anhänge',
+      dragOrClick: '📁 Dateien zum Hochladen ziehen oder klicken',
+      editModeDragOrClick: '⚠️ Neue Dateien hinzufügen (alle vorhandenen Dateien werden gelöscht)',
+      editModeHint:
+        'Das Auswählen neuer Dateien löscht alle vorhandenen Anhänge\nBitte sorgfältig auswählen',
+      newImage: 'Neue Bilder ({count})',
+      newFile: 'Neue Anhänge ({count})',
+      existingImage: 'Vorhandene Bilder ({count})',
+      existingFile: 'Vorhandene Anhänge ({count})',
+    },
     selectedFiles: 'Ausgewählte Dateien',
     existingAttachedFiles: 'Vorhandene Anhänge',
     newImages: 'Neue Bilder',
@@ -1117,6 +1134,7 @@ const de = {
             'Sie haben ungespeicherte Änderungen. Möchten Sie diese Seite wirklich verlassen?',
         },
       },
+      hideOriginal: 'Original ausblenden',
     },
     comments: {
       title: 'Kommentare',
@@ -1554,8 +1572,10 @@ const de = {
       noReplies: 'Noch keine Antworten. Sei der Erste und antworte!',
       cancel: 'Abbrechen',
     },
-    specialIssues: 'Alle Themen Anzeigen',
-    noVotesYet: 'Noch keine Stimmen. Seien Sie der Erste, der abstimmt!',
+    specialIssue: 'Spezielle Themen',
+    specialIssues: 'Alle Themen anzeigen',
+    noVotesYet: 'Noch keine Stimmen. Sei der Erste, der abstimmt!',
+    noIssues: 'Keine Debatten gefunden.',
   },
   infoPage: {
     title: 'Korea Leben Guide',
@@ -1598,8 +1618,8 @@ const de = {
       createdAt: 'Erstellt',
     },
     sidebar: {
-      popularInfo: '🔥 Beliebte Informationen',
-      emergencyContacts: '🆘 Notfallkontakte',
+      popularInfo: 'Beliebte Informationen',
+      emergencyContacts: 'Notfallkontakte',
       emergency: {
         title: 'Notfall',
         subtitle: 'Feuer, medizinischer Notfall',
@@ -1669,6 +1689,7 @@ const de = {
     title: 'Korea Leben Assistent',
     subtitle: 'Korea Lebensführer mit KI-Experte',
     greeting: 'Hallo! Ich bin ein KI-Experte im Bereich {{category}}.',
+    matchingMessage: 'Ein KI-Experte wird für Sie gefunden. Bitte warten Sie einen Moment.',
     categories: {
       all: '🌏 Alle',
       visa: '📑 Visa/Rechtlich',
@@ -1679,7 +1700,7 @@ const de = {
       life: '👨‍👩‍👧 Alltag',
     },
     sidebar: {
-      title: '📚 Kategorienführer',
+      title: 'Kategorienführer',
       autoSelectInfo: 'Kategorien werden automatisch basierend auf Ihren Fragen ausgewählt',
     },
     chat: {
@@ -1688,7 +1709,7 @@ const de = {
       placeholder: 'Fragen Sie gerne alles...',
       send: 'Senden',
       sending: 'Wird gesendet...',
-      loading: 'Antwort wird vorbereitet...',
+      loading: 'Warte auf die Antwort des Experten...',
       initialMessage: 'Wie kann ich Ihnen helfen?',
       aiExpert: 'KI-Experte',
       justNow: 'Gerade eben',
@@ -1744,6 +1765,23 @@ const de = {
     welcome: 'Willkommen',
     termsAgreement:
       'Mit der Anmeldung stimmen Sie den Nutzungsbedingungen und der Datenschutzrichtlinie zu.',
+  },
+  intro: {
+    slide1: {
+      title: 'Starte deine Reise mit EUM!',
+      desc1: 'Entdecke Korea Schritt für Schritt mit EUM.',
+      desc2: 'Wir wünschen dir eine wundervolle neue Reise.',
+    },
+    slide2: {
+      title: 'Bitte warte einen Moment',
+      desc1: 'EUM bereitet das beste Erlebnis für dich vor.',
+      desc2: 'Deine großartige Reise beginnt in Kürze.',
+    },
+    slide3: {
+      title: 'Willkommen!',
+      desc1: 'Deine Reise mit EUM beginnt gleich.',
+      desc2: 'Alles ist bereit für dein neues Erlebnis.',
+    },
   },
   home: {
     communityFeed: {

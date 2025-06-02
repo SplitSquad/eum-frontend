@@ -378,7 +378,6 @@ const ReplySection: React.FC<ReplySectionProps> = ({
         <ReplyInput
           fullWidth
           size="small"
-          placeholder="답글을 입력하세요..."
           value={newReply}
           onChange={e => setNewReply(e.target.value)}
           onKeyPress={e => {
