@@ -271,6 +271,8 @@ export const checkAuthStatus = async (): Promise<User> => {
         email: profileResponse.email,
         role: profileResponse.role,
         name: profileResponse.name,
+        profileImagePath: profileResponse.profileImagePath,
+        picture: profileResponse.profileImagePath,
         isOnBoardDone: preferenceResponse.isOnBoardDone || false,
         nation: preferenceResponse.nation,
         language: preferenceResponse.language,

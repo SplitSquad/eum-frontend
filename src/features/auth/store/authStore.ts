@@ -366,11 +366,17 @@ export const useAuthStore = create<AuthState>()(
         user: state.user,
         token: state.token,
       }),
-      // hydration 후 토큰 없으면 인증 해제
+      // hydration 후 토큰 없으면 인증 해제, 있으면 사용자 정보 로드
       onRehydrateStorage: () => state => {
         const storedToken = getToken() || localStorage.getItem('auth_token');
         if (!storedToken) {
           state?.clearAuthState();
+        } else if (state && storedToken) {
+          // 토큰이 있으면 사용자 정보 로드 (프로필 이미지 포함)
+          console.log('Auth Store Rehydrate: 사용자 정보 로드 시작');
+          state.loadUser().catch(error => {
+            console.error('Rehydrate 후 사용자 정보 로드 실패:', error);
+          });
         }
       },
     }

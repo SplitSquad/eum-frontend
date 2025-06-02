@@ -512,9 +512,9 @@ const ProfilePage: React.FC = () => {
       // 프로필 정보 다시 불러오기
       await fetchProfile();
 
-      // auth store의 프로필 이미지도 업데이트 (헤더 반영용)
-      const { updateProfileImage } = useAuthStore.getState();
-      updateProfileImage(imageUrl);
+      // auth store의 사용자 정보도 다시 로드하여 헤더에 즉시 반영
+      const { loadUser } = useAuthStore.getState();
+      await loadUser();
 
       showNotification(t('mypage.imageupdetesuccess'), 'success');
       console.log('프로필 이미지 업로드 성공:', imageUrl);
@@ -535,9 +535,9 @@ const ProfilePage: React.FC = () => {
       // 프로필 정보 다시 불러오기
       await fetchProfile();
 
-      // auth store의 프로필 이미지도 업데이트 (헤더 반영용) - 빈 문자열로 설정
-      const { updateProfileImage } = useAuthStore.getState();
-      updateProfileImage('');
+      // auth store의 사용자 정보도 다시 로드하여 헤더에 즉시 반영
+      const { loadUser } = useAuthStore.getState();
+      await loadUser();
 
       showNotification(t('mypage.imagedeletesuccess'), 'success');
       console.log('프로필 이미지 삭제 성공');

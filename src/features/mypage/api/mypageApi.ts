@@ -10,98 +10,6 @@ import {
 } from '../types';
 import { get } from 'http';
 
-// 목업 데이터
-const MOCK_PROFILE: ProfileInfo = {
-  userId: 1,
-  name: '알렉스',
-  email: 'alex@example.com',
-  profileImage: 'https://i.pravatar.cc/150?img=12',
-  introduction:
-    '한국에서 프로그래머로 일하고 있는 외국인입니다. 한국 문화와 음식을 좋아하고, 한국어 공부에 관심이 많습니다.',
-  country: '미국',
-  language: '영어',
-  joinDate: '2023-11-01',
-  role: '취업',
-};
-
-const MOCK_POSTS: MyPost[] = [
-  {
-    id: 1,
-    title: '서울 강남에서 한국어 스터디 모임 구해요',
-    content:
-      '서울 강남에서 한국어 스터디 모임을 찾고 있습니다. 주 2회 정도 만나서 회화 연습을 하고 싶어요.',
-    category: '게시글',
-    createdAt: '2023-12-12',
-    viewCount: 45,
-    likeCount: 5,
-    commentCount: 3,
-  },
-  {
-    id: 2,
-    title: '외국인 친구를 위한 한국 문화 체험 장소 추천해주세요',
-    content:
-      '이번에 미국에서 친구가 방문하는데, 서울에서 한국 문화를 체험할 수 있는 장소를 추천해주세요.',
-    category: '토론',
-    createdAt: '2023-12-10',
-    viewCount: 87,
-    likeCount: 12,
-    commentCount: 8,
-  },
-];
-
-const MOCK_COMMENTS: MyComment[] = [
-  {
-    id: 1,
-    content: '저도 강남 쪽에 있어요! 저랑 중급 정도 수준엔데 실전 회화가 부족해서 연습하고 싶어요.',
-    createdAt: '2023-12-12',
-    postId: 3,
-    postTitle: '서울에서 한국어 스터디 구합니다',
-  },
-  {
-    id: 2,
-    content:
-      '외국인 등록증 발급 절차가 복잡해서 저도 처음에 많이 헤맸어요. 출입국관리사무소에 방문하기 전에 온라인으로 예약하는 게 좋아요.',
-    createdAt: '2023-12-10',
-    postId: 5,
-    postTitle: '외국인 등록증 발급 절차 질문있어요',
-  },
-];
-
-const MOCK_DEBATES: MyDebate[] = [
-  {
-    id: 1,
-    title: '외국인의 한국 정착 지원을 위한 언어 요구사항?',
-    createdAt: '2023-12-10',
-    votedOption: '한국어 교육 지원 확대',
-    totalVotes: 145,
-  },
-  {
-    id: 2,
-    title: '외국인 노동자 보호를 위한 최선의 정책은?',
-    createdAt: '2023-12-05',
-    votedOption: '노동법 강화',
-    totalVotes: 232,
-  },
-];
-
-// 북마크 목업 데이터 (실제 API 연동 전까지 사용)
-const MOCK_BOOKMARKS: MyBookmark[] = [
-  {
-    id: 1,
-    title: '외국인들을 위한 산청 방법',
-    category: '북마크',
-    createdAt: '2023-12-08',
-    source: '한국문화원',
-  },
-  {
-    id: 2,
-    title: '서울 생활 가이드북 2023',
-    category: '북마크',
-    createdAt: '2023-11-20',
-    source: '서울시청',
-  },
-];
-
 // API 응답 타입 정의
 interface UserProfileResponse {
   userId: number;
@@ -144,75 +52,67 @@ class MypageApi {
    * 사용자 프로필 정보 조회
    */
   async getProfileInfo(userId?: number): Promise<ProfileInfo> {
-    try {
-      // 토큰 가져오기
-      const token = localStorage.getItem('auth_token');
-      if (!token) {
-        throw new Error('인증 토큰이 없습니다. 로그인이 필요합니다.');
-      }
-
-      console.log('[API] 사용자 프로필 요청 시작');
-
-      // 사용자 프로필 정보 가져오기
-      const profileResponse = await apiClient.get<UserProfileResponse>('/users/profile', {
-        headers: {
-          Authorization: token,
-        },
-      });
-
-      // 사용자 선호도 정보 가져오기
-      const preferenceResponse = await apiClient.get<UserPreferenceResponse>('/users/preference', {
-        headers: {
-          Authorization: token,
-        },
-      });
-
-      console.log('[API] 프로필 응답:', profileResponse);
-      console.log('[API] 선호도 응답:', preferenceResponse);
-
-      // 프로필 정보에서 필요한 데이터 추출
-      const profileData = profileResponse as UserProfileResponse;
-      const preferenceData = preferenceResponse as UserPreferenceResponse;
-
-      let onBoardingData: Record<string, any> = {};
-      if (preferenceData.onBoardingPreference) {
-        try {
-          // JSON 문자열이면 파싱
-          if (typeof preferenceData.onBoardingPreference === 'string') {
-            onBoardingData = JSON.parse(preferenceData.onBoardingPreference);
-          } else {
-            // 이미 객체면 그대로 사용
-            onBoardingData = preferenceData.onBoardingPreference as Record<string, any>;
-          }
-        } catch (e) {
-          console.error('온보딩 데이터 파싱 실패:', e);
-        }
-      }
-
-      // 백엔드 응답을 ProfileInfo 형식으로 변환
-      const userProfile: ProfileInfo = {
-        userId: profileData.userId,
-        name: profileData.name || '사용자',
-        email: profileData.email || '',
-        profileImage: profileData.profileImagePath || 'https://i.pravatar.cc/150?img=12', // 기본 이미지 설정
-        introduction: (onBoardingData.introduction as string) || '', // 온보딩 데이터에서 소개 가져오기
-        country: preferenceData.nation || '',
-        language: preferenceData.language || '',
-        joinDate: profileData.signedAt
-          ? new Date(profileData.signedAt).toISOString().split('T')[0]
-          : '',
-        role: preferenceData.visitPurpose || '',
-      };
-
-      console.log('[API] 처리된 사용자 프로필:', userProfile);
-      return userProfile;
-    } catch (error) {
-      console.error('사용자 프로필 조회 실패:', error);
-
-      // 모의 데이터로 폴백 처리
-      console.warn('실제 API 연동 실패로 모의 데이터 반환');
-      return MOCK_PROFILE;
+    // 토큰 가져오기
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      throw new Error('인증 토큰이 없습니다. 로그인이 필요합니다.');
     }
+
+    console.log('[API] 사용자 프로필 요청 시작');
+
+    // 사용자 프로필 정보 가져오기
+    const profileResponse = await apiClient.get<UserProfileResponse>('/users/profile', {
+      headers: {
+        Authorization: token,
+      },
+    });
+
+    // 사용자 선호도 정보 가져오기
+    const preferenceResponse = await apiClient.get<UserPreferenceResponse>('/users/preference', {
+      headers: {
+        Authorization: token,
+      },
+    });
+
+    console.log('[API] 프로필 응답:', profileResponse);
+    console.log('[API] 선호도 응답:', preferenceResponse);
+
+    // 프로필 정보에서 필요한 데이터 추출
+    const profileData = profileResponse as UserProfileResponse;
+    const preferenceData = preferenceResponse as UserPreferenceResponse;
+
+    let onBoardingData: Record<string, any> = {};
+    if (preferenceData.onBoardingPreference) {
+      try {
+        // JSON 문자열이면 파싱
+        if (typeof preferenceData.onBoardingPreference === 'string') {
+          onBoardingData = JSON.parse(preferenceData.onBoardingPreference);
+        } else {
+          // 이미 객체면 그대로 사용
+          onBoardingData = preferenceData.onBoardingPreference as Record<string, any>;
+        }
+      } catch (e) {
+        console.error('온보딩 데이터 파싱 실패:', e);
+      }
+    }
+
+    // 백엔드 응답을 ProfileInfo 형식으로 변환
+    const userProfile: ProfileInfo = {
+      userId: profileData.userId,
+      name: profileData.name || '사용자',
+      email: profileData.email || '',
+      profileImage: profileData.profileImagePath || '', // 더미 이미지 제거
+      introduction: (onBoardingData.introduction as string) || '', // 온보딩 데이터에서 소개 가져오기
+      country: preferenceData.nation || '',
+      language: preferenceData.language || '',
+      joinDate: profileData.signedAt
+        ? new Date(profileData.signedAt).toISOString().split('T')[0]
+        : '',
+      role: preferenceData.visitPurpose || '',
+    };
+
+    console.log('[API] 처리된 사용자 프로필:', userProfile);
+    return userProfile;
   }
 
   /**
