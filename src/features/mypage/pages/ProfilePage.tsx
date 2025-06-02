@@ -24,6 +24,8 @@ import CakeIcon from '@mui/icons-material/Cake';
 import TravelExploreIcon from '@mui/icons-material/TravelExplore';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
+import { useTranslation } from '@/shared/i18n';
+
 
 // TODO : 실제 유저 정보 및 활동 연결(유저 정보, 유저가 투표한 토론, 유저가 작성한 게시글, 유저가 작성한 댓글)
 
@@ -310,7 +312,8 @@ const ToastNotification = styled.div<{ show: boolean; type: 'success' | 'error' 
 
 // 방문 목적에 따른 한국어 변환 함수
 const translateVisitPurpose = (purpose?: string): string => {
-  if (!purpose) return '미지정';
+  const { t } = useTranslation();
+  if (!purpose) return t('mypage.myprofile.novistpurpose');
 
   const purposeMap: Record<string, string> = {
     travel: '여행',
@@ -494,13 +497,13 @@ const ProfilePage: React.FC = () => {
     try {
       // 파일 크기 체크 (5MB 제한)
       if (file.size > 5 * 1024 * 1024) {
-        showNotification('파일이 너무 큽니다! 5MB 이하의 이미지를 선택해 주세요 📁', 'error');
+        showNotification(t('mypage.imagesize'), 'error');
         return;
       }
 
       // 파일 타입 체크
       if (!file.type.startsWith('image/')) {
-        showNotification('JPG, PNG, GIF 등의 이미지 파일만 업로드할 수 있습니다 🖼️', 'error');
+        showNotification(t('mypage.imagesize'), 'error');
         return;
       }
 
@@ -513,11 +516,11 @@ const ProfilePage: React.FC = () => {
       const { updateProfileImage } = useAuthStore.getState();
       updateProfileImage(imageUrl);
 
-      showNotification('프로필 이미지가 성공적으로 업데이트되었습니다! 🎉', 'success');
+      showNotification(t('mypage.imageupdetesuccess'), 'success');
       console.log('프로필 이미지 업로드 성공:', imageUrl);
     } catch (error) {
       console.error('프로필 이미지 업로드 실패:', error);
-      showNotification('이미지 업로드에 실패했습니다. 다시 시도해 주세요 😔', 'error');
+      showNotification(t('mypage.imageupdetesuccess'), 'error');
     } finally {
       setIsImageLoading(false);
     }
@@ -536,11 +539,11 @@ const ProfilePage: React.FC = () => {
       const { updateProfileImage } = useAuthStore.getState();
       updateProfileImage('');
 
-      showNotification('프로필 이미지가 성공적으로 삭제되었습니다! ✨', 'success');
+      showNotification(t('mypage.imagedeletesuccess'), 'success');
       console.log('프로필 이미지 삭제 성공');
     } catch (error) {
       console.error('프로필 이미지 삭제 실패:', error);
-      showNotification('이미지 삭제에 실패했습니다. 다시 시도해 주세요 😔', 'error');
+      showNotification(t('mypage.imagedeletefail'), 'error');
     } finally {
       setIsImageLoading(false);
     }
@@ -548,8 +551,9 @@ const ProfilePage: React.FC = () => {
 
   // 통합 로딩 상태 처리 (깜빡임 방지)
   if (isInitialLoading) {
+    const { t } = useTranslation();
     return (
-      <PageLayout title="내 프로필">
+      <PageLayout title={t('mypage.myprofile.title')}>
         <LoadingWrapper>
           <Spinner />
         </LoadingWrapper>
@@ -559,8 +563,9 @@ const ProfilePage: React.FC = () => {
 
   // 에러 상태
   if (profileError && profileLoading === 'error') {
+    const { t } = useTranslation();
     return (
-      <PageLayout title="내 프로필">
+      <PageLayout title={t('mypage.myprofile.title')}>
         <ErrorMessage>
           <p>{profileError}</p>
           <Button
@@ -572,7 +577,7 @@ const ProfilePage: React.FC = () => {
             variant="primary"
             className="mt-4"
           >
-            다시 시도
+            {t('mypage.trybtn')}
           </Button>
         </ErrorMessage>
       </PageLayout>
@@ -590,14 +595,15 @@ const ProfilePage: React.FC = () => {
   const totalActivities = postsCount + commentsCount + debatesCount;
 
   // 배지 정보 - 실제 활동 기반으로 동적 생성
+  const { t } = useTranslation();
   const badges = [
     ...(postsCount > 0
       ? [
           {
             id: 1,
-            name: '첫 게시글',
+            name: t('mypage.badge1name'),
             icon: '📝',
-            description: '첫 번째 게시글을 작성했습니다!',
+            description: t('mypage.badge1desc'),
             unlocked: true,
           },
         ]
@@ -606,9 +612,9 @@ const ProfilePage: React.FC = () => {
       ? [
           {
             id: 2,
-            name: '소통왕',
+            name: t('mypage.badge2name'),
             icon: '💬',
-            description: '10개 이상의 댓글을 작성했습니다!',
+            description: t('mypage.badge2desc'),
             unlocked: true,
           },
         ]
@@ -617,9 +623,9 @@ const ProfilePage: React.FC = () => {
       ? [
           {
             id: 3,
-            name: '토론 참여자',
+            name: t('mypage.badge3name'),
             icon: '🗳️',
-            description: '토론에 참여하여 의견을 표현했습니다!',
+            description: t('mypage.badge3desc'),
             unlocked: true,
           },
         ]
@@ -628,9 +634,9 @@ const ProfilePage: React.FC = () => {
       ? [
           {
             id: 4,
-            name: '지식 수집가',
+            name: t('mypage.badge4name'),
             icon: '📚',
-            description: '첫 번째 북마크를 추가했습니다!',
+            description: t('mypage.badge4desc'),
             unlocked: true,
           },
         ]
@@ -639,9 +645,9 @@ const ProfilePage: React.FC = () => {
       ? [
           {
             id: 5,
-            name: '활발한 활동가',
+            name: t('mypage.badge5name'),
             icon: '🌟',
-            description: '10개 이상의 활동을 완료했습니다!',
+            description: t('mypage.badge5desc'),
             unlocked: true,
           },
         ]
@@ -654,7 +660,7 @@ const ProfilePage: React.FC = () => {
   const levelProgress = (userLevel / maxLevel) * 100;
 
   return (
-    <PageLayout title="내 프로필">
+    <PageLayout title={t('mypage.myprofile.title')}>
       {/* 부드러운 등장 효과를 위한 컨테이너 */}
       <PageContainer
         style={{
@@ -685,7 +691,7 @@ const ProfilePage: React.FC = () => {
                       onClick={handleCancel}
                       disabled={profileUpdateLoading === 'loading'}
                     >
-                      취소
+                      {t('mypage.cancelbtn')}
                     </Button>
                     <Button
                       type="submit"
@@ -693,7 +699,7 @@ const ProfilePage: React.FC = () => {
                       isLoading={profileUpdateLoading === 'loading'}
                       className="ml-2"
                     >
-                      {profileUpdateLoading === 'loading' ? '저장 중...' : '저장하기'}
+                      {profileUpdateLoading === 'loading' ? t('mypage.save2') : t('mypage.save1')}
                     </Button>
                   </>
                 ) : (
@@ -703,14 +709,14 @@ const ProfilePage: React.FC = () => {
                     onClick={() => setIsEditing(true)}
                     fullWidth
                   >
-                    프로필 수정
+                    {t('mypage.myprofile.profileedit')}
                   </Button>
                 )}
               </ProfileActions>
 
               <Box mt={2} p={2} bgcolor="#f9f9f9" borderRadius={2}>
                 <Typography variant="body2" color="text.secondary" align="center">
-                  활동 레벨: {userLevel}/{maxLevel}
+                  {t('mypage.myprofile.activitylevel')}: {userLevel}/{maxLevel}
                 </Typography>
                 <Box
                   mt={1}
@@ -732,38 +738,38 @@ const ProfilePage: React.FC = () => {
             </ProfileCard>
 
             {/* 오른쪽: 상세 정보 */}
-            <InfoCard title="개인 정보">
+            <InfoCard title={t('mypage.myprofile.Personalinformation')}>
               <ProfileInfoSection>
-                <StyledFormField label="이름" htmlFor="name">
+                <StyledFormField label={t('mypage.myprofile.name')} htmlFor="name">
                   {isEditing ? (
                     <StyledInput
                       id="name"
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
-                      placeholder="이름을 입력하세요"
+                      placeholder={t('mypage.inputname')}
                     />
                   ) : (
-                    <ReadOnlyValue>{profile?.name || '이름 없음'}</ReadOnlyValue>
+                    <ReadOnlyValue>{profile?.name || t('mypage.myprofile.noname')}</ReadOnlyValue>
                   )}
                 </StyledFormField>
 
-                <StyledFormField label="이메일" htmlFor="email">
-                  <ReadOnlyValue>{profile?.email || '이메일 없음'}</ReadOnlyValue>
+                <StyledFormField label={t('mypage.myprofile.email')} htmlFor="email">
+                  <ReadOnlyValue>{profile?.email || t('mypage.myprofile.noemail')}</ReadOnlyValue>
                 </StyledFormField>
 
-                <StyledFormField label="자기소개" htmlFor="introduction">
+                <StyledFormField label={t('mypage.myprofile.Introduceyourself')} htmlFor="introduction">
                   {isEditing ? (
                     <StyledTextarea
                       id="introduction"
                       name="introduction"
                       value={formData.introduction}
                       onChange={handleChange}
-                      placeholder="자기소개를 입력하세요"
+                      placeholder={t('mypage.inputintroduction')}
                       rows={4}
                     />
                   ) : (
-                    <ReadOnlyValue>{profile?.introduction || '자기소개가 없습니다.'}</ReadOnlyValue>
+                    <ReadOnlyValue>{profile?.introduction || t('mypage.myprofile.nointroduction')}</ReadOnlyValue>
                   )}
                 </StyledFormField>
 
@@ -772,28 +778,28 @@ const ProfilePage: React.FC = () => {
                     <IconWithText>
                       <PublicIcon fontSize="small" sx={{ color: '#FF9999' }} />
                       <Typography variant="body2">
-                        <strong>국가:</strong> {profile?.country || '국가 정보 없음'}
+                        <strong>{t('mypage.myprofile.country')}:</strong> {profile?.country || t('mypage.myprofile.nocountry')}
                       </Typography>
                     </IconWithText>
 
                     <IconWithText>
                       <TranslateIcon fontSize="small" sx={{ color: '#FF9999' }} />
                       <Typography variant="body2">
-                        <strong>언어:</strong> {profile?.language || '언어 정보 없음'}
+                        <strong>{t('mypage.myprofile.language')}:</strong> {profile?.language || t('mypage.myprofile.nolanguage')}
                       </Typography>
                     </IconWithText>
 
                     <IconWithText>
                       <CakeIcon fontSize="small" sx={{ color: '#FF9999' }} />
                       <Typography variant="body2">
-                        <strong>가입일:</strong> {profile?.joinDate || '가입일 정보 없음'}
+                        <strong>{t('mypage.myprofile.Joineddate')}:</strong> {profile?.joinDate || t('mypage.myprofile.nojoindate')}
                       </Typography>
                     </IconWithText>
 
                     <IconWithText>
                       <TravelExploreIcon fontSize="small" sx={{ color: '#FF9999' }} />
                       <Typography variant="body2">
-                        <strong>방문 목적:</strong> {visitPurpose}
+                        <strong>{t('mypage.myprofile.visitpurpose')}:</strong> {visitPurpose}
                       </Typography>
                     </IconWithText>
                   </Box>
@@ -805,7 +811,7 @@ const ProfilePage: React.FC = () => {
 
         {/* 활동 통계 */}
         <Typography variant="h6" component="h2" sx={{ mb: 2, mt: 4 }}>
-          활동 통계
+          {t('mypage.myprofile.ActivityStatistics')}
         </Typography>
         <StatsSection>
           <StatCard>
@@ -813,7 +819,7 @@ const ProfilePage: React.FC = () => {
               <ForumIcon />
             </StatIcon>
             <StatValue>{postsCount}</StatValue>
-            <StatLabel>작성한 게시글</StatLabel>
+            <StatLabel>{t('mypage.myprofile.post')}</StatLabel>
           </StatCard>
 
           <StatCard>
@@ -821,7 +827,7 @@ const ProfilePage: React.FC = () => {
               <ChatBubbleOutlineIcon />
             </StatIcon>
             <StatValue>{commentsCount}</StatValue>
-            <StatLabel>작성한 댓글</StatLabel>
+            <StatLabel>{t('mypage.myprofile.comment')}</StatLabel>
           </StatCard>
 
           <StatCard>
@@ -829,7 +835,7 @@ const ProfilePage: React.FC = () => {
               <HowToVoteIcon />
             </StatIcon>
             <StatValue>{debatesCount}</StatValue>
-            <StatLabel>참여한 토론</StatLabel>
+            <StatLabel>{t('mypage.myprofile.debate')}</StatLabel>
           </StatCard>
 
           <StatCard>
@@ -837,13 +843,13 @@ const ProfilePage: React.FC = () => {
               <BookmarkIcon />
             </StatIcon>
             <StatValue>{bookmarksCount}</StatValue>
-            <StatLabel>저장한 북마크</StatLabel>
+            <StatLabel>{t('mypage.myprofile.Bookmark')}</StatLabel>
           </StatCard>
         </StatsSection>
 
         {/* 배지 섹션 */}
         <Typography variant="h6" component="h2" sx={{ mb: 2, mt: 4 }}>
-          나의 배지
+          {t('mypage.myprofile.badge')}
         </Typography>
 
         {badges.length > 0 ? (
@@ -860,10 +866,10 @@ const ProfilePage: React.FC = () => {
           <NoBadge>
             <EmojiEventsIcon sx={{ fontSize: 48, color: '#ddd', mb: 2 }} />
             <Typography variant="body1" color="text.secondary">
-              아직 획득한 배지가 없습니다.
+              {t('mypage.myprofile.nobadge')}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              활동을 통해 다양한 배지를 수집해 보세요!
+              {t('mypage.myprofile.nobadge2')}
             </Typography>
           </NoBadge>
         )}

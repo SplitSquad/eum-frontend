@@ -2,6 +2,7 @@ import { StudyProfile } from '@/features/onboarding';
 import { duration } from '@mui/material';
 import { profile } from 'console';
 import { de, pl } from 'date-fns/locale';
+import { Book } from 'lucide-react';
 import { title } from 'process';
 
 const ko = {
@@ -17,6 +18,64 @@ const ko = {
     alarm: '알람',
     markAllRead: '모두 읽음',
     noAlarms: '알림이 없습니다.',
+  },
+  mypage:{
+    sidebar:{
+      profile: '프로필',
+      settings: '설정',
+      Activity: '활동내역'
+    },
+    myprofile:{
+      title: '내 프로필',
+      Personalinformation : '개인정보',
+      name: '이름',
+      noname: '이름 없음',
+      email: '이메일',
+      noemail: '이메일 없음',
+      Introduceyourself: '자기소개',
+      nointroduction: '자기소개가 없습니다',
+      country: '국가',
+      nocountry: '국가 정보 없음',
+      language: '언어',
+      nolanguage: '언어 정보 없음',
+      Joineddate: '가입일',
+      nojoindate: '가입일 정보 없음',
+      visitpurpose: '방문목적',
+      novistpurpose: '미지정',
+      ActivityStatistics: '활동통계',
+      post: '작성한 게시물',
+      comment: '작성한 댓글',
+      debate: '참여한 토론',
+      Bookmark: '저장한 북마크',
+      badge: '나의 배지',
+      nobadge: '아직 획득한 배지가 없습니다.',
+      nobadge2: '활동을 통해 다양한 배지를 수집해 보세요!',
+      profileedit: '프로필 수정',
+      activitylevel: '활동 레벨',
+      save1: '저장하기',
+      save2: '저장 중...',
+      imagesize: '파일이 너무 큽니다! 5MB 이하의 이미지를 선택해 주세요 📁',
+      imagetype: 'JPG, PNG, GIF 등의 이미지 파일만 업로드할 수 있습니다 🖼️',
+      imageupdetesuccess: '프로필 이미지가 성공적으로 업데이트되었습니다! 🎉',
+      imageupdatefail: '이미지 업로드에 실패했습니다. 다시 시도해 주세요 😔',
+      imagedeletesuccess: '프로필 이미지가 성공적으로 삭제되었습니다! ✨',
+      imagedeletefail: '이미지 삭제에 실패했습니다. 다시 시도해 주세요 😔',
+    },
+    inputname: '이름을 입력하세요',
+    inputintroduction: '자기소개를 입력하세요',
+    cancelbtn: '취소',
+    savebtn: '저장',
+    trybtn: '다시시도',
+    badge1name: '첫 게시글',
+    badge1desc: '첫 번째 게시글을 작성했습니다!',
+    badge2name: '소통왕',
+    badge2desc: '10개 이상의 댓글을 작성했습니다!',
+    badge3name: '토론 참여자',
+    badge3desc: '토론에 참여하여 의견을 표현했습니다!',
+    badge4name: '지식 수집가',
+    badge4desc: '첫 번째 북마크를 추가했습니다!',
+    badge5name: '활발한 활동가',
+    badge5desc: '10개 이상의 활동을 완료했습니다!',
   },
   city: {
     seoul: '서울',
