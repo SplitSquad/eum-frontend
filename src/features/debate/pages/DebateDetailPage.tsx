@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useMemo, useCallback, useRef, memo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useDebateStore } from '../store';
 import { Debate, mapIsVotedStateToVoteType, ReactionType, mapIsStateToEmotionType } from '../types';
@@ -376,7 +376,7 @@ type EmotionType = 'like' | 'dislike' | 'sad' | 'angry' | 'confused';
  * 토론 상세 페이지
  * 선택한 토론의 상세 내용과 댓글을 표시
  */
-const DebateDetailPage: React.FC = () => {
+const DebateDetailPage: React.FC = memo(() => {
   const { id } = useParams<{ id: string }>();
   const { t } = useTranslation();
   const { language } = useLanguageStore();
@@ -402,10 +402,40 @@ const DebateDetailPage: React.FC = () => {
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [countryStats, setCountryStats] = useState<any[]>([]);
   const hasInitialLoadedRef = useRef(false);
+  const isDataLoadingRef = useRef(false);
   
   // 언어 변경 추적을 위한 ref
   const previousLanguageRef = useRef(language);
   const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 통합 데이터 로딩 함수
+  const loadAllData = useCallback(async (debateId: number, skipIfLoading = false) => {
+    // 이미 로딩 중이면 중복 실행 방지
+    if (skipIfLoading && isDataLoadingRef.current) {
+      console.log('[INFO] 데이터 로딩 중이므로 중복 실행 방지');
+      return;
+    }
+    
+    isDataLoadingRef.current = true;
+    console.log('[INFO] 통합 데이터 로딩 시작 - ID:', debateId);
+    
+    try {
+      // 토론 상세 정보 로드
+      await fetchDebateById(debateId);
+      
+      // 댓글과 국가별 통계는 병렬로 로드
+      await Promise.allSettled([
+        fetchComments(debateId),
+        loadCountryStats(debateId)
+      ]);
+      
+      console.log('[INFO] 통합 데이터 로딩 완료');
+    } catch (error) {
+      console.error('[ERROR] 데이터 로딩 실패:', error);
+    } finally {
+      isDataLoadingRef.current = false;
+    }
+  }, [fetchDebateById, fetchComments]);
 
   // 데이터 새로고침 함수들을 useCallback으로 메모화
   const refreshDebateData = useCallback(async () => {
@@ -415,12 +445,12 @@ const DebateDetailPage: React.FC = () => {
     setLanguageChanging(true);
     
     try {
-      await fetchDebateById(parseInt(id));
+      await loadAllData(parseInt(id), true);
     } finally {
       setLanguageChanging(false);
       console.log('[INFO] 토론 상세 페이지 - 데이터 새로고침 완료');
     }
-  }, [id, fetchDebateById, setLanguageChanging]);
+  }, [id, loadAllData, setLanguageChanging]);
 
   // 직접 API 접근을 위한 함수들
   const directVoteOnDebate = async (debateId: number, stance: 'pro' | 'con'): Promise<any> => {
@@ -444,13 +474,13 @@ const DebateDetailPage: React.FC = () => {
     }
   }, [stance]);
 
-  // 초기 데이터 로드 - 중복 방지 개선
+  // 초기 데이터 로드 - 통합된 로딩 함수 사용
   useEffect(() => {
     if (id && !hasInitialLoadedRef.current) {
       hasInitialLoadedRef.current = true;
-      fetchDebateById(parseInt(id));
+      loadAllData(parseInt(id));
     }
-  }, [id, fetchDebateById]);
+  }, [id, loadAllData]);
 
   // 언어 변경 감지 및 데이터 새로고침 (최적화됨) - 깜빡임 방지
   useEffect(() => {
@@ -463,11 +493,10 @@ const DebateDetailPage: React.FC = () => {
         clearTimeout(refreshTimeoutRef.current);
       }
       
-      // 디바운스된 새로고침 (500ms 지연으로 증가하여 깜빡임 최소화)
+      // 디바운스된 새로고침 (200ms로 단축)
       refreshTimeoutRef.current = setTimeout(() => {
-        // 언어 변경 중임을 표시하지 않고 백그라운드에서 새로고침
-        fetchDebateById(parseInt(id));
-      }, 500);
+        loadAllData(parseInt(id), true);
+      }, 200);
     }
     
     // 현재 언어를 이전 언어로 업데이트
@@ -479,22 +508,21 @@ const DebateDetailPage: React.FC = () => {
         clearTimeout(refreshTimeoutRef.current);
       }
     };
-  }, [language, id, debate, fetchDebateById]);
+  }, [language, id, debate, loadAllData]);
 
-  // 토론 상세 불러온 후 댓글도 불러오기 - 깜빡임 방지 개선
+  // 토론 데이터가 로드된 후 상태 초기화 (useEffect 분리)
   useEffect(() => {
     if (debate) {
-      // 상태 초기화
-      if (debate?.isVotedState === '찬성') {
-        setUserVote('pro');
-        setStance('pro');
-      } else if (debate?.isVotedState === '반대') {
-        setUserVote('con');
-        setStance('con');
-      } else {
-        setUserVote(null);
-        setStance(null);
-      }
+      // 상태 초기화를 배치로 처리
+      const newUserVote = debate?.isVotedState === '찬성' ? 'pro' : 
+                          debate?.isVotedState === '반대' ? 'con' : null;
+      const newStance = newUserVote;
+      const mappedEmotionType = debate.isState ? mapIsStateToEmotionType(debate.isState) : null;
+      
+      // 상태를 한 번에 업데이트
+      setUserVote(newUserVote);
+      setStance(newStance);
+      setUserEmotion(mappedEmotionType);
       
       // 웹로그 전송 - 최초 1회만
       if (!hasInitialLoadedRef.current) {
@@ -510,28 +538,8 @@ const DebateDetailPage: React.FC = () => {
         };
         sendWebLog({ userId, content: JSON.stringify(chatLogPayload) });
       }
-
-      // 코멘트 로드 - 중복 방지
-      if (id) {
-        fetchComments(parseInt(id));
-      }
-
-      // 감정표현 상태 확인
-      const mappedEmotionType = debate.isState ? mapIsStateToEmotionType(debate.isState) : null;
-
-      // 감정표현 상태가 있으면 설정
-      if (mappedEmotionType) {
-        setUserEmotion(mappedEmotionType);
-      } else {
-        setUserEmotion(null);
-      }
-
-      // 국가별 참여 정보를 항상 최신으로 로드
-      if (id) {
-        loadCountryStats(parseInt(id));
-      }
     }
-  }, [debate, id, fetchComments]);
+  }, [debate?.id, debate?.isVotedState, debate?.isState]); // 필요한 필드만 의존성에 추가
 
   // 국가별 통계 로드 함수
   const loadCountryStats = async (debateId: number) => {
@@ -972,14 +980,45 @@ const DebateDetailPage: React.FC = () => {
     );
   };
 
+  // 계산된 값들을 useMemo로 메모화
+  const enhancedDebate = useMemo(() => debate as EnhancedDebate, [debate]);
+  
+  const voteRatio = useMemo(() => 
+    calculateVoteRatio(enhancedDebate?.proCount || 0, enhancedDebate?.conCount || 0), 
+    [enhancedDebate?.proCount, enhancedDebate?.conCount]
+  );
+  
+  const chartData = useMemo(() => 
+    prepareChartData(enhancedDebate?.proCount || 0, enhancedDebate?.conCount || 0), 
+    [enhancedDebate?.proCount, enhancedDebate?.conCount]
+  );
+  
+  const categoryColor = useMemo(() => 
+    (enhancedDebate?.category &&
+      categoryColors[enhancedDebate.category as keyof typeof categoryColors]) ||
+    '#757575',
+    [enhancedDebate?.category]
+  );
+
   // Render loading state
-  if (loading) {
+  if (loading || isDataLoadingRef.current) {
     return (
-      <DebateLayout>
+      <DebateLayout showSidebar={false}>
         <Box
-          sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}
+          sx={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            height: '60vh',
+            minHeight: '400px' // 최소 높이 설정으로 레이아웃 변화 방지
+          }}
         >
-          <CircularProgress />
+          <Box sx={{ textAlign: 'center' }}>
+            <CircularProgress size={40} />
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+              {t('common.loading')}...
+            </Typography>
+          </Box>
         </Box>
       </DebateLayout>
     );
@@ -1008,15 +1047,6 @@ const DebateDetailPage: React.FC = () => {
     );
   }
 
-  const enhancedDebate = debate as EnhancedDebate;
-
-  // Calculate vote percentages
-  const voteRatio = calculateVoteRatio(enhancedDebate.proCount || 0, enhancedDebate.conCount || 0);
-  const chartData = prepareChartData(enhancedDebate.proCount || 0, enhancedDebate.conCount || 0);
-  const categoryColor =
-    (enhancedDebate.category &&
-      categoryColors[enhancedDebate.category as keyof typeof categoryColors]) ||
-    '#757575';
   // 토론 콘텐츠 파싱 함수
   const parseDebateContent = (content: string) => {
     if (!content)
@@ -1457,6 +1487,10 @@ const DebateDetailPage: React.FC = () => {
     </Box>
   );
 
+  // 메모화된 렌더 함수들
+  const MemoizedVoteChartSection = memo(VoteChartSection);
+  const MemoizedCountryStatsSection = memo(CountryStatsSection);
+
   return (
     <DebateLayout
       sidebar={
@@ -1497,14 +1531,14 @@ const DebateDetailPage: React.FC = () => {
               <span className="vote-count">{enhancedDebate.conCount || 0}</span>
             </VoteButton>
           </VoteButtonGroup>
-          <VoteChartSection
+          <MemoizedVoteChartSection
             voteRatio={voteRatio}
             chartData={chartData}
             COLORS={COLORS}
             t={t}
             enhancedDebate={enhancedDebate}
           />
-          <CountryStatsSection enhancedDebate={enhancedDebate} t={t} />
+          <MemoizedCountryStatsSection enhancedDebate={enhancedDebate} t={t} />
         </Box>
       }
     >
@@ -1687,6 +1721,6 @@ const DebateDetailPage: React.FC = () => {
       </Container>
     </DebateLayout>
   );
-};
+});
 
 export default DebateDetailPage;
