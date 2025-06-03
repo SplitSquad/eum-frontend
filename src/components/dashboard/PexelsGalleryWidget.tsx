@@ -156,7 +156,6 @@ const PexelsGalleryWidget: React.FC = () => {
 
       const results = await Promise.all(imagePromises);
       const validImages = results.filter(img => img !== null) as ImageItem[];
-
       setImages(validImages);
     } catch (err) {
       console.error('Pexels API 오류:', err);

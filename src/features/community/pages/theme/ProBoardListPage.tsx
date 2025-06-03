@@ -131,7 +131,9 @@ const ProBoardListPage: React.FC = () => {
     posts,
     postLoading,
     postError,
+    selectedCategory,
     postPageInfo,
+    setSelectedCategory,
     fetchPosts,
     setPostFilter,
     searchPosts,
@@ -139,9 +141,6 @@ const ProBoardListPage: React.FC = () => {
     topPosts,
     resetPostsState,
   } = useCommunityStore();
-
-  // 🔥 자유게시판 페이지별 독립적인 selectedCategory 상태 관리
-  const [selectedCategory, setSelectedCategory] = useState<string>('전체');
 
   // 🔥 컴포넌트 마운트 즉시 이전 페이지 데이터 초기화 (헤더 네비게이션 대응)
   React.useLayoutEffect(() => {
@@ -152,12 +151,6 @@ const ProBoardListPage: React.FC = () => {
       resetPostsState();
       usePostStore.setState({ postLoading: true, posts: [] });
     }
-    
-    // 🔥 자유게시판 진입 시 상태 즉시 초기화 (다른 페이지에서 오는 경우 대응)
-    console.log('[DEBUG] 자유게시판 진입 - useLayoutEffect에서 모든 상태 즉시 초기화');
-    setSelectedCategory('전체');
-    setSelectedTags([]);
-    setAvailableTags([]);
   }, [resetPostsState]);
 
   // 상태 관리
@@ -379,8 +372,7 @@ const ProBoardListPage: React.FC = () => {
             saved.isSearchMode &&
             saved.selectedTags &&
             Array.isArray(saved.selectedTags) &&
-            saved.selectedTags.length > 0 &&
-            saved.category && saved.category !== '전체' && saved.category !== t('community.filters.all')
+            saved.selectedTags.length > 0
           ) {
             console.log('[DEBUG] 자유게시판 검색 모드 - 태그 상태 복구:', saved.selectedTags);
             // 카테고리가 유효한 경우에만 태그 상태 복구
@@ -643,9 +635,10 @@ const ProBoardListPage: React.FC = () => {
     setSelectedTags([]);
 
     // 카테고리에 맞는 태그 목록 즉시 설정
-    const newAvailableTags = category && category !== t('community.filters.all') 
-      ? categoryTags[category as keyof typeof categoryTags] || []
-      : [];
+    const newAvailableTags =
+      category && category !== t('community.filters.all')
+        ? categoryTags[category as keyof typeof categoryTags] || []
+        : [];
     setAvailableTags(newAvailableTags);
     console.log('[DEBUG] 새 카테고리의 사용 가능한 태그:', newAvailableTags);
 
@@ -861,13 +854,7 @@ const ProBoardListPage: React.FC = () => {
     // 2. postStore에서도 로딩 상태 즉시 설정
     usePostStore.setState({ postLoading: true, posts: [] });
 
-    
-    // 3. 모든 상태 즉시 초기화
-    setSelectedCategory('전체');
-    setSelectedTags([]);
-    setAvailableTags([]);
-    
-    // 4. 약간의 지연 후 네비게이션 (초기화가 UI에 반영될 시간)
+    // 3. 약간의 지연 후 네비게이션 (초기화가 UI에 반영될 시간)
     setTimeout(() => {
       navigate('/community/groups');
     }, 50);
@@ -1521,7 +1508,7 @@ const ProBoardListPage: React.FC = () => {
                         {t('community.filters.tags')}
                       </Typography>
                       <Box
-                        key={`proBoardTags-${selectedCategory}-${selectedTags.length}-${Date.now() % 1000}`}
+                        key={`tags-${selectedCategory}-${selectedTags.length}`}
                         sx={{
                           display: 'flex',
                           flexWrap: 'wrap',
@@ -1531,7 +1518,7 @@ const ProBoardListPage: React.FC = () => {
                       >
                         {availableTags.map(tag => (
                           <Chip
-                            key={`proBoardTag-${tag}-${selectedTags.includes(tag) ? 'selected' : 'unselected'}`}
+                            key={`${tag}-${selectedTags.includes(tag)}`}
                             label={tag}
                             onClick={() => handleTagSelect(tag)}
                             color={selectedTags.includes(tag) ? 'primary' : 'default'}

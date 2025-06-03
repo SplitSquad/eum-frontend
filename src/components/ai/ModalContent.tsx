@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { callAgentic } from '@/shared/utils/Agentic';
 import { useModalStore } from '@/shared/store/ModalStore';
+import { useTranslation } from '@/shared/i18n';
 // import { callJobAgent, processCoverLetterResponse } from '@/shared/utils/JobAgent';
 // import { CoverLetterState } from '@/types/CoverLetterTypes';
 
