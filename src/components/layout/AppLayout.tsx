@@ -36,80 +36,43 @@ export default function AppLayout() {
       const rect = btnRef.current.getBoundingClientRect();
       
       // 모달 크기 (실제 크기와 정확히 일치)
-      const MODAL_WIDTH = 400;
-      const MODAL_HEIGHT = 520;
-      const PADDING = 20; // 여유 공간을 더 크게
+      const MODAL_WIDTH = 350;
+      const MODAL_HEIGHT = 400;
+      const PADDING = 10; // 버튼과의 간격
       
-      // 화면 크기
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
-      
-      console.log('=== 모달 위치 계산 시작 ===');
+      console.log('=== 모달 위치 계산 (이음이 버튼 좌상단) ===');
       console.log('버튼 위치:', { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom });
-      console.log('화면 크기:', { viewportWidth, viewportHeight });
-      console.log('모달 크기:', { MODAL_WIDTH, MODAL_HEIGHT });
       
-      let x, y;
+      // 기본 위치: 버튼의 좌상단에 모달의 우하단이 오도록 설정
+      let x = rect.left - MODAL_WIDTH;
+      let y = rect.top - MODAL_HEIGHT;
       
-      // 1단계: X 위치 결정 (수평 위치)
-      // 기본적으로 버튼 왼쪽에 배치
-      x = rect.left - MODAL_WIDTH - PADDING;
-      
-      // 왼쪽 공간이 부족하면 오른쪽에 배치
+      // 화면 왼쪽을 벗어나면 오른쪽으로 이동
       if (x < PADDING) {
         x = rect.right + PADDING;
-        console.log('왼쪽 공간 부족, 오른쪽으로 이동:', x);
+        console.log('왼쪽 경계 벗어남, 오른쪽으로 이동:', x);
       }
       
-      // 오른쪽도 부족하면 화면에 맞춰 강제 조정
-      if (x + MODAL_WIDTH > viewportWidth - PADDING) {
-        x = viewportWidth - MODAL_WIDTH - PADDING;
-        console.log('오른쪽도 부족, 강제 조정:', x);
-      }
-      
-      // 최종 X 위치 검증 및 보정
-      if (x < PADDING) {
-        x = PADDING;
-        console.log('최종 X 보정:', x);
-      }
-      
-      // 2단계: Y 위치 결정 (수직 위치)
-      y = rect.top - 50; // 버튼 위쪽에 약간 여유를 두고 배치
-      
-      // 위쪽 공간이 부족하면 아래로
+      // 화면 위쪽을 벗어나면 아래쪽으로 이동
       if (y < PADDING) {
         y = rect.bottom + PADDING;
-        console.log('위쪽 공간 부족, 아래로 이동:', y);
+        console.log('위쪽 경계 벗어남, 아래쪽으로 이동:', y);
       }
       
-      // 아래쪽도 부족하면 강제 조정 (푸터 고려)
-      const footerHeight = 180; // 푸터 높이를 더 크게 잡음 (140 -> 180)
-      const maxY = viewportHeight - footerHeight - MODAL_HEIGHT - PADDING;
-      if (y > maxY) {
-        y = Math.max(PADDING, maxY);
-        console.log('아래쪽 공간 부족, 강제 조정:', y);
+      // 화면 오른쪽을 벗어나면 조정
+      if (x + MODAL_WIDTH > window.innerWidth - PADDING) {
+        x = window.innerWidth - MODAL_WIDTH - PADDING;
+        console.log('오른쪽 경계 벗어남, 조정:', x);
       }
       
-      // 최종 Y 위치 검증
-      if (y + MODAL_HEIGHT > viewportHeight - PADDING) {
-        y = viewportHeight - MODAL_HEIGHT - PADDING;
-        console.log('최종 Y 보정:', y);
-      }
-      
-      if (y < PADDING) {
-        y = PADDING;
-        console.log('최종 Y 최소값 보정:', y);
+      // 화면 아래쪽을 벗어나면 조정 (푸터 고려)
+      const footerHeight = 120;
+      if (y + MODAL_HEIGHT > window.innerHeight - footerHeight - PADDING) {
+        y = window.innerHeight - footerHeight - MODAL_HEIGHT - PADDING;
+        console.log('아래쪽 경계 벗어남, 조정:', y);
       }
       
       console.log('최종 모달 위치:', { x, y });
-      console.log('모달 경계:', { 
-        right: x + MODAL_WIDTH, 
-        bottom: y + MODAL_HEIGHT,
-        withinViewport: {
-          x: x >= PADDING && (x + MODAL_WIDTH) <= (viewportWidth - PADDING),
-          y: y >= PADDING && (y + MODAL_HEIGHT) <= (viewportHeight - PADDING)
-        }
-      });
       console.log('=== 모달 위치 계산 완료 ===');
       
       openModal(<ModalContent />, { x, y });
