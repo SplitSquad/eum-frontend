@@ -666,12 +666,12 @@ const KakaoMapWidget: React.FC = () => {
       // API 키 확인
       const kakaoApiKey = env.KAKAO_MAP_API_KEY;
       if (!kakaoApiKey) {
-        throw new Error('카카오맵 API 키가 설정되지 않았습니다.');
+        throw new Error('Kakao Map API key is not configured.');
       }
 
       // 컨테이너 확인
       if (!mapContainerRef.current) {
-        throw new Error('지도 컨테이너가 DOM에 존재하지 않습니다.');
+        throw new Error('Map container does not exist in DOM.');
       }
 
       // 컨테이너 크기가 0이면 최소 크기 설정
@@ -719,7 +719,7 @@ const KakaoMapWidget: React.FC = () => {
           }
         });
       } else {
-        throw new Error('카카오맵 객체가 초기화되지 않았습니다.');
+        throw new Error('Kakao Map object is not initialized.');
       }
 
       // 지도 스타일 적용 (지연 적용)
@@ -802,7 +802,7 @@ const KakaoMapWidget: React.FC = () => {
 
         // 컨테이너 확인
         if (!fullMapContainerRef.current) {
-          throw new Error('전체화면 지도 컨테이너가 존재하지 않습니다.');
+          throw new Error('Fullscreen map container does not exist.');
         }
 
         // 컨테이너 크기 확인 및 설정
@@ -1146,13 +1146,13 @@ const KakaoMapWidget: React.FC = () => {
     retryCount: number = 0
   ) => {
     // 사용자 목적이 아직 설정되지 않은 경우 검색 연기
-    if (!userPurpose && !keyword) {
+    /*if (!userPurpose && !keyword) {
       console.log('사용자 목적이 아직 설정되지 않아 검색을 연기합니다.');
       setTimeout(() => {
         searchNearbyPlaces(mapInstance, kakaoMaps, lat, lng, keyword, retryCount);
       }, 1000);
       return;
-    }
+    }*/
 
     // 이전 검색 취소
     if (searchTimeoutRef.current) {

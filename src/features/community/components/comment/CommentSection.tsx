@@ -240,7 +240,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         setComments([]);
         setTotal(0);
         setTotalPages(0);
-        enqueueSnackbar(t('community.comments.loadFailed'), { variant: 'error' });
+        enqueueSnackbar('An error occurred while loading comments.', { variant: 'error' });
       } finally {
         setIsLoading(false);
       }
@@ -310,7 +310,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         }
       } catch (error) {
         console.error('[ERROR] 대댓글 로드 실패:', error);
-        enqueueSnackbar('답글을 불러오는 중 오류가 발생했습니다.', { variant: 'error' });
+        enqueueSnackbar('An error occurred while loading replies.', { variant: 'error' });
       } finally {
         setLoadingReplies(prev => ({ ...prev, [commentId]: false }));
       }

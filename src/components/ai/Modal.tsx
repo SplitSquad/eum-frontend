@@ -24,11 +24,70 @@ export default function Modal({ isOpen, onClose, children, position }: ModalProp
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
     document.addEventListener('keydown', onKey);
-    console.log(position);
-    console.log(window.scrollY);
 
     return () => document.removeEventListener('keydown', onKey);
   }, [onClose]);
+
+  // 모달 위치 보정 함수
+  const getAdjustedPosition = (pos: { x: number; y: number }) => {
+    const modalWidth = 400;
+    const modalHeight = 520;
+    const padding = 20;
+    
+    let { x, y } = pos;
+    
+    // 화면 경계 확인 및 조정
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    
+    console.log('=== Modal 위치 보정 시작 ===');
+    console.log('원본 위치:', { x, y });
+    console.log('화면 크기:', { viewportWidth, viewportHeight });
+    
+    // 오른쪽 경계 체크 (가장 중요!)
+    if (x + modalWidth > viewportWidth - padding) {
+      const newX = viewportWidth - modalWidth - padding;
+      console.log(`오른쪽 경계 초과! x: ${x} -> ${newX}`);
+      x = newX;
+    }
+    
+    // 왼쪽 경계 체크
+    if (x < padding) {
+      console.log(`왼쪽 경계 초과! x: ${x} -> ${padding}`);
+      x = padding;
+    }
+    
+    // 아래쪽 경계 체크 (푸터 고려)
+    const footerHeight = 180;
+    const maxBottomY = viewportHeight - footerHeight - padding;
+    if (y + modalHeight > maxBottomY) {
+      const newY = maxBottomY - modalHeight;
+      console.log(`아래쪽 경계 초과! y: ${y} -> ${newY}`);
+      y = Math.max(padding, newY);
+    }
+    
+    // 위쪽 경계 체크
+    if (y < padding) {
+      console.log(`위쪽 경계 초과! y: ${y} -> ${padding}`);
+      y = padding;
+    }
+    
+    // 최종 검증
+    const finalCheck = {
+      x: x >= padding && (x + modalWidth) <= (viewportWidth - padding),
+      y: y >= padding && (y + modalHeight) <= (viewportHeight - padding),
+      right: x + modalWidth,
+      bottom: y + modalHeight,
+      viewportRight: viewportWidth - padding,
+      viewportBottom: viewportHeight - padding
+    };
+    
+    console.log('최종 위치 검증:', finalCheck);
+    console.log('최종 보정된 위치:', { x, y });
+    console.log('=== Modal 위치 보정 완료 ===');
+    
+    return { x, y };
+  };
 
   // 모달 포탈 root 엘리먼트 준비
   const portalRoot =
@@ -39,37 +98,54 @@ export default function Modal({ isOpen, onClose, children, position }: ModalProp
       document.body.appendChild(el);
       return el;
     })();
+    
+  // 위치 보정
+  const adjustedPosition = position ? getAdjustedPosition(position) : undefined;
+    
   // 포탈을 사용해 모달 렌더링
   return createPortal(
     <AnimatePresence>
       {isOpen && (
         <>
           {/* 모달 래퍼 */}
-          <motion.div className="z-[1050] pointer-events-none">
+          <motion.div 
+            className="pointer-events-none"
+            style={{ zIndex: 100000 }} // 모달 버튼보다 높은 z-index
+          >
             <div
               className="
                 pointer-events-auto
                 bg-white rounded-2xl shadow-xl 
-                max-w-sm w-[600px] overflow-hidden
-                z-[1051]
+                overflow-hidden
               "
               style={
-                position
+                adjustedPosition
                   ? ({
                       position: 'fixed',
-                      top: position.y,
-                      left: position.x,
+                      top: adjustedPosition.y,
+                      left: adjustedPosition.x,
+                      width: '400px',
+                      height: '520px',
                       transform: 'translate(0, 0)',
+                      zIndex: 100001, // 래퍼보다 높은 z-index
                     } as CSSProperties)
-                  : undefined
+                  : {
+                      position: 'fixed',
+                      top: '50%',
+                      left: '50%',
+                      width: '400px',
+                      height: '520px',
+                      transform: 'translate(-50%, -50%)',
+                      zIndex: 100001,
+                    }
               }
             >
-              <div className="relative p-4">
+              <div className="relative w-full h-full">
                 {/* 닫기(X) 버튼 */}
                 <button
                   onClick={onClose}
                   aria-label="Close modal"
-                  className="absolute top-2 right-2 p-2 text-gray-400 hover:text-gray-600 focus:outline-none bg-transparent shadow-none border-none"
+                  className="absolute top-2 right-2 p-2 text-gray-400 hover:text-gray-600 focus:outline-none bg-transparent shadow-none border-none z-50"
                   style={{ boxShadow: 'none', background: 'none', outline: 'none' }}
                   tabIndex={0}
                 >

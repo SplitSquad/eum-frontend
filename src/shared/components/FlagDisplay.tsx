@@ -40,7 +40,7 @@ const FlagDisplay: React.FC<FlagDisplayProps> = ({
           ...sx 
         }}
       >
-        🌍 {showName ? '알 수 없음' : ''}
+        🌍 {showName ? '' : ''}
       </Typography>
     );
   }

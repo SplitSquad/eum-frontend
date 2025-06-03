@@ -108,7 +108,7 @@ const CommunityService = {
         last: page >= (response.totalPages || 0) - 1,
       };
     } catch (error) {
-      console.error('커뮤니티 게시글 조회 실패:', error);
+      console.error('Error fetching community posts:', error);
       // 에러 발생 시 빈 데이터 반환
       return {
         content: [],
@@ -150,7 +150,7 @@ const CommunityService = {
         last: page >= (response.totalPages || 0) - 1,
       };
     } catch (error) {
-      console.error('모임 게시글 조회 실패:', error);
+      console.error('Error fetching meeting posts:', error);
       // 에러 발생 시 빈 데이터 반환
       return {
         content: [],
@@ -230,7 +230,7 @@ const CommunityService = {
         last: page >= (response.totalPages || 0) - 1,
       };
     } catch (error) {
-      console.error('토론 게시글 조회 실패:', error);
+      console.error('Error fetching debate posts:', error);
       // 에러 발생 시 빈 데이터 반환
       return {
         content: [],
@@ -296,7 +296,7 @@ const CommunityService = {
             );
           });
         } catch (error) {
-          console.error('위치 정보 가져오기 실패:', error);
+          console.error('Error getting location info:', error);
           userAddress = '자유'; // 오류 발생 시 기본값으로 '자유' 사용
         }
       }
@@ -320,8 +320,8 @@ const CommunityService = {
 
       // 구 단위까지만 추출한 주소
       const districtAddress = addressParts.length >= 2 ? `${city} ${district}` : userAddress;
-      console.log('API 요청 주소:', userAddress);
-      console.log('구 단위 주소:', districtAddress);
+      console.log('API request address:', userAddress);
+      console.log('District address:', districtAddress);
 
       try {
         let postList = [];
@@ -331,7 +331,7 @@ const CommunityService = {
 
         // 동 단위 주소가 있으면 해당 요청
         if (!isDistrictOnly && dong) {
-          console.log('동 단위까지 포함한 주소로 요청 시도');
+          console.log('Trying with detailed address including dong/eup/myeon');
           // 백엔드에서 추천 게시글 API 호출 (동 단위)
           response = await apiClient.get<any>('/community/post/recommendation', {
             params: {
@@ -355,7 +355,7 @@ const CommunityService = {
 
         // 결과가 없거나 매우 적거나, 처음부터 구 단위 주소만 있으면 구 단위로 요청
         if (postList.length < 2 || isDistrictOnly) {
-          console.log('구 단위로 요청 시도:', districtAddress);
+          console.log('Trying with district address:', districtAddress);
 
           // 구 단위 주소로 요청
           districtResponse = await apiClient.get<any>('/community/post/recommendation', {
@@ -397,7 +397,7 @@ const CommunityService = {
           }
         }
 
-        console.log('분석 데이터:', analysisData);
+        console.log('Analysis data:', analysisData);
 
         // 게시글 목록 변환
         return postList
@@ -438,7 +438,7 @@ const CommunityService = {
             };
           });
       } catch (error) {
-        console.error('추천 게시글 조회 실패:', error);
+        console.error('Error fetching recommended posts:', error);
 
         // 에러 시 인기 게시글로 대체
         try {
@@ -451,12 +451,12 @@ const CommunityService = {
             };
           });
         } catch (err) {
-          console.error('인기 게시글 조회도 실패:', err);
+          console.error('Error fetching popular posts fallback:', err);
           return [];
         }
       }
     } catch (err) {
-      console.error('추천 게시글 최종 실패:', err);
+      console.error('Final error in recommended posts:', err);
       return [];
     }
   },
@@ -471,7 +471,7 @@ const CommunityService = {
       const response = await CommunityApi.getPostById(parseInt(postId, 10));
       return convertToWidgetPost(response);
     } catch (error) {
-      console.error('게시글 상세 조회 실패:', error);
+      console.error('Error fetching post detail:', error);
       return null;
     }
   },
@@ -488,7 +488,7 @@ const CommunityService = {
       // 필요한 개수만큼 무작위로 선택
       return CommunityService.shuffleArray(popularPosts.map(convertToWidgetPost)).slice(0, count);
     } catch (error) {
-      console.error('랜덤 커뮤니티 게시글 조회 실패:', error);
+      console.error('Error fetching random community posts:', error);
       return [];
     }
   },
@@ -516,7 +516,7 @@ const CommunityService = {
       }
       return [];
     } catch (error) {
-      console.error('랜덤 토론 게시글 조회 실패:', error);
+      console.error('Error fetching random debate posts:', error);
       return [];
     }
   },

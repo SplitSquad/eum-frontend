@@ -139,7 +139,7 @@ const hasViewedPost = (postId: number): boolean => {
   );
   
   if (DEBUG_LOG) {
-    console.log(`[ViewTracker] 게시글 ${postId} 조회 기록 확인: ${hasViewed ? '이미 조회함' : '새 조회'}`);
+    console.log(`[ViewTracker] Post ${postId} view record check: ${hasViewed ? 'Already viewed' : 'New view'}`);
   }
   return hasViewed;
 };

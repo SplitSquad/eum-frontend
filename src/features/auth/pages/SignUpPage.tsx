@@ -358,11 +358,11 @@ const SignUpPage: React.FC = () => {
         password,
       });
       setLoading(false);
-      alert('회원가입이 완료되었습니다! 로그인 페이지로 이동합니다.');
+      alert('Registration completed! Redirecting to login page.');
       navigate('/google-login');
     } catch (err: any) {
       setLoading(false);
-      setError(err.message || '회원가입 중 오류가 발생했습니다.');
+      setError(err.message || 'An error occurred during registration.');
     }
   };
 
@@ -458,18 +458,7 @@ const SignUpPage: React.FC = () => {
                 {t('signup.termsAgreement')}
               </Typography>
             </Box>
-            <Box>
-              <Typography
-                variant="subtitle2"
-                sx={{
-                  mb: 1,
-                  color: 'text.secondary',
-                  fontWeight: 500,
-                }}
-              >
-                {t('onboarding.worker.schedule.startDateLabel')}
-              </Typography>
-            </Box>
+            
           </LoginCard>
         </Fade>
       </Box>

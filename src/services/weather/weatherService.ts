@@ -292,7 +292,7 @@ const WeatherService = {
 
       throw new Error('Invalid API response format');
     } catch (error) {
-      console.error('기상청 API 호출 실패:', error);
+      console.error('Weather API request failed:', error);
       // 에러 발생 시 기본 날씨 정보 반환
       return {
         T1H: '22.3', // 기온
@@ -371,7 +371,7 @@ const WeatherService = {
 
       throw new Error('Invalid API response format');
     } catch (error) {
-      console.error('기상청 단기예보 API 호출 실패:', error);
+      console.error('Short-term forecast API request failed:', error);
       // 에러 발생 시 기본 예보 정보 반환
       const baseDate = new Date().toISOString().split('T')[0].replace(/-/g, '');
       const tomorrow = new Date();
@@ -489,7 +489,7 @@ const WeatherService = {
         forecast: forecastData,
       };
     } catch (error) {
-      console.error('날씨 정보 조회 실패:', error);
+      console.error('Error fetching weather info:', error);
       // 에러 발생 시 기본 날씨 정보 반환
       return {
         current: 'sunny',

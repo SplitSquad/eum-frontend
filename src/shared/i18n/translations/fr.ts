@@ -60,6 +60,14 @@ const fr = {
     badge4desc: 'Vous avez ajouté votre premier signet !',
     badge5name: 'Contributeur Actif',
     badge5desc: 'Vous avez complété plus de 10 activités !',
+    visitPurpose: {
+      travel: 'Voyage',
+      study: 'Étude',
+      work: 'Travail',
+      living: 'Résidence',
+      business: 'Affaires',
+      other: 'Autre',
+    },
   },
   ActivitiesPage: {
     activitylist: 'Historique des activités',
@@ -1011,7 +1019,35 @@ const fr = {
     editPost: 'Modifier le Post',
     create: 'Créer',
     edit: 'Modifier',
-    fileUpload: 'Téléchargement de Fichier',
+    fileUpload: {
+      title: 'Téléchargement de Fichier',
+      dragAndDrop: 'Glissez et déposez les fichiers ici ou cliquez pour télécharger',
+      maxSize: 'Max 10MB, fichiers image et document supportés',
+      selectedFiles: 'Fichiers Sélectionnés',
+      existingFiles: 'Fichiers Joints Existants',
+      finalConfirmTitle: '📝 Confirmation Finale',
+      finalConfirmMessage: `📝 Confirmation Finale
+
+Nouveaux fichiers sélectionnés: {{newFileCount}}
+Pièces jointes existantes: {{existingFileCount}}
+
+⚠️ La sauvegarde supprimera toutes les pièces jointes existantes et ne conservera que les nouveaux fichiers.
+
+Voulez-vous vraiment sauvegarder?`,
+      newFileWarning: '⚠️ Ajouter de nouveaux fichiers supprimera tous les fichiers existants',
+      editModeWarning: '⚠️ Attention: Ajouter de nouveaux fichiers supprimera toutes les {{count}} pièces jointes existantes.\n\nVoulez-vous vraiment continuer?\n\nSélectionnez "Annuler" pour conserver les fichiers existants.',
+      deleteConfirm: 'Êtes-vous sûr de vouloir supprimer ce fichier?',
+      deleteWarning: "⚠️ Attention: Ce fichier sera supprimé définitivement lors de l'enregistrement de la publication.",
+      imageHint: 'Les images seront affichées en aperçu',
+      editModeDragOrClick: 'Glissez des fichiers ou cliquez pour remplacer par de nouveaux fichiers',
+      dragOrClick: 'Glissez des fichiers ou cliquez pour télécharger',
+      editModeHint: 'De nouveaux fichiers seront téléchargés à la place des fichiers existants',
+      imageHint2: 'Les images seront affichées en aperçu ✨\nMax 10MB, tous les formats de fichiers pris en charge',
+      newImage: 'Nouvelles images ({{count}})',
+      newFile: 'Nouveaux fichiers ({{count}})',
+      existingImage: 'Images existantes ({{count}})',
+      existingFile: 'Fichiers existants ({{count}})',
+    },
     dragAndDropOrClickToUpload: 'Glissez et déposez les fichiers ici ou cliquez pour télécharger',
     max10MBImageAndDocumentFiles: 'Max 10MB, fichiers image et document supportés',
     selectedFiles: 'Fichiers Sélectionnés',
@@ -1324,8 +1360,6 @@ const fr = {
       "• L'ajout de nouveaux fichiers supprimera tous les fichiers existants\n• N'ajoutez pas de nouveaux fichiers pour conserver les fichiers existants\n• Téléchargez d'abord les fichiers existants si vous devez modifier les fichiers",
     newFileWarning:
       "⚠️ Tous les fichiers existants seront supprimés lors de l'ajout de nouveaux fichiers",
-    editModeFileUpload:
-      '⚠️ Ajouter de Nouveaux Fichiers (Tous les fichiers existants seront supprimés)',
     editModeFileWarning:
       'La sélection de nouveaux fichiers supprimera toutes les pièces jointes existantes\nVeuillez choisir avec précaution',
     sidebar: {
@@ -1362,6 +1396,8 @@ const fr = {
       },
       currentSearch: 'Recherche actuelle',
     },
+    region: 'Région',
+    selectMeetingRegion: 'Veuillez sélectionner la région où aura lieu la réunion',
   },
   widgets: {
     dynamicFeed: {
@@ -1525,19 +1561,19 @@ const fr = {
         button: 'Rechercher',
       },
       actions: {
-        like: "J'aime",
+        like: 'J\'aime',
         download: 'Télécharger',
         view: 'Voir',
       },
       info: {
         photographer: 'Par',
-        poweredBy: "Fourni par l'API Pexels",
+        poweredBy: 'Fourni par l\'API Pexels',
       },
       messages: {
         loading: 'Chargement des images...',
         error: 'Erreur lors du chargement des images',
         noResults: 'Aucun résultat de recherche',
-        apiKeyMissing: "Clé API Pexels non configurée. Images d'exemple affichées.",
+        apiKeyMissing: 'Clé API Pexels non configurée. Images d\'exemple affichées.',
       },
       images: {
         seoul_tower: 'Tour de Séoul',
@@ -1578,14 +1614,14 @@ const fr = {
         button: 'Rechercher',
       },
       actions: {
-        like: "J'aime",
+        like: 'J\'aime',
         play: 'Lire',
         close: 'Fermer',
       },
       info: {
         views: 'vues',
         channel: 'Chaîne',
-        poweredBy: "Fourni par l'API YouTube Data",
+        poweredBy: 'Fourni par l\'API YouTube Data',
       },
       messages: {
         loading: 'Chargement des vidéos...',
@@ -1785,7 +1821,7 @@ const fr = {
       createdAt: 'Créé',
     },
     sidebar: {
-      popularInfo: 'Informations populaires',
+      popularInfo: '🔥 Informations populaires',
       emergencyContacts: "🆘 Contacts d'urgence",
       emergency: {
         title: 'Urgence',
@@ -2079,37 +2115,6 @@ const fr = {
         },
       },
     },
-  },
-  ai: {
-    modal: {
-      askHelp: 'Comment puis-je vous aider ? (ex : créer un planning, rédiger un post, etc.)',
-      loadingAnswer: 'Réponse en cours...',
-    },
-  },
-  chatbot: {
-    askHelp: 'Comment puis-je vous aider ? (ex : créer un planning, rédiger un post, etc.)',
-    loadingAnswer: 'Réponse en cours...',
-    errorMessage: 'Une erreur est survenue lors de la réponse.',
-    downloadImg: "Télécharger l'image",
-    errorCalender: '⛔ Échec du chargement du planning.',
-    schedule: '📅 Tous les plannings',
-    noDescription: 'Pas de description',
-    startDate: 'Début :',
-    endDate: 'Fin :',
-    deleteSchedule: '🗑️ Le planning a été supprimé.',
-    errorDelete: '⛔ Impossible de charger le planning supprimé.',
-    failSchedule: '⛔ Impossible de charger les informations du planning.',
-    successSchedule: '✅ Planning ajouté avec succès.',
-    location: 'Lieu :',
-    noLocation: 'Aucun lieu',
-    failEdit: '⛔ Impossible de charger le planning modifié.',
-    successEdit: '✏️ Planning modifié avec succès.',
-    address: '📍 Adresse :',
-    phone: '📞 Téléphone :',
-    distance: '📏 Distance :',
-    openPdf: '📄 Ouvrir le PDF',
-    placeHolder: 'Saisissez votre question ou demande...',
-    send: 'Envoyer',
   },
 };
 

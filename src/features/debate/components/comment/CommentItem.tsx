@@ -288,7 +288,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
   // 신고 대화상자 핸들러
   const handleOpenReportDialog = () => {
     if (!user) {
-      alert('로그인이 필요합니다.');
+      alert('Login is required.');
       return;
     }
 
@@ -351,12 +351,12 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
       } else {
         // 실패 시 원래 내용으로 복원
         setLocalContent(displayContent);
-        alert('댓글 수정에 실패했습니다.');
+        alert('Comment edit failed.');
       }
     } catch (error) {
       console.error('댓글 수정 실패:', error);
       setLocalContent(displayContent);
-      alert('댓글 수정 중 오류가 발생했습니다.');
+      alert('An error occurred while editing comment.');
     } finally {
       setIsSubmitting(false);
     }
@@ -369,7 +369,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
       e.stopPropagation();
     }
 
-    if (!window.confirm('정말로 댓글을 삭제하시겠습니까?')) {
+    if (!window.confirm('Are you sure you want to delete this comment?')) {
       return;
     }
 
@@ -385,7 +385,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
       }
     } catch (error) {
       console.error('댓글 삭제 실패:', error);
-      alert('댓글 삭제 중 오류가 발생했습니다.');
+      alert('An error occurred while deleting comment.');
     } finally {
       setIsSubmitting(false);
     }
@@ -465,7 +465,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
       }
     } catch (error) {
       console.error('답글 작성 실패:', error);
-      alert('답글 작성 중 오류가 발생했습니다.');
+      alert('An error occurred while creating reply.');
     } finally {
       setIsSubmitting(false);
     }
@@ -496,7 +496,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
         }
         title={
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, alignItems: 'center' }}>
-            <Typography variant="subtitle2">{userName || '익명'}</Typography>
+            <Typography variant="subtitle2">{userName || 'Anonymous'}</Typography>
 
             {/* 국가/국기 표시 */}
             {nation && (
@@ -618,7 +618,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onUpdate, debateId }
                 }}
                 disabled={isSubmitting}
               >
-                {isSubmitting ? '저장 중...' : '저장'}
+                {isSubmitting ? 'Saving...' : 'Save'}
               </Button>
             </Box>
           </Box>

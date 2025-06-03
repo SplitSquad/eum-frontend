@@ -128,7 +128,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
   const handleReaction = async (type: ReactionType) => {
     try {
       if (!currentUser) {
-        alert('좋아요/싫어요를 남기려면 로그인이 필요합니다.');
+        alert('Login is required to leave likes/dislikes.');
         return;
       }
 
@@ -144,7 +144,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
   const handleDelete = async () => {
     try {
       if (!isCommentAuthor) {
-        alert('자신이 작성한 댓글만 삭제할 수 있습니다.');
+        alert('Only the author can delete their own comments.');
         return;
       }
 
@@ -215,12 +215,12 @@ const CommentItem: React.FC<CommentItemProps> = ({
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Avatar
               src={comment.writer?.profileImage}
-              alt={comment.writer?.nickname || '사용자'}
+              alt={comment.writer?.nickname || 'User'}
               sx={{ width: 32, height: 32, mr: 1 }}
             />
             <Box>
               <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#555' }}>
-                {comment.writer?.nickname || '사용자'}
+                {comment.writer?.nickname || 'User'}
               </Typography>
               <Typography variant="caption" sx={{ color: '#888' }}>
                 {formattedDate} {isReply && <span style={{ color: '#FFAAA5' }}>(답글)</span>}

@@ -82,7 +82,7 @@ export default function InfoCreatePage() {
       try {
         const stored = localStorage.getItem('auth-storage');
         if (!stored) {
-          alert('로그인이 필요합니다.');
+          alert('Login is required.');
           navigate('/info');
           return;
         }
@@ -91,13 +91,13 @@ export default function InfoCreatePage() {
         const role = parsed?.state?.user?.role;
 
         if (role !== 'ROLE_ADMIN') {
-          alert('관리자만 접근할 수 있습니다.');
+          alert('Only administrators can access this page.');
           navigate('/info');
           return;
         }
       } catch (error) {
-        console.error('권한 확인 중 오류:', error);
-        alert('권한 확인에 실패했습니다.');
+        console.error('Permission verification error:', error);
+        alert('Permission verification failed.');
         navigate('/info');
       }
     };
@@ -239,13 +239,13 @@ export default function InfoCreatePage() {
         },
         body: JSON.stringify(body),
       });
-      if (!res.ok) throw new Error(`${method} 실패: ${res.status}`);
+      if (!res.ok) throw new Error(`${method} failed: ${res.status}`);
 
       // 등록 후 목록, 수정 후 상세로 이동
       isEdit ? navigate(`/info/${id}`) : navigate('/info');
     } catch (err) {
       console.error(isEdit ? '게시글 수정 실패:' : '게시글 등록 실패:', err);
-      alert(isEdit ? '수정에 실패했습니다.' : '등록에 실패했습니다.');
+      alert(isEdit ? 'Update failed.' : 'Registration failed.');
     }
   };
 

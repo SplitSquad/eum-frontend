@@ -110,13 +110,13 @@ const LoginPage: React.FC = () => {
       navigate('/dashboard');
     } catch (err) {
       setError(t('auth.loginError'));
-      console.error('로그인 처리 실패:', err);
+      console.error('Login processing failed:', err);
     }
   };
 
   const handleLoginError = (error: any) => {
     setError(t('auth.googleLoginError'));
-    console.error('구글 로그인 오류:', error);
+    console.error('Google login error:', error);
   };
 
   return (

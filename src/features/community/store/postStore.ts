@@ -170,7 +170,7 @@ const setupLanguageChangeListener = () => {
     // 언어가 변경되었을 때만 실행
     if (currentLanguage !== previousLanguage) {
       console.log(
-        `[INFO] 언어가 변경됨: ${previousLanguage} → ${currentLanguage}, 게시글 데이터 새로고침`
+        `[INFO] language changed: ${previousLanguage} → ${currentLanguage}, refreshing post data`
       );
       previousLanguage = currentLanguage;
 
@@ -194,7 +194,7 @@ const setupLanguageChangeListener = () => {
       // 백그라운드에서 새로운 데이터 가져오기 (기존 데이터는 유지)
       setTimeout(async () => {
         try {
-          console.log(`[INFO] 언어 변경 - 현재 게시글 ${currentPosts.length}개 유지하며 백그라운드 새로고침`);
+          console.log(`[INFO] language changed - current post ${currentPosts.length} posts retained in background refresh`);
           
           // 검색 상태 확인
           const isSearchActive = postState.searchActive;
@@ -202,7 +202,7 @@ const setupLanguageChangeListener = () => {
           const searchType = postState.searchType;
           
           if (isSearchActive && searchTerm) {
-            console.log(`[INFO] 언어 변경 - 검색 상태 유지: "${searchTerm}" (${searchType})`);
+            console.log(`[INFO] language changed - search state retained: "${searchTerm}" (${searchType})`);
             
             // 검색 상태인 경우 검색 API로 새로고침
             await usePostStore.getState().searchPosts(searchTerm, searchType, {
@@ -223,12 +223,12 @@ const setupLanguageChangeListener = () => {
           const currentPost = postState.currentPost;
           if (currentPost) {
             console.log(
-              `[INFO] 언어 변경으로 현재 게시글(ID: ${currentPost.postId}) 상세 정보 새로고침`
+              `[INFO] language changed, refreshing current post(ID: ${currentPost.postId}) details`
             );
             await usePostStore.getState().fetchPostById(currentPost.postId);
           }
         } catch (error) {
-          console.error('[ERROR] 언어 변경 시 데이터 새로고침 실패:', error);
+          console.error('[ERROR] language change failed to refresh data:', error);
           // 에러 발생 시에도 기존 데이터 유지
           usePostStore.setState({ 
             posts: currentPosts,
@@ -308,7 +308,7 @@ export const usePostStore = create<PostState & PostActions>()(
         let normalizedFilter: any = null; // 함수 시작 시 선언
         
         try {
-          console.log('[DEBUG] fetchPosts 시작 - 필터:', filter);
+          console.log('[DEBUG] fetchPosts starting - filter:', filter);
 
           // 현재 요청 ID 생성 - 중복 요청 추적용
           const currentRequestId = ++lastRequestId;
@@ -318,7 +318,7 @@ export const usePostStore = create<PostState & PostActions>()(
 
           // resetSearch가 명시적으로 true인 경우에만 검색 상태 초기화
           if (filter?.resetSearch === true) {
-            console.log('[DEBUG] resetSearch가 true, 검색 상태 초기화');
+            console.log('[DEBUG] resetSearch is true, resetting search state');
             const postType = filter.postType || currentState.postFilter.postType || '자유';
             set(state => ({
               searchStates: {
@@ -340,7 +340,7 @@ export const usePostStore = create<PostState & PostActions>()(
             const postType = filter?.postType || currentState.postFilter.postType || '자유';
             const searchState = currentState.searchStates[postType];
             
-            console.log('[DEBUG] fetchPosts - 검색 상태 확인:', {
+            console.log('[DEBUG] fetchPosts - search state check:', {
               postType,
               searchState,
               레거시검색상태: {
@@ -352,7 +352,7 @@ export const usePostStore = create<PostState & PostActions>()(
             
             if (searchState?.active && searchState?.term) {
               console.log(
-                '[DEBUG] 검색 상태에서 페이지 이동:',
+                '[DEBUG] search state moving page:',
                 postType,
                 searchState.term,
                 searchState.type
@@ -373,7 +373,7 @@ export const usePostStore = create<PostState & PostActions>()(
           // 필터 병합 전에 언어 변경 확인
           const isLanguageRefresh = filter && filter._forceRefresh;
           if (isLanguageRefresh) {
-            console.log('[DEBUG] 언어 변경으로 인한 강제 새로고침, 캐시 무시');
+            console.log('[DEBUG] language change forced refresh, ignoring cache');
             lastFetchTimestamp = 0; // 캐시 무효화
             pageCache = {}; // 페이지 캐시도 초기화
 
@@ -404,7 +404,7 @@ export const usePostStore = create<PostState & PostActions>()(
           };
 
           // 더 자세한 필터 로깅 추가
-          console.log('[DEBUG] 병합된 필터 상세:', {
+          console.log('[DEBUG] merged filter details:', {
             ...mergedFilter,
             category: mergedFilter.category || '전체',
             postType: mergedFilter.postType || '전체',
@@ -488,7 +488,7 @@ export const usePostStore = create<PostState & PostActions>()(
             const originalCategory = categoryTranslationMap[normalizedFilter.category] || normalizedFilter.category;
             
             if (originalCategory !== normalizedFilter.category) {
-              console.log('[DEBUG] 카테고리 번역 변환:', {
+              console.log('[DEBUG] category translation:', {
                 번역된값: normalizedFilter.category,
                 원본값: originalCategory
               });
@@ -504,7 +504,7 @@ export const usePostStore = create<PostState & PostActions>()(
           const tagForCache = normalizedFilter.tag || 'notag';
           const cacheKey = `${normalizedFilter.page}_${normalizedFilter.category || '전체'}_${normalizedFilter.sortBy || 'latest'}_${normalizedFilter.location || '전체'}_${postTypeForCache}_${tagForCache}`;
 
-          console.log(`[DEBUG] 생성된 캐시 키: ${cacheKey}`);
+          console.log(`[DEBUG] generated cache key: ${cacheKey}`);
 
           const now = Date.now();
           const CACHE_TTL = 5000; // 5초로 단축 (디버깅 편의를 위해)
@@ -515,7 +515,7 @@ export const usePostStore = create<PostState & PostActions>()(
             activeRequest &&
             areFiltersEqual(lastFetchedFilter, normalizedFilter)
           ) {
-            console.log('[DEBUG] 이미 동일한 요청이 진행 중입니다. 중복 요청 방지.');
+            console.log('[DEBUG] already in progress, preventing duplicate request');
             return await activeRequest;
           }
 

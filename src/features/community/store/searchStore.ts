@@ -78,7 +78,7 @@ export const useSearchStore = create<SearchState & SearchActions>()(
             error: (error as Error).message,
             results: [],
           });
-          console.error('게시글 검색 오류:', error);
+          console.error('Post search error:', error);
         }
       },
 

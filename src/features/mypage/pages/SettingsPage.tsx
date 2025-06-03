@@ -334,7 +334,7 @@ const SettingsPage: React.FC = () => {
               disabled={withdrawLoading || confirmText !== t('settings.delete1')}
               isLoading={withdrawLoading}
             >
-              {withdrawLoading ? '처리 중...' : t('settings.delete1')}
+              {withdrawLoading ? 'Processing...' : t('settings.delete1')}
             </DangerButton>
           </DialogActions>
         </StyledDialog>

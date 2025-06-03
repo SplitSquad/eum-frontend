@@ -131,9 +131,7 @@ const ProBoardListPage: React.FC = () => {
     posts,
     postLoading,
     postError,
-    selectedCategory,
     postPageInfo,
-    setSelectedCategory,
     fetchPosts,
     setPostFilter,
     searchPosts,
@@ -141,6 +139,9 @@ const ProBoardListPage: React.FC = () => {
     topPosts,
     resetPostsState,
   } = useCommunityStore();
+
+  // 🔥 자유게시판 페이지별 독립적인 selectedCategory 상태 관리
+  const [selectedCategory, setSelectedCategory] = useState<string>('전체');
 
   // 🔥 컴포넌트 마운트 즉시 이전 페이지 데이터 초기화 (헤더 네비게이션 대응)
   React.useLayoutEffect(() => {
@@ -151,6 +152,12 @@ const ProBoardListPage: React.FC = () => {
       resetPostsState();
       usePostStore.setState({ postLoading: true, posts: [] });
     }
+    
+    // 🔥 자유게시판 진입 시 상태 즉시 초기화 (다른 페이지에서 오는 경우 대응)
+    console.log('ProBoardListPage - Already initializing or data loaded, preventing duplicate request');
+    setSelectedCategory('전체');
+    setSelectedTags([]);
+    setAvailableTags([]);
   }, [resetPostsState]);
 
   // 상태 관리
@@ -238,7 +245,7 @@ const ProBoardListPage: React.FC = () => {
     };
 
     setCategoryTags(newCategoryTags);
-    console.log('[DEBUG] ProBoard 언어 변경으로 카테고리 태그 업데이트:', newCategoryTags);
+    console.log('ProBoard 언어 변경으로 카테고리 태그 업데이트:', newCategoryTags);
   }, [language]); // language 변경 시에만 재생성
 
   // 언어 변경 시 카테고리 태그 업데이트
@@ -254,7 +261,7 @@ const ProBoardListPage: React.FC = () => {
     if (selectedCategory && selectedCategory !== '전체') {
       const newAvailableTags = categoryTags[selectedCategory as keyof typeof categoryTags] || [];
       setAvailableTags(newAvailableTags);
-      console.log('[DEBUG] ProBoard 카테고리/언어 변경으로 태그 목록 업데이트:', {
+      console.log('ProBoard 카테고리/언어 변경으로 태그 목록 업데이트:', {
         카테고리: selectedCategory,
         새태그목록: newAvailableTags,
       });
@@ -322,16 +329,16 @@ const ProBoardListPage: React.FC = () => {
   useEffect(() => {
     // 이미 초기화 중이거나 데이터를 로드했으면 중복 요청 방지
     if (isInitializingRef.current || initialDataLoadedRef.current) {
-      console.log('ProBoardListPage - 이미 초기화 중이거나 데이터가 로드됨, 중복 요청 방지');
+      console.log('ProBoardListPage - Already initializing or data loaded, preventing duplicate request');
       return;
     }
 
     // 초기화 시작
     isInitializingRef.current = true;
-    console.log('ProBoardListPage 컴포넌트 마운트, 게시글 목록 조회 시작');
+    console.log('ProBoardListPage component mounted, starting post list fetch');
 
     // 🔥 페이지 진입 시 태그 상태 무조건 초기화
-    console.log('[DEBUG] 자유게시판 진입 - 태그 상태 초기화');
+    console.log('ProBoardListPage entering free board - initializing tag state');
     setSelectedTags([]);
 
     // localStorage에서 저장된 검색 상태 복구
@@ -353,7 +360,7 @@ const ProBoardListPage: React.FC = () => {
               : t('community.searchType.titleContent');
             setSearchType(restoredSearchType);
             setIsSearchMode(true);
-            console.log('[DEBUG] 자유게시판 검색 상태 복구:', {
+            console.log('ProBoard 자유게시판 검색 상태 복구:', {
               ...saved,
               searchType: restoredSearchType,
             });
@@ -372,14 +379,15 @@ const ProBoardListPage: React.FC = () => {
             saved.isSearchMode &&
             saved.selectedTags &&
             Array.isArray(saved.selectedTags) &&
-            saved.selectedTags.length > 0
+            saved.selectedTags.length > 0 &&
+            saved.category && saved.category !== '전체' && saved.category !== t('community.filters.all')
           ) {
-            console.log('[DEBUG] 자유게시판 검색 모드 - 태그 상태 복구:', saved.selectedTags);
+            console.log('ProBoard 자유게시판 검색 모드 - 태그 상태 복구:', saved.selectedTags);
             // 카테고리가 유효한 경우에만 태그 상태 복구
             setSelectedTags(saved.selectedTags);
           } else {
             // 조건을 만족하지 않으면 태그 상태 명시적 초기화
-            console.log('[DEBUG] 자유게시판 - 태그 상태 복구 조건 불만족, 명시적 초기화');
+            console.log('ProBoard 자유게시판 - 태그 상태 복구 조건 불만족, 명시적 초기화');
             setSelectedTags([]);
           }
         } else {
@@ -387,7 +395,7 @@ const ProBoardListPage: React.FC = () => {
           localStorage.removeItem('proBoardSearch');
         }
       } catch (error) {
-        console.error('[ERROR] 검색 상태 복구 실패:', error);
+        console.error('Error during search:', error);
         localStorage.removeItem('proBoardSearch');
       }
     }
@@ -398,7 +406,7 @@ const ProBoardListPage: React.FC = () => {
       setSearchTerm(storeSearchState.term);
       setSearchType(storeSearchState.type || t('community.searchType.titleContent'));
       setIsSearchMode(true);
-      console.log('[DEBUG] postStore에서 자유게시판 검색 상태 복구:', storeSearchState);
+      console.log('postStore에서 자유게시판 검색 상태 복구:', storeSearchState);
     } else {
       // 자유게시판이 아닌 다른 postType의 검색 상태가 활성화되어 있다면 초기화
       const otherPostTypes = Object.keys(usePostStore.getState().searchStates).filter(
@@ -409,7 +417,7 @@ const ProBoardListPage: React.FC = () => {
       );
 
       if (hasOtherActiveSearch) {
-        console.log('[DEBUG] 다른 postType의 검색 상태 감지, 자유게시판 검색 상태 초기화');
+        console.log('ProBoard 다른 postType의 검색 상태 감지, 자유게시판 검색 상태 초기화');
         // 자유게시판 검색 상태만 초기화
         const postStore = usePostStore.getState();
         postStore.searchStates['자유'] = {
@@ -459,11 +467,11 @@ const ProBoardListPage: React.FC = () => {
       return;
     }
 
-    console.log('[DEBUG] 언어 변경 감지됨:', language);
+    console.log('ProBoard language change detected:', language);
 
     // 검색 상태인 경우 검색 상태를 유지하면서 새로고침
     if (isSearchMode && searchTerm) {
-      console.log('[DEBUG] 검색 상태에서 언어 변경 - 검색 상태 유지');
+      console.log('ProBoard maintaining search state during language change');
 
       // 약간의 지연 후 검색 재실행 (번역이 완료된 후)
       setTimeout(() => {
@@ -475,7 +483,7 @@ const ProBoardListPage: React.FC = () => {
   // 컴포넌트 언마운트 시 정리 작업 (뒤로가기 무한 로딩 방지)
   useEffect(() => {
     return () => {
-      console.log('[DEBUG] ProBoardListPage 언마운트 - 로딩 상태 정리');
+      console.log('ProBoardListPage unmounting - clearing loading state');
       // 언마운트 시 로딩 상태만 false로 설정 (데이터는 유지)
       const postStore = usePostStore.getState();
       if (postStore.postLoading) {
@@ -561,7 +569,7 @@ const ProBoardListPage: React.FC = () => {
 
     if (isSearchMode && searchTerm) {
       // 검색 중이면 필터와 함께 검색 재실행
-      console.log('[DEBUG] 검색 상태에서 필터 변경 - 세부 정보:', {
+      console.log('ProBoard 검색 상태에서 필터 변경 - 세부 정보:', {
         현재필터: filter,
         새필터: newFilter,
         병합필터: updatedFilter,
@@ -599,7 +607,7 @@ const ProBoardListPage: React.FC = () => {
         sort: updatedFilter.sortBy === 'popular' ? 'views,desc' : 'createdAt,desc',
       };
 
-      console.log('[DEBUG] 검색 API 파라미터:', searchOptions);
+      console.log('ProBoard 검색 API 파라미터:', searchOptions);
 
       // 이번에는 서버에 직접 API 요청 (postApi 직접 사용)
       try {
@@ -607,7 +615,7 @@ const ProBoardListPage: React.FC = () => {
 
         postApi.searchPosts(searchTerm, searchType, searchOptions);
       } catch (error) {
-        console.error('검색 중 오류 발생:', error);
+        console.error('Error during search:', error);
       }
     } else {
       // 검색 중이 아니면 일반 필터 적용
@@ -635,10 +643,9 @@ const ProBoardListPage: React.FC = () => {
     setSelectedTags([]);
 
     // 카테고리에 맞는 태그 목록 즉시 설정
-    const newAvailableTags =
-      category && category !== t('community.filters.all')
-        ? categoryTags[category as keyof typeof categoryTags] || []
-        : [];
+    const newAvailableTags = category && category !== t('community.filters.all') 
+      ? categoryTags[category as keyof typeof categoryTags] || []
+      : [];
     setAvailableTags(newAvailableTags);
     console.log('[DEBUG] 새 카테고리의 사용 가능한 태그:', newAvailableTags);
 
@@ -850,11 +857,16 @@ const ProBoardListPage: React.FC = () => {
   const handleNavigateToGroups = () => {
     // 1. 즉시 posts 데이터 초기화 및 로딩 상태 설정
     resetPostsState();
-
+    
     // 2. postStore에서도 로딩 상태 즉시 설정
     usePostStore.setState({ postLoading: true, posts: [] });
-
-    // 3. 약간의 지연 후 네비게이션 (초기화가 UI에 반영될 시간)
+    
+    // 3. 모든 상태 즉시 초기화
+    setSelectedCategory('전체');
+    setSelectedTags([]);
+    setAvailableTags([]);
+    
+    // 4. 약간의 지연 후 네비게이션 (초기화가 UI에 반영될 시간)
     setTimeout(() => {
       navigate('/community/groups');
     }, 50);
@@ -894,77 +906,6 @@ const ProBoardListPage: React.FC = () => {
         </div>
       </div>
 
-      {/* 커뮤니티 타입 전환 버튼 - Pro 테마용 
-      <div
-        style={{
-          borderBottom: '1.5px solid #e5e7eb',
-          paddingBottom: '24px',
-        }}
-      >
-        <div
-          style={{
-            maxWidth: 1120,
-            margin: '0 auto',
-            display: 'flex',
-            justifyContent: 'center',
-            paddingTop: '12px',
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              border: '1.5px solid #222',
-              borderRadius: '50px',
-              overflow: 'hidden',
-              backgroundColor: '#fff',
-            }}
-          >
-            <button
-              onClick={() => navigate('/community/groups')}
-              style={{
-                ...proButton,
-                margin: 0,
-                padding: '12px 32px',
-                borderRadius: 0,
-                border: 'none',
-                backgroundColor: 'transparent',
-                fontSize: '1.1rem',
-                fontWeight: 700,
-                color: '#666',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.backgroundColor = 'rgba(34, 34, 34, 0.1)';
-                e.currentTarget.style.color = '#222';
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.color = '#666';
-              }}
-            >
-              {t('common.smallGroups')}
-            </button>
-            <button
-              style={{
-                ...proButton,
-                margin: 0,
-                padding: '12px 32px',
-                borderRadius: 0,
-                border: 'none',
-                backgroundColor: '#222',
-                fontSize: '1.1rem',
-                fontWeight: 700,
-                color: '#fff',
-                cursor: 'default',
-              }}
-            >
-              {t('common.communicationBoard')}
-            </button>
-          </div>
-        </div>
-      </div>*/}
-
       {/* 메인 레이아웃 (ProInfoList와 동일) */}
       <div
         style={{
@@ -984,7 +925,7 @@ const ProBoardListPage: React.FC = () => {
         >
           {/* 메인 컨텐츠 */}
           <div style={{ flex: 1, paddingRight: 32 }}>
-            {/* 카테고리/아이콘 영역과 커뮤니티 타입 전환 버튼 통합 */}
+            {/* 카테고리/아이콘 영역 */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
               {/* 왼쪽: 카테고리 아이콘과 텍스트 */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -1007,61 +948,6 @@ const ProBoardListPage: React.FC = () => {
                     : t(`community.categories.${selectedCategory}`) || selectedCategory}
                 </h2>
               </div>
-
-              {/* 중앙: 커뮤니티 타입 전환 버튼 - 더 예쁘게 
-              <div
-                style={{
-                  display: 'flex',
-                  border: '1.5px solid #222',
-                  borderRadius: '25px',
-                  overflow: 'hidden',
-                  backgroundColor: '#fff',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                }}
-              >
-                <button
-                  onClick={handleNavigateToGroups}
-                  style={{
-                    ...proButton,
-                    margin: 0,
-                    padding: '12px 24px',
-                    borderRadius: 0,
-                    border: 'none',
-                    backgroundColor: 'transparent',
-                    fontSize: '1rem',
-                    fontWeight: 700,
-                    color: '#666',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                  }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.backgroundColor = 'rgba(34, 34, 34, 0.1)';
-                    e.currentTarget.style.color = '#222';
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                    e.currentTarget.style.color = '#666';
-                  }}
-                >
-                  {t('common.smallGroups')}
-                </button>
-                <button
-                  style={{
-                    ...proButton,
-                    margin: 0,
-                    padding: '12px 24px',
-                    borderRadius: 0,
-                    border: 'none',
-                    backgroundColor: '#222',
-                    fontSize: '1rem',
-                    fontWeight: 700,
-                    color: '#fff',
-                    cursor: 'default',
-                  }}
-                >
-                  {t('common.communicationBoard')}
-                </button>
-              </div>*/}
 
               {/* 오른쪽: 총 게시글과 글쓰기 버튼, 정렬 드롭다운 */}
               <div
@@ -1508,7 +1394,7 @@ const ProBoardListPage: React.FC = () => {
                         {t('community.filters.tags')}
                       </Typography>
                       <Box
-                        key={`tags-${selectedCategory}-${selectedTags.length}`}
+                        key={`proBoardTags-${selectedCategory}-${selectedTags.length}-${Date.now() % 1000}`}
                         sx={{
                           display: 'flex',
                           flexWrap: 'wrap',
@@ -1518,7 +1404,7 @@ const ProBoardListPage: React.FC = () => {
                       >
                         {availableTags.map(tag => (
                           <Chip
-                            key={`${tag}-${selectedTags.includes(tag)}`}
+                            key={`proBoardTag-${tag}-${selectedTags.includes(tag) ? 'selected' : 'unselected'}`}
                             label={tag}
                             onClick={() => handleTagSelect(tag)}
                             color={selectedTags.includes(tag) ? 'primary' : 'default'}

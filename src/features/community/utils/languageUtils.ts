@@ -238,7 +238,7 @@ export const detectLanguage = async (text: string): Promise<string> => {
     } catch (cld3Error) {
       console.warn('[언어감지] CLD3 오류, fallback 사용:', {
         error: cld3Error,
-        errorMessage: cld3Error instanceof Error ? cld3Error.message : '알 수 없는 오류'
+        errorMessage: cld3Error instanceof Error ? cld3Error.message : 'Unknown error'
       });
       return fallbackLanguageDetection(text);
     }
@@ -445,12 +445,12 @@ export const analyzeLanguageComposition = (text: string): Record<string, number>
  */
 export const testLanguageDetection = (text: string): void => {
   console.log('\n=== 언어 감지 테스트 ===');
-  console.log('테스트 텍스트:', text);
+  console.log('Test text:', text);
   console.log('---');
   
   const result = fallbackLanguageDetection(text);
   
-  console.log('최종 결과:', result);
+  console.log('Final result:', result);
   console.log('===================\n');
 };
 

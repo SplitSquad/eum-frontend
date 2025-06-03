@@ -25,7 +25,7 @@ export async function requireAuth({ request }: LoaderFunctionArgs) {
     tries++;
   }
   if (user === undefined || isAuthenticated === undefined || isLoading) {
-    console.log('requireAuth: 인증 상태가 확정되지 않았습니다 에서 걸린 로딩 .');
+    console.log('requireAuth: Authentication status not confirmed yet, showing loading.');
     return <Loading />;
   }
   if (!isAuthenticated) {
@@ -69,7 +69,7 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
 
         if (!validToken) {
           // 유효한 토큰이 없으면 인증 상태 정리하고 리다이렉트
-          console.log('AuthGuard: 유효한 토큰이 없습니다. 인증 상태를 정리합니다.');
+          console.log('AuthGuard: No valid token found. Clearing auth state.');
           clearAuthState();
           setShouldRedirect(true);
           return;
@@ -77,11 +77,11 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
 
         // 인증 상태가 불확실한 경우 백엔드에서 사용자 정보 로드
         if (!isAuthenticated && !isLoading) {
-          console.log('AuthGuard: 사용자 정보를 로드합니다.');
+          console.log('AuthGuard: Loading user information.');
           await loadUser();
         }
       } catch (error) {
-        console.error('AuthGuard: 인증 상태 확인 실패:', error);
+        console.error('AuthGuard: Error checking auth status:', error);
         // 에러 발생 시 인증 상태 정리
         clearAuthState();
         setShouldRedirect(true);
@@ -94,13 +94,13 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
 
   if (isLoading || isChecking || user === undefined || isAuthenticated === undefined) {
     // 인증 확인 중에는 로딩 상태 표시
-    console.log('AuthGuard: 인증 확인 중에는 로딩 상태 표시');
+    console.log('AuthGuard: Showing loading state while checking authentication');
     return <Loading />;
   }
 
   if (shouldRedirect || !isAuthenticated) {
     // 비로그인 상태거나 리다이렉트가 필요한 경우 로그인 페이지로 이동
-    console.log('AuthGuard: 로그인 페이지로 리다이렉트합니다.');
+    console.log('AuthGuard: Redirecting to login page.');
     return <Navigate to="/google-login" state={{ from: location }} replace />;
   }
 
@@ -128,7 +128,7 @@ export const GuestGuard = ({ children }: GuestGuardProps) => {
 
       if (!validToken && isAuthenticated) {
         // 토큰이 유효하지 않은데 인증 상태가 true라면 상태 정리
-        console.log('GuestGuard: 토큰이 유효하지 않아 인증 상태를 정리합니다.');
+        console.log('GuestGuard: Token invalid, clearing auth state.');
         clearAuthState();
       }
 
@@ -146,7 +146,7 @@ export const GuestGuard = ({ children }: GuestGuardProps) => {
   const validToken = getValidToken();
   if (validToken && isAuthenticated) {
     const from = (location.state as any)?.from?.pathname || '/dashboard';
-    console.log('GuestGuard: 이미 로그인된 사용자입니다. 홈으로 리다이렉트합니다.');
+    console.log('GuestGuard: User already logged in. Redirecting to home.');
     return <Navigate to={from} replace />;
   }
 

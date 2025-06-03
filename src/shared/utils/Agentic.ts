@@ -26,7 +26,7 @@ export async function callAgentic(
   // localStorage에서 토큰 읽기
   const token = localStorage.getItem('auth_token');
   if (!token) {
-    throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
+    throw new Error('Authentication token is required. Please login again.');
   }
 
   const state = getAgenticState(); // 현재 상태 가져오기

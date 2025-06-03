@@ -299,7 +299,7 @@ const PurposeSelection: React.FC = () => {
   React.useEffect(() => {
     const params = new URLSearchParams(location.search);
     if (params.has('from')) {
-      enqueueSnackbar('상세 정보 입력을 완료해주세요', { variant: 'info', autoHideDuration: 1500 });
+      enqueueSnackbar('Please complete detailed information entry', { variant: 'info', autoHideDuration: 1500 });
     }
   }, [location.search, enqueueSnackbar]);
 

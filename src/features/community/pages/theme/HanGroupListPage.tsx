@@ -214,11 +214,11 @@ const HanGroupListPage: React.FC = () => {
   useEffect(() => {
     // 이미 데이터를 로드했으면 중복 요청 방지
     if (initialDataLoadedRef.current) {
-      console.log('PostListPage - 이미 초기 데이터가 로드됨, 중복 요청 방지');
+      console.log('PostListPage - Already loaded initial data, preventing duplicate request');
       return;
     }
 
-    console.log('PostListPage 컴포넌트 마운트, 게시글 목록 조회 시작');
+    console.log('PostListPage component mounted, starting post list fetch');
 
     // 현재 카테고리에 맞는 태그 목록 설정
     if (filter.category && filter.category !== t('community.filters.all')) {
@@ -368,11 +368,11 @@ const HanGroupListPage: React.FC = () => {
 
   // 카테고리 변경 핸들러
   const handleCategoryChange = (category: string) => {
-    console.log('카테고리 변경:', category);
+    console.log('Category changed:', category);
 
     // 이전 카테고리와 같으면 변경 없음
     if (category === selectedCategory) {
-      console.log('같은 카테고리 선택, 변경 없음');
+      console.log('Same category selected, no change');
       return;
     }
 
@@ -398,7 +398,7 @@ const HanGroupListPage: React.FC = () => {
 
   // 태그 선택 핸들러
   const handleTagSelect = (tag: string) => {
-    console.log('태그 선택:', tag);
+    console.log('Tag selected:', tag);
 
     let newSelectedTags: string[];
     let originalTagNames: string[];
@@ -441,11 +441,11 @@ const HanGroupListPage: React.FC = () => {
   // 검색 실행 핸들러
   const handleSearch = () => {
     if (!searchTerm.trim()) {
-      console.log('검색어가 비어있음');
+      console.log('Search term is empty');
       return;
     }
 
-    console.log('검색 실행:', searchTerm, searchType);
+    console.log('Search execution:', searchTerm, searchType);
 
     // 번역된 검색 타입을 한국어로 변환
     let convertedSearchType = searchType;
@@ -478,11 +478,11 @@ const HanGroupListPage: React.FC = () => {
   // 작성자 검색 핸들러
   const handleAuthorSearch = () => {
     if (!searchTerm.trim()) {
-      console.log('검색어가 비어있음');
+      console.log('Search term is empty');
       return;
     }
 
-    console.log('작성자 검색 실행:', searchTerm);
+    console.log('Author search execution:', searchTerm);
 
     // 검색 타입을 작성자로 변경하고 검색 실행
     setSearchType(t('community.searchType.author'));
@@ -504,7 +504,7 @@ const HanGroupListPage: React.FC = () => {
 
   // 게시글 작성 페이지로 이동
   const handleCreatePost = () => {
-    console.log('글 작성 버튼 클릭됨');
+    console.log('Write post button clicked');
     navigate('/community/create');
   };
 
@@ -520,7 +520,7 @@ const HanGroupListPage: React.FC = () => {
 
   // 정렬 방식 변경 핸들러
   const handleSortChange = (sortBy: 'latest' | 'popular') => {
-    console.log('정렬 방식 변경:', sortBy);
+    console.log('Sort method changed:', sortBy);
 
     // 검색 상태 고려하여 필터 적용
     applyFilterWithSearchState({ sortBy, page: 0 });

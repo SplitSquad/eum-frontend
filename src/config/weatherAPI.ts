@@ -37,7 +37,7 @@ export const getShortTermForecast = async (params: {
 }): Promise<any> => {
   try {
     if (!WEATHER_API_KEY) {
-      throw new Error('기상청 API 키가 설정되지 않았습니다.');
+      throw new Error('Weather API key is not configured.');
     }
 
     const response = await weatherAxios.get('/getVilageFcst', {
@@ -56,7 +56,7 @@ export const getShortTermForecast = async (params: {
       return response.data.response.body.items.item;
     } else {
       const errorMsg = response.data?.response?.header?.resultMsg || '알 수 없는 오류';
-      throw new Error(`단기 예보 조회 실패: ${errorMsg}`);
+      throw new Error(`Short-term weather forecast failed: ${errorMsg}`);
     }
   } catch (error) {
     console.error('단기 예보 조회 실패:', error);
@@ -77,7 +77,7 @@ export const getMidTermForecast = async (params: {
 }): Promise<any> => {
   try {
     if (!WEATHER_API_KEY) {
-      throw new Error('기상청 API 키가 설정되지 않았습니다.');
+      throw new Error('Weather API key is not configured.');
     }
 
     const response = await weatherAxios.get('/getMidLandFcst', {
@@ -94,7 +94,7 @@ export const getMidTermForecast = async (params: {
       return response.data.response.body.items.item;
     } else {
       const errorMsg = response.data?.response?.header?.resultMsg || '알 수 없는 오류';
-      throw new Error(`중기 예보 조회 실패: ${errorMsg}`);
+      throw new Error(`Mid-term weather forecast failed: ${errorMsg}`);
     }
   } catch (error) {
     console.error('중기 예보 조회 실패:', error);
@@ -117,7 +117,7 @@ export const getUltraShortNowcast = async (params: {
 }): Promise<any> => {
   try {
     if (!WEATHER_API_KEY) {
-      throw new Error('기상청 API 키가 설정되지 않았습니다.');
+      throw new Error('Weather API key is not configured.');
     }
 
     const response = await weatherAxios.get('/getUltraSrtNcst', {
@@ -136,7 +136,7 @@ export const getUltraShortNowcast = async (params: {
       return response.data.response.body.items.item;
     } else {
       const errorMsg = response.data?.response?.header?.resultMsg || '알 수 없는 오류';
-      throw new Error(`초단기 실황 조회 실패: ${errorMsg}`);
+      throw new Error(`Ultra short-term weather data failed: ${errorMsg}`);
     }
   } catch (error) {
     console.error('초단기 실황 조회 실패:', error);
