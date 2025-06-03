@@ -297,6 +297,7 @@ type ActivityItem = {
  * 사용자의 게시물, 댓글, 좋아요, 북마크 등의 활동을 표시합니다.
  */
 const ActivitiesPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuthStore();
   const userId = user?.userId ? Number(user.userId) : 0;
@@ -567,7 +568,6 @@ const ActivitiesPage: React.FC = () => {
     let activities: ActivityItem[] = [];
     let totalPages = 1;
     let totalElements = 0;
-    const { t } = useTranslation();
 
     if (activeTab === 'posts' && posts?.content) {
       activities = posts.content.map(post => ({
@@ -676,7 +676,28 @@ const ActivitiesPage: React.FC = () => {
 
       activities = sortedActivities.slice(startIndex, endIndex);
       totalPages = Math.ceil(sortedActivities.length / itemsPerPage);
-      totalElements = sortedActivities.length;
+      
+      // 실제 totalElements의 합계 사용 (클라이언트 데이터 개수가 아닌)
+      const actualTotalElements = 
+        (posts?.totalElements || 0) + 
+        (comments?.totalElements || 0) + 
+        (debates?.totalElements || 0) + 
+        (bookmarks?.totalElements || 0);
+      
+      // 디버깅을 위한 로그 추가
+      console.log('📊 활동 페이지 전체 탭 통계:', {
+        postsTotal: posts?.totalElements || 0,
+        commentsTotal: comments?.totalElements || 0,
+        debatesTotal: debates?.totalElements || 0,
+        bookmarksTotal: bookmarks?.totalElements || 0,
+        actualTotalElements,
+        currentDisplayedItems: sortedActivities.length
+      });
+      
+      totalElements = actualTotalElements;
+      
+      // 페이지 계산도 실제 전체 개수 기준으로 수정
+      totalPages = Math.ceil(actualTotalElements / itemsPerPage);
     }
 
     return {
@@ -687,7 +708,6 @@ const ActivitiesPage: React.FC = () => {
   };
 
   const { activities, totalPages, totalItems } = getActivities();
-  const { t } = useTranslation();
 
   // 통합 로딩 상태 처리 (깜빡임 방지)
   if (isInitialLoading) {

@@ -9,7 +9,7 @@ export default function AppProviders({ children }: { children: ReactNode }) {
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
     if (token && !isAuthenticated) {
-      console.log('AppProviders: 초기 사용자 정보 로드 시작');
+      console.log('AppProviders: Starting initial user info load');
       loadUser();
     }
   }, [loadUser, isAuthenticated]);

@@ -310,28 +310,13 @@ const ToastNotification = styled.div<{ show: boolean; type: 'success' | 'error' 
   border: 1px solid rgba(255, 255, 255, 0.2);
 `;
 
-// 방문 목적에 따른 한국어 변환 함수
-const translateVisitPurpose = (purpose?: string): string => {
-  const { t } = useTranslation();
-  if (!purpose) return t('mypage.myprofile.novistpurpose');
-
-  const purposeMap: Record<string, string> = {
-    travel: '여행',
-    study: '유학',
-    work: '취업',
-    living: '거주',
-    business: '사업',
-    other: '기타',
-  };
-
-  return purposeMap[purpose] || purpose;
-};
-
 /**
  * 마이페이지 - 프로필 페이지
  * 사용자 프로필 정보를 표시하고 수정할 수 있습니다.
  */
 const ProfilePage: React.FC = () => {
+  const { t } = useTranslation(); // 컴포넌트 최상단에서 hook 호출
+
   const {
     profile,
     profileLoading,
@@ -382,6 +367,22 @@ const ProfilePage: React.FC = () => {
     type: 'success',
   });
 
+  // 방문 목적에 따른 번역 함수 - 컴포넌트 내부에서 정의
+  const translateVisitPurpose = (purpose?: string): string => {
+    if (!purpose) return t('mypage.myprofile.novistpurpose');
+
+    const purposeMap: Record<string, string> = {
+      travel: t('mypage.visitPurpose.travel'),
+      study: t('mypage.visitPurpose.study'),
+      work: t('mypage.visitPurpose.work'),
+      living: t('mypage.visitPurpose.living'),
+      business: t('mypage.visitPurpose.business'),
+      other: t('mypage.visitPurpose.other'),
+    };
+
+    return purposeMap[purpose] || purpose;
+  };
+
   // 통합 알림 함수
   const showNotification = (message: string, type: 'success' | 'error') => {
     setNotification({ show: true, message, type });
@@ -403,10 +404,10 @@ const ProfilePage: React.FC = () => {
         // 동시에 모든 데이터 로드
         const dataPromises = [
           fetchProfile(),
-          fetchMyPosts(0, 5),
-          fetchMyComments(0, 5),
-          fetchMyDebates(0, 5),
-          fetchMyBookmarks(0, 5),
+          fetchMyPosts(0, 10), // 프로필에서는 10개씩 표시
+          fetchMyComments(0, 10),
+          fetchMyDebates(0, 10), 
+          fetchMyBookmarks(0, 10),
         ];
 
         // 모든 데이터 로딩 완료까지 대기
@@ -455,7 +456,7 @@ const ProfilePage: React.FC = () => {
   useEffect(() => {
     if (profileUpdated) {
       setIsEditing(false);
-      showNotification('프로필이 성공적으로 업데이트되었습니다! 🎉', 'success');
+      showNotification('Profile has been successfully updated! 🎉', 'success');
       resetProfileUpdateStatus();
     }
   }, [profileUpdated, resetProfileUpdateStatus]);
@@ -551,7 +552,6 @@ const ProfilePage: React.FC = () => {
 
   // 통합 로딩 상태 처리 (깜빡임 방지)
   if (isInitialLoading) {
-    const { t } = useTranslation();
     return (
       <PageLayout title={t('mypage.myprofile.title')}>
         <LoadingWrapper>
@@ -563,7 +563,6 @@ const ProfilePage: React.FC = () => {
 
   // 에러 상태
   if (profileError && profileLoading === 'error') {
-    const { t } = useTranslation();
     return (
       <PageLayout title={t('mypage.myprofile.title')}>
         <ErrorMessage>
@@ -592,10 +591,22 @@ const ProfilePage: React.FC = () => {
   const commentsCount = comments?.totalElements || 0;
   const debatesCount = debates?.totalElements || 0;
   const bookmarksCount = bookmarks?.totalElements || 0;
-  const totalActivities = postsCount + commentsCount + debatesCount;
+  const totalActivities = postsCount + commentsCount + debatesCount + bookmarksCount;
+
+  // 디버깅을 위한 로그
+  console.log('📊 마이페이지 통계 데이터:', {
+    postsData: posts,
+    postsCount,
+    commentsData: comments,
+    commentsCount,
+    debatesData: debates,
+    debatesCount,
+    bookmarksData: bookmarks,
+    bookmarksCount,
+    totalActivities,
+  });
 
   // 배지 정보 - 실제 활동 기반으로 동적 생성
-  const { t } = useTranslation();
   const badges = [
     ...(postsCount > 0
       ? [

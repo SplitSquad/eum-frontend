@@ -27,7 +27,7 @@ import {
 } from '@mui/material';
 import OnboardingLayout from '../components/common/OnboardingLayout';
 import FormButtons from '../components/common/FormButtons';
-import CommonStep, { CommonStepType, LanguageData, EmergencyData } from './CommonSteps';
+import CommonStep, { CommonStepType, LanguageData } from './CommonSteps';
 import { useThemeStore } from '../../theme/store/themeStore';
 import { saveOnboardingData } from '../api/onboardingApi';
 import { koreanCities, koreanAdministrativeDivisions } from '../data/koreaData';
@@ -49,6 +49,8 @@ import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { useTranslation } from '@/shared/i18n';
 import CountrySelector from '@/shared/components/CountrySelector';
+import GavelIcon from '@mui/icons-material/Gavel';
+import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
 
 const { t } = useTranslation();
 // 스타일링된 컴포넌트
@@ -166,7 +168,6 @@ interface LivingProfileData {
 
   // 공통 섹션 데이터
   language: LanguageData;
-  emergencyInfo: EmergencyData;
   interests: string[];
 }
 
@@ -284,12 +285,6 @@ const LivingProfile: React.FC = () => {
 
     // 공통 섹션 초기화
     language: { koreanLevel: 'basic' },
-    emergencyInfo: {
-      contact: '',
-      medicalConditions: '',
-      foodAllergies: '',
-      receiveEmergencyAlerts: true,
-    },
     interests: [],
   });
 
@@ -315,19 +310,17 @@ const LivingProfile: React.FC = () => {
     t('onboarding.living.steps.family'),
     t('onboarding.living.steps.language'),
     t('onboarding.living.steps.interests'),
-    t('onboarding.living.steps.emergency'),
   ];
 
   // 스텝 아이콘 정의
   const stepIcons = [
     <PersonIcon />,
-    <HomeIcon />,
-    <CalendarTodayIcon />,
-    <LocationOnIcon />,
     <FamilyRestroomIcon />,
+    <HomeIcon />,
+    <GavelIcon />,
+    <LocalHospitalIcon />,
     <TranslateIcon />,
     <FavoriteIcon />,
-    <HealthAndSafetyIcon />,
   ];
 
   // 총 스텝 수
@@ -340,8 +333,6 @@ const LivingProfile: React.FC = () => {
         return 'language';
       case 7:
         return 'interests';
-      case 8:
-        return 'emergency';
       default:
         return null;
     }
@@ -390,14 +381,6 @@ const LivingProfile: React.FC = () => {
     }));
   };
 
-  // 응급 정보 변경 핸들러
-  const handleEmergencyChange = (data: EmergencyData) => {
-    setFormData(prev => ({
-      ...prev,
-      emergencyInfo: data,
-    }));
-  };
-
   // 관심사 변경 핸들러
   const handleInterestsChange = (interests: string[]) => {
     setFormData(prev => ({
@@ -431,13 +414,13 @@ const LivingProfile: React.FC = () => {
     try {
       // 필수 필드 검증
       if (!formData.nationality && !formData.country) {
-        alert('국적 정보를 입력해주세요.');
+        alert('Please enter your nationality information.');
         setIsSubmitting(false);
         return;
       }
 
       if (!formData.gender) {
-        alert('성별 정보를 입력해주세요.');
+        alert('Please select your gender.');
         setIsSubmitting(false);
         return;
       }
@@ -457,7 +440,6 @@ const LivingProfile: React.FC = () => {
 
         // 공통 정보
         language: formData.language,
-        emergencyInfo: formData.emergencyInfo,
         interests: formData.interests,
       };
 
@@ -465,7 +447,7 @@ const LivingProfile: React.FC = () => {
         // 백엔드에 데이터 저장 (visit purpose: living)
         await saveOnboardingData('living', onboardingData);
         // 성공 메시지 표시
-        console.log('온보딩 데이터가 성공적으로 저장되었습니다.');
+        console.log('Onboarding data saved successfully.');
       } catch (saveError) {
         // 로그인하지 않은 상태이거나 API 오류가 발생한 경우 여기서 처리
         console.warn('온보딩 데이터 저장 실패. 테스트 모드에서는 무시합니다:', saveError);
@@ -506,10 +488,8 @@ const LivingProfile: React.FC = () => {
         <CommonStep
           stepType={commonStepType}
           languageData={formData.language}
-          emergencyData={formData.emergencyInfo}
           interests={formData.interests}
           onLanguageChange={handleLanguageChange}
-          onEmergencyChange={handleEmergencyChange}
           onInterestsChange={handleInterestsChange}
         />
       );

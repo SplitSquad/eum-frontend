@@ -27,7 +27,7 @@ import {
 } from '@mui/material';
 import OnboardingLayout from '../components/common/OnboardingLayout';
 import FormButtons from '../components/common/FormButtons';
-import CommonStep, { CommonStepType, LanguageData, EmergencyData } from './CommonSteps';
+import CommonStep, { CommonStepType, LanguageData } from './CommonSteps';
 import { useThemeStore } from '../../theme/store/themeStore';
 import { saveOnboardingData } from '../api/onboardingApi';
 import { koreanUniversities, koreanCities, koreanAdministrativeDivisions } from '../data/koreaData';
@@ -163,7 +163,6 @@ interface StudyProfileData {
 
   // 공통 섹션 데이터
   language: LanguageData;
-  emergencyInfo: EmergencyData;
   interests: string[];
 }
 
@@ -260,29 +259,15 @@ const StudyProfile: React.FC = () => {
     fieldOfStudy: '',
     desiredSchool: '',
     visaType: '',
-
-    // 학업 정보
     studyType: '',
     majorField: '',
     academicLevel: '',
-
-    // 유학 일정
     startDate: '',
     endDate: '',
     studyDuration: '',
-
-    // 학교/지역 선택
     preferredUniversities: [],
     preferredRegions: [],
-
-    // 공통 섹션 초기화
     language: { koreanLevel: 'basic' },
-    emergencyInfo: {
-      contact: '',
-      medicalConditions: '',
-      foodAllergies: '',
-      receiveEmergencyAlerts: true,
-    },
     interests: [],
   });
 
@@ -310,7 +295,6 @@ const StudyProfile: React.FC = () => {
     t('onboarding.study.steps.location'),
     t('onboarding.study.steps.language'),
     t('onboarding.study.steps.interests'),
-    t('onboarding.study.steps.emergency'),
   ];
 
   // 스텝 아이콘 정의
@@ -321,7 +305,6 @@ const StudyProfile: React.FC = () => {
     <LocationOnIcon />,
     <TranslateIcon />,
     <FavoriteIcon />,
-    <HealthAndSafetyIcon />,
   ];
 
   // 총 스텝 수
@@ -334,8 +317,6 @@ const StudyProfile: React.FC = () => {
         return 'language';
       case 6:
         return 'interests';
-      case 7:
-        return 'emergency';
       default:
         return null;
     }
@@ -359,14 +340,6 @@ const StudyProfile: React.FC = () => {
     setFormData(prev => ({
       ...prev,
       language: data,
-    }));
-  };
-
-  // 응급 정보 변경 핸들러
-  const handleEmergencyChange = (data: EmergencyData) => {
-    setFormData(prev => ({
-      ...prev,
-      emergencyInfo: data,
     }));
   };
 
@@ -403,13 +376,13 @@ const StudyProfile: React.FC = () => {
     try {
       // 필수 필드 검증
       if (!formData.nationality && !formData.country) {
-        alert('국적 정보를 입력해주세요.');
+        alert('Please enter your nationality information.');
         setIsSubmitting(false);
         return;
       }
 
       if (!formData.gender) {
-        alert('성별 정보를 입력해주세요.');
+        alert('Please select your gender.');
         setIsSubmitting(false);
         return;
       }
@@ -426,11 +399,9 @@ const StudyProfile: React.FC = () => {
         educationLevel: formData.educationLevel,
         fieldOfStudy: formData.fieldOfStudy,
         desiredSchool: formData.desiredSchool,
-        visaType: formData.visaType,
 
         // 공통 정보
         language: formData.language,
-        emergencyInfo: formData.emergencyInfo,
         interests: formData.interests,
       };
 
@@ -438,7 +409,7 @@ const StudyProfile: React.FC = () => {
         // 백엔드에 데이터 저장 (visit purpose: study)
         await saveOnboardingData('study', onboardingData);
         // 성공 메시지 표시
-        console.log('온보딩 데이터가 성공적으로 저장되었습니다.');
+        console.log('Onboarding data saved successfully.');
       } catch (saveError) {
         // 로그인하지 않은 상태이거나 API 오류가 발생한 경우 여기서 처리
         console.warn('온보딩 데이터 저장 실패. 테스트 모드에서는 무시합니다:', saveError);
@@ -479,10 +450,8 @@ const StudyProfile: React.FC = () => {
         <CommonStep
           stepType={commonStepType}
           languageData={formData.language}
-          emergencyData={formData.emergencyInfo}
           interests={formData.interests}
           onLanguageChange={handleLanguageChange}
-          onEmergencyChange={handleEmergencyChange}
           onInterestsChange={handleInterestsChange}
         />
       );
@@ -1061,7 +1030,7 @@ const StudyProfile: React.FC = () => {
         return !formData.studyType;
       case 3: // 유학 일정
         return !formData.studyDuration;
-      case 5: // 언어 능력
+      case 4: // 언어 능력
         return !formData.language.koreanLevel;
       default:
         return false;

@@ -41,7 +41,7 @@ export const getAreaBasedList = async (params: {
 }): Promise<any> => {
   try {
     if (!TOUR_API_KEY) {
-      throw new Error('한국관광공사 API 키가 설정되지 않았습니다.');
+      throw new Error('Korea Tourism API key is not configured.');
     }
 
     const response = await tourAxios.get('/areaBasedList1', {
@@ -62,7 +62,7 @@ export const getAreaBasedList = async (params: {
       return response.data.response.body.items.item || [];
     } else {
       const errorMsg = response.data?.response?.header?.resultMsg || '알 수 없는 오류';
-      throw new Error(`지역 기반 관광정보 조회 실패: ${errorMsg}`);
+      throw new Error(`Regional tourism information failed: ${errorMsg}`);
     }
   } catch (error) {
     console.error('지역 기반 관광정보 조회 실패:', error);
@@ -85,7 +85,7 @@ export const getLocationBasedList = async (params: {
 }): Promise<any> => {
   try {
     if (!TOUR_API_KEY) {
-      throw new Error('한국관광공사 API 키가 설정되지 않았습니다.');
+      throw new Error('Korea Tourism API key is not configured.');
     }
 
     const response = await tourAxios.get('/locationBasedList1', {
@@ -104,7 +104,7 @@ export const getLocationBasedList = async (params: {
       return response.data.response.body.items.item || [];
     } else {
       const errorMsg = response.data?.response?.header?.resultMsg || '알 수 없는 오류';
-      throw new Error(`위치 기반 관광정보 조회 실패: ${errorMsg}`);
+      throw new Error(`Location-based tourism information failed: ${errorMsg}`);
     }
   } catch (error) {
     console.error('위치 기반 관광정보 조회 실패:', error);
@@ -127,7 +127,7 @@ export const getSearchKeyword = async (params: {
 }): Promise<any> => {
   try {
     if (!TOUR_API_KEY) {
-      throw new Error('한국관광공사 API 키가 설정되지 않았습니다.');
+      throw new Error('Korea Tourism API key is not configured.');
     }
 
     const response = await tourAxios.get('/searchKeyword1', {
@@ -146,7 +146,7 @@ export const getSearchKeyword = async (params: {
       return response.data.response.body.items.item || [];
     } else {
       const errorMsg = response.data?.response?.header?.resultMsg || '알 수 없는 오류';
-      throw new Error(`키워드 검색 조회 실패: ${errorMsg}`);
+      throw new Error(`Keyword search failed: ${errorMsg}`);
     }
   } catch (error) {
     console.error('키워드 검색 조회 실패:', error);
@@ -172,7 +172,7 @@ export const getDetailCommon = async (params: {
 }): Promise<any> => {
   try {
     if (!TOUR_API_KEY) {
-      throw new Error('한국관광공사 API 키가 설정되지 않았습니다.');
+      throw new Error('Korea Tourism API key is not configured.');
     }
 
     const response = await tourAxios.get('/detailCommon1', {
@@ -194,7 +194,7 @@ export const getDetailCommon = async (params: {
       return response.data.response.body.items.item[0] || {};
     } else {
       const errorMsg = response.data?.response?.header?.resultMsg || '알 수 없는 오류';
-      throw new Error(`컨텐츠 상세정보 조회 실패: ${errorMsg}`);
+      throw new Error(`Content details failed: ${errorMsg}`);
     }
   } catch (error) {
     console.error('컨텐츠 상세정보 조회 실패:', error);

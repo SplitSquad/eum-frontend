@@ -58,6 +58,14 @@ const en = {
     badge4desc: 'You added your first bookmark!',
     badge5name: 'Active Contributor',
     badge5desc: 'You completed more than 10 activities!',
+    visitPurpose: {
+      travel: 'Travel',
+      study: 'Study',
+      work: 'Work',
+      living: 'Living',
+      business: 'Business',
+      other: 'Other',
+    },
   },
   ActivitiesPage: {
     activitylist: 'Activity History',
@@ -218,6 +226,12 @@ const en = {
     notification: 'Notification',
     backToList: 'Back to List',
     saving: 'Saving...',
+    errors: {
+      downloadFailed: 'An error occurred while downloading',
+    },
+    actions: {
+      downloadImage: 'Download Image',
+    },
   },
   nav: {
     accountSettings: 'Account Settings',
@@ -475,22 +489,29 @@ const en = {
       endDate: 'End date',
       purposeTitle: 'Purpose of Your Stay',
       visaTypeOptions: {
-        d2_1: 'D-2-1 (Associate Degree Student)',
-        d2_2: "D-2-2 (Bachelor's Degree Student)",
-        d2_3: "D-2-3 (Master's Degree Student)",
-        d2_4: 'D-2-4 (Doctoral Degree Student)',
-        d2_5: 'D-2-5 (Research Student)',
-        d2_6: 'D-2-6 (Exchange Student)',
-        d4_1: 'D-4-1 (Language Course at University-affiliated Institute)',
-        d4_2: 'D-4-2 (Other Institute Training)',
-        d4_3: 'D-4-3 (Elementary, Middle, High School Student)',
-        d4_5: 'D-4-5 (Korean Cuisine Training)',
-        d4_6: 'D-4-6 (Private Institute Training)',
-        d4_7: 'D-4-7 (Foreign Language Training)',
-        c3_1: 'C-3-1 (Short-term General)',
-        c3_4: 'C-3-4 (Short-term Business)',
-        d1: 'D-1 (Cultural & Artistic Training)',
-        f1_13: 'F-1-13 (Parent of International Student)',
+        f1_3: 'F-1-3 (Visiting Cohabitation)',
+        f1_5: 'F-1-5 (Other Visiting Cohabitation)',
+        f1_9: 'F-1-9 (Other Visiting Cohabitation)',
+        f2_2: 'F-2-2 (Resident Spouse)',
+        f2_3: 'F-2-3 (Resident Minor Child)',
+        f3_1: 'F-3-1 (Accompanying)',
+        f4_11: 'F-4-11 (Overseas Korean Residence)',
+        f4_12: 'F-4-12 (Overseas Korean Employment)',
+        f5: 'F-5 (Permanent Residence)',
+        f5_5: 'F-5-5 (Permanent Resident Spouse)',
+        f6_1: 'F-6-1 (Marriage Immigration)',
+        f6_2: 'F-6-2 (Korean National Spouse)',
+        d7_1: 'D-7-1 (Intra-company Transferee)',
+        d7_2: 'D-7-2 (Intra-company Transferee Spouse)',
+        d8_1: 'D-8-1 (Corporate Investment)',
+        d8_2: 'D-8-2 (Corporate Investment Spouse)',
+        d8_3: 'D-8-3 (Corporate Investment Child)',
+        d8_4: 'D-8-4 (Corporate Investment Other)',
+        d9_1: 'D-9-1 (Trade Management)',
+        d9_2: 'D-9-2 (Trade Management Spouse)',
+        d9_3: 'D-9-3 (Trade Management Child)',
+        d9_4: 'D-9-4 (Trade Management Other)',
+        g1_10: 'G-1-10 (Other)',
         unknown: 'Unknown/Not decided',
         other: 'Other',
       },
@@ -944,14 +965,40 @@ const en = {
   },
   messages: {
     saveSuccess: 'Saved successfully',
-    saveFailed: 'Failed to save',
+    saveFailed: 'Save failed',
     deleteSuccess: 'Deleted successfully',
-    deleteFailed: 'Failed to delete',
+    deleteFailed: 'Delete failed',
     updateSuccess: 'Updated successfully',
-    updateFailed: 'Failed to update',
+    updateFailed: 'Update failed',
     networkError: 'Network error occurred',
     serverError: 'Server error occurred',
     unknownError: 'Unknown error occurred',
+    
+    // Authentication/permission related messages
+    loginRequired: 'Login is required',
+    loginRequiredAction: 'Login is required to leave likes/dislikes',
+    adminOnlyAccess: 'Only administrators can access',
+    permissionCheckFailed: 'Permission check failed',
+    signupComplete: 'Registration complete! Redirecting to login page',
+    
+    // Comment/post related messages
+    onlyAuthorCanDelete: 'Only the author can delete their own comments',
+    commentEditFailed: 'Comment edit failed',
+    commentEditError: 'An error occurred while editing comment',
+    commentDeleteError: 'An error occurred while deleting comment',
+    replyEditError: 'An error occurred while editing reply',
+    replyDeleteError: 'An error occurred while deleting reply',
+    replyCreateError: 'An error occurred while creating reply',
+    
+    // Voting related messages
+    alreadyVotedCancel: 'You have already voted for another option. Please cancel your existing vote first and try again',
+    
+    // Copy related messages
+    linkCopied: 'Link copied to clipboard',
+    
+    // Onboarding related messages
+    confirmNation: 'Please enter your nationality',
+    confirmGender: 'Please select your gender',
   },
   notFound: {
     title: 'Page Not Found',
@@ -1304,7 +1351,35 @@ const en = {
     editPost: 'Edit Post',
     create: 'Create',
     edit: 'Edit',
-    fileUpload: 'File Upload',
+    fileUpload: {
+      title: 'File Upload',
+      dragAndDrop: 'Drag and drop files here or click to upload',
+      maxSize: 'Max 10MB, image and document files supported',
+      selectedFiles: 'Selected Files',
+      existingFiles: 'Existing Attached Files',
+      finalConfirmTitle: '📝 Final Confirmation',
+      finalConfirmMessage: `📝 Final Confirmation
+
+New files selected: {{newFileCount}}
+Existing attachments: {{existingFileCount}}
+
+⚠️ Saving will delete all existing attachments and keep only the new files.
+
+Do you really want to save?`,
+      newFileWarning: '⚠️ Adding new files will delete all existing files',
+      editModeWarning: '⚠️ Warning: Adding new files will delete all {{count}} existing attachments.\n\nDo you really want to continue?\n\nSelect \'Cancel\' to keep existing files.',
+      deleteConfirm: 'Are you sure you want to delete this file?',
+      deleteWarning: '⚠️ Warning: This file will be permanently deleted when the post is saved.',
+      imageHint: 'Images will be displayed as previews',
+      editModeDragOrClick: 'Drag files or click to replace with new files',
+      dragOrClick: 'Drag files or click to upload',
+      editModeHint: 'New files will be uploaded instead of existing files',
+      imageHint2: 'Images will be displayed as previews ✨\nMax 10MB, all file formats supported',
+      newImage: 'New Images ({{count}})',
+      newFile: 'New Files ({{count}})',
+      existingImage: 'Existing Images ({{count}})',
+      existingFile: 'Existing Files ({{count}})',
+    },
     dragAndDropOrClickToUpload: 'Drag and drop files here or click to upload',
     max10MBImageAndDocumentFiles: 'Max 10MB, image and document files supported',
     selectedFiles: 'Selected Files',
@@ -1323,7 +1398,6 @@ const en = {
     confirmDeleteFile: 'Are you sure you want to delete this file?',
     fileDeleteWarning: '⚠️ Warning: This file will be permanently deleted when the post is saved.',
     imagePreviewNote: '💡 Images are displayed as previews for easy content verification',
-    dragDropUpload: '📁 Drag files or click to upload',
     uploadSupportInfo:
       'Images will be displayed as previews ✨\nMax 10MB, all file formats supported',
     postTypeCannotModify: 'Post type cannot be modified',
@@ -1655,6 +1729,8 @@ const en = {
       },
       currentSearch: 'Current Search',
     },
+    region: 'Region',
+    selectMeetingRegion: 'Please select the region where the meeting will be held',
   },
   widgets: {
     dynamicFeed: {

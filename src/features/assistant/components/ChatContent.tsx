@@ -204,6 +204,19 @@ export default function ChatContent({
           }
           return copy;
         });
+        
+        // 타이핑 중에도 스크롤을 자동으로 아래로 이동
+        if (listRef.current) {
+          const { scrollTop, scrollHeight, clientHeight } = listRef.current;
+          const isNearBottom = scrollTop + clientHeight >= scrollHeight - 50;
+          if (isNearBottom) {
+            listRef.current.scrollTo({
+              top: listRef.current.scrollHeight,
+              behavior: 'smooth',
+            });
+          }
+        }
+        
         if (idx >= text.length) clearInterval(interval);
       }, 30);
       return () => clearInterval(interval);
@@ -213,13 +226,38 @@ export default function ChatContent({
   // 메시지 추가 시 스크롤 하단으로 부드럽게 이동 - 개선된 버전
   useEffect(() => {
     if (listRef.current) {
-      setTimeout(() => {
+      // 즉시 스크롤과 약간의 지연 후 다시 한번 스크롤
+      const scrollToEnd = () => {
         if (listRef.current) {
-          listRef.current.scrollTop = listRef.current.scrollHeight;
+          listRef.current.scrollTo({
+            top: listRef.current.scrollHeight,
+            behavior: 'smooth',
+          });
         }
-      }, 0);
+      };
+      
+      scrollToEnd();
+      setTimeout(scrollToEnd, 100);
+      setTimeout(scrollToEnd, 300);
     }
-  }, [messages.length]);
+  }, [messages.length, loading]);
+
+  // 타이핑 효과로 메시지 내용이 변경될 때도 스크롤 따라가기
+  useEffect(() => {
+    const last = messages[messages.length - 1];
+    if (last?.sender === 'bot' && last.isTyping && listRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = listRef.current;
+      const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100;
+      
+      if (isNearBottom) {
+        requestAnimationFrame(() => {
+          if (listRef.current) {
+            listRef.current.scrollTop = listRef.current.scrollHeight;
+          }
+        });
+      }
+    }
+  }, [messages[messages.length - 1]?.displayText]);
 
   // 스크롤 위치 감지하여 버튼 표시 여부 결정
   useEffect(() => {
@@ -256,17 +294,17 @@ export default function ChatContent({
       {/* 스크롤바 스타일 추가 */}
       <style>{scrollbarStyles}</style>
 
-      {/* 최상단 div: 고정 높이 채팅 레이아웃(원하는 값으로 조정 가능) */}
+      {/* 최상단 div: 완전 고정 높이 채팅 레이아웃 - UX 개선 */}
       <div
         className="chat-area"
         style={{
           background: '#f7f8fa',
           borderRadius: 16,
           padding: 24,
-          minHeight: 400,
+          height: '70vh', // minHeight 대신 고정 height 사용
           boxShadow: '0 2px 8px rgba(80,80,90,0.06)',
-          maxHeight: '70vh',
-          overflowY: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
         <div
@@ -280,9 +318,9 @@ export default function ChatContent({
             height: '100%',
           }}
         >
-          {/* 채팅 헤더 */}
+          {/* 채팅 헤더 - 고정 */}
           <div
-            className="px-6 py-4 border-b"
+            className="px-6 py-4 border-b flex-shrink-0"
             style={{
               borderColor: '#e0e0e7',
               background: 'linear-gradient(90deg, #f7f7fa 0%, #ececf0 100%)',
@@ -313,18 +351,18 @@ export default function ChatContent({
             </div>
           </div>
 
-          {/* 메시지 리스트: 여기에만 스크롤 (height, minHeight 꼭 적용) */}
+          {/* 메시지 리스트: 스크롤 영역 - flex-1로 남은 공간 모두 사용 */}
           <div
             ref={listRef}
             className="flex-1 overflow-auto p-6 space-y-4 chat-scrollbar relative"
             style={{
               minHeight: 0,
-              maxHeight: '100%',
               background: `
                 radial-gradient(circle at 20% 30%, rgba(220, 220, 230, 0.18) 0%, transparent 50%),
                 radial-gradient(circle at 80% 70%, rgba(210, 210, 220, 0.13) 0%, transparent 50%),
                 linear-gradient(180deg, #f7f8fa 0%, #ececf0 100%)
               `,
+              scrollBehavior: 'smooth', // 부드러운 스크롤
             }}
           >
             {messages.map((m, index) => (
@@ -477,11 +515,11 @@ export default function ChatContent({
             )}
           </div>
 
-          {/* 🔥 스크롤 맨 아래로 이동 버튼 */}
+          {/* 🔥 스크롤 맨 아래로 이동 버튼 - 위치 조정 */}
           {showScrollButton && (
             <button
               onClick={scrollToBottom}
-              className="absolute bottom-4 right-4 w-12 h-12 rounded-full shadow-lg transition-all duration-300 hover:scale-110 active:scale-95 z-10"
+              className="absolute bottom-20 right-4 w-12 h-12 rounded-full shadow-lg transition-all duration-300 hover:scale-110 active:scale-95 z-10"
               style={{
                 background: 'linear-gradient(145deg, #e0e0e7 0%, #cfd0d7 100%)',
                 border: '1.5px solid #bfc0c7',
@@ -509,12 +547,15 @@ export default function ChatContent({
             </button>
           )}
 
-          {/* 입력창 */}
+          {/* 입력창 - 완전 고정 */}
           <div
-            className="px-6 py-4 border-t"
+            className="px-6 py-4 border-t flex-shrink-0"
             style={{
               borderColor: '#e0e0e7',
               background: 'linear-gradient(90deg, #f7f7fa 0%, #ececf0 100%)',
+              position: 'sticky',
+              bottom: 0,
+              zIndex: 10,
             }}
           >
             <div className="flex items-center space-x-4">

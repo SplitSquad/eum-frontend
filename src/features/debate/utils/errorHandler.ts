@@ -38,7 +38,7 @@ export function showToast(type: ToastEventType, message: string, duration = 3000
  * @param showToastMessage 토스트 메시지를 표시할지 여부
  * @returns 에러 메시지
  */
-export function handleApiError(error: unknown, defaultMessage = '요청 처리 중 오류가 발생했습니다.', showToastMessage = true): string {
+export function handleApiError(error: unknown, defaultMessage = 'An error occurred while processing the request.', showToastMessage = true): string {
   let errorMessage = defaultMessage;
   
   if (error instanceof Error) {
@@ -66,20 +66,20 @@ export function handleApiError(error: unknown, defaultMessage = '요청 처리 �
         // 상태 코드별 메시지
         if (!errorMessage || errorMessage === defaultMessage) {
           if (status === 400) {
-            errorMessage = '잘못된 요청입니다.';
+            errorMessage = 'Invalid request.';
           } else if (status === 401) {
-            errorMessage = '로그인이 필요합니다.';
+            errorMessage = 'Login is required.';
           } else if (status === 403) {
-            errorMessage = '접근 권한이 없습니다.';
+            errorMessage = 'Access denied.';
           } else if (status === 404) {
-            errorMessage = '요청한 데이터를 찾을 수 없습니다.';
+            errorMessage = 'Requested data not found.';
           } else if (status === 500) {
-            errorMessage = '서버 오류가 발생했습니다.';
+            errorMessage = 'Server error occurred.';
           }
         }
       } else if (axiosError.request) {
         // 요청은 보냈지만 응답이 없는 경우 (네트워크 오류 등)
-        errorMessage = '서버에 연결할 수 없습니다. 네트워크 상태를 확인해주세요.';
+        errorMessage = 'Cannot connect to server. Please check your network connection.';
       }
     }
   }

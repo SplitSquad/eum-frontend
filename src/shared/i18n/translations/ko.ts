@@ -62,6 +62,14 @@ const ko = {
     badge4desc: '첫 번째 북마크를 추가했습니다!',
     badge5name: '활발한 활동가',
     badge5desc: '10개 이상의 활동을 완료했습니다!',
+    visitPurpose: {
+      travel: '여행',
+      study: '유학', 
+      work: '취업',
+      living: '거주',
+      business: '사업',
+      other: '기타',
+    },
   },
   ActivitiesPage: {
     activitylist: '활동내역',
@@ -243,7 +251,7 @@ const ko = {
     language: '언어',
     languageSettings: '언어 설정',
     selectLanguage: '언어 선택',
-    smallGroups: '소그룹 모임',
+    smallGroups: '소모임',
     communicationBoard: '자유 게시판',
     save: '저장',
     cancel: '취소',
@@ -258,6 +266,12 @@ const ko = {
     notification: '알림',
     backToList: '목록으로 돌아가기',
     saving: '저장 중...',
+    errors: {
+      downloadFailed: '다운로드 중 오류가 발생했습니다',
+    },
+    actions: {
+      downloadImage: '이미지 다운로드',
+    },
   },
   nav: {
     accountSettings: '계정 설정',
@@ -275,6 +289,7 @@ const ko = {
     invalidLoginInfo: '로그인 정보가 올바르지 않습니다',
     termsAgreement: '로그인 시 서비스 이용약관 및 개인정보 처리방침에 동의하게 됩니다',
     springMemories: '봄날의 기억',
+    tokenRequired: '인증 토큰이 없습니다. 로그인이 필요합니다.',
   },
   mainCategories: {
     travel: '여행',
@@ -507,22 +522,29 @@ const ko = {
       endDate: '종료 날짜',
       purposeTitle: '거주 목적',
       visaTypeOptions: {
-        d2_1: 'D-2-1 (전문학사)',
-        d2_2: 'D-2-2 (학사유학)',
-        d2_3: 'D-2-3 (석사유학)',
-        d2_4: 'D-2-4 (박사유학)',
-        d2_5: 'D-2-5 (연구유학)',
-        d2_6: 'D-2-6 (교환학생)',
-        d4_1: 'D-4-1 (대학부설어학원연수)',
-        d4_2: 'D-4-2 (기타기관연수)',
-        d4_3: 'D-4-3 (초중고생)',
-        d4_5: 'D-4-5 (한식조리연수)',
-        d4_6: 'D-4-6 (사설기관연수)',
-        d4_7: 'D-4-7 (외국어연수)',
-        c3_1: 'C-3-1 (단기일반)',
-        c3_4: 'C-3-4 (일반상용)',
-        d1: 'D-1 (문화예술연수)',
-        f1_13: 'F-1-13 (유학생부모)',
+        f1_3: 'F-1-3 (동거목적 방문동거)',
+        f1_5: 'F-1-5 (기타 방문동거)',
+        f1_9: 'F-1-9 (기타 방문동거)',
+        f2_2: 'F-2-2 (거주자격자 배우자)',
+        f2_3: 'F-2-3 (거주자격자 미성년자녀)',
+        f3_1: 'F-3-1 (동반비자)',
+        f4_11: 'F-4-11 (재외동포 거주)',
+        f4_12: 'F-4-12 (재외동포 취업)',
+        f5: 'F-5 (영주)',
+        f5_5: 'F-5-5 (영주자 배우자)',
+        f6_1: 'F-6-1 (결혼이민)',
+        f6_2: 'F-6-2 (국민의 배우자)',
+        d7_1: 'D-7-1 (주재)',
+        d7_2: 'D-7-2 (주재자 배우자)',
+        d8_1: 'D-8-1 (기업투자)',
+        d8_2: 'D-8-2 (기업투자 배우자)',
+        d8_3: 'D-8-3 (기업투자 자녀)',
+        d8_4: 'D-8-4 (기업투자 기타)',
+        d9_1: 'D-9-1 (무역경영)',
+        d9_2: 'D-9-2 (무역경영 배우자)',
+        d9_3: 'D-9-3 (무역경영 자녀)',
+        d9_4: 'D-9-4 (무역경영 기타)',
+        g1_10: 'G-1-10 (기타)',
         unknown: '미정/모름',
         other: '기타',
       },
@@ -565,7 +587,6 @@ const ko = {
         family: '가족정보',
         language: '언어',
         interests: '관심사',
-        emergency: '응급정보',
       },
       purpose: {
         family: '가족과 함께',
@@ -1003,6 +1024,32 @@ const ko = {
     networkError: '네트워크 오류가 발생했습니다',
     serverError: '서버 오류가 발생했습니다',
     unknownError: '알 수 없는 오류가 발생했습니다',
+    
+    // 인증/권한 관련 메시지
+    loginRequired: '로그인이 필요합니다',
+    loginRequiredAction: '좋아요/싫어요를 남기려면 로그인이 필요합니다',
+    adminOnlyAccess: '관리자만 접근할 수 있습니다',
+    permissionCheckFailed: '권한 확인에 실패했습니다',
+    signupComplete: '회원가입이 완료되었습니다! 로그인 페이지로 이동합니다',
+    
+    // 댓글/게시글 관련 메시지
+    onlyAuthorCanDelete: '자신이 작성한 댓글만 삭제할 수 있습니다',
+    commentEditFailed: '댓글 수정에 실패했습니다',
+    commentEditError: '댓글 수정 중 오류가 발생했습니다',
+    commentDeleteError: '댓글 삭제 중 오류가 발생했습니다',
+    replyEditError: '대댓글 수정 중 오류가 발생했습니다',
+    replyDeleteError: '답글 삭제 중 오류가 발생했습니다',
+    replyCreateError: '답글 작성 중 오류가 발생했습니다',
+    
+    // 투표 관련 메시지
+    alreadyVotedCancel: '이미 다른 옵션에 투표하셨습니다. 먼저 기존 투표를 취소한 후 다시 시도해주세요',
+    
+    // 복사 관련 메시지
+    linkCopied: '링크가 클립보드에 복사되었습니다',
+    
+    // 온보딩 관련 메시지
+    confirmNation: '국적 정보를 입력해주세요',
+    confirmGender: '성별 정보를 입력해주세요',
   },
   notFound: {
     title: '페이지를 찾을 수 없습니다',
@@ -1326,15 +1373,44 @@ const ko = {
   },
   community: {
     title: '커뮤니티',
-    createPost: '글 작성',
-    editPost: '글 수정',
     backToList: '목록으로 돌아가기',
-    content: '내용',
+    createPost: '게시글 작성',
+    editPost: '게시글 수정',
+    content: '내용',  
     postType: '게시글 유형',
     category: '카테고리',
     region: '지역',
+    selectMeetingRegion: '모임이 진행될 지역을 선택하세요',
     subTags: '세부 태그',
-    fileUpload: '파일 첨부',
+    fileUpload: {
+      title: '파일 첨부',
+      dragAndDrop: '파일을 여기에 끌어다 놓거나 클릭하여 업로드하세요',
+      maxSize: '최대 10MB, 이미지 및 문서 파일 지원',
+      selectedFiles: '선택된 파일',
+      existingFiles: '기존 첨부 파일',
+      finalConfirmTitle: '📝 최종 확인',
+      finalConfirmMessage: `📝 최종 확인
+
+새로 선택한 파일: {{newFileCount}}개
+기존 첨부파일: {{existingFileCount}}개
+
+⚠️ 저장하면 기존 첨부파일이 모두 삭제되고 새 파일만 남습니다.
+
+정말로 저장하시겠습니까?`,
+      newFileWarning: '⚠️ 새 파일 추가하면 기존 파일 모두 삭제됨',
+      editModeWarning: '⚠️ 경고: 새 파일을 추가하면 기존 첨부파일이 모두 삭제됩니다.\n\n정말로 계속하시겠습니까?\n\n기존 파일을 유지하려면 \'취소\'를 선택하세요.',
+      deleteConfirm: '정말로 이 파일을 삭제하시겠습니까?',
+      deleteWarning: '⚠️ 주의: 게시글 저장 시 이 파일이 영구적으로 삭제됩니다.',
+      imageHint: '이미지는 미리보기로 표시됩니다',
+      editModeDragOrClick: '파일을 드래그하거나 클릭하여 새 파일로 교체',
+      dragOrClick: '파일을 드래그하거나 클릭하여 업로드',
+      editModeHint: '기존 파일 대신 새 파일이 업로드됩니다',
+      imageHint2: '이미지는 미리보기로 표시됩니다 ✨\n최대 10MB, 모든 파일 형식 지원',
+      newImage: '새 이미지 ({{count}}개)',
+      newFile: '새 파일 ({{count}}개)',
+      existingImage: '기존 이미지 ({{count}}개)',
+      existingFile: '기존 파일 ({{count}}개)',
+    },
     dragAndDropOrClickToUpload: '파일을 여기에 끌어다 놓거나 클릭하여 업로드하세요',
     max10MBImageAndDocumentFiles: '최대 10MB, 이미지 및 문서 파일 지원',
     selectedFiles: '선택된 파일',
@@ -2223,6 +2299,21 @@ const ko = {
       aiExpert: 'AI 전문가',
       justNow: '방금 전',
     },
+    features: {
+      title: '이음이가 도울 수 있는 일들',
+      items: [
+        '📝 비자 및 체류자격 안내',
+        '🏥 의료보험 및 병원 이용법',
+        '🏠 주거 계약 및 생활 팁',
+        '💼 취업 및 아르바이트 정보',
+        '🏛️ 관공서 업무 및 서류',
+        '🚌 교통 및 대중교통 이용',
+        '🍽️ 음식 문화 및 맛집 추천',
+        '📚 한국어 학습 및 교육',
+        '💰 세금 및 금융 서비스',
+        '👥 문화 적응 및 인간관계'
+      ]
+    },
     errors: {
       responseError: '응답 중 오류가 발생했습니다.',
       networkError: '네트워크 연결을 확인해주세요.',
@@ -2367,6 +2458,28 @@ const ko = {
           topCategories: '관심분야 TOP 5',
         },
       },
+    },
+  },
+  api: {
+    errors: {
+      noToken: '인증 토큰이 없습니다. 로그인이 필요합니다.',
+      noUserId: '사용자 ID가 없습니다.',
+      profileUpdateFailed: '프로필 업데이트 실패',
+      passwordChangeRequest: '비밀번호 변경 요청',
+      postsFetchFailed: '내 게시글을 불러올 수 없습니다.',
+      commentsFetchFailed: '내 댓글을 불러올 수 없습니다.',
+      debatesFetchFailed: '내 토론을 불러올 수 없습니다.',
+      bookmarksFetchFailed: '내가 북마크한 정보 조회 실패',
+      imageUploadFailed: '프로필 이미지 업로드 실패',
+      imageDeleteFailed: '프로필 이미지 삭제 실패',
+      onboardingDataParseFailed: '온보딩 데이터 파싱 실패',
+    },
+    defaults: {
+      user: '사용자',
+      general: '일반',
+      noTitle: '[제목 없음]',
+      noPostTitle: '[게시글 제목 없음]',
+      noVoteInfo: '투표 정보 없음',
     },
   },
 };

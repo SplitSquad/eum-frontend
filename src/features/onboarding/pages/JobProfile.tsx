@@ -26,7 +26,7 @@ import {
 } from '@mui/material';
 import OnboardingLayout from '../components/common/OnboardingLayout';
 import FormButtons from '../components/common/FormButtons';
-import CommonStep, { CommonStepType, LanguageData, EmergencyData } from './CommonSteps';
+import CommonStep, { CommonStepType, LanguageData } from './CommonSteps';
 import { useThemeStore } from '../../theme/store/themeStore';
 import { saveOnboardingData } from '../api/onboardingApi';
 import { koreanCities, koreanAdministrativeDivisions } from '../data/koreaData';
@@ -48,6 +48,7 @@ import PaymentsIcon from '@mui/icons-material/Payments';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { useTranslation } from '@/shared/i18n';
 import CountrySelector from '@/shared/components/CountrySelector';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 
 // 번역을 위한 useTranslation 훅
 const { t } = useTranslation();
@@ -163,7 +164,6 @@ interface JobProfileData {
 
   // 공통 섹션 데이터
   language: LanguageData;
-  emergencyInfo: EmergencyData;
   interests: string[];
 }
 
@@ -289,35 +289,27 @@ const JobProfile: React.FC = () => {
 
     // 공통 섹션 초기화
     language: { koreanLevel: 'basic' },
-    emergencyInfo: {
-      contact: '',
-      medicalConditions: '',
-      foodAllergies: '',
-      receiveEmergencyAlerts: true,
-    },
     interests: [],
   });
 
   // 스텝 라벨 정의
   const stepLabels = [
     t('onboarding.job.steps.profile'),
-    t('onboarding.job.steps.details'),
-    t('onboarding.job.steps.schedule'),
-    t('onboarding.job.steps.conditions'),
+    t('onboarding.job.steps.field'),
+    t('onboarding.job.steps.experience'),
+    t('onboarding.job.steps.salary'),
     t('onboarding.job.steps.language'),
     t('onboarding.job.steps.interests'),
-    t('onboarding.job.steps.emergency'),
   ];
 
   // 스텝 아이콘 정의
   const stepIcons = [
     <PersonIcon />,
     <WorkIcon />,
-    <CalendarTodayIcon />,
     <BusinessIcon />,
+    <AttachMoneyIcon />,
     <TranslateIcon />,
     <FavoriteIcon />,
-    <HealthAndSafetyIcon />,
   ];
 
   // 총 스텝 수
@@ -330,8 +322,6 @@ const JobProfile: React.FC = () => {
         return 'language';
       case 6:
         return 'interests';
-      case 7:
-        return 'emergency';
       default:
         return null;
     }
@@ -364,14 +354,6 @@ const JobProfile: React.FC = () => {
     setFormData(prev => ({
       ...prev,
       language: data,
-    }));
-  };
-
-  // 응급 정보 변경 핸들러
-  const handleEmergencyChange = (data: EmergencyData) => {
-    setFormData(prev => ({
-      ...prev,
-      emergencyInfo: data,
     }));
   };
 
@@ -408,13 +390,13 @@ const JobProfile: React.FC = () => {
     try {
       // 필수 필드 검증
       if (!formData.nationality && !formData.country) {
-        alert('국적 정보를 입력해주세요.');
+        alert('Please enter your nationality information.');
         setIsSubmitting(false);
         return;
       }
 
       if (!formData.gender) {
-        alert('성별 정보를 입력해주세요.');
+        alert('Please select your gender.');
         setIsSubmitting(false);
         return;
       }
@@ -435,7 +417,6 @@ const JobProfile: React.FC = () => {
 
         // 공통 정보
         language: formData.language,
-        emergencyInfo: formData.emergencyInfo,
         interests: formData.interests,
       };
 
@@ -443,7 +424,7 @@ const JobProfile: React.FC = () => {
         // 백엔드에 데이터 저장 (visit purpose: job)
         await saveOnboardingData('job', onboardingData);
         // 성공 메시지 표시
-        console.log('온보딩 데이터가 성공적으로 저장되었습니다.');
+        console.log('Onboarding data saved successfully.');
       } catch (saveError) {
         // 로그인하지 않은 상태이거나 API 오류가 발생한 경우 여기서 처리
         console.warn('온보딩 데이터 저장 실패. 테스트 모드에서는 무시합니다:', saveError);
@@ -471,10 +452,8 @@ const JobProfile: React.FC = () => {
         <CommonStep
           stepType={commonStepType}
           languageData={formData.language}
-          emergencyData={formData.emergencyInfo}
           interests={formData.interests}
           onLanguageChange={handleLanguageChange}
-          onEmergencyChange={handleEmergencyChange}
           onInterestsChange={handleInterestsChange}
         />
       );
@@ -1176,8 +1155,6 @@ const JobProfile: React.FC = () => {
         return !formData.language.koreanLevel;
       case 6: // 관심사 선택
         return formData.interests.length === 0;
-      case 7: // 응급 상황 설정
-        return !formData.emergencyInfo.contact;
       default:
         return false;
     }

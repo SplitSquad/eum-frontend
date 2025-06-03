@@ -72,7 +72,7 @@ const UserService = {
       const response = await apiClient.get<UserProfile>('/users/profile');
       return response;
     } catch (error) {
-      console.error('사용자 프로필 정보 조회 실패:', error);
+      console.error('Error fetching user profile:', error);
       throw error;
     }
   },
@@ -85,7 +85,7 @@ const UserService = {
       const response = await apiClient.get<UserPreference>('/users/preference');
       return response;
     } catch (error) {
-      console.error('사용자 선호도 정보 조회 실패:', error);
+      console.error('Error fetching user preferences:', error);
       throw error;
     }
   },
@@ -98,7 +98,7 @@ const UserService = {
       const response = await apiClient.get<UserActivity[]>('/users/activities');
       return response;
     } catch (error) {
-      console.error('사용자 활동 조회 실패:', error);
+      console.error('Error fetching user activities:', error);
       // 에러 발생 시 빈 배열 반환 (UI에서 예외 처리 용이하게)
       return [];
     }
@@ -112,7 +112,7 @@ const UserService = {
       const response = await apiClient.get<UserActivityStats>('/users/activity-stats');
       return response;
     } catch (error) {
-      console.error('사용자 활동 통계 조회 실패:', error);
+      console.error('Error fetching user activity stats:', error);
       // 에러 발생 시 기본값 반환
       return {
         postsCount: 0,
@@ -132,7 +132,7 @@ const UserService = {
       const response = await apiClient.get<UserBadge[]>('/users/badges');
       return response;
     } catch (error) {
-      console.error('사용자 뱃지 조회 실패:', error);
+      console.error('Error fetching user badges:', error);
       // 에러 발생 시 빈 배열 반환
       return [];
     }
@@ -146,7 +146,7 @@ const UserService = {
       const response = await apiClient.put<UserProfile>('/users/profile', profile);
       return response;
     } catch (error) {
-      console.error('사용자 프로필 정보 수정 실패:', error);
+      console.error('Error updating user profile:', error);
       throw error;
     }
   },
@@ -159,7 +159,7 @@ const UserService = {
       const response = await apiClient.put<UserPreference>('/users/preference', preference);
       return response;
     } catch (error) {
-      console.error('사용자 선호도 정보 수정 실패:', error);
+      console.error('Error updating user preferences:', error);
       throw error;
     }
   }

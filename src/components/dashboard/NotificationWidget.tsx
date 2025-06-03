@@ -12,12 +12,8 @@ interface NotificationItem {
 }
 
 const NotificationWidget: React.FC = () => {
-  // 샘플 알림 데이터
-  const notifications: NotificationItem[] = [
-    { id: '1', title: '새로운 공지사항이 등록되었습니다', type: 'info', time: '1시간 전' },
-    { id: '2', title: '보고서 마감일이 임박했습니다', type: 'warning', time: '3시간 전' },
-    { id: '3', title: '긴급 회의가 소집되었습니다', type: 'urgent', time: '오늘' }
-  ];
+  // 실제 알림 데이터를 사용 (현재는 빈 배열)
+  const notifications: NotificationItem[] = [];
 
   // 알림 유형별 색상
   const getTypeColor = (type: string) => {
@@ -31,9 +27,9 @@ const NotificationWidget: React.FC = () => {
 
   const getTypeLabel = (type: string) => {
     switch (type) {
-      case 'info': return '정보';
-      case 'warning': return '경고';
-      case 'urgent': return '긴급';
+      case 'info': return 'Info';
+      case 'warning': return 'Warning';
+      case 'urgent': return 'Urgent';
       default: return '';
     }
   };
@@ -72,8 +68,15 @@ const NotificationWidget: React.FC = () => {
       
       <Divider sx={{ mb: 1.5 }} />
       
-      <List dense disablePadding>
-        {notifications.map((notification, index) => (
+      <List sx={{ p: 0 }}>
+        {notifications.length === 0 ? (
+          <ListItem sx={{ justifyContent: 'center', py: 3 }}>
+            <Typography variant="body2" color="text.secondary">
+              새로운 알림이 없습니다
+            </Typography>
+          </ListItem>
+        ) : (
+          notifications.map((notification, index) => (
           <React.Fragment key={notification.id}>
             {index > 0 && <Divider component="li" sx={{ my: 1 }} />}
             <ListItem disablePadding sx={{ py: 0.5 }}>
@@ -107,7 +110,8 @@ const NotificationWidget: React.FC = () => {
               />
             </ListItem>
           </React.Fragment>
-        ))}
+          ))
+        )}
       </List>
       
       <Box sx={{ textAlign: 'center', mt: 2 }}>

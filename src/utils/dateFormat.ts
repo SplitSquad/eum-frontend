@@ -16,7 +16,7 @@ export const formatDateTime = (dateString?: string): string => {
     
     return `${year}-${month}-${day} ${hours}:${minutes}`;
   } catch (e) {
-    console.error('날짜 형식화 오류:', e);
+    console.error('Date formatting error:', e);
     return '';
   }
 };

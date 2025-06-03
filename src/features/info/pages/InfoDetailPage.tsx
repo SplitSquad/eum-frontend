@@ -40,6 +40,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import PersonIcon from '@mui/icons-material/Person';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import CategoryIcon from '@mui/icons-material/Category';
+import { toggleBookmark } from '../api/infoApi';
 
 // userId 꺼내오는 헬퍼
 export function getUserId(): number | null {
@@ -485,21 +486,32 @@ export default function InfoDetailPage() {
         <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-4 space-y-4 min-w-[140px]">
           {/* 북마크 버튼 */}
           <button
-            onClick={() => {
-              // 북마크 기능 (목록 페이지와 동일한 로컬스토리지 키 사용)
-              const bookmarks = JSON.parse(localStorage.getItem('bookmarkedIds') || '[]');
-              const currentId = detail?.informationId;
-
-              if (isBookmarked) {
-                const newBookmarks = bookmarks.filter((id: number) => id !== currentId);
-                localStorage.setItem('bookmarkedIds', JSON.stringify(newBookmarks));
-                setIsBookmarked(false);
-              } else {
+            onClick={async () => {
+              try {
+                const currentId = detail?.informationId;
+                
                 if (currentId) {
-                  bookmarks.push(currentId);
-                  localStorage.setItem('bookmarkedIds', JSON.stringify(bookmarks));
-                  setIsBookmarked(true);
+                  const success = await toggleBookmark(currentId);
+                  
+                  if (success) {
+                    const bookmarks = JSON.parse(localStorage.getItem('bookmarkedIds') || '[]');
+                    if (isBookmarked) {
+                      const newBookmarks = bookmarks.filter((id: number) => id !== currentId);
+                      localStorage.setItem('bookmarkedIds', JSON.stringify(newBookmarks));
+                      setIsBookmarked(false);
+                    } else {
+                      bookmarks.push(currentId);
+                      localStorage.setItem('bookmarkedIds', JSON.stringify(bookmarks));
+                      setIsBookmarked(true);
+                    }
+                  } else {
+                    console.error('북마크 API 호출 실패');
+                    alert('북마크 처리 중 오류가 발생했습니다.');
+                  }
                 }
+              } catch (err) {
+                console.error('북마크 실패:', err);
+                alert('북마크 처리 중 오류가 발생했습니다.');
               }
             }}
             className={`w-full px-3 py-3 rounded-xl flex items-center gap-3 transition-all duration-200 text-sm font-medium ${
@@ -521,7 +533,7 @@ export default function InfoDetailPage() {
                 d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
               />
             </svg>
-            <span>{isBookmarked ? t('infoPage.actions.bookmarked') : t('infoPage.actions.bookmark')}</span>
+            <span>{isBookmarked ? '저장됨' : '북마크'}</span>
           </button>
 
           {/* 공유 버튼 */}
@@ -550,7 +562,7 @@ export default function InfoDetailPage() {
                 d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
               />
             </svg>
-            <span>{t('infoPage.actions.shareAction')}</span>
+            <span>공유하기</span>
           </button>
 
           {/* 인쇄 버튼 */}
@@ -600,7 +612,7 @@ export default function InfoDetailPage() {
                 d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z"
               />
             </svg>
-            <span>{t('infoPage.actions.printAction')}</span>
+            <span>인쇄하기</span>
           </button>
 
           {/* 맨 위로 버튼 */}
@@ -616,7 +628,7 @@ export default function InfoDetailPage() {
                 d="M5 10l7-7m0 0l7 7m-7-7v18"
               />
             </svg>
-            <span>{t('infoPage.actions.scrollToTop')}</span>
+            <span>맨 위로</span>
           </button>
         </div>
       </div>

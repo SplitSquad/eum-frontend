@@ -523,7 +523,7 @@ const PostDetailPage: React.FC = () => {
     try {
       return format(new Date(dateString), 'yyyy-MM-dd HH:mm', { locale: ko });
     } catch (e) {
-      console.error('날짜 형식 변환 오류:', e);
+      console.error('Date format conversion error:', e);
       return t('community.posts.noDate');
     }
   };
@@ -543,7 +543,7 @@ const PostDetailPage: React.FC = () => {
   // 신고 다이얼로그 열기
   const handleOpenReportDialog = () => {
     if (!post || !post.userId) {
-      console.error('게시글 작성자 정보가 없습니다.');
+      console.error('Post author information is missing.');
       enqueueSnackbar(t('community.posts.noPermission'), { variant: 'error' });
       return;
     }
@@ -632,7 +632,7 @@ const PostDetailPage: React.FC = () => {
       }
     } catch (error) {
       console.error('[ERROR] 게시글 반응 처리 실패:', error);
-      enqueueSnackbar('반응 처리 중 오류가 발생했습니다.', { variant: 'error' });
+      enqueueSnackbar('An error occurred while processing your reaction.', { variant: 'error' });
       // 에러 발생 시 전체 게시글 데이터 다시 로드
       fetchPostData();
     }

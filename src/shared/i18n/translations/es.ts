@@ -20,7 +20,14 @@ const es = {
       nolanguage: 'Sin información del idioma',
       Joineddate: 'Fecha de Registro',
       nojoindate: 'Sin información de registro',
-      visitpurpose: 'Motivo de la visita',
+      visitPurpose: {
+        travel: 'Viaje',
+        study: 'Estudio',
+        work: 'Trabajo',
+        living: 'Residencia',
+        business: 'Negocio',
+        other: 'Otro',
+      },
       novistpurpose: 'No especificado',
       ActivityStatistics: 'Estadísticas de Actividad',
       post: 'Publicaciones',
@@ -1117,7 +1124,35 @@ const es = {
     editPost: 'Editar Publicación',
     create: 'Crear',
     edit: 'Editar',
-    fileUpload: 'Subir Archivo',
+    fileUpload: {
+      title: 'Subir Archivo',
+      dragAndDrop: 'Arrastra y suelta archivos aquí o haz clic para subir',
+      maxSize: 'Máx 10MB, archivos de imagen y documento soportados',
+      selectedFiles: 'Archivos Seleccionados',
+      existingFiles: 'Archivos Adjuntos Existentes',
+      finalConfirmTitle: '📝 Confirmación Final',
+      finalConfirmMessage: `📝 Confirmación Final
+
+Nuevos archivos seleccionados: {{newFileCount}}
+Archivos adjuntos existentes: {{existingFileCount}}
+
+⚠️ Al guardar se eliminarán todos los archivos adjuntos existentes y solo quedarán los nuevos archivos.
+
+¿Realmente quieres guardar?`,
+      newFileWarning: '⚠️ Agregar nuevos archivos eliminará todos los archivos existentes',
+      editModeWarning: '⚠️ Advertencia: Agregar nuevos archivos eliminará todos los {{count}} archivos adjuntos existentes.\n\n¿Realmente quieres continuar?\n\nSelecciona "Cancelar" para mantener los archivos existentes.',
+      deleteConfirm: '¿Estás seguro de que quieres eliminar este archivo?',
+      deleteWarning: '⚠️ Advertencia: Este archivo será eliminado permanentemente al guardar la publicación.',
+      imageHint: 'Las imágenes se mostrarán como vista previa',
+      editModeDragOrClick: 'Arrastra archivos o haz clic para reemplazar con nuevos archivos',
+      dragOrClick: 'Arrastra archivos o haz clic para subir',
+      editModeHint: 'Se subirán nuevos archivos en lugar de los archivos existentes',
+      imageHint2: 'Las imágenes se mostrarán como vista previa ✨\nMáx 10MB, soporta todos los formatos de archivo',
+      newImage: 'Nuevas imágenes ({{count}})',
+      newFile: 'Nuevos archivos ({{count}})',
+      existingImage: 'Imágenes existentes ({{count}})',
+      existingFile: 'Archivos existentes ({{count}})',
+    },
     dragAndDropOrClickToUpload: 'Arrastra y suelta archivos aquí o haz clic para subir',
     max10MBImageAndDocumentFiles: 'Máx 10MB, archivos de imagen y documento soportados',
     selectedFiles: 'Archivos Seleccionados',
@@ -1470,6 +1505,8 @@ const es = {
       },
       currentSearch: 'Búsqueda actual',
     },
+    region: 'Región',
+    selectMeetingRegion: 'Por favor seleccione la región donde se realizará la reunión',
   },
   widgets: {
     dynamicFeed: {

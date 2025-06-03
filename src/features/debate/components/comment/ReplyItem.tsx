@@ -138,7 +138,7 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
   // 신고 대화상자 핸들러
   const handleOpenReportDialog = () => {
     if (!user) {
-      alert('로그인이 필요합니다.');
+      alert('Login is required.');
       return;
     }
     setReportDialogOpen(true);
@@ -180,7 +180,7 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
       // onUpdate();
     } catch (error) {
       console.error('대댓글 수정 실패:', error);
-      alert('대댓글 수정 중 오류가 발생했습니다.');
+      alert('An error occurred while editing reply.');
       // 실패 시 원래 내용으로 복원
       setContent(originalContent);
       setEditText(originalContent);
@@ -196,7 +196,7 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
       e.stopPropagation();
     }
 
-    if (window.confirm('정말 답글을 삭제하시겠습니까?')) {
+    if (window.confirm('Are you sure you want to delete this reply?')) {
       try {
         setIsSubmitting(true);
         await deleteReply(id);
@@ -206,7 +206,7 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
         // onUpdate();
       } catch (error) {
         console.error('답글 삭제 실패:', error);
-        alert('답글 삭제 중 오류가 발생했습니다.');
+        alert('An error occurred while deleting reply.');
       } finally {
         setIsSubmitting(false);
       }
@@ -318,7 +318,7 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
                 onClose={handleMenuClose}
                 onClick={e => e.stopPropagation()}
               >
-                <MenuItem onClick={toggleEdit}>수정</MenuItem>
+                <MenuItem onClick={toggleEdit}>Edit</MenuItem>
                 <MenuItem
                   onClick={e => {
                     e.stopPropagation();
@@ -326,7 +326,7 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
                     handleDelete();
                   }}
                 >
-                  삭제
+                  Delete
                 </MenuItem>
               </Menu>
             </Box>
@@ -362,7 +362,7 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
                     disabled={isSubmitting}
                     disableRipple
                   >
-                    취소
+                    Cancel
                   </Button>
                   <Button
                     variant="contained"
@@ -372,7 +372,7 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onUpdate }) => {
                     disabled={isSubmitting}
                     disableRipple
                   >
-                    {isSubmitting ? '저장 중...' : '저장'}
+                    {isSubmitting ? 'Saving...' : 'Save'}
                   </Button>
                 </Stack>
               </Box>

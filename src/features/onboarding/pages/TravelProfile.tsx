@@ -32,7 +32,7 @@ import {
 } from '@mui/material';
 import OnboardingLayout from '../components/common/OnboardingLayout';
 import FormButtons from '../components/common/FormButtons';
-import CommonStep, { CommonStepType, LanguageData, EmergencyData } from './CommonSteps';
+import CommonStep, { CommonStepType, LanguageData } from './CommonSteps';
 import { useThemeStore } from '../../theme/store/themeStore';
 import { saveOnboardingData } from '../api/onboardingApi';
 import { koreanCities, koreanTouristAttractions } from '../data/koreaData';
@@ -159,7 +159,6 @@ interface TravelProfileData {
 
   // 공통 섹션 데이터
   language: LanguageData;
-  emergencyInfo: EmergencyData;
   interests: string[];
 }
 const { t } = useTranslation();
@@ -268,12 +267,6 @@ const TravelProfile: React.FC = () => {
 
     // 공통 섹션 초기화
     language: { koreanLevel: 'basic' },
-    emergencyInfo: {
-      contact: '',
-      medicalConditions: '',
-      foodAllergies: '',
-      receiveEmergencyAlerts: true,
-    },
     interests: [],
   });
 
@@ -297,7 +290,6 @@ const TravelProfile: React.FC = () => {
     t('onboarding.travel.steps.purposes'),
     t('onboarding.travel.steps.language'),
     t('onboarding.travel.steps.interests'),
-    t('onboarding.travel.steps.emergency'),
   ];
 
   // 스텝 아이콘 정의
@@ -308,7 +300,6 @@ const TravelProfile: React.FC = () => {
     <ExploreIcon />,
     <TranslateIcon />,
     <FavoriteIcon />,
-    <HealthAndSafetyIcon />,
   ];
 
   // 총 스텝 수
@@ -321,8 +312,6 @@ const TravelProfile: React.FC = () => {
         return 'language';
       case 6:
         return 'interests';
-      case 7:
-        return 'emergency';
       default:
         return null;
     }
@@ -346,14 +335,6 @@ const TravelProfile: React.FC = () => {
     setFormData(prev => ({
       ...prev,
       language: data,
-    }));
-  };
-
-  // 응급 정보 변경 핸들러
-  const handleEmergencyChange = (data: EmergencyData) => {
-    setFormData(prev => ({
-      ...prev,
-      emergencyInfo: data,
     }));
   };
 
@@ -390,13 +371,13 @@ const TravelProfile: React.FC = () => {
     try {
       // 필수 필드 검증
       if (!formData.nationality && !formData.country) {
-        alert(t('onboarding.confirmNation'));
+        alert(t('messages.confirmNation'));
         setIsSubmitting(false);
         return;
       }
 
       if (!formData.gender) {
-        alert(t('onboarding.confirmGender'));
+        alert(t('messages.confirmGender'));
         setIsSubmitting(false);
         return;
       }
@@ -421,7 +402,6 @@ const TravelProfile: React.FC = () => {
 
         // 공통 정보
         language: formData.language,
-        emergencyInfo: formData.emergencyInfo,
         interests: formData.interests,
       };
 
@@ -470,10 +450,8 @@ const TravelProfile: React.FC = () => {
         <CommonStep
           stepType={commonStepType}
           languageData={formData.language}
-          emergencyData={formData.emergencyInfo}
           interests={formData.interests}
           onLanguageChange={handleLanguageChange}
-          onEmergencyChange={handleEmergencyChange}
           onInterestsChange={handleInterestsChange}
         />
       );
@@ -1329,164 +1307,6 @@ const TravelProfile: React.FC = () => {
           </StyledPaper>
         );
 
-      case 7: // 응급 상황 설정
-        return (
-          <StyledPaper elevation={0} sx={{ p: 4 }}>
-            <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
-              <Avatar
-                sx={{
-                  bgcolor: alpha(primaryColor, 0.2),
-                  color: primaryColor,
-                  width: 48,
-                  height: 48,
-                  mr: 2,
-                }}
-              >
-                <HealthAndSafetyIcon />
-              </Avatar>
-              <Typography variant="h5" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                {t('onboarding.emergency.title')} {'1234124124'}
-              </Typography>
-            </Box>
-
-            <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
-              {t('onboarding.emergency.description')}
-            </Typography>
-
-            <Box sx={{ mb: 4 }}>
-              <Typography
-                variant="subtitle2"
-                sx={{ mb: 1, color: 'text.secondary', fontWeight: 500 }}
-              >
-                {t('onboarding.emergency.contactLabel')}
-              </Typography>
-              <StyledTextField
-                label={t('onboarding.emergency.contactLabel')}
-                name="emergencyInfo.contact"
-                value={formData.emergencyInfo.contact}
-                onChange={handleInputChange}
-                fullWidth
-                required
-                color="primary"
-                placeholder={t('onboarding.emergency.contactPlaceholder')}
-                helperText={t('onboarding.emergency.contactHelper')}
-                sx={{ mb: 3 }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Box sx={{ color: alpha(primaryColor, 0.7) }}>📞</Box>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-
-              <Typography
-                variant="subtitle2"
-                sx={{ mb: 1, color: 'text.secondary', fontWeight: 500 }}
-              >
-                {t('onboarding.emergency.medicalLabel')}
-              </Typography>
-              <StyledTextField
-                label={t('onboarding.emergency.medicalLabel')}
-                name="emergencyInfo.medicalConditions"
-                value={formData.emergencyInfo.medicalConditions}
-                onChange={handleInputChange}
-                multiline
-                rows={2}
-                fullWidth
-                color="primary"
-                placeholder={t('onboarding.emergency.medicalPlaceholder')}
-                helperText={t('onboarding.emergency.medicalHelper')}
-                sx={{ mb: 3 }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Box sx={{ color: alpha(primaryColor, 0.7) }}>🏥</Box>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-
-              <Typography
-                variant="subtitle2"
-                sx={{ mb: 1, color: 'text.secondary', fontWeight: 500 }}
-              >
-                {t('onboarding.emergency.foodLabel')}
-              </Typography>
-              <StyledTextField
-                label={t('onboarding.emergency.foodLabel')}
-                name="emergencyInfo.foodAllergies"
-                value={formData.emergencyInfo.foodAllergies}
-                onChange={handleInputChange}
-                multiline
-                rows={2}
-                fullWidth
-                color="primary"
-                placeholder={t('onboarding.emergency.foodPlaceholder')}
-                helperText={t('onboarding.emergency.foodHelper')}
-                sx={{ mb: 3 }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Box sx={{ color: alpha(primaryColor, 0.7) }}>🍽️</Box>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-
-              <Box
-                sx={{
-                  p: 2,
-                  backgroundColor: alpha(theme.palette.info.main, 0.05),
-                  borderRadius: 2,
-                  border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                }}
-              >
-                <Box
-                  component="span"
-                  sx={{
-                    mr: 1.5,
-                    color: theme.palette.info.main,
-                    fontSize: '1.2rem',
-                    mt: 0.5,
-                  }}
-                >
-                  ℹ️
-                </Box>
-                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                  {t('onboarding.emergency.notice')}
-                </Typography>
-              </Box>
-
-              <Box sx={{ mt: 3, display: 'flex', alignItems: 'center' }}>
-                <FormControlLabel
-                  control={
-                    <Radio
-                      checked={formData.emergencyInfo.receiveEmergencyAlerts}
-                      onChange={e =>
-                        setFormData(prev => ({
-                          ...prev,
-                          emergencyInfo: {
-                            ...prev.emergencyInfo,
-                            receiveEmergencyAlerts: e.target.checked,
-                          },
-                        }))
-                      }
-                      sx={{
-                        color: theme.palette.grey[400],
-                        '&.Mui-checked': { color: primaryColor },
-                      }}
-                    />
-                  }
-                  label={t('onboarding.emergency.alertLabel')}
-                />
-              </Box>
-            </Box>
-          </StyledPaper>
-        );
-
       default:
         return null;
     }
@@ -1507,12 +1327,6 @@ const TravelProfile: React.FC = () => {
         return !formData.language.koreanLevel;
       case 6: // 관심사 선택
         return formData.interests.length === 0;
-      case 7: // 응급 상황 설정
-        return (
-          !formData.emergencyInfo.contact ||
-          !formData.emergencyInfo.medicalConditions ||
-          !formData.emergencyInfo.foodAllergies
-        );
       default:
         return false;
     }

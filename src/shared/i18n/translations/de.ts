@@ -23,7 +23,14 @@ const de = {
       nolanguage: 'Keine Sprachinformationen',
       Joineddate: 'Beitrittsdatum',
       nojoindate: 'Keine Beitrittsinformationen',
-      visitpurpose: 'Besuchsgrund',
+      visitPurpose: {
+        travel: 'Reisen',
+        study: 'Studium',
+        work: 'Arbeit',
+        living: 'Wohnen',
+        business: 'Geschäft',
+        other: 'Andere',
+      },
       novistpurpose: 'Nicht angegeben',
       ActivityStatistics: 'Aktivitätsstatistik',
       post: 'Beiträge',
@@ -982,24 +989,39 @@ const de = {
     error: 'Fehler beim Laden der Daten',
   },
   community: {
-    title: 'Community',
+    title: 'Gemeinschaft',
     createPost: 'Beitrag Erstellen',
     editPost: 'Beitrag Bearbeiten',
     create: 'Erstellen',
     edit: 'Bearbeiten',
     fileUpload: {
-      fileUpload: 'Dateianhang',
-      imageHint: '💡 Bilder werden zur einfachen Überprüfung als Vorschau angezeigt',
-      imageHint2: 'Bilder werden als Vorschau angezeigt ✨\nMax. 10MB, alle Dateitypen unterstützt',
-      editModeWarning: '⚠️ Das Hinzufügen neuer Dateien löscht alle vorhandenen Anhänge',
-      dragOrClick: '📁 Dateien zum Hochladen ziehen oder klicken',
-      editModeDragOrClick: '⚠️ Neue Dateien hinzufügen (alle vorhandenen Dateien werden gelöscht)',
-      editModeHint:
-        'Das Auswählen neuer Dateien löscht alle vorhandenen Anhänge\nBitte sorgfältig auswählen',
-      newImage: 'Neue Bilder ({count})',
-      newFile: 'Neue Anhänge ({count})',
-      existingImage: 'Vorhandene Bilder ({count})',
-      existingFile: 'Vorhandene Anhänge ({count})',
+      title: 'Dateianhang',
+      dragAndDrop: 'Dateien hier hinziehen oder klicken zum Hochladen',
+      maxSize: 'Max 10MB, Bild- und Dokumentdateien unterstützt',
+      selectedFiles: 'Ausgewählte Dateien',
+      existingFiles: 'Vorhandene Anhänge',
+      finalConfirmTitle: '📝 Endgültige Bestätigung',
+      finalConfirmMessage: `📝 Endgültige Bestätigung
+
+Neue ausgewählte Dateien: {{newFileCount}}
+Vorhandene Anhänge: {{existingFileCount}}
+
+⚠️ Beim Speichern werden alle vorhandenen Anhänge gelöscht und nur die neuen Dateien bleiben.
+
+Möchten Sie wirklich speichern?`,
+      newFileWarning: '⚠️ Das Hinzufügen neuer Dateien löscht alle vorhandenen Dateien',
+      editModeWarning: '⚠️ Warnung: Das Hinzufügen neuer Dateien löscht alle {{count}} vorhandenen Anhänge.\n\nMöchten Sie wirklich fortfahren?\n\nWählen Sie "Abbrechen", um vorhandene Dateien zu behalten.',
+      deleteConfirm: 'Sind Sie sicher, dass Sie diese Datei löschen möchten?',
+      deleteWarning: '⚠️ Warnung: Diese Datei wird beim Speichern des Beitrags dauerhaft gelöscht.',
+      imageHint: 'Bilder werden als Vorschau angezeigt',
+      editModeDragOrClick: 'Dateien ziehen oder klicken, um durch neue Dateien zu ersetzen',
+      dragOrClick: 'Dateien ziehen oder klicken zum Hochladen',
+      editModeHint: 'Neue Dateien werden anstelle der vorhandenen Dateien hochgeladen',
+      imageHint2: 'Bilder werden als Vorschau angezeigt ✨\nMax 10MB, alle Dateiformate unterstützt',
+      newImage: 'Neue Bilder ({{count}})',
+      newFile: 'Neue Dateien ({{count}})',
+      existingImage: 'Vorhandene Bilder ({{count}})',
+      existingFile: 'Vorhandene Dateien ({{count}})',
     },
     selectedFiles: 'Ausgewählte Dateien',
     existingAttachedFiles: 'Vorhandene Anhänge',
@@ -1349,6 +1371,7 @@ const de = {
       },
       currentSearch: 'Aktuelle Suche',
     },
+    selectMeetingRegion: 'Bitte wählen Sie die Region aus, in der das Treffen stattfinden wird',
   },
   widgets: {
     dynamicFeed: {

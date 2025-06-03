@@ -2,6 +2,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { callAgentic } from '@/shared/utils/Agentic';
 import { useModalStore } from '@/shared/store/ModalStore';
+import { useTranslation } from '@/shared/i18n';
+import { useLanguageStore } from '@/features/theme/store/languageStore';
+import EeumProfile from '@/assets/images/characters/이음이.png';
 // import { callJobAgent, processCoverLetterResponse } from '@/shared/utils/JobAgent';
 // import { CoverLetterState } from '@/types/CoverLetterTypes';
 
@@ -33,11 +36,14 @@ interface ModalContentProps {
 }
 
 export default function ModalContent({ adjustKey, btnRect }: ModalContentProps) {
+  const { t } = useTranslation();
+  const { language } = useLanguageStore();
+  
   const [messages, setMessages] = useState<Message[]>([
     {
       id: Date.now(),
       sender: 'bot',
-      text: '무엇을 도와드릴까요? (예: 일정 작성, 게시글 작성 등)',
+      text: t('aiAssistant.chat.initialMessage'),
     },
   ]);
   const [loading, setLoading] = useState(false);
@@ -46,6 +52,17 @@ export default function ModalContent({ adjustKey, btnRect }: ModalContentProps) 
   const [input, setInput] = useState('');
   const { openModal, content } = useModalStore();
 
+  // 언어가 변경될 때 초기 메시지 업데이트
+  useEffect(() => {
+    setMessages([
+      {
+        id: Date.now(),
+        sender: 'bot',
+        text: t('aiAssistant.chat.initialMessage'),
+      },
+    ]);
+  }, [language, t]);
+
   const downloadImage = url => {
     fetch(url)
       .then(response => response.blob())
@@ -53,14 +70,14 @@ export default function ModalContent({ adjustKey, btnRect }: ModalContentProps) 
         const blobUrl = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = blobUrl;
-        link.download = 'downloaded-image.jpg'; // 원하는 파일명으로 설정
+        link.download = 'downloaded-image.jpg';
         document.body.appendChild(link);
         link.click();
         link.remove();
         window.URL.revokeObjectURL(blobUrl);
       })
       .catch(error => {
-        console.error('이미지 다운로드 중 오류 발생:', error);
+        console.error(t('common.errors.downloadFailed'), error);
       });
   };
 
@@ -154,7 +171,7 @@ export default function ModalContent({ adjustKey, btnRect }: ModalContentProps) 
     } catch {
       setMessages(msgs => [
         ...msgs,
-        { id: nextId + 2, sender: 'bot', text: '응답 중 오류가 발생했습니다.' },
+        { id: nextId + 2, sender: 'bot', text: t('aiAssistant.errors.responseError') },
       ]);
     } finally {
       setLoading(false);
@@ -162,294 +179,385 @@ export default function ModalContent({ adjustKey, btnRect }: ModalContentProps) 
   };
 
   return (
-    <div ref={modalRef} className="flex flex-col h-[400px] w-[350px] bg-white rounded-lg shadow-lg">
-      {/* 메시지 리스트 */}
-      <div ref={listRef} className="flex-1 overflow-auto p-3 space-y-2 bg-gray-50">
+    <div 
+      ref={modalRef} 
+      className="flex flex-col h-[520px] w-[400px] bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden"
+      style={{
+        background: `
+          radial-gradient(circle at 20% 30%, rgba(220, 220, 230, 0.15) 0%, transparent 50%),
+          radial-gradient(circle at 80% 70%, rgba(210, 210, 220, 0.10) 0%, transparent 50%),
+          linear-gradient(145deg, #f7f8fa 0%, #ececf0 100%)
+        `,
+        boxShadow: `
+          0 25px 50px -12px rgba(0, 0, 0, 0.25),
+          0 10px 20px -5px rgba(0, 0, 0, 0.1),
+          inset 0 1px 0 rgba(255, 255, 255, 0.1)
+        `,
+        border: '2px solid #e0e0e7',
+        backdropFilter: 'blur(10px)',
+      }}
+    >
+      {/* 모달 헤더 - 개선된 디자인 */}
+      <div 
+        className="flex items-center px-5 py-4 border-b flex-shrink-0"
+        style={{
+          background: `
+            linear-gradient(135deg, #f7f7fa 0%, #e9e9ee 100%)
+          `,
+          borderColor: '#e0e0e7',
+          borderTopLeftRadius: '16px',
+          borderTopRightRadius: '16px',
+          boxShadow: '0 2px 8px rgba(120,120,130,0.06)',
+        }}
+      >
+        <div 
+          className="w-10 h-10 rounded-full mr-3 flex-shrink-0 overflow-hidden"
+          style={{
+            background: 'linear-gradient(145deg, #fff 0%, #f0f0f3 100%)',
+            border: '2px solid #e0e0e7',
+            boxShadow: '0 2px 8px rgba(120,120,130,0.08)',
+          }}
+        >
+          <img
+            src={EeumProfile}
+            alt="이음이"
+            className="w-full h-full object-cover"
+          />
+        </div>
+        <div className="flex-1">
+          <h3 
+            className="font-bold text-gray-800"
+            style={{
+              fontSize: '16px',
+              fontFamily: '"Noto Serif KR", serif',
+              letterSpacing: '0.02em',
+              color: '#444',
+            }}
+          >
+            {t('aiAssistant.title')}
+          </h3>
+          <p 
+            className="text-xs mt-1"
+            style={{
+              color: '#666',
+              fontFamily: '"Noto Sans KR", sans-serif',
+              fontWeight: '500',
+            }}
+          >
+            {t('aiAssistant.chat.aiExpert')}
+          </p>
+        </div>
+        <div 
+          className="px-3 py-1 rounded-full text-xs"
+          style={{
+            background: '#f0f0f3',
+            color: '#555',
+            fontFamily: '"Noto Sans KR", sans-serif',
+            fontWeight: '600',
+            border: '1px solid #e0e0e7',
+          }}
+        >
+          온라인
+        </div>
+      </div>
+
+      {/* 메시지 리스트 - 개선된 디자인 */}
+      <div 
+        ref={listRef} 
+        className="flex-1 overflow-auto p-5 space-y-4"
+        style={{
+          background: `
+            radial-gradient(circle at 25% 25%, rgba(220, 220, 230, 0.08) 0%, transparent 50%),
+            radial-gradient(circle at 75% 75%, rgba(210, 210, 220, 0.05) 0%, transparent 50%),
+            linear-gradient(180deg, #f7f8fa 0%, #ececf0 100%)
+          `,
+          scrollbarWidth: 'thin',
+          scrollbarColor: 'rgba(139, 69, 19, 0.3) transparent',
+        }}
+      >
         {messages.map(m => (
           <div
             key={m.id}
-            className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+            className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'} items-end mb-3`}
           >
-            <span
-              className={`inline-block px-3 py-1 rounded-xl max-w-[70%] break-words ${
-                m.sender === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800'
-              }`}
-            >
-              {m.imageUrl ? (
-                m.imageUrl.includes('amazonaws') ? (
-                  <>
-                    <img src={m.imageUrl} alt="AI 응답 이미지" className="max-w-full rounded-md" />
-                    <a
-                      href={m.imageUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-blue-600 underline"
-                    >
-                      이미지 다운로드
-                    </a>
-                  </>
-                ) : (
-                  <>
-                    <img src={m.imageUrl} alt="AI 응답 이미지" className="max-w-full rounded-md" />
-                    <button
-                      onClick={() => downloadImage(m.imageUrl!)}
-                      className="text-sm text-blue-600 underline"
-                    >
-                      이미지 다운로드
-                    </button>
-                  </>
-                )
-              ) : m.post ? (
-                <div className="space-y-2 text-sm text-gray-800">
-                  {m.post.split('\n').map((line, idx) => {
-                    const match = line.match(/^(제목|카테고리|내용):\s*(.*)/);
-                    if (match) {
-                      const [, label, content] = match;
-                      return (
-                        <div key={idx}>
-                          <strong>{label}:</strong> {content}
-                        </div>
-                      );
-                    } else {
-                      // '글이 작성되었습니다.' 같은 일반 텍스트 출력
-                      return <div key={idx}>{line}</div>;
-                    }
-                  })}
-                </div>
-              ) : m.calendar_check ? (
-                (() => {
-                  type CalendarEvent = {
-                    summary: string;
-                    description?: string;
-                    start: { dateTime: string; timeZone?: string };
-                    end: { dateTime: string; timeZone?: string };
-                  };
-
-                  let events: CalendarEvent[] = [];
-
-                  try {
-                    events = JSON.parse(m.calendar_check);
-                  } catch (err) {
-                    console.error('calendar_check 파싱 실패:', err);
-                    return <div className="text-red-600">⛔ 일정을 불러오는 데 실패했습니다.</div>;
-                  }
-
-                  return (
-                    <div className="space-y-3">
-                      <div className="text-sm font-medium text-indigo-600 mb-1">📅 전체 일정</div>
-                      {events.map((event, index) => (
-                        <div key={index} className="border rounded-lg p-4 shadow-sm bg-white">
-                          <div className="text-lg font-semibold text-blue-600">{event.summary}</div>
-                          <div className="text-sm text-gray-500 mb-1">
-                            {event.description && event.description !== 'N/A'
-                              ? event.description
-                              : '설명 없음'}
-                          </div>
-                          <div className="text-sm">
-                            🕒 <span className="font-medium">시작:</span>{' '}
-                            {new Date(event.start.dateTime).toLocaleString('ko-KR')}
-                          </div>
-                          <div className="text-sm">
-                            🕓 <span className="font-medium">종료:</span>{' '}
-                            {new Date(event.end.dateTime).toLocaleString('ko-KR')}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  );
-                })()
-              ) : m.calendar_delete ? (
-                (() => {
-                  let event;
-                  try {
-                    const fixed = m.calendar_delete.replace(/'/g, '"');
-                    event = JSON.parse(fixed);
-                  } catch (err) {
-                    console.error('calendar_delete 파싱 실패:', err);
-                    return <div className="text-red-600">⛔ 삭제된 일정을 불러올 수 없습니다.</div>;
-                  }
-
-                  return (
-                    <div className="border rounded-lg p-4 mb-2 shadow-sm bg-white opacity-60">
-                      <div className="text-sm font-medium text-red-600 mb-2">
-                        🗑️ 일정이 삭제되었습니다.
-                      </div>
-                      <div className="text-lg font-semibold text-gray-700 line-through">
-                        {event.summary}
-                      </div>
-                      <div className="text-sm text-gray-500 mb-1 line-through">
-                        {event.description}
-                      </div>
-                      <div className="text-sm line-through">
-                        🕒 <span className="font-medium">시작:</span>{' '}
-                        {new Date(event.startDateTime).toLocaleString('ko-KR')}
-                      </div>
-                      <div className="text-sm line-through">
-                        🕓 <span className="font-medium">종료:</span>{' '}
-                        {new Date(event.endDateTime).toLocaleString('ko-KR')}
-                      </div>
-                    </div>
-                  );
-                })()
-              ) : m.calendar_add ? (
-                (() => {
-                  let event;
-                  try {
-                    // 문자열에 작은따옴표가 있어서 JSON.parse 전에 큰따옴표로 변환
-                    const fixed = m.calendar_add.replace(/'/g, '"');
-                    event = JSON.parse(fixed);
-                  } catch (err) {
-                    console.error('calendar_add 파싱 실패:', err);
-                    return <div className="text-red-600">⛔ 일정 정보를 불러올 수 없습니다.</div>;
-                  }
-
-                  return (
-                    <div className="border rounded-lg p-4 mb-2 shadow-sm bg-white">
-                      <div className="text-sm font-medium text-green-600 mb-2">
-                        ✅ 일정이 성공적으로 추가되었습니다.
-                      </div>
-                      <div className="text-lg font-semibold text-blue-600">{event.summary}</div>
-                      <div className="text-sm text-gray-500 mb-1">{event.description}</div>
-                      {event.location && (
-                        <div className="text-sm">
-                          📍 <span className="font-medium">장소:</span>{' '}
-                          {event.location || '장소 없음'}
-                        </div>
-                      )}
-                      <div className="text-sm">
-                        🕒 <span className="font-medium">시작:</span>{' '}
-                        {new Date(event.startDateTime).toLocaleString('ko-KR')}
-                      </div>
-                      <div className="text-sm">
-                        🕓 <span className="font-medium">종료:</span>{' '}
-                        {new Date(event.endDateTime).toLocaleString('ko-KR')}
-                      </div>
-                    </div>
-                  );
-                })()
-              ) : m.calendar_edit ? (
-                (() => {
-                  let event;
-                  try {
-                    // 작은따옴표 → 큰따옴표로 변환하여 JSON 파싱
-                    const fixed = m.calendar_edit.replace(/'/g, '"');
-                    event = JSON.parse(fixed);
-                  } catch (err) {
-                    console.error('calendar_edit 파싱 실패:', err);
-                    return <div className="text-red-600">⛔ 수정된 일정을 불러올 수 없습니다.</div>;
-                  }
-
-                  return (
-                    <div className="border rounded-lg p-4 mb-2 shadow-sm bg-white">
-                      <div className="text-sm font-medium text-yellow-600 mb-2">
-                        ✏️ 일정이 성공적으로 수정되었습니다.
-                      </div>
-                      <div className="text-lg font-semibold text-blue-600">{event.summary}</div>
-                      <div className="text-sm text-gray-500 mb-1">{event.description}</div>
-                      {event.location && (
-                        <div className="text-sm">
-                          📍 <span className="font-medium">장소:</span>{' '}
-                          {event.location || '장소 없음'}
-                        </div>
-                      )}
-                      <div className="text-sm">
-                        🕒 <span className="font-medium">시작:</span>{' '}
-                        {new Date(event.startDateTime).toLocaleString('ko-KR')}
-                      </div>
-                      <div className="text-sm">
-                        🕓 <span className="font-medium">종료:</span>{' '}
-                        {new Date(event.endDateTime).toLocaleString('ko-KR')}
-                      </div>
-                    </div>
-                  );
-                })()
-              ) : m.location ? (
-                <ul className="space-y-2">
-                  {Array.isArray(m.location) &&
-                    m.location.map((item, index) => (
-                      <li key={index} className="text-sm text-gray-800">
-                        <div className="font-semibold text-base">{item.place_name}</div>
-                        <div>📍 주소: {item.address_name}</div>
-                        <div>📞 전화번호: {item.phone ? item.phone : '없음'}</div>
-                        <div>📏 거리: {item.distance}m</div>
-                      </li>
-                    ))}
-                </ul>
-              ) : m.Amenities ? (
-                <ul className="space-y-1">
-                  {(m.Amenities.match(/\d+\.\s*[^0-9]+/g) || []).map((item, index) => {
-                    const [_, num, name] = item.match(/(\d+\.)\s*(.+)/) || [];
-                    return (
-                      <li key={index}>
-                        <span className="font-bold">{num}</span>{' '}
-                        <a
-                          href="#"
-                          className="text-blue-600 underline"
-                          onClick={e => {
-                            e.preventDefault();
-                            sendMessage(name.trim()); // ✅ 이렇게 해야 클릭 시 해당 항목으로 API 재질문 가능
-                          }}
-                        >
-                          &lt;{name.trim()}&gt;
-                        </a>
-                      </li>
-                    );
-                  })}
-                </ul>
-              ) : m.pdfUrl ? (
-                <a
-                  href={m.pdfUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-indigo-600 underline"
+            {m.sender === 'user' ? (
+              <div className="max-w-[75%] group">
+                <div
+                  className="inline-block px-4 py-3 rounded-2xl break-words relative"
+                  style={{
+                    background: `
+                      linear-gradient(145deg, #4f46e5 0%, #3730a3 100%)
+                    `,
+                    color: '#ffffff',
+                    boxShadow: `
+                      0 4px 12px rgba(79, 70, 229, 0.3),
+                      inset 0 1px 0 rgba(255,255,255,0.1)
+                    `,
+                    border: '1.5px solid #4338ca',
+                    fontFamily: '"Noto Sans KR", sans-serif',
+                    fontSize: '14px',
+                    lineHeight: '1.5',
+                    letterSpacing: '0.01em',
+                    fontWeight: '500',
+                  }}
                 >
-                  📄 PDF 파일 열기
-                </a>
-              ) : m.search ? (
-                <ul className="space-y-1">
-                  {Array.isArray(m.search) &&
-                    m.search.map((item: { title: string; link: string }, index: number) => (
-                      <li key={index}>
-                        <a
-                          href={item.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-blue-600 underline"
-                        >
-                          🔗 {item.title}
-                        </a>
-                      </li>
-                    ))}
-                </ul>
-              ) : (
-                m.text
-              )}
-            </span>
+                  <div
+                    className="absolute top-3 -right-1.5 w-3 h-3 transform rotate-45"
+                    style={{
+                      background: 'linear-gradient(145deg, #4f46e5 0%, #3730a3 100%)',
+                      border: '1.5px solid #4338ca',
+                      borderLeft: 'none',
+                      borderBottom: 'none',
+                    }}
+                  />
+                  <div className="relative z-10" style={{ color: '#ffffff' }}>{m.text}</div>
+                </div>
+                <div 
+                  className="text-xs mt-1 text-right opacity-60"
+                  style={{ color: '#888', fontFamily: '"Noto Sans KR", sans-serif' }}
+                >
+                  방금 전
+                </div>
+              </div>
+            ) : (
+              <div className="flex max-w-[85%] group">
+                <div 
+                  className="w-7 h-7 rounded-full mr-3 mt-1 flex-shrink-0 overflow-hidden"
+                  style={{
+                    background: 'linear-gradient(145deg, #fff 0%, #f0f0f3 100%)',
+                    border: '1.5px solid #e0e0e7',
+                    boxShadow: '0 2px 6px rgba(120,120,130,0.06)',
+                  }}
+                >
+                  <img
+                    src={EeumProfile}
+                    alt="이음이"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex-1">
+                  <div
+                    className="inline-block px-4 py-3 rounded-2xl break-words relative"
+                    style={{
+                      background: `
+                        linear-gradient(145deg, #fff 0%, #f7f7fa 100%)
+                      `,
+                      color: '#444',
+                      boxShadow: `
+                        0 4px 12px rgba(120,120,130,0.08),
+                        inset 0 1px 0 rgba(255,255,255,0.1)
+                      `,
+                      border: '1.5px solid #e0e0e7',
+                      fontFamily: '"Noto Sans KR", sans-serif',
+                      fontSize: '14px',
+                      lineHeight: '1.6',
+                      letterSpacing: '0.01em',
+                    }}
+                  >
+                    <div
+                      className="absolute top-3 -left-1.5 w-3 h-3 transform rotate-45"
+                      style={{
+                        background: 'linear-gradient(145deg, #fff 0%, #f7f7fa 100%)',
+                        border: '1.5px solid #e0e0e7',
+                        borderRight: 'none',
+                        borderBottom: 'none',
+                      }}
+                    />
+                    <div className="relative z-10">
+                      {m.imageUrl ? (
+                        m.imageUrl.includes('amazonaws') ? (
+                          <>
+                            <img 
+                              src={m.imageUrl} 
+                              alt="AI 응답 이미지" 
+                              className="max-w-full rounded-lg mb-2"
+                              style={{
+                                boxShadow: '0 4px 8px rgba(120,120,130,0.1)',
+                                border: '1px solid #e0e0e7',
+                              }}
+                            />
+                            <a
+                              href={m.imageUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm underline hover:no-underline transition-all"
+                              style={{
+                                color: '#6c63ff',
+                                fontWeight: '600',
+                                fontFamily: '"Noto Sans KR", sans-serif',
+                              }}
+                            >
+                              {t('common.actions.downloadImage')}
+                            </a>
+                          </>
+                        ) : (
+                          <>
+                            <img 
+                              src={m.imageUrl} 
+                              alt="AI 응답 이미지" 
+                              className="max-w-full rounded-lg mb-2"
+                              style={{
+                                boxShadow: '0 4px 8px rgba(120,120,130,0.1)',
+                                border: '1px solid #e0e0e7',
+                              }}
+                            />
+                            <button
+                              onClick={() => downloadImage(m.imageUrl!)}
+                              className="text-sm underline hover:no-underline transition-all"
+                              style={{
+                                color: '#6c63ff',
+                                fontWeight: '600',
+                                fontFamily: '"Noto Sans KR", sans-serif',
+                              }}
+                            >
+                              {t('common.actions.downloadImage')}
+                            </button>
+                          </>
+                        )
+                      ) : (
+                        m.text
+                      )}
+                    </div>
+                  </div>
+                  <div 
+                    className="text-xs mt-1 opacity-60"
+                    style={{ color: '#888', fontFamily: '"Noto Sans KR", sans-serif' }}
+                  >
+                    방금 전
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         ))}
         {loading && (
-          <div className="sticky bottom-0 w-full text-center py-2 bg-white/70">
-            <span className="text-gray-500">답변 중...</span>
+          <div className="flex justify-start">
+            <div className="flex max-w-[85%] group">
+              <div 
+                className="w-7 h-7 rounded-full mr-3 mt-1 flex-shrink-0 overflow-hidden"
+                style={{
+                  background: 'linear-gradient(145deg, #fff 0%, #f0f0f3 100%)',
+                  border: '1.5px solid #e0e0e7',
+                  boxShadow: '0 2px 6px rgba(120,120,130,0.06)',
+                }}
+              >
+                <img
+                  src={EeumProfile}
+                  alt="이음이"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div
+                className="inline-block px-4 py-3 rounded-2xl"
+                style={{
+                  background: `
+                    linear-gradient(145deg, #fff 0%, #f7f7fa 100%)
+                  `,
+                  color: '#888',
+                  boxShadow: `
+                    0 4px 12px rgba(120,120,130,0.08),
+                    inset 0 1px 0 rgba(255,255,255,0.1)
+                  `,
+                  border: '1.5px solid #e0e0e7',
+                }}
+              >
+                <div className="flex items-center space-x-2">
+                  <div className="flex space-x-1">
+                    <div 
+                      className="w-2 h-2 rounded-full animate-bounce" 
+                      style={{ 
+                        animationDelay: '0ms',
+                        background: 'linear-gradient(145deg, #bfc0c7 0%, #a0a1a8 100%)',
+                      }}
+                    ></div>
+                    <div 
+                      className="w-2 h-2 rounded-full animate-bounce" 
+                      style={{ 
+                        animationDelay: '150ms',
+                        background: 'linear-gradient(145deg, #bfc0c7 0%, #a0a1a8 100%)',
+                      }}
+                    ></div>
+                    <div 
+                      className="w-2 h-2 rounded-full animate-bounce" 
+                      style={{ 
+                        animationDelay: '300ms',
+                        background: 'linear-gradient(145deg, #bfc0c7 0%, #a0a1a8 100%)',
+                      }}
+                    ></div>
+                  </div>
+                  <span 
+                    className="text-sm font-medium"
+                    style={{ fontFamily: '"Noto Sans KR", sans-serif' }}
+                  >
+                    {t('aiAssistant.chat.loading')}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>
-      {/* 입력창 */}
-      <div className="flex items-center border-t p-2">
-        <input
-          type="text"
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && !loading && sendMessage()}
-          disabled={loading}
-          className="flex-1 px-3 py-1 bg-white border rounded-lg focus:outline-none focus:ring disabled:opacity-50"
-          placeholder="질문이나 요청을 입력하세요..."
-        />
+
+      {/* 입력창 - 개선된 디자인 */}
+      <div 
+        className="flex items-center p-5 border-t flex-shrink-0"
+        style={{
+          background: `
+            linear-gradient(135deg, #f7f7fa 0%, #e9e9ee 100%)
+          `,
+          borderColor: '#e0e0e7',
+          borderBottomLeftRadius: '16px',
+          borderBottomRightRadius: '16px',
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1)',
+        }}
+      >
+        <div className="flex-1 relative">
+          <input
+            type="text"
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && !loading && sendMessage()}
+            disabled={loading}
+            className="w-full px-4 py-3 rounded-full border-2 focus:outline-none transition-all duration-300 disabled:opacity-50"
+            placeholder={t('aiAssistant.chat.placeholder')}
+            style={{
+              background: 'rgba(255, 255, 255, 0.97)',
+              borderColor: '#e0e0e7',
+              color: '#444',
+              fontFamily: '"Noto Sans KR", sans-serif',
+              fontSize: '14px',
+              boxShadow: 'inset 0 2px 4px rgba(180,180,200,0.07)',
+              backdropFilter: 'blur(10px)',
+            }}
+            onFocus={e => {
+              e.target.style.borderColor = '#bfc0c7';
+              e.target.style.boxShadow = '0 0 0 3px rgba(180,180,200,0.10), inset 0 2px 4px rgba(180,180,200,0.07)';
+            }}
+            onBlur={e => {
+              e.target.style.borderColor = '#e0e0e7';
+              e.target.style.boxShadow = 'inset 0 2px 4px rgba(180,180,200,0.07)';
+            }}
+          />
+        </div>
         <button
           onClick={() => sendMessage()}
-          disabled={loading}
-          className="ml-2 px-4 py-1 bg-indigo-600 text-white rounded-lg disabled:opacity-50"
+          disabled={loading || !input.trim()}
+          className="ml-3 px-5 py-3 rounded-full font-bold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95"
+          style={{
+            background: loading || !input.trim() 
+              ? 'linear-gradient(145deg, #e5e7eb 0%, #d1d5db 100%)' 
+              : 'linear-gradient(145deg, #6c63ff 0%, #5a52d5 100%)',
+            color: loading || !input.trim() ? '#9ca3af' : 'white',
+            boxShadow: loading || !input.trim() 
+              ? 'none' 
+              : '0 4px 16px rgba(108, 99, 255, 0.3), inset 0 1px 0 rgba(255,255,255,0.1)',
+            fontSize: '14px',
+            fontFamily: '"Noto Sans KR", sans-serif',
+            letterSpacing: '0.02em',
+            border: loading || !input.trim() ? '1px solid #d1d5db' : '1px solid rgba(108, 99, 255, 0.2)',
+          }}
         >
-          전송
+          {loading ? t('aiAssistant.chat.sending') : t('aiAssistant.chat.send')}
         </button>
       </div>
     </div>

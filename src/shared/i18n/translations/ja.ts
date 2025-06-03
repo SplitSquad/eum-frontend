@@ -58,6 +58,14 @@ const ja = {
     badge4desc: '初めてブックマークを追加しました！',
     badge5name: '活発な活動者',
     badge5desc: '10件以上の活動を完了しました！',
+    visitPurpose: {
+      travel: '旅行',
+      study: '留学',
+      work: '就職',
+      living: '居住',
+      business: '事業',
+      other: 'その他',
+    },
   },
   ActivitiesPage: {
     activitylist: '活動履歴',
@@ -942,18 +950,33 @@ const ja = {
     create: '作成',
     edit: '編集',
     fileUpload: {
-      fileUpload: 'ファイル添付',
-      imageHint: '💡 画像はプレビューで簡単に確認できます',
+      title: 'ファイル添付',
+      dragAndDrop: 'ファイルをここにドラッグ&ドロップまたはクリックしてアップロード',
+      maxSize: '最大10MB、画像およびドキュメントファイルをサポート',
+      selectedFiles: '選択されたファイル',
+      existingFiles: '既存の添付ファイル',
+      finalConfirmTitle: '📝 最終確認',
+      finalConfirmMessage: `📝 最終確認
+
+選択された新しいファイル: {{newFileCount}}個
+既存の添付ファイル: {{existingFileCount}}個
+
+⚠️ 保存すると既存の添付ファイルがすべて削除され、新しいファイルのみが残ります。
+
+本当に保存しますか？`,
+      newFileWarning: '⚠️ 新しいファイルを追加すると既存ファイルがすべて削除されます',
+      editModeWarning: '⚠️ 警告：新しいファイルを追加すると既存の添付ファイル{{count}}個がすべて削除されます。\n\n本当に続行しますか？\n\n既存のファイルを保持するには「キャンセル」を選択してください。',
+      deleteConfirm: 'このファイルを削除してもよろしいですか？',
+      deleteWarning: '⚠️ 注意：投稿保存時にこのファイルが永久に削除されます。',
+      imageHint: '画像はプレビューで表示されます',
+      editModeDragOrClick: 'ファイルをドラッグまたはクリックして新しいファイルに置き換え',
+      dragOrClick: 'ファイルをドラッグまたはクリックしてアップロード',
+      editModeHint: '既存ファイルの代わりに新しいファイルがアップロードされます',
       imageHint2: '画像はプレビュー表示されます ✨\n最大10MB、すべてのファイル形式対応',
-      editModeWarning: '⚠️ 新しいファイルを追加すると既存の添付ファイルはすべて削除されます',
-      dragOrClick: '📁 ファイルをドラッグまたはクリックしてアップロード',
-      editModeDragOrClick: '⚠️ 新しいファイルを追加（既存ファイルはすべて削除されます）',
-      editModeHint:
-        '新しいファイルを選択すると既存の添付ファイルはすべて削除されます\n慎重に選択してください',
-      newImage: '新しい画像（{count}件）',
-      newFile: '新しい添付ファイル（{count}件）',
-      existingImage: '既存画像（{count}件）',
-      existingFile: '既存添付ファイル（{count}件）',
+      newImage: '新しい画像 ({{count}}個)',
+      newFile: '新しいファイル ({{count}}個)',
+      existingImage: '既存画像 ({{count}}個)',
+      existingFile: '既存ファイル ({{count}}個)',
     },
     dragAndDropOrClickToUpload: 'ファイルをここにドラッグ&ドロップまたはクリックしてアップロード',
     max10MBImageAndDocumentFiles: '最大10MB、画像およびドキュメントファイルをサポート',
@@ -1293,6 +1316,8 @@ const ja = {
       currentSearch: '現在の検索',
       popularPosts: '人気の投稿',
     },
+    region: '地域',
+    selectMeetingRegion: 'ミーティングが行われる地域を選択してください',
   },
   widgets: {
     dynamicFeed: {

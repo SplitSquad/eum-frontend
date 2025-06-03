@@ -398,6 +398,10 @@ const DebateDetailPage: React.FC = () => {
   const [userEmotion, setUserEmotion] = useState<EmotionType | null>(null);
   const [comment, setComment] = useState<string>('');
   const [stance, setStance] = useState<VoteType | null>(null);
+  const [newComment, setNewComment] = useState('');
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const [countryStats, setCountryStats] = useState<any[]>([]);
+  const hasInitialLoadedRef = useRef(false);
   
   // 언어 변경 추적을 위한 ref
   const previousLanguageRef = useRef(language);
@@ -428,7 +432,7 @@ const DebateDetailPage: React.FC = () => {
     targetType: 'debate',
     reactionType: ReactionType
   ): Promise<boolean> => {
-    return await DebateApi.addReaction({ targetId, targetType, reactionType });
+    return await addReaction(targetId, targetType, reactionType);
   };
 
   // stance 상태가 바뀔 때마다 로컬스토리지에 저장
@@ -441,8 +445,6 @@ const DebateDetailPage: React.FC = () => {
   }, [stance]);
 
   // 초기 데이터 로드 - 중복 방지 개선
-  const hasInitialLoadedRef = useRef(false);
-  
   useEffect(() => {
     if (id && !hasInitialLoadedRef.current) {
       hasInitialLoadedRef.current = true;
@@ -510,7 +512,7 @@ const DebateDetailPage: React.FC = () => {
       }
 
       // 코멘트 로드 - 중복 방지
-      if (id && (!debate.comments || debate.comments.length === 0)) {
+      if (id) {
         fetchComments(parseInt(id));
       }
 
@@ -524,54 +526,52 @@ const DebateDetailPage: React.FC = () => {
         setUserEmotion(null);
       }
 
-      // 국가별 참여 정보 로깅
-      if (debate.countryStats && debate.countryStats.length > 0) {
-        console.log('국가별 참여 정보:', debate.countryStats);
-      } else {
-        console.log('국가별 참여 정보가 없습니다.');
-
-        // 국가별 참여 정보가 없을 경우 즉시 API에서 가져옴
-        if (id) {
-          getVotesByDebateId(parseInt(id))
-            .then(voteData => {
-              if (voteData && voteData.nationPercent) {
-                console.log('투표 API에서 국가별 참여 정보 로드됨:', voteData.nationPercent);
-
-                // nationPercent를 countryStats로 변환
-                const countryStats = Object.entries(voteData.nationPercent).map(
-                  ([countryCode, percentage]) => {
-                    // 국가 코드에서 국가명 추출
-                    let countryName = countryCode;
-                    if (countryCode === 'KR') countryName = t('debate.korea');
-                    else if (countryCode === 'US') countryName = '미국';
-                    else if (countryCode === 'JP') countryName = '일본';
-                    else if (countryCode === 'CN') countryName = '중국';
-
-                    return {
-                      countryCode,
-                      countryName,
-                      count: Math.round(((percentage as number) / 100) * (voteData.voteCnt || 0)),
-                      percentage: percentage as number,
-                    };
-                  }
-                );
-
-                // 토론 객체의 countryStats 업데이트
-                debate.countryStats = countryStats;
-
-                // 강제 리렌더링을 위해 상태 업데이트
-                setUserVote(prev => prev);
-              } else {
-                console.log('투표 API에서 국가별 참여 정보를 가져오지 못했습니다.');
-              }
-            })
-            .catch(error => {
-              console.error('투표 API 호출 중 오류:', error);
-            });
-        }
+      // 국가별 참여 정보를 항상 최신으로 로드
+      if (id) {
+        loadCountryStats(parseInt(id));
       }
     }
   }, [debate, id, fetchComments]);
+
+  // 국가별 통계 로드 함수
+  const loadCountryStats = async (debateId: number) => {
+    try {
+      const voteData = await getVotesByDebateId(debateId);
+      if (voteData && voteData.nationPercent) {
+        console.log('국가별 참여 정보 로드됨:', voteData.nationPercent);
+
+        // nationPercent를 countryStats로 변환
+        const stats = Object.entries(voteData.nationPercent).map(
+          ([countryCode, percentage]) => {
+            // 국가 코드에서 국가명 추출
+            let countryName = countryCode;
+            if (countryCode === 'KR') countryName = t('debate.korea');
+            else if (countryCode === 'US') countryName = '미국';
+            else if (countryCode === 'JP') countryName = '일본';
+            else if (countryCode === 'CN') countryName = '중국';
+
+            return {
+              countryCode,
+              countryName,
+              count: Math.round(((percentage as number) / 100) * (voteData.voteCnt || 0)),
+              percentage: percentage as number,
+            };
+          }
+        );
+
+        setCountryStats(stats);
+        return stats;
+      } else {
+        console.log('국가별 참여 정보를 가져오지 못했습니다.');
+        setCountryStats([]);
+        return [];
+      }
+    } catch (error) {
+      console.error('국가별 통계 로드 중 오류:', error);
+      setCountryStats([]);
+      return [];
+    }
+  };
 
   const handleVote = (voteType: VoteType) => {
     if (!id || !debate) return;
@@ -608,7 +608,7 @@ const DebateDetailPage: React.FC = () => {
           console.log('투표 후 국가별 참여 정보:', response.nationPercent);
 
           // nationPercent를 countryStats로 변환
-          const countryStats = Object.entries(response.nationPercent).map(
+          const newCountryStats = Object.entries(response.nationPercent).map(
             ([countryCode, percentage]) => {
               // 국가 코드에서 국가명 추출 (간단한 매핑)
               let countryName = countryCode;
@@ -626,44 +626,19 @@ const DebateDetailPage: React.FC = () => {
             }
           );
 
-          // 상태 업데이트
-          debate.countryStats = countryStats;
-
-          // 강제 리렌더링을 위해 상태 업데이트
-          setUserVote(prev => prev);
+          // 상태와 debate 객체 모두 업데이트
+          setCountryStats(newCountryStats);
+          debate.countryStats = newCountryStats;
         }
         // 투표 실패하거나 응답에 nationPercent가 없는 경우 최신 투표 정보 가져오기
         else if (!success || !response.nationPercent) {
           // 최신 투표 정보 가져오기
-          getVotesByDebateId(parseInt(id))
-            .then(voteData => {
-              if (voteData && voteData.nationPercent) {
-                console.log('투표 API에서 국가별 참여 정보 로드됨:', voteData.nationPercent);
-
-                // nationPercent를 countryStats로 변환
-                const countryStats = Object.entries(voteData.nationPercent).map(
-                  ([countryCode, percentage]) => {
-                    // 국가 코드에서 국가명 추출 (간단한 매핑)
-                    let countryName = countryCode;
-                    if (countryCode === 'KR') countryName = t('debate.korea');
-                    else if (countryCode === 'US') countryName = '미국';
-                    else if (countryCode === 'JP') countryName = '일본';
-                    else if (countryCode === 'CN') countryName = '중국';
-
-                    return {
-                      countryCode,
-                      countryName,
-                      count: Math.round(((percentage as number) / 100) * (voteData.voteCnt || 0)),
-                      percentage: percentage as number,
-                    };
-                  }
-                );
-
-                // 상태 업데이트
-                debate.countryStats = countryStats;
-
-                // 컴포넌트 강제 리렌더링을 위해 상태 업데이트
-                setUserVote(prev => prev);
+          loadCountryStats(parseInt(id))
+            .then(stats => {
+              if (stats && stats.length > 0) {
+                console.log('투표 API에서 국가별 참여 정보 로드됨:', stats);
+                // debate 객체도 업데이트
+                debate.countryStats = stats;
               }
             })
             .catch(error => {
@@ -684,7 +659,7 @@ const DebateDetailPage: React.FC = () => {
       });
     } else if (userVote && userVote !== voteType) {
       // 이미 다른 옵션에 투표한 경우, 안내 메시지 표시
-      alert('이미 다른 옵션에 투표하셨습니다. 먼저 기존 투표를 취소한 후 다시 시도해주세요.');
+      alert('You have already voted for another option. Please cancel your existing vote first and try again.');
     } else {
       // 토글 전 현재 값 저장
       const originalProCount = debate.proCount;
@@ -715,7 +690,7 @@ const DebateDetailPage: React.FC = () => {
           console.log('투표 후 국가별 참여 정보:', response.nationPercent);
 
           // nationPercent를 countryStats로 변환
-          const countryStats = Object.entries(response.nationPercent).map(
+          const newCountryStats = Object.entries(response.nationPercent).map(
             ([countryCode, percentage]) => {
               // 국가 코드에서 국가명 추출 (간단한 매핑)
               let countryName = countryCode;
@@ -733,11 +708,9 @@ const DebateDetailPage: React.FC = () => {
             }
           );
 
-          // 상태 업데이트
-          debate.countryStats = countryStats;
-
-          // 강제 리렌더링을 위해 상태 업데이트
-          setUserVote(prev => prev);
+          // 상태와 debate 객체 모두 업데이트
+          setCountryStats(newCountryStats);
+          debate.countryStats = newCountryStats;
         }
 
         // 실패 시에만 원래 상태로 되돌림
@@ -1389,8 +1362,8 @@ const DebateDetailPage: React.FC = () => {
         <Typography variant="h6" fontWeight={600} gutterBottom sx={{ color: '#222' }}>
           {t('debate.countryParticipation')}
         </Typography>
-        {enhancedDebate.countryStats && enhancedDebate.countryStats.length > 0 ? (
-          enhancedDebate.countryStats.map((stat: any, index: number) => {
+        {countryStats && countryStats.length > 0 ? (
+          countryStats.map((stat: any, index: number) => {
             const countryColors = {
               KR: '#4caf50',
               US: '#2196f3',

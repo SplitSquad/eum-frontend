@@ -385,7 +385,7 @@ const PostCreateEditPage: React.FC = () => {
           }
         }
       } catch (error) {
-        console.error('게시글 로드 오류:', error);
+        console.error('Post load error:', error);
         enqueueSnackbar(t('community.posts.form.messages.loadError'), { variant: 'error' });
       } finally {
         setIsLoading(false);
@@ -432,24 +432,19 @@ const PostCreateEditPage: React.FC = () => {
       ...prev,
       subTags: typeof value === 'string' ? value.split(',') : value,
     }));
+    
+    // 세부태그 에러 초기화
+    if (errors.subTags) {
+      setErrors(prev => ({
+        ...prev,
+        subTags: '',
+      }));
+    }
   };
 
   // 파일 선택 핸들러
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
-      // 수정 모드에서 기존 파일이 있고 새 파일을 선택하는 경우 경고
-      if (isEditMode && postFiles.length > 0) {
-        const confirmMessage = `⚠️ 경고: 새 파일을 추가하면 기존 첨부파일 ${postFiles.length}개가 모두 삭제됩니다.\n\n정말로 계속하시겠습니까?\n\n기존 파일을 유지하려면 '취소'를 선택하세요.`;
-
-        if (!window.confirm(confirmMessage)) {
-          // 파일 입력 초기화
-          if (event.target) {
-            event.target.value = '';
-          }
-          return;
-        }
-      }
-
       setSelectedFiles(prev => [...prev, ...Array.from(event.target.files || [])]);
     }
   };
@@ -518,8 +513,9 @@ const PostCreateEditPage: React.FC = () => {
     if (!formData.category) {
       newErrors.category = t('community.posts.form.validation.categoryRequired');
     }
-    if (!formData.subTags) {
-      newErrors.subTags = t('community.posts.form.validation.subTagsRequired');
+    // 세부태그 필수 검증 개선: 배열이 존재하지 않거나 비어있는 경우 오류 처리
+    if (!formData.subTags || formData.subTags.length === 0) {
+      newErrors.subTags = 'Please select at least one subtag';
     }
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -564,7 +560,7 @@ const PostCreateEditPage: React.FC = () => {
             tags: convertTranslatedTagsToOriginal(formData.subTags, formData.category || '', t),
           };
 
-      console.log('태그 변환 결과:', {
+      console.log('Tag conversion result:', {
         원본번역된태그: formData.subTags,
         변환된한국어태그: isEditMode
           ? '수정모드-태그변환안함'
@@ -572,7 +568,7 @@ const PostCreateEditPage: React.FC = () => {
         카테고리: formData.category,
       });
 
-      console.log('서버로 전송할 최종 데이터:', {
+      console.log('Final data to send to server:', {
         ...postData,
         content: postData.content.substring(0, 100) + '...',
         tagsCount: 'tags' in postData && postData.tags ? postData.tags.length : 0,
@@ -582,7 +578,10 @@ const PostCreateEditPage: React.FC = () => {
       if (isEditMode && postId) {
         // 수정 모드에서 새 파일이 있는 경우 최종 확인
         if (selectedFiles.length > 0) {
-          const confirmMessage = `📝 최종 확인\n\n새로 선택한 파일: ${selectedFiles.length}개\n기존 첨부파일: ${postFiles.length}개\n\n⚠️ 저장하면 기존 첨부파일이 모두 삭제되고 새 파일만 남습니다.\n\n정말로 저장하시겠습니까?`;
+          const confirmMessage = t('community.fileUpload.finalConfirmMessage', {
+            newFileCount: selectedFiles.length.toString(),
+            existingFileCount: postFiles.length.toString()
+          });
 
           if (!window.confirm(confirmMessage)) {
             setIsSaving(false);
@@ -602,7 +601,7 @@ const PostCreateEditPage: React.FC = () => {
           enqueueSnackbar(t('community.posts.saveSuccess'), { variant: 'success' });
 
           // 생성 결과 확인
-          console.log('게시글 생성 결과:', result);
+          console.log('Post creation result:', result);
 
           // eum-frontend와 동일한 방식: 약간의 지연 후 전체 페이지 새로고침
           // 이렇게 하면 서버에서 데이터가 완전히 처리될 시간을 확보하고 최신 게시글이 바로 표시됨
@@ -619,7 +618,7 @@ const PostCreateEditPage: React.FC = () => {
             }
           }, 500); // eum-frontend와 동일한 500ms
         } catch (error) {
-          console.error('게시글 생성 오류:', error);
+          console.error('Post creation error:', error);
           enqueueSnackbar(t('community.posts.saveFailed'), { variant: 'error' });
           // 에러 발생 시에도 목록 페이지로 이동
           setTimeout(() => {
@@ -628,7 +627,7 @@ const PostCreateEditPage: React.FC = () => {
         }
       }
     } catch (error) {
-      console.error('게시글 저장 오류:', error);
+      console.error('Post save error:', error);
       enqueueSnackbar(t('community.posts.saveFailed'), { variant: 'error' });
     } finally {
       setIsSaving(false);
@@ -744,15 +743,6 @@ const PostCreateEditPage: React.FC = () => {
               </FormHelperText>
             </FormControl>
 
-            {/* 게시글 타입이 '모임'일 때만 지역 선택 표시 */}
-            {formData.postType === '모임' && (
-              <FormControl fullWidth sx={{ mt: 2, backgroundColor: '#fff', borderRadius: '12px' }}>
-                <InputLabel>지역</InputLabel>
-                <RegionSelector onChange={handleRegionChange} />
-                <FormHelperText>모임이 진행될 지역을 선택하세요</FormHelperText>
-              </FormControl>
-            )}
-
             {/* 카테고리 선택 - 수정 모드에서는 비활성화 */}
             <FormControl
               fullWidth
@@ -803,6 +793,7 @@ const PostCreateEditPage: React.FC = () => {
                 fullWidth
                 variant="outlined"
                 margin="normal"
+                error={!!errors.subTags}
                 sx={{ backgroundColor: '#fff', borderRadius: '12px' }}
               >
                 <InputLabel id="subtags-label">{t('community.posts.form.tags')}</InputLabel>
@@ -816,6 +807,7 @@ const PostCreateEditPage: React.FC = () => {
                     <OutlinedInput
                       id="select-multiple-chip"
                       label={t('community.posts.form.tags')}
+                      error={!!errors.subTags}
                     />
                   }
                   renderValue={selected => (
@@ -840,13 +832,13 @@ const PostCreateEditPage: React.FC = () => {
                     backgroundColor: '#fff',
                     borderRadius: '12px',
                     '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: '#bdbdbd',
+                      borderColor: errors.subTags ? '#d32f2f' : '#bdbdbd',
                     },
                     '&:hover .MuiOutlinedInput-notchedOutline': {
-                      borderColor: '#757575',
+                      borderColor: errors.subTags ? '#d32f2f' : '#757575',
                     },
                     '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                      borderColor: '#333',
+                      borderColor: errors.subTags ? '#d32f2f' : '#333',
                     },
                   }}
                 >
@@ -862,7 +854,28 @@ const PostCreateEditPage: React.FC = () => {
                       </MenuItem>
                     ))}
                 </Select>
-                <FormHelperText>{t('community.chooseRelatedSubTags')} (최대 3개)</FormHelperText>
+                <FormHelperText>
+                  {errors.subTags || `${t('community.chooseRelatedSubTags')} (최대 3개)`}
+                </FormHelperText>
+              </FormControl>
+            )}
+
+            {/* 게시글 타입이 '모임'일 때만 지역 선택 표시 - 태그 선택 뒤에 배치 */}
+            {formData.postType === '모임' && (
+              <FormControl 
+                fullWidth 
+                sx={{ 
+                  mt: 3, 
+                  mb: 2,
+                  backgroundColor: '#fff', 
+                  borderRadius: '12px' 
+                }}
+              >
+                <InputLabel shrink>{t('community.region')}</InputLabel>
+                <Box sx={{ mt: 2 }}>
+                  <RegionSelector onChange={handleRegionChange} />
+                </Box>
+                <FormHelperText sx={{ mt: 1 }}>{t('community.selectMeetingRegion')}</FormHelperText>
               </FormControl>
             )}
 
@@ -881,19 +894,6 @@ const PostCreateEditPage: React.FC = () => {
                   {t('community.editPostNote')}
                 </Typography>
               </Box>
-            )}
-
-            {/* 파일 업로드 안내 메시지 - 수정 모드 전용 */}
-            {isEditMode && (
-              <Box
-                sx={{
-                  p: 2,
-                  bgcolor: 'rgba(244, 67, 54, 0.1)',
-                  borderRadius: '8px',
-                  border: '1px solid rgba(244, 67, 54, 0.3)',
-                  mb: 2,
-                }}
-              ></Box>
             )}
 
             {/* 내용 입력 필드 */}
@@ -929,7 +929,7 @@ const PostCreateEditPage: React.FC = () => {
             {/* 파일 업로드 영역 */}
             <Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                <Typography variant="subtitle1">{t('community.fileUpload.fileUpload')}</Typography>
+                <Typography variant="subtitle1">{t('community.fileUpload.title')}</Typography>
                 {!isEditMode && (
                   <Typography
                     variant="caption"

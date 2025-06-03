@@ -56,12 +56,6 @@ export interface OnboardingDetailData {
     koreanLevel?: string;
     englishLevel?: string;
   };
-  emergencyInfo?: {
-    contact?: string;
-    medicalConditions?: string;
-    foodAllergies?: string;
-    receiveEmergencyAlerts?: boolean;
-  };
   interests?: string[]; // 관심사 태그 목록
 }
 
@@ -74,7 +68,7 @@ export const getUserPreference = async () => {
     const token = localStorage.getItem('auth_token');
     
     if (!token) {
-      throw new Error('인증 토큰이 없습니다. 로그인이 필요합니다.');
+      throw new Error('Authentication token is required. Login is needed.');
     }
     
     // Authorization 헤더에 토큰 추가
@@ -102,7 +96,7 @@ export const saveUserPreference = async (data: UserPreferenceData) => {
     
     if (!token) {
       console.error('토큰이 없습니다. 로그인이 필요합니다.');
-      throw new Error('인증 토큰이 없습니다. 로그인이 필요합니다.');
+      throw new Error('Authentication token is required. Login is needed.');
     }
     
     console.log('토큰을 사용하여 사용자 선호도 저장 요청:', token.substring(0, 20) + '...');
@@ -203,9 +197,6 @@ export const saveOnboardingData = async (
     
     // 언어 능력
     language: detailData.language,
-    
-    // 긴급 연락처
-    emergencyInfo: detailData.emergencyInfo,
     
     // 관심사
     interests: detailData.interests

@@ -52,7 +52,7 @@ const CalendarService = {
       const response = await apiClient.get<CalendarEvent[]>('/calendar');
       return response;
     } catch (error) {
-      console.error('캘린더 이벤트 조회 실패:', error);
+      console.error('Error fetching calendar events:', error);
       return [];
     }
   },
@@ -67,7 +67,7 @@ const CalendarService = {
       const response = await apiClient.post<CalendarEvent>('/calendar', event);
       return response;
     } catch (error) {
-      console.error('캘린더 이벤트 추가 실패:', error);
+      console.error('Error adding calendar event:', error);
       throw error;
     }
   },
@@ -82,7 +82,7 @@ const CalendarService = {
       const response = await apiClient.delete(`/calendar/${eventId}`);
       return response;
     } catch (error) {
-      console.error('캘린더 이벤트 삭제 실패:', error);
+      console.error('Error deleting calendar event:', error);
       throw error;
     }
   },
@@ -98,7 +98,7 @@ const CalendarService = {
       const response = await apiClient.patch<CalendarEvent>(`/calendar/${eventId}`, event);
       return response;
     } catch (error) {
-      console.error('캘린더 이벤트 업데이트 실패:', error);
+      console.error('Error updating calendar event:', error);
       throw error;
     }
   },
@@ -113,7 +113,7 @@ const CalendarService = {
       await CalendarService.getEvents();
       return true;
     } catch (error) {
-      console.error('구글 캘린더 연동 상태 확인 실패:', error);
+      console.error('Error checking Google Calendar integration:', error);
       return false;
     }
   }

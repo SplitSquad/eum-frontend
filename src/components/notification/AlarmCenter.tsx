@@ -45,7 +45,7 @@ export function AlarmCenter() {
     fetchUnreadAlarms(userId)
       .then(list => setAlarms(list)) // 알림 리스트 상태에 저장
       .catch(err => {
-        console.error('알림 조회 실패', err);
+        console.error('Fetch unread alarms failed', err);
         setAlarms([]); // 실패 시 빈 배열
       })
       .finally(() => setLoading(false)); // 로딩 완료 처리
@@ -74,7 +74,7 @@ export function AlarmCenter() {
       await markAlarmsRead(alarms.map(a => a.alarmId)); // 모든 알림 ID 배열 넘김
       setAlarms([]); // 클라이언트 상태 초기화
     } catch (err) {
-      console.error('읽음 처리 실패', err);
+      console.error('Mark all read failed', err);
     }
   };
 
@@ -125,7 +125,7 @@ export function AlarmCenter() {
           outline: 'none',
           boxShadow: 'none',
         }}
-        aria-label="알림 센터 토글"
+        aria-label="Notification center toggle"
         tabIndex={0}
         onFocus={e => (e.currentTarget.style.outline = 'none')}
         onBlur={e => (e.currentTarget.style.outline = 'none')}

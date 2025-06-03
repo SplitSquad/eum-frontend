@@ -77,7 +77,7 @@ export const getInfoDetail = async (id: string | number): Promise<InfoDetail> =>
     return res as InfoDetail;
   } catch (error) {
     console.error('정보 상세 조회 실패:', error);
-    throw new Error('정보 상세 조회에 실패했습니다.');
+    throw new Error('Failed to retrieve information details.');
   }
 };
 
@@ -86,7 +86,7 @@ export const deleteInfo = async (id: string | number): Promise<void> => {
     await apiClient.delete(`/information/${id}`);
   } catch (error) {
     console.error('정보 삭제 실패:', error);
-    throw new Error('정보 삭제에 실패했습니다.');
+    throw new Error('Failed to delete information.');
   }
 };
 
@@ -116,7 +116,7 @@ export const createInfo = async ({
     return await apiClient.post('/information', { title, content, category, files });
   } catch (error) {
     console.error('정보글 등록 실패:', error);
-    throw new Error('정보글 등록에 실패했습니다.');
+    throw new Error('Failed to create information post.');
   }
 };
 
@@ -136,7 +136,7 @@ export const updateInfo = async ({
     return await apiClient.patch(`/information/${id}`, { title, content, files });
   } catch (error) {
     console.error('정보글 수정 실패:', error);
-    throw new Error('정보글 수정에 실패했습니다.');
+    throw new Error('Failed to update information post.');
   }
 };
 
@@ -176,9 +176,9 @@ export const uploadInfoImage = async (
           }
         } else {
           if (xhr.status === 413) {
-            alert('이미지 용량이 너무 큽니다.');
+            alert('Image file is too large.');
           }
-          reject(new Error('이미지 업로드 실패: ' + xhr.status));
+          reject(new Error('Image upload failed: ' + xhr.status));
         }
       }
     };
