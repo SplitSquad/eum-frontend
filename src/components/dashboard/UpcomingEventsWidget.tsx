@@ -27,6 +27,8 @@ import {
   Snackbar,
   Alert,
   AlertTitle,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import EventIcon from '@mui/icons-material/Event';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
@@ -43,8 +45,12 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
 import LockIcon from '@mui/icons-material/Lock';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { widgetPaperBase, widgetGradients } from './theme/dashboardWidgetTheme';
-import CalendarService, { CalendarEvent, GoogleCalendarEventRequest } from '../../services/calendar/calendarService';
+import CalendarService, {
+  CalendarEvent,
+  GoogleCalendarEventRequest,
+} from '../../services/calendar/calendarService';
 
 // 이벤트 폼 데이터 타입
 interface EventFormData {
@@ -62,9 +68,18 @@ interface EventFormData {
 const getEventTypeColor = (summary: string) => {
   if (summary.includes('회의') || summary.includes('미팅') || summary.includes('meeting')) {
     return { bg: 'rgba(33, 150, 243, 0.1)', color: '#2196F3', icon: '👥' };
-  } else if (summary.includes('보고') || summary.includes('제출') || summary.includes('마감') || summary.includes('deadline')) {
+  } else if (
+    summary.includes('보고') ||
+    summary.includes('제출') ||
+    summary.includes('마감') ||
+    summary.includes('deadline')
+  ) {
     return { bg: 'rgba(244, 67, 54, 0.1)', color: '#F44336', icon: '⏰' };
-  } else if (summary.includes('중요') || summary.includes('필수') || summary.includes('important')) {
+  } else if (
+    summary.includes('중요') ||
+    summary.includes('필수') ||
+    summary.includes('important')
+  ) {
     return { bg: 'rgba(156, 39, 176, 0.1)', color: '#9C27B0', icon: '⭐' };
   } else if (summary.includes('여행') || summary.includes('출장') || summary.includes('travel')) {
     return { bg: 'rgba(76, 175, 80, 0.1)', color: '#4CAF50', icon: '✈️' };
@@ -78,11 +93,11 @@ const getEventTypeColor = (summary: string) => {
 // 우선순위 계산 (시간이 가까울수록 높은 우선순위)
 const calculatePriority = (event: CalendarEvent): 'high' | 'medium' | 'low' => {
   if (!event.start?.dateTime) return 'low';
-  
+
   const eventDate = new Date(event.start.dateTime);
   const now = new Date();
   const diffHours = (eventDate.getTime() - now.getTime()) / (1000 * 60 * 60);
-  
+
   if (diffHours <= 24) return 'high';
   if (diffHours <= 72) return 'medium';
   return 'low';
@@ -94,24 +109,24 @@ const formatDate = (dateString: string): string => {
   const today = new Date();
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
-  
+
   const isToday = date.toDateString() === today.toDateString();
   const isTomorrow = date.toDateString() === tomorrow.toDateString();
-  
+
   if (isToday) return '오늘';
   if (isTomorrow) return '내일';
-  
+
   const diffTime = date.getTime() - today.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  
+
   if (diffDays <= 7) {
     return `${diffDays}일 후`;
   }
-  
+
   return date.toLocaleDateString('ko-KR', {
     month: 'short',
     day: 'numeric',
-    weekday: 'short'
+    weekday: 'short',
   });
 };
 
@@ -121,7 +136,7 @@ const formatTime = (dateString: string): string => {
   return date.toLocaleTimeString('ko-KR', {
     hour: '2-digit',
     minute: '2-digit',
-    hour12: false
+    hour12: false,
   });
 };
 
@@ -135,12 +150,12 @@ const EventItem: React.FC<EventItemProps> = ({ event, onEdit, onDelete }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const eventConfig = getEventTypeColor(event.summary);
   const priority = calculatePriority(event);
-  
+
   // 우선순위별 색상
   const priorityColors = {
     high: '#F44336',
     medium: '#FF9800',
-    low: '#4CAF50'
+    low: '#4CAF50',
   };
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -161,49 +176,49 @@ const EventItem: React.FC<EventItemProps> = ({ event, onEdit, onDelete }) => {
     onDelete(event.id);
     handleMenuClose();
   };
-  
+
   return (
     <>
-      <ListItem 
-        sx={{ 
-          px: 0, 
+      <ListItem
+        sx={{
+          px: 0,
           py: 1.5,
           borderRadius: 2,
           '&:hover': {
             bgcolor: 'action.hover',
-            cursor: 'pointer'
+            cursor: 'pointer',
           },
-          transition: 'background-color 0.2s ease'
+          transition: 'background-color 0.2s ease',
         }}
       >
         <ListItemIcon sx={{ minWidth: 48 }}>
-          <Avatar 
-            sx={{ 
+          <Avatar
+            sx={{
               bgcolor: eventConfig.bg,
               color: eventConfig.color,
               width: 40,
               height: 40,
-              fontSize: '1.2rem'
+              fontSize: '1.2rem',
             }}
           >
             {eventConfig.icon}
           </Avatar>
         </ListItemIcon>
-        
+
         <ListItemText
           primary={
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
               <Typography variant="subtitle2" fontWeight={600} sx={{ flex: 1, mr: 1 }}>
                 {event.summary}
               </Typography>
-              <Box 
-                sx={{ 
-                  width: 8, 
-                  height: 8, 
-                  borderRadius: '50%', 
+              <Box
+                sx={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
                   bgcolor: priorityColors[priority],
-                  ml: 1
-                }} 
+                  ml: 1,
+                }}
               />
             </Box>
           }
@@ -224,7 +239,7 @@ const EventItem: React.FC<EventItemProps> = ({ event, onEdit, onDelete }) => {
                   </>
                 )}
               </Box>
-              
+
               {/* 위치 */}
               {event.location && (
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
@@ -234,7 +249,7 @@ const EventItem: React.FC<EventItemProps> = ({ event, onEdit, onDelete }) => {
                   </Typography>
                 </Box>
               )}
-              
+
               {/* 주최자 */}
               {event.organizer?.displayName && (
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -248,11 +263,7 @@ const EventItem: React.FC<EventItemProps> = ({ event, onEdit, onDelete }) => {
           }
         />
 
-        <IconButton
-          size="small"
-          onClick={handleMenuOpen}
-          sx={{ ml: 1 }}
-        >
+        <IconButton size="small" onClick={handleMenuOpen} sx={{ ml: 1 }}>
           <MoreVertIcon fontSize="small" />
         </IconButton>
       </ListItem>
@@ -292,12 +303,12 @@ interface EventDialogProps {
   isLoading?: boolean;
 }
 
-const EventDialog: React.FC<EventDialogProps> = ({ 
-  open, 
-  onClose, 
-  onSave, 
-  event, 
-  isLoading = false 
+const EventDialog: React.FC<EventDialogProps> = ({
+  open,
+  onClose,
+  onSave,
+  event,
+  isLoading = false,
 }) => {
   const [formData, setFormData] = useState<EventFormData>({
     summary: '',
@@ -307,7 +318,7 @@ const EventDialog: React.FC<EventDialogProps> = ({
     startTime: '',
     endDate: '',
     endTime: '',
-    category: 'general'
+    category: 'general',
   });
 
   // 이벤트 데이터로 폼 초기화
@@ -315,7 +326,7 @@ const EventDialog: React.FC<EventDialogProps> = ({
     if (event) {
       const startDate = new Date(event.start.dateTime);
       const endDate = new Date(event.end?.dateTime || event.start.dateTime);
-      
+
       setFormData({
         summary: event.summary || '',
         description: event.description || '',
@@ -324,13 +335,13 @@ const EventDialog: React.FC<EventDialogProps> = ({
         startTime: startDate.toTimeString().slice(0, 5),
         endDate: endDate.toISOString().split('T')[0],
         endTime: endDate.toTimeString().slice(0, 5),
-        category: 'general'
+        category: 'general',
       });
     } else {
       // 새 이벤트의 경우 기본값 설정
       const now = new Date();
       const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
-      
+
       setFormData({
         summary: '',
         description: '',
@@ -339,19 +350,19 @@ const EventDialog: React.FC<EventDialogProps> = ({
         startTime: now.toTimeString().slice(0, 5),
         endDate: oneHourLater.toISOString().split('T')[0],
         endTime: oneHourLater.toTimeString().slice(0, 5),
-        category: 'general'
+        category: 'general',
       });
     }
   }, [event, open]);
 
-  const handleInputChange = (field: keyof EventFormData) => (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: e.target.value
-    }));
-  };
+  const handleInputChange =
+    (field: keyof EventFormData) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      setFormData(prev => ({
+        ...prev,
+        [field]: e.target.value,
+      }));
+    };
 
   const handleSave = () => {
     if (!formData.summary.trim()) return;
@@ -359,13 +370,13 @@ const EventDialog: React.FC<EventDialogProps> = ({
   };
 
   return (
-    <Dialog 
-      open={open} 
-      onClose={onClose} 
-      maxWidth="sm" 
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="sm"
       fullWidth
       PaperProps={{
-        sx: { borderRadius: 3 }
+        sx: { borderRadius: 3 },
       }}
     >
       <DialogTitle sx={{ pb: 1 }}>
@@ -374,7 +385,7 @@ const EventDialog: React.FC<EventDialogProps> = ({
           {event ? '일정 수정' : '새 일정 추가'}
         </Box>
       </DialogTitle>
-      
+
       <DialogContent sx={{ pt: 2 }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <TextField
@@ -385,7 +396,7 @@ const EventDialog: React.FC<EventDialogProps> = ({
             required
             variant="outlined"
           />
-          
+
           <TextField
             label="설명"
             value={formData.description}
@@ -395,7 +406,7 @@ const EventDialog: React.FC<EventDialogProps> = ({
             rows={2}
             variant="outlined"
           />
-          
+
           <TextField
             label="위치"
             value={formData.location}
@@ -403,7 +414,7 @@ const EventDialog: React.FC<EventDialogProps> = ({
             fullWidth
             variant="outlined"
           />
-          
+
           <Box sx={{ display: 'flex', gap: 2 }}>
             <TextField
               label="시작 날짜"
@@ -422,7 +433,7 @@ const EventDialog: React.FC<EventDialogProps> = ({
               InputLabelProps={{ shrink: true }}
             />
           </Box>
-          
+
           <Box sx={{ display: 'flex', gap: 2 }}>
             <TextField
               label="종료 날짜"
@@ -441,12 +452,12 @@ const EventDialog: React.FC<EventDialogProps> = ({
               InputLabelProps={{ shrink: true }}
             />
           </Box>
-          
+
           <FormControl fullWidth>
             <InputLabel>카테고리</InputLabel>
             <Select
               value={formData.category}
-              onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+              onChange={e => setFormData(prev => ({ ...prev, category: e.target.value }))}
               label="카테고리"
             >
               <MenuItem value="general">일반</MenuItem>
@@ -458,23 +469,19 @@ const EventDialog: React.FC<EventDialogProps> = ({
           </FormControl>
         </Box>
       </DialogContent>
-      
+
       <DialogActions sx={{ p: 2, pt: 1 }}>
-        <Button 
-          onClick={onClose} 
-          startIcon={<CancelIcon />}
-          disabled={isLoading}
-        >
+        <Button onClick={onClose} startIcon={<CancelIcon />} disabled={isLoading}>
           취소
         </Button>
-        <Button 
-          onClick={handleSave} 
-          variant="contained" 
+        <Button
+          onClick={handleSave}
+          variant="contained"
           startIcon={<SaveIcon />}
           disabled={!formData.summary.trim() || isLoading}
           sx={{ borderRadius: 2 }}
         >
-          {isLoading ? <CircularProgress size={20} /> : (event ? '수정' : '추가')}
+          {isLoading ? <CircularProgress size={20} /> : event ? '수정' : '추가'}
         </Button>
       </DialogActions>
     </Dialog>
@@ -489,11 +496,11 @@ const UpcomingEventsWidget: React.FC = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
   const [isDialogLoading, setIsDialogLoading] = useState(false);
-  
+
   // OAuth 로그인 상태 체크 추가
   const [isOAuthUser, setIsOAuthUser] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
-  
+
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
@@ -501,8 +508,12 @@ const UpcomingEventsWidget: React.FC = () => {
   }>({
     open: false,
     message: '',
-    severity: 'success'
+    severity: 'success',
   });
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   // OAuth 사용자 체크 함수 추가
   const checkOAuthUser = () => {
@@ -510,19 +521,20 @@ const UpcomingEventsWidget: React.FC = () => {
       // 로컬 스토리지에서 사용자 정보 확인
       const token = localStorage.getItem('token');
       const userInfo = localStorage.getItem('userInfo');
-      
+
       if (token && userInfo) {
         const parsedUserInfo = JSON.parse(userInfo);
         setUserProfile(parsedUserInfo);
-        
+
         // OAuth 제공자가 있는지 확인 (Google OAuth)
         // 또는 이메일이 Gmail인지 확인
-        const isGoogleOAuth = parsedUserInfo.provider === 'google' || 
-                             parsedUserInfo.email?.includes('@gmail.com') ||
-                             parsedUserInfo.oauth_provider === 'google';
-        
+        const isGoogleOAuth =
+          parsedUserInfo.provider === 'google' ||
+          parsedUserInfo.email?.includes('@gmail.com') ||
+          parsedUserInfo.oauth_provider === 'google';
+
         setIsOAuthUser(isGoogleOAuth);
-        
+
         if (isGoogleOAuth) {
           checkGoogleCalendarConnection();
         } else {
@@ -562,11 +574,11 @@ const UpcomingEventsWidget: React.FC = () => {
     setError(null);
     try {
       const calendarEvents = await CalendarService.getEvents();
-      
+
       // 다가오는 이벤트만 필터링 (오늘부터 앞으로 30일간)
       const now = new Date();
       const thirtyDaysLater = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-      
+
       const upcomingEvents = calendarEvents
         .filter(event => {
           if (!event.start?.dateTime) return false;
@@ -579,7 +591,7 @@ const UpcomingEventsWidget: React.FC = () => {
           return dateA.getTime() - dateB.getTime();
         })
         .slice(0, 10); // 최대 10개만 표시
-      
+
       setEvents(upcomingEvents);
     } catch (error) {
       console.error('캘린더 이벤트 가져오기 실패:', error);
@@ -631,7 +643,7 @@ const UpcomingEventsWidget: React.FC = () => {
   // 일정 삭제 핸들러
   const handleDeleteEvent = async (eventId: string) => {
     if (!window.confirm('정말로 이 일정을 삭제하시겠습니까?')) return;
-    
+
     try {
       await CalendarService.deleteEvent(eventId);
       await fetchEvents();
@@ -654,7 +666,7 @@ const UpcomingEventsWidget: React.FC = () => {
         description: eventData.description,
         location: eventData.location,
         startDateTime: startDateTime.toISOString(),
-        endDateTime: endDateTime.toISOString()
+        endDateTime: endDateTime.toISOString(),
       };
 
       if (editingEvent) {
@@ -695,7 +707,7 @@ const UpcomingEventsWidget: React.FC = () => {
           height: '100%',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center'
+          justifyContent: 'center',
         }}
       >
         <CircularProgress size={40} />
@@ -730,7 +742,8 @@ const UpcomingEventsWidget: React.FC = () => {
             width: 200,
             height: 200,
             borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(233,245,255,0.7) 0%, rgba(233,245,255,0) 70%)',
+            background:
+              'radial-gradient(circle, rgba(233,245,255,0.7) 0%, rgba(233,245,255,0) 70%)',
             zIndex: 0,
           }}
         />
@@ -791,19 +804,19 @@ const UpcomingEventsWidget: React.FC = () => {
           background: widgetGradients.blue,
           height: '100%',
           display: 'flex',
-          flexDirection: 'column'
+          flexDirection: 'column',
         }}
       >
         {/* 헤더 */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Avatar 
-              sx={{ 
-                bgcolor: 'rgba(33, 150, 243, 0.2)', 
+            <Avatar
+              sx={{
+                bgcolor: 'rgba(33, 150, 243, 0.2)',
                 color: '#2196F3',
                 width: 32,
                 height: 32,
-                mr: 1
+                mr: 1,
               }}
             >
               <EventIcon />
@@ -811,50 +824,44 @@ const UpcomingEventsWidget: React.FC = () => {
             <Typography variant="h6" fontWeight={600}>
               다가오는 일정
             </Typography>
-            {isGoogleConnected && (
-              <Chip 
-                icon={<GoogleIcon />}
-                label="연동됨" 
-                size="small" 
-                sx={{ 
-                  ml: 1,
-                  height: 24,
-                  bgcolor: 'rgba(76, 175, 80, 0.1)',
-                  color: '#4CAF50'
-                }} 
-              />
-            )}
+            <IconButton
+              sx={{ display: { xs: 'inline-flex', md: 'none' }, ml: 1 }}
+              size="small"
+              onClick={() => setIsCollapsed(v => !v)}
+            >
+              <ExpandMoreIcon />
+            </IconButton>
           </Box>
           <Box>
-            <IconButton 
-              size="small" 
+            <IconButton
+              size="small"
               onClick={handleAddEvent}
-              sx={{ 
+              sx={{
                 bgcolor: 'action.hover',
                 mr: 1,
-                '&:hover': { bgcolor: 'action.selected' }
+                '&:hover': { bgcolor: 'action.selected' },
               }}
             >
               <AddIcon fontSize="small" />
             </IconButton>
-            <IconButton 
-              size="small" 
+            <IconButton
+              size="small"
               onClick={handleRefresh}
-              sx={{ 
+              sx={{
                 bgcolor: 'action.hover',
                 mr: 1,
-                '&:hover': { bgcolor: 'action.selected' }
+                '&:hover': { bgcolor: 'action.selected' },
               }}
             >
               <RefreshIcon fontSize="small" />
             </IconButton>
             {isGoogleConnected && (
-              <IconButton 
+              <IconButton
                 size="small"
                 onClick={handleGoogleSync}
-                sx={{ 
+                sx={{
                   bgcolor: 'action.hover',
-                  '&:hover': { bgcolor: 'action.selected' }
+                  '&:hover': { bgcolor: 'action.selected' },
                 }}
               >
                 <SyncIcon fontSize="small" />
@@ -866,23 +873,23 @@ const UpcomingEventsWidget: React.FC = () => {
         {/* 이벤트 목록 */}
         <Box sx={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
           {error ? (
-            <Box 
-              sx={{ 
-                display: 'flex', 
+            <Box
+              sx={{
+                display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
                 height: '100%',
                 textAlign: 'center',
-                py: 4
+                py: 4,
               }}
             >
               <Typography variant="body2" color="error" sx={{ mb: 2 }}>
                 {error}
               </Typography>
-              <Button 
-                variant="outlined" 
-                size="small" 
+              <Button
+                variant="outlined"
+                size="small"
                 onClick={handleRefresh}
                 sx={{ borderRadius: 2 }}
               >
@@ -890,24 +897,24 @@ const UpcomingEventsWidget: React.FC = () => {
               </Button>
             </Box>
           ) : !isGoogleConnected ? (
-            <Box 
-              sx={{ 
-                display: 'flex', 
+            <Box
+              sx={{
+                display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
                 height: '100%',
                 textAlign: 'center',
-                py: 4
+                py: 4,
               }}
             >
               <GoogleIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                 구글 캘린더 연동이 필요합니다
               </Typography>
-              <Button 
-                variant="outlined" 
-                size="small" 
+              <Button
+                variant="outlined"
+                size="small"
                 startIcon={<GoogleIcon />}
                 onClick={handleRefresh}
                 sx={{ borderRadius: 2 }}
@@ -919,34 +926,30 @@ const UpcomingEventsWidget: React.FC = () => {
             <List disablePadding>
               {events.map((event, index) => (
                 <React.Fragment key={event.id}>
-                  <EventItem 
-                    event={event} 
-                    onEdit={handleEditEvent}
-                    onDelete={handleDeleteEvent}
-                  />
+                  <EventItem event={event} onEdit={handleEditEvent} onDelete={handleDeleteEvent} />
                   {index < events.length - 1 && <Divider sx={{ my: 0.5 }} />}
                 </React.Fragment>
               ))}
             </List>
           ) : (
-            <Box 
-              sx={{ 
-                display: 'flex', 
+            <Box
+              sx={{
+                display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
                 height: '100%',
                 textAlign: 'center',
-                py: 4
+                py: 4,
               }}
             >
               <EventIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                 예정된 일정이 없습니다
               </Typography>
-              <Button 
-                variant="outlined" 
-                size="small" 
+              <Button
+                variant="outlined"
+                size="small"
                 startIcon={<AddIcon />}
                 onClick={handleAddEvent}
                 sx={{ borderRadius: 2 }}
@@ -983,11 +986,7 @@ const UpcomingEventsWidget: React.FC = () => {
         onClose={handleSnackbarClose}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert 
-          onClose={handleSnackbarClose} 
-          severity={snackbar.severity}
-          sx={{ width: '100%' }}
-        >
+        <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: '100%' }}>
           {snackbar.message}
         </Alert>
       </Snackbar>
@@ -995,4 +994,4 @@ const UpcomingEventsWidget: React.FC = () => {
   );
 };
 
-export default UpcomingEventsWidget; 
+export default UpcomingEventsWidget;

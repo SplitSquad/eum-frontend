@@ -9,7 +9,6 @@ import {
   Divider,
 } from '@mui/material';
 import Toast from './Toast';
-import PageHeaderText from '@/components/layout/PageHeaderText';
 import { useTranslation } from '@/shared/i18n';
 import { useDebateStore } from '@/features/debate/store/debateStore';
 import bottomImg from '@/assets/icons/common/방석.png';
@@ -25,6 +24,7 @@ const LayoutContent = styled(Box)({
   zIndex: 5,
   padding: 0,
 });
+
 const debateCard = {
   background: 'rgba(255,255,255,0.5)',
   border: '1.5px solid #222',
@@ -34,6 +34,7 @@ const debateCard = {
   padding: 24,
   fontFamily: 'Inter, Pretendard, Arial, sans-serif',
 };
+
 const Sidebar = styled(Box)(({ theme }) => ({
   width: 320,
   borderRadius: 10,
@@ -51,6 +52,20 @@ const Sidebar = styled(Box)(({ theme }) => ({
     display: 'none',
   },
   zIndex: 5,
+}));
+
+const MobileSidebarWrapper = styled(Box)(({ theme }) => ({
+  width: '100%',
+  background: '#fff',
+  zIndex: 10,
+  borderBottom: '1.5px solid #e5e7eb',
+  padding: '12px 16px',
+  fontFamily: 'Inter, Pretendard, Arial, sans-serif',
+  // 모바일에서는 position: static 으로 설정
+  position: 'static',
+  [theme.breakpoints.up('md')]: {
+    display: 'none',
+  },
 }));
 
 const Main = styled(Box)(({ theme }) => ({
@@ -93,7 +108,6 @@ const DebateLayout: React.FC<DebateLayoutProps> = ({
 
   // 카테고리 목록 (key: 한글, value: 번역 텍스트)
   const categories: Record<string, string> = {
-    //'': t('debate.categories.all'), // 전체
     '정치/사회': t('debate.categories.politics'),
     경제: t('debate.categories.economy'),
     '생활/문화': t('debate.categories.culture'),
@@ -104,6 +118,7 @@ const DebateLayout: React.FC<DebateLayoutProps> = ({
 
   t('debate.title');
   t('debate.description');
+
   return (
     <div>
       {/* 페이지 헤더 */}
@@ -139,6 +154,7 @@ const DebateLayout: React.FC<DebateLayoutProps> = ({
             </div>
           </div>
         </div>
+
         <div
           style={{
             display: 'flex',
@@ -167,13 +183,22 @@ const DebateLayout: React.FC<DebateLayoutProps> = ({
             />
             {specialLabelText}
           </h2>
-          <div style={{ flex: 1 }}></div>
+          <div style={{ flex: 1 }} />
         </div>
+
         <Divider sx={{ mb: 2, borderColor: '#e5e7eb', mx: 2 }} />
+
+        {/* 모바일에서 사이드바를 스크롤과 함께 흐르게 */}
+        {isMobile && showSidebar && sidebar && (
+          <MobileSidebarWrapper>{sidebar}</MobileSidebarWrapper>
+        )}
+
         <LayoutContent>
           <Main>{children}</Main>
-          {showSidebar && sidebar && <Sidebar>{sidebar}</Sidebar>}
+          {/* PC에서만 sticky 사이드바 보이기 */}
+          {showSidebar && sidebar && !isMobile && <Sidebar>{sidebar}</Sidebar>}
         </LayoutContent>
+
         <Toast />
       </div>
     </div>

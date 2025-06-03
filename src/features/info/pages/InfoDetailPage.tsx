@@ -18,28 +18,11 @@ import { Selection } from '@tiptap-editor/components/tiptap-extension/selection-
 import { ImageUploadNode } from '@tiptap-editor/components/tiptap-node/image-upload-node/image-upload-node-extension';
 import { TrailingNode } from '@tiptap-editor/components/tiptap-extension/trailing-node-extension';
 import { handleImageUpload, MAX_FILE_SIZE } from '@tiptap-editor/lib/tiptap-utils';
-import {
-  Box,
-  Paper,
-  Typography as MuiTypography,
-  Button,
-  Chip,
-  Divider,
-  IconButton,
-  CircularProgress,
-  Alert,
-  useTheme,
-  useMediaQuery,
-  Breadcrumbs,
-  Link as MuiLink,
-} from '@mui/material';
+import { Box, useTheme, useMediaQuery } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import VisibilityIcon from '@mui/icons-material/Visibility';
 import PersonIcon from '@mui/icons-material/Person';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import CategoryIcon from '@mui/icons-material/Category';
 import { toggleBookmark } from '../api/infoApi';
 
 // userId 꺼내오는 헬퍼
@@ -91,8 +74,6 @@ interface InfoDetail {
   views: number;
   category: string;
 }
-
-// API_BASE는 스토어에서 사용하므로 제거
 
 // 카테고리별 색상 매핑 (한국어 카테고리명을 키로 사용)
 const getCategoryColor = (category: string) => {
@@ -149,11 +130,6 @@ export default function InfoDetailPage() {
 
   // 정보 스토어에서 상태와 함수 가져오기
   const { currentPost, fetchPostDetail } = useInfoStore();
-
-  // 디버깅을 위한 로그
-  console.log('InfoDetailPage - Current language:', language);
-  console.log('InfoDetailPage - Translation test:', t('infoPage.title'));
-  console.log('InfoDetailPage - Detail test:', t('infoPage.detail.back'));
 
   const [detail, setDetail] = useState<InfoDetail | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -254,11 +230,8 @@ export default function InfoDetailPage() {
   useEffect(() => {
     if (currentPost) {
       setDetail(currentPost);
-      console.log('[InfoDetailPage] 스토어에서 상세 데이터 업데이트:', currentPost);
     }
   }, [currentPost]);
-
-  // 언어 변경 감지는 스토어에서 자동으로 처리되므로 제거
 
   // 에디터에 콘텐츠 설정
   useEffect(() => {
@@ -321,7 +294,6 @@ export default function InfoDetailPage() {
     const jsonTOC = extractTOCFromJSON(detail.content);
     if (jsonTOC.length > 0) {
       setTableOfContents(jsonTOC);
-      console.log('JSON에서 목차 추출 성공:', jsonTOC);
       return;
     }
 
@@ -334,8 +306,6 @@ export default function InfoDetailPage() {
       );
       const toc: { id: string; text: string; level: number }[] = [];
 
-      console.log('DOM에서 헤딩 요소 발견:', headings.length);
-
       headings.forEach((heading, index) => {
         const id = `heading-${index}`;
         heading.id = id;
@@ -344,24 +314,19 @@ export default function InfoDetailPage() {
 
         if (text.trim()) {
           toc.push({ id, text: text.trim(), level });
-          console.log(`DOM에서 목차 항목 추가: ${text} (레벨 ${level})`);
         }
       });
 
       if (toc.length > 0) {
         setTableOfContents(toc);
-        console.log('DOM에서 최종 목차:', toc);
       }
     };
 
-    // 에디터 업데이트 이벤트 리스너
     const handleEditorUpdate = () => {
       setTimeout(generateTOCFromDOM, 500);
     };
 
     editor.on('update', handleEditorUpdate);
-
-    // 초기 목차 생성 (여러 번 시도)
     setTimeout(generateTOCFromDOM, 300);
     setTimeout(generateTOCFromDOM, 1000);
     setTimeout(generateTOCFromDOM, 2000);
@@ -375,7 +340,6 @@ export default function InfoDetailPage() {
   useEffect(() => {
     if (tableOfContents.length === 0) return;
 
-    // DOM 헤딩에 ID 설정
     const setHeadingIds = () => {
       const headings = document.querySelectorAll(
         '.article-content h1, .article-content h2, .article-content h3, .article-content h4, .article-content h5, .article-content h6'
@@ -389,7 +353,7 @@ export default function InfoDetailPage() {
     };
 
     setHeadingIds();
-    setTimeout(setHeadingIds, 500); // 한 번 더 시도
+    setTimeout(setHeadingIds, 500);
 
     const handleScroll = () => {
       const headings = document.querySelectorAll(
@@ -481,22 +445,20 @@ export default function InfoDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* 플로팅 툴바 - 항상 보이는 유용한 기능들 */}
-      <div className="fixed right-6 top-1/2 transform -translate-y-1/2 z-50">
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-4 space-y-4 min-w-[140px]">
-          {/* 북마크 버튼 */}
-          <button
-            onClick={async () => {
-              try {
-                const currentId = detail?.informationId;
-                
-                if (currentId) {
+      {/* PC 버전: 스크롤 따라다니는 플로팅 툴바 */}
+      {!isMobile && (
+        <div className="fixed right-6 top-1/2 transform -translate-y-1/2 z-50">
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-4 space-y-4 min-w-[140px]">
+            {/* 북마크 버튼 */}
+            <button
+              onClick={async () => {
+                try {
+                  const currentId = detail.informationId;
                   const success = await toggleBookmark(currentId);
-                  
                   if (success) {
                     const bookmarks = JSON.parse(localStorage.getItem('bookmarkedIds') || '[]');
                     if (isBookmarked) {
-                      const newBookmarks = bookmarks.filter((id: number) => id !== currentId);
+                      const newBookmarks = bookmarks.filter((bid: number) => bid !== currentId);
                       localStorage.setItem('bookmarkedIds', JSON.stringify(newBookmarks));
                       setIsBookmarked(false);
                     } else {
@@ -504,134 +466,142 @@ export default function InfoDetailPage() {
                       localStorage.setItem('bookmarkedIds', JSON.stringify(bookmarks));
                       setIsBookmarked(true);
                     }
-                  } else {
-                    console.error('북마크 API 호출 실패');
-                    alert('북마크 처리 중 오류가 발생했습니다.');
                   }
+                } catch {
+                  alert('북마크 처리 중 오류가 발생했습니다.');
                 }
-              } catch (err) {
-                console.error('북마크 실패:', err);
-                alert('북마크 처리 중 오류가 발생했습니다.');
-              }
-            }}
-            className={`w-full px-3 py-3 rounded-xl flex items-center gap-3 transition-all duration-200 text-sm font-medium ${
-              isBookmarked
-                ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
-                : 'bg-gray-100 text-gray-700 hover:bg-yellow-50 hover:text-yellow-700'
-            }`}
-          >
-            <svg
-              className="w-6 h-6 flex-shrink-0"
-              fill={isBookmarked ? 'currentColor' : 'none'}
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+              }}
+              className={`w-full px-3 py-3 rounded-xl flex items-center gap-3 transition-all duration-200 text-sm font-medium ${
+                isBookmarked
+                  ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+                  : 'bg-gray-100 text-gray-700 hover:bg-yellow-50 hover:text-yellow-700'
+              }`}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-              />
-            </svg>
-            <span>{isBookmarked ? '저장됨' : '북마크'}</span>
-          </button>
+              <svg
+                className="w-6 h-6 flex-shrink-0"
+                fill={isBookmarked ? 'currentColor' : 'none'}
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
+                />
+              </svg>
+              <span>{isBookmarked ? '저장됨' : '북마크'}</span>
+            </button>
 
-          {/* 공유 버튼 */}
-          <button
-            onClick={() => {
-              if (!detail) return;
-              const text = `${detail.title}\n\n${window.location.href}\n\n한국 생활 정보 - EUM 커뮤니티에서 공유`;
-              if (navigator.share) {
-                navigator.share({
-                  title: detail.title,
-                  text: '유용한 한국 생활 정보입니다.',
-                  url: window.location.href,
-                });
-              } else {
-                navigator.clipboard.writeText(text);
-                alert('링크가 클립보드에 복사되었습니다.');
-              }
-            }}
-            className="w-full px-3 py-3 rounded-xl bg-gray-100 text-gray-700 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-3 transition-all duration-200 text-sm font-medium"
-          >
-            <svg className="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
-              />
-            </svg>
-            <span>공유하기</span>
-          </button>
+            {/* 공유 버튼 */}
+            <button
+              onClick={() => {
+                const text = `${detail.title}\n\n${window.location.href}\n\n한국 생활 정보 - EUM 커뮤니티에서 공유`;
+                if (navigator.share) {
+                  navigator.share({
+                    title: detail.title,
+                    text: '유용한 한국 생활 정보입니다.',
+                    url: window.location.href,
+                  });
+                } else {
+                  navigator.clipboard.writeText(text);
+                  alert('링크가 클립보드에 복사되었습니다.');
+                }
+              }}
+              className="w-full px-3 py-3 rounded-xl bg-gray-100 text-gray-700 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-3 transition-all duration-200 text-sm font-medium"
+            >
+              <svg
+                className="w-6 h-6 flex-shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
+                />
+              </svg>
+              <span>공유하기</span>
+            </button>
 
-          {/* 인쇄 버튼 */}
-          <button
-            onClick={() => {
-              if (!detail) return;
-              const printContent =
-                document.querySelector('.article-content')?.innerHTML || '';
-              const printWindow = window.open('', '_blank');
-              if (printWindow) {
-                printWindow.document.write(`
-                  <html>
-                    <head>
-                      <title>${detail.title}</title>
-                      <style>
-                        body { font-family: 'Noto Sans KR', sans-serif; line-height: 1.6; margin: 40px; }
-                        h1, h2, h3 { color: #1f2937; margin-top: 2em; margin-bottom: 1em; }
-                        p { margin-bottom: 1em; }
-                        img { max-width: 100%; height: auto; }
-                        .header { border-bottom: 2px solid #e5e7eb; padding-bottom: 20px; margin-bottom: 30px; }
-                        .meta { color: #6b7280; font-size: 14px; margin-top: 10px; }
-                      </style>
-                    </head>
-                    <body>
-                      <div class="header">
-                        <h1>${detail.title}</h1>
-                        <div class="meta">
-                          카테고리: ${detail.category} | 작성자: ${detail.userName} | 
-                          작성일: ${formatDateTime(new Date(detail.createdAt))}
+            {/* 인쇄 버튼 */}
+            <button
+              onClick={() => {
+                const printContent = document.querySelector('.article-content')?.innerHTML || '';
+                const printWindow = window.open('', '_blank');
+                if (printWindow) {
+                  printWindow.document.write(`
+                    <html>
+                      <head>
+                        <title>${detail.title}</title>
+                        <style>
+                          body { font-family: 'Noto Sans KR', sans-serif; line-height: 1.6; margin: 40px; }
+                          h1, h2, h3 { color: #1f2937; margin-top: 2em; margin-bottom: 1em; }
+                          p { margin-bottom: 1em; }
+                          img { max-width: 100%; height: auto; }
+                          .header { border-bottom: 2px solid #e5e7eb; padding-bottom: 20px; margin-bottom: 30px; }
+                          .meta { color: #6b7280; font-size: 14px; margin-top: 10px; }
+                        </style>
+                      </head>
+                      <body>
+                        <div class="header">
+                          <h1>${detail.title}</h1>
+                          <div class="meta">
+                            카테고리: ${detail.category} | 작성자: ${detail.userName} | 
+                            작성일: ${formatDateTime(new Date(detail.createdAt))}
+                          </div>
                         </div>
-                      </div>
-                      <div class="content">${printContent}</div>
-                    </body>
-                  </html>
-                `);
-                printWindow.document.close();
-                printWindow.print();
-              }
-            }}
-            className="w-full px-3 py-3 rounded-xl bg-gray-100 text-gray-700 hover:bg-green-50 hover:text-green-700 flex items-center gap-3 transition-all duration-200 text-sm font-medium"
-          >
-            <svg className="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z"
-              />
-            </svg>
-            <span>인쇄하기</span>
-          </button>
+                        <div class="content">${printContent}</div>
+                      </body>
+                    </html>
+                  `);
+                  printWindow.document.close();
+                  printWindow.print();
+                }
+              }}
+              className="w-full px-3 py-3 rounded-xl bg-gray-100 text-gray-700 hover:bg-green-50 hover:text-green-700 flex items-center gap-3 transition-all duration-200 text-sm font-medium"
+            >
+              <svg
+                className="w-6 h-6 flex-shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z"
+                />
+              </svg>
+              <span>인쇄하기</span>
+            </button>
 
-          {/* 맨 위로 버튼 */}
-          <button
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="w-full px-3 py-3 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 flex items-center gap-3 transition-all duration-200 text-sm font-medium"
-          >
-            <svg className="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 10l7-7m0 0l7 7m-7-7v18"
-              />
-            </svg>
-            <span>맨 위로</span>
-          </button>
+            {/* 맨 위로 버튼 */}
+            <button
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              className="w-full px-3 py-3 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 flex items-center gap-3 transition-all duration-200 text-sm font-medium"
+            >
+              <svg
+                className="w-6 h-6 flex-shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 10l7-7m0 0l7 7m-7-7v18"
+                />
+              </svg>
+              <span>맨 위로</span>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* 상단 네비게이션 */}
       <div className="bg-white border-b border-gray-200">
@@ -666,7 +636,61 @@ export default function InfoDetailPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex gap-8">
+        <div className={`${isMobile ? 'flex flex-col gap-8' : 'flex gap-8'}`}>
+          {/* 모바일일 때, TOC만 먼저 표시 */}
+          {isMobile && tableOfContents.length > 0 && (
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">
+                📋 {t('infoPage.detail.tableOfContents')}
+              </h3>
+              <nav className="space-y-1 max-h-64 overflow-y-auto">
+                {tableOfContents.map(item => (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      let element = document.getElementById(item.id);
+                      if (!element) {
+                        const headings = document.querySelectorAll(
+                          '.article-content h1, .article-content h2, .article-content h3, .article-content h4, .article-content h5, .article-content h6'
+                        );
+                        headings.forEach((heading, index) => {
+                          if (heading.textContent?.trim() === item.text) {
+                            heading.id = item.id;
+                            element = heading as HTMLElement;
+                          }
+                        });
+                      }
+                      if (element) {
+                        const yOffset = -80;
+                        const y =
+                          element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                        window.scrollTo({ top: y, behavior: 'smooth' });
+                      }
+                    }}
+                    className={`block w-full text-left py-2 px-3 rounded text-sm transition-all duration-200 ${
+                      activeHeading === item.id
+                        ? 'bg-blue-100 text-blue-700 font-medium border-l-2 border-blue-500'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    }`}
+                    style={{
+                      paddingLeft: `${(item.level - 1) * 12 + 12}px`,
+                    }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="opacity-50">
+                        {item.level === 1 && '●'}
+                        {item.level === 2 && '○'}
+                        {item.level === 3 && '▸'}
+                        {item.level >= 4 && '·'}
+                      </span>
+                      <span className="truncate">{item.text}</span>
+                    </div>
+                  </button>
+                ))}
+              </nav>
+            </div>
+          )}
+
           {/* 메인 콘텐츠 */}
           <div className="flex-1">
             <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
@@ -747,79 +771,338 @@ export default function InfoDetailPage() {
             </div>
           </div>
 
-          {/* 오른쪽 사이드바 */}
-          <aside className="w-80 space-y-6">
-            {/* 목차 */}
-            {tableOfContents.length > 0 && (
-              <div className="bg-white rounded-lg border border-gray-200 p-6 sticky top-8">
+          {/* PC일 때 사이드바 본문 오른쪽 고정 */}
+          {!isMobile && (
+            <aside className="w-80 space-y-6">
+              {/* 목차 */}
+              {tableOfContents.length > 0 && (
+                <div className="bg-white rounded-lg border border-gray-200 p-6 sticky top-8">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">
+                    📋 {t('infoPage.detail.tableOfContents')}
+                  </h3>
+                  <nav className="space-y-1 max-h-64 overflow-y-auto">
+                    {tableOfContents.map(item => (
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          let element = document.getElementById(item.id);
+                          if (!element) {
+                            const headings = document.querySelectorAll(
+                              '.article-content h1, .article-content h2, .article-content h3, .article-content h4, .article-content h5, .article-content h6'
+                            );
+                            headings.forEach((heading, index) => {
+                              if (heading.textContent?.trim() === item.text) {
+                                heading.id = item.id;
+                                element = heading as HTMLElement;
+                              }
+                            });
+                          }
+                          if (element) {
+                            const yOffset = -80;
+                            const y =
+                              element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                            window.scrollTo({ top: y, behavior: 'smooth' });
+                          }
+                        }}
+                        className={`block w-full text-left py-2 px-3 rounded text-sm transition-all duration-200 ${
+                          activeHeading === item.id
+                            ? 'bg-blue-100 text-blue-700 font-medium border-l-2 border-blue-500'
+                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                        }`}
+                        style={{ paddingLeft: `${(item.level - 1) * 12 + 12}px` }}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="opacity-50">
+                            {item.level === 1 && '●'}
+                            {item.level === 2 && '○'}
+                            {item.level === 3 && '▸'}
+                            {item.level >= 4 && '·'}
+                          </span>
+                          <span className="truncate">{item.text}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </nav>
+                </div>
+              )}
+
+              {/* 이 글 정보 (useful features) */}
+              <div
+                className="bg-white rounded-lg border border-gray-200 p-6"
+                style={{ position: 'sticky', top: tableOfContents.length > 0 ? '24rem' : '2rem' }}
+              >
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">
-                  📋 {t('infoPage.detail.tableOfContents')}
+                  {t('infoPage.detail.usefulFeatures')}
                 </h3>
-                <nav className="space-y-1 max-h-64 overflow-y-auto">
-                  {tableOfContents.map(item => (
-                    <button
-                      key={item.id}
-                      onClick={() => {
-                        // 먼저 DOM에서 헤딩 요소를 찾아보기
-                        let element = document.getElementById(item.id);
-
-                        // ID로 찾을 수 없으면 텍스트로 찾기
-                        if (!element) {
-                          const headings = document.querySelectorAll(
-                            '.article-content h1, .article-content h2, .article-content h3, .article-content h4, .article-content h5, .article-content h6'
-                          );
-                          headings.forEach((heading, index) => {
-                            if (heading.textContent?.trim() === item.text) {
-                              heading.id = item.id; // ID 설정
-                              element = heading as HTMLElement;
-                            }
-                          });
-                        }
-
-                        if (element) {
-                          const yOffset = -80;
-                          const y =
-                            element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-                          window.scrollTo({ top: y, behavior: 'smooth' });
-                        } else {
-                          console.warn('헤딩 요소를 찾을 수 없습니다:', item.text);
-                        }
-                      }}
-                      className={`block w-full text-left py-2 px-3 rounded text-sm transition-all duration-200 ${
-                        activeHeading === item.id
-                          ? 'bg-blue-100 text-blue-700 font-medium border-l-2 border-blue-500'
-                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                      }`}
-                      style={{
-                        paddingLeft: `${(item.level - 1) * 12 + 12}px`,
-                      }}
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-700 mb-1">
+                      {t('infoPage.categories.title')}
+                    </p>
+                    <span
+                      className="inline-block px-2 py-1 text-xs font-medium text-white rounded"
+                      style={{ backgroundColor: getCategoryColor(detail.category) }}
                     >
-                      <div className="flex items-center gap-2">
-                        <span className="opacity-50">
-                          {item.level === 1 && '●'}
-                          {item.level === 2 && '○'}
-                          {item.level === 3 && '▸'}
-                          {item.level >= 4 && '·'}
-                        </span>
-                        <span className="truncate">{item.text}</span>
-                      </div>
-                    </button>
-                  ))}
-                </nav>
-              </div>
-            )}
+                      {t(`infoPage.categories.${getCategoryKey(detail.category)}`)}
+                    </span>
+                  </div>
 
-            {/* 이 글 정보 */}
-            <div
-              className="bg-white rounded-lg border border-gray-200 p-6"
-              style={{ position: 'sticky', top: tableOfContents.length > 0 ? '24rem' : '2rem' }}
-            >
+                  <div>
+                    <p className="text-sm font-medium text-gray-700 mb-1">
+                      {t('infoPage.content.author')}
+                    </p>
+                    <p className="text-sm text-gray-600">{detail.userName}</p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-medium text-gray-700 mb-1">
+                      {t('infoPage.content.createdAt')}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      <span>{formatDateTime(new Date(detail.createdAt))}</span>
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-medium text-gray-700 mb-1">
+                      {t('infoPage.content.views')}
+                    </p>
+                    <p className="text-sm text-gray-600">{detail.views.toLocaleString()}</p>
+                  </div>
+                </div>
+
+                {/* 관련 카테고리 정보 */}
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                  <h4 className="font-medium text-gray-900 mb-3">
+                    <span className="flex items-center gap-2">
+                      📂 {t('infoPage.detail.relatedInfo')}
+                    </span>
+                  </h4>
+                  <div className="space-y-3">
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <p className="text-sm text-gray-700 mb-2">
+                        {t('infoPage.detail.moreInfoNeeded', {
+                          category: t(`infoPage.categories.${getCategoryKey(detail.category)}`),
+                        })}
+                      </p>
+                      <button
+                        onClick={() => {
+                          navigate('/info', {
+                            state: { selectedCategory: getCategoryKey(detail.category) },
+                          });
+                        }}
+                        className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                      >
+                        →{' '}
+                        {t('infoPage.detail.viewAllCategory', {
+                          category: t(`infoPage.categories.${getCategoryKey(detail.category)}`),
+                        })}
+                      </button>
+                    </div>
+
+                    {getCategoryKey(detail.category) === 'visa' && (
+                      <div className="bg-blue-50 rounded-lg p-3">
+                        <p className="text-sm font-medium text-blue-800 mb-1">
+                          💡 {t('infoPage.detail.recommendedSites')}
+                        </p>
+                        <a
+                          href="https://www.hikorea.go.kr"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-blue-600 hover:underline"
+                        >
+                          {t('infoPage.sidebar.hikorea.title')} (
+                          {t('infoPage.sidebar.hikorea.subtitle')})
+                        </a>
+                      </div>
+                    )}
+
+                    {getCategoryKey(detail.category) === 'healthcare' && (
+                      <div className="bg-red-50 rounded-lg p-3">
+                        <p className="text-sm font-medium text-red-800 mb-1">
+                          🏥 {t('infoPage.detail.emergencyInfo')}
+                        </p>
+                        <p className="text-sm text-red-600">
+                          {t('infoPage.detail.emergencyNumbers')}
+                        </p>
+                      </div>
+                    )}
+
+                    {getCategoryKey(detail.category) === 'employment' && (
+                      <div className="bg-green-50 rounded-lg p-3">
+                        <p className="text-sm font-medium text-green-800 mb-1">
+                          💼 {t('infoPage.detail.employmentSupport')}
+                        </p>
+                        <a
+                          href="https://www.work.go.kr"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-green-600 hover:underline"
+                        >
+                          {t('infoPage.sidebar.worknet.title')} (
+                          {t('infoPage.sidebar.worknet.subtitle')})
+                        </a>
+                      </div>
+                    )}
+
+                    {getCategoryKey(detail.category) === 'housing' && (
+                      <div className="bg-orange-50 rounded-lg p-3">
+                        <p className="text-sm font-medium text-orange-800 mb-1">
+                          🏠 {t('infoPage.detail.housingSupport')}
+                        </p>
+                        <p className="text-sm text-orange-600">
+                          {t('infoPage.detail.housingDispute')}
+                        </p>
+                      </div>
+                    )}
+
+                    {getCategoryKey(detail.category) === 'education' && (
+                      <div className="bg-purple-50 rounded-lg p-3">
+                        <p className="text-sm font-medium text-purple-800 mb-1">
+                          🎓 {t('infoPage.detail.educationSupport')}
+                        </p>
+                        <p className="text-sm text-purple-600">
+                          {t('infoPage.detail.koreanLearning')}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </aside>
+          )}
+
+          {/* 모바일일 때, 본문과 useful features 사이에 가로 툴바 추가 */}
+          {isMobile && (
+            <div className="flex justify-around items-center bg-white border border-gray-200 rounded-lg p-2 space-x-2">
+              <button
+                onClick={async () => {
+                  try {
+                    const currentId = detail.informationId;
+                    const success = await toggleBookmark(currentId);
+                    if (success) {
+                      const bookmarks = JSON.parse(localStorage.getItem('bookmarkedIds') || '[]');
+                      if (isBookmarked) {
+                        const newBookmarks = bookmarks.filter((bid: number) => bid !== currentId);
+                        localStorage.setItem('bookmarkedIds', JSON.stringify(newBookmarks));
+                        setIsBookmarked(false);
+                      } else {
+                        bookmarks.push(currentId);
+                        localStorage.setItem('bookmarkedIds', JSON.stringify(bookmarks));
+                        setIsBookmarked(true);
+                      }
+                    }
+                  } catch {
+                    alert('북마크 처리 중 오류가 발생했습니다.');
+                  }
+                }}
+                className={`flex flex-col items-center text-xs ${
+                  isBookmarked ? 'text-yellow-600' : 'text-gray-600'
+                }`}
+              >
+                <PersonIcon fontSize="small" />
+                <span>{isBookmarked ? '저장됨' : '북마크'}</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  const text = `${detail.title}\n\n${window.location.href}`;
+                  if (navigator.share) {
+                    navigator.share({
+                      title: detail.title,
+                      text: '유용한 한국 생활 정보입니다.',
+                      url: window.location.href,
+                    });
+                  } else {
+                    navigator.clipboard.writeText(text);
+                    alert('링크가 클립보드에 복사되었습니다.');
+                  }
+                }}
+                className="flex flex-col items-center text-xs text-gray-600"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
+                  />
+                </svg>
+                <span>공유</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  const printContent = document.querySelector('.article-content')?.innerHTML || '';
+                  const printWindow = window.open('', '_blank');
+                  if (printWindow) {
+                    printWindow.document.write(`
+                      <html>
+                        <head>
+                          <title>${detail.title}</title>
+                          <style>
+                            body { font-family: 'Noto Sans KR', sans-serif; margin: 40px; }
+                            h1,h2,h3 { color: #1f2937; margin-top: 2em; margin-bottom: 1em; }
+                            p { margin-bottom: 1em; }
+                            img { max-width: 100%; height: auto; }
+                            .header { border-bottom: 2px solid #e5e7eb; padding-bottom: 20px; margin-bottom: 30px; }
+                            .meta { color: #6b7280; font-size: 14px; margin-top: 10px; }
+                          </style>
+                        </head>
+                        <body>
+                          <div class="header">
+                            <h1>${detail.title}</h1>
+                            <div class="meta">
+                              카테고리: ${detail.category} | 작성자: ${detail.userName} | 
+                              작성일: ${formatDateTime(new Date(detail.createdAt))}
+                            </div>
+                          </div>
+                          <div class="content">${printContent}</div>
+                        </body>
+                      </html>
+                    `);
+                    printWindow.document.close();
+                    printWindow.print();
+                  }
+                }}
+                className="flex flex-col items-center text-xs text-gray-600"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z"
+                  />
+                </svg>
+                <span>인쇄</span>
+              </button>
+
+              <button
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="flex flex-col items-center text-xs text-gray-600"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 10l7-7m0 0l7 7m-7-7v18"
+                  />
+                </svg>
+                <span>맨 위로</span>
+              </button>
+            </div>
+          )}
+
+          {/* 모바일일 때, useful features만 이곳에 렌더 */}
+          {isMobile && (
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">
                 {t('infoPage.detail.usefulFeatures')}
               </h3>
-
-              <div className="space-y-4">
-                <div>
+              <div className="flex flex-wrap gap-4">
+                <div className="flex-1 min-w-[120px]">
                   <p className="text-sm font-medium text-gray-700 mb-1">
                     {t('infoPage.categories.title')}
                   </p>
@@ -831,14 +1114,14 @@ export default function InfoDetailPage() {
                   </span>
                 </div>
 
-                <div>
+                <div className="flex-1 min-w-[120px]">
                   <p className="text-sm font-medium text-gray-700 mb-1">
                     {t('infoPage.content.author')}
                   </p>
                   <p className="text-sm text-gray-600">{detail.userName}</p>
                 </div>
 
-                <div>
+                <div className="flex-1 min-w-[120px]">
                   <p className="text-sm font-medium text-gray-700 mb-1">
                     {t('infoPage.content.createdAt')}
                   </p>
@@ -847,7 +1130,7 @@ export default function InfoDetailPage() {
                   </p>
                 </div>
 
-                <div>
+                <div className="flex-1 min-w-[120px]">
                   <p className="text-sm font-medium text-gray-700 mb-1">
                     {t('infoPage.content.views')}
                   </p>
@@ -871,7 +1154,6 @@ export default function InfoDetailPage() {
                     </p>
                     <button
                       onClick={() => {
-                        // URL을 통해 카테고리 필터링하여 이동
                         navigate('/info', {
                           state: { selectedCategory: getCategoryKey(detail.category) },
                         });
@@ -954,7 +1236,7 @@ export default function InfoDetailPage() {
                 </div>
               </div>
             </div>
-          </aside>
+          )}
         </div>
       </div>
 

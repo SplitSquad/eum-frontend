@@ -314,3 +314,18 @@ body.theme-professional .MuiButton-contained:hover {
   background: transparent !important;
   border-radius: 0 !important;
 }
+
+/* notistack snackbar 텍스트 색상 오버라이드 */
+.SnackbarContent-root {
+  color: #222 !important;
+}
+
+/* Welcome 페이지 및 전체 버튼 연한 회색 스타일 오버라이드 */
+.MuiButton-contained.login-welcome-btn {
+  background-color: #f1f3f6 !important;
+  color: #222 !important;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08) !important;
+}
+.MuiButton-contained.login-welcome-btn:hover {
+  background-color: #e0e3e8 !important;
+}

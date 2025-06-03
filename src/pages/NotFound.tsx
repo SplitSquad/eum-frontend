@@ -19,6 +19,13 @@ const NotFoundCard = styled(Paper)`
   border-radius: 18px;
   border: 1px solid #e0e0e0;
   backdrop-filter: blur(4px);
+
+  /* --- 모바일(≤600px) 가로 너비일 때 --- */
+  @media (max-width: 600px) {
+    padding: 2rem 1rem;
+    max-width: 90%;
+    border-radius: 14px;
+  }
 `;
 
 const ErrorImg = styled('img')`
@@ -31,11 +38,15 @@ const ErrorImg = styled('img')`
   display: block;
   background: #fff;
   border: 1.5px solid #ededed;
-`;
 
-/**
- * 404 페이지 컴포넌트
- */
+  /* --- 모바일(≤600px) 가로 너비일 때 --- */
+  @media (max-width: 600px) {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 1.5rem;
+    border: 1px solid #ededed;
+  }
+`;
 
 const NotFound: React.FC = () => {
   const { t } = useTranslation();
@@ -49,17 +60,41 @@ const NotFound: React.FC = () => {
         alignItems: 'center',
         justifyContent: 'center',
         minHeight: '70vh',
+        /* --- 모바일에서 간격 조금 더 좁게(선택사항) --- */
+        px: { xs: 1, sm: 2, md: 0 },
       }}
     >
       <NotFoundCard elevation={3}>
         <ErrorImg src={error404} alt="404" />
-        <Typography variant="h3" fontWeight={800} style={{ color: '#222' }} gutterBottom>
+        <Typography
+          variant="h3"
+          fontWeight={800}
+          style={{ color: '#222' }}
+          gutterBottom
+          sx={{
+            /* 모바일에서 폰트 크기 축소 */
+            fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+          }}
+        >
           404
         </Typography>
-        <Typography variant="h4" gutterBottom>
+        <Typography
+          variant="h4"
+          gutterBottom
+          sx={{
+            fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' },
+          }}
+        >
           {t('notFound.title')}
         </Typography>
-        <Typography variant="h6" sx={{ mb: 3, color: '#555' }}>
+        <Typography
+          variant="h6"
+          sx={{
+            mb: 3,
+            color: '#555',
+            fontSize: { xs: '1rem', sm: '1.125rem', md: '1.25rem' },
+          }}
+        >
           {t('notFound.description')}
         </Typography>
         <Button
@@ -69,10 +104,11 @@ const NotFound: React.FC = () => {
           sx={{
             bgcolor: '#FF9999',
             '&:hover': { bgcolor: '#FF7777' },
-            px: 4,
+            px: { xs: 3, sm: 4 },
             fontWeight: 700,
             borderRadius: 2,
             mt: 2,
+            fontSize: { xs: '0.875rem', sm: '1rem' },
           }}
         >
           {t('notFound.goHome')}

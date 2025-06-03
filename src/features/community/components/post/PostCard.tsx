@@ -572,6 +572,7 @@ interface PostCardProps {
   hideImage?: boolean;
   onClick?: (post: PostSummary) => void;
   isGroup?: boolean;
+  isMobile?: boolean;
 }
 
 /**
@@ -583,6 +584,7 @@ const PostCard: React.FC<PostCardProps> = ({
   hideImage = false,
   onClick,
   isGroup = false,
+  isMobile = false,
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -652,6 +654,81 @@ const PostCard: React.FC<PostCardProps> = ({
   const formattedDate = post.createdAt
     ? format(new Date(post.createdAt), 'yyyy-MM-dd HH:mm', { locale: ko })
     : t('community.posts.noDate');
+
+  // 모바일 & 그룹카드: 심플 스타일 (제목 줄바꿈, 작성자 아래)
+  if (isMobile) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: 2,
+          p: 1.5,
+          borderRadius: 2,
+          background: '#fff',
+          boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+          border: '1px solid #eee',
+          minHeight: 72,
+          cursor: 'pointer',
+        }}
+        onClick={handleCardClick}
+      >
+        <img
+          src={thumbnailUrl}
+          alt={post.title}
+          style={{
+            width: 56,
+            height: 56,
+            borderRadius: 8,
+            objectFit: 'cover',
+            background: '#f5f5f5',
+            flexShrink: 0,
+          }}
+        />
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Typography
+            variant="subtitle1"
+            sx={{
+              fontWeight: 700,
+              fontSize: 16,
+              color: '#222',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              mb: 0.5,
+            }}
+          >
+            {post.title}
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+            <StyledAvatar>{post.writer?.nickname?.charAt(0) || '?'}</StyledAvatar>
+            <Typography variant="caption" color="text.secondary">
+              {post.writer?.nickname || t('community.posts.anonymous')}
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              · {formattedDate}
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+            <VisibilityOutlinedIcon sx={{ fontSize: 16, color: '#bbb' }} />
+            <Typography variant="caption" color="text.secondary">
+              {post.viewCount || post.views || 0}
+            </Typography>
+            <ChatBubbleOutlineIcon sx={{ fontSize: 16, color: '#bbb', ml: 1 }} />
+            <Typography variant="caption" color="text.secondary">
+              {post.commentCount ?? 0}
+            </Typography>
+            <ThumbUpOutlinedIcon sx={{ fontSize: 16, color: '#bbb', ml: 1 }} />
+            <Typography variant="caption" color="text.secondary">
+              {post.likeCount || post.like || 0}
+            </Typography>
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
 
   if (!isGroup) {
     // 영화표(티켓) 스타일 카드

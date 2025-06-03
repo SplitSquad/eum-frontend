@@ -152,9 +152,11 @@ const ProBoardListPage: React.FC = () => {
       resetPostsState();
       usePostStore.setState({ postLoading: true, posts: [] });
     }
-    
+
     // 🔥 자유게시판 진입 시 상태 즉시 초기화 (다른 페이지에서 오는 경우 대응)
-    console.log('ProBoardListPage - Already initializing or data loaded, preventing duplicate request');
+    console.log(
+      'ProBoardListPage - Already initializing or data loaded, preventing duplicate request'
+    );
     setSelectedCategory('전체');
     setSelectedTags([]);
     setAvailableTags([]);
@@ -329,7 +331,9 @@ const ProBoardListPage: React.FC = () => {
   useEffect(() => {
     // 이미 초기화 중이거나 데이터를 로드했으면 중복 요청 방지
     if (isInitializingRef.current || initialDataLoadedRef.current) {
-      console.log('ProBoardListPage - Already initializing or data loaded, preventing duplicate request');
+      console.log(
+        'ProBoardListPage - Already initializing or data loaded, preventing duplicate request'
+      );
       return;
     }
 
@@ -380,7 +384,9 @@ const ProBoardListPage: React.FC = () => {
             saved.selectedTags &&
             Array.isArray(saved.selectedTags) &&
             saved.selectedTags.length > 0 &&
-            saved.category && saved.category !== '전체' && saved.category !== t('community.filters.all')
+            saved.category &&
+            saved.category !== '전체' &&
+            saved.category !== t('community.filters.all')
           ) {
             console.log('ProBoard 자유게시판 검색 모드 - 태그 상태 복구:', saved.selectedTags);
             // 카테고리가 유효한 경우에만 태그 상태 복구
@@ -643,9 +649,10 @@ const ProBoardListPage: React.FC = () => {
     setSelectedTags([]);
 
     // 카테고리에 맞는 태그 목록 즉시 설정
-    const newAvailableTags = category && category !== t('community.filters.all') 
-      ? categoryTags[category as keyof typeof categoryTags] || []
-      : [];
+    const newAvailableTags =
+      category && category !== t('community.filters.all')
+        ? categoryTags[category as keyof typeof categoryTags] || []
+        : [];
     setAvailableTags(newAvailableTags);
     console.log('[DEBUG] 새 카테고리의 사용 가능한 태그:', newAvailableTags);
 
@@ -857,15 +864,15 @@ const ProBoardListPage: React.FC = () => {
   const handleNavigateToGroups = () => {
     // 1. 즉시 posts 데이터 초기화 및 로딩 상태 설정
     resetPostsState();
-    
+
     // 2. postStore에서도 로딩 상태 즉시 설정
     usePostStore.setState({ postLoading: true, posts: [] });
-    
+
     // 3. 모든 상태 즉시 초기화
     setSelectedCategory('전체');
     setSelectedTags([]);
     setAvailableTags([]);
-    
+
     // 4. 약간의 지연 후 네비게이션 (초기화가 UI에 반영될 시간)
     setTimeout(() => {
       navigate('/community/groups');
@@ -910,24 +917,44 @@ const ProBoardListPage: React.FC = () => {
       <div
         style={{
           maxWidth: 1120,
+          width: '100%',
+          minWidth: 0,
           margin: '0 auto',
-          padding: '32px 16px',
+          padding: isMobile ? '16px 4vw' : '32px 2vw',
+          boxSizing: 'border-box',
           height: 'auto',
         }}
       >
         <div
           style={{
             display: 'flex',
-            gap: 8,
+            flexDirection: isMobile ? 'column' : 'row',
+            gap: isMobile ? 0 : 8,
             alignItems: 'flex-start',
-            height: 'auto',
+            minWidth: 0,
+            width: '100%',
           }}
         >
           {/* 메인 컨텐츠 */}
-          <div style={{ flex: 1, paddingRight: 32 }}>
+          <div
+            style={{
+              flex: 1,
+              minWidth: 0,
+              paddingRight: isMobile ? 0 : 32,
+              width: '100%',
+              boxSizing: 'border-box',
+            }}
+          >
             {/* 카테고리/아이콘 영역 */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
-              {/* 왼쪽: 카테고리 아이콘과 텍스트 */}
+            <div
+              style={{
+                display: isMobile ? 'block' : 'flex',
+                alignItems: isMobile ? 'flex-start' : 'center',
+                gap: 16,
+                marginBottom: 24,
+              }}
+            >
+              {/* 아이콘+텍스트 */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <img
                   src={squareImg}
@@ -948,63 +975,379 @@ const ProBoardListPage: React.FC = () => {
                     : t(`community.categories.${selectedCategory}`) || selectedCategory}
                 </h2>
               </div>
+              {isMobile && (
+                <div
+                  style={{
+                    paddingTop: 18,
+                    width: isMobile ? '100%' : '28vw',
+                    minWidth: isMobile ? 0 : 220,
+                    maxWidth: isMobile ? '100%' : 340,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 12,
+                    position: isMobile ? 'static' : 'sticky',
+                    top: isMobile ? undefined : 200,
+                    alignSelf: isMobile ? 'auto' : 'flex-start',
+                    height: 'fit-content',
+                    paddingLeft: isMobile ? 0 : 16,
+                    boxSizing: 'border-box',
+                  }}
+                >
+                  {' '}
+                  {/* 검색 필드 */}
+                  <Box
+                    sx={{
+                      mb: 2,
+                      display: 'flex',
+                      gap: 1,
+                      flexWrap: 'wrap',
+                      marginBottom: 0,
+                    }}
+                  >
+                    {/* 검색 타입 선택 */}
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        gap: 1,
+                        alignItems: 'center',
+                        width: '100%',
+                      }}
+                    >
+                      <FormControl variant="outlined" size="small" sx={{ minWidth: 120, flex: 1 }}>
+                        <InputLabel id="search-type-label">
+                          {t('community.searchType.titleContent')}
+                        </InputLabel>
+                        <Select
+                          labelId="search-type-label"
+                          id="search-type"
+                          value={searchType}
+                          onChange={handleSearchTypeChange}
+                          label={t('community.searchType.titleContent')}
+                          sx={{
+                            bgcolor: 'rgba(255, 255, 255, 0.5)',
+                            '& .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#e5e7eb',
+                            },
+                            '&:hover .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#222',
+                            },
+                            borderRadius: '8px',
+                          }}
+                        >
+                          <MenuItem value={t('community.searchType.titleContent')}>
+                            {t('community.searchType.titleContent')}
+                          </MenuItem>
+                          <MenuItem value={t('community.searchType.author')}>
+                            {t('community.searchType.author')}
+                          </MenuItem>
+                        </Select>
+                      </FormControl>
+                      <button
+                        onClick={handleNavigateToGroups}
+                        style={{
+                          ...proButton,
+                          padding: '7px 0',
+                          fontSize: 15,
+                          width: 'auto',
+                          minWidth: 90,
+                          borderRadius: 8,
+                          border: 'none',
+                          backgroundColor: '#f7f7f7',
+                          color: '#333',
+                          fontWeight: 600,
+                          margin: 0,
+                          boxShadow: 'none',
+                          transition: 'background 0.2s, color 0.2s',
+                          outline: 'none',
+                          flexShrink: 0,
+                          marginLeft: 8,
+                        }}
+                        onMouseEnter={e => {
+                          e.currentTarget.style.backgroundColor = 'rgba(34, 34, 34, 0.07)';
+                          e.currentTarget.style.color = '#111';
+                        }}
+                        onMouseLeave={e => {
+                          e.currentTarget.style.backgroundColor = '#f7f7f7';
+                          e.currentTarget.style.color = '#333';
+                        }}
+                      >
+                        {t('common.smallGroups')}
+                      </button>
+                    </Box>
 
-              {/* 오른쪽: 총 게시글과 글쓰기 버튼, 정렬 드롭다운 */}
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  flex: 1,
-                  justifyContent: 'flex-end',
-                }}
-              >
-                {/* 총 게시글 Typography를 글쓰기 버튼 왼쪽에 배치 */}
-                <Typography
-                  variant="subtitle2"
-                  sx={{ color: '#222', fontWeight: 700, fontSize: 15, mr: 1 }}
-                >
-                  {t('community.messages.totalPosts', {
-                    count: postPageInfo.totalElements.toString(),
-                  })}
-                </Typography>
-                <button
-                  onClick={handleCreatePost}
+                    {/* 검색창 */}
+                    <TextField
+                      placeholder={t('community.searchPlaceholder')}
+                      variant="outlined"
+                      size="small"
+                      value={searchTerm}
+                      onChange={e => setSearchTerm(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      sx={{
+                        flexGrow: 1,
+                        '& .MuiOutlinedInput-root': {
+                          bgcolor: 'rgba(255, 255, 255, 0.5)',
+                          borderRadius: '8px',
+                          '& fieldset': {
+                            borderColor: '#e5e7eb',
+                          },
+                          '&:hover fieldset': {
+                            borderColor: '#222',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: '#222',
+                          },
+                        },
+                      }}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              size="small"
+                              onClick={handleSearch}
+                              title={t('common.search')}
+                            >
+                              <SearchIcon fontSize="small" sx={{ color: '#222' }} />
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  </Box>
+                  {/* 분리된 필터 영역 */}
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      mb: 3,
+                      p: 2,
+                      bgcolor: 'rgba(255, 255, 255, 0.85)',
+                      borderRadius: '16px',
+                      border: '1.5px solid #e5e7eb',
+                      boxShadow: '0 8px 20px rgba(226, 225, 225, 0.15)',
+                      backdropFilter: 'blur(8px)',
+                      marginBottom: 0,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: 'grid',
+                        gridTemplateColumns: isMobile
+                          ? '1fr'
+                          : 'repeat(auto-fit, minmax(200px, 1fr))',
+                        gap: 2,
+                        margin: 0,
+                      }}
+                    >
+                      {/* 카테고리와 태그 영역(통합) */}
+                      <Box sx={{ gridColumn: isMobile ? 'auto' : '1 / -1' }}>
+                        <Typography
+                          variant="subtitle2"
+                          gutterBottom
+                          sx={{ fontWeight: 600, color: '#222' }}
+                        >
+                          {t('community.filters.category')}
+                        </Typography>
+
+                        {/* 카테고리 선택 버튼 */}
+                        <ToggleButtonGroup
+                          color="primary"
+                          value={selectedCategory}
+                          exclusive
+                          onChange={(e, newValue) => newValue && handleCategoryChange(newValue)}
+                          size="small"
+                          sx={{
+                            width: '100%',
+                            flexWrap: 'wrap',
+                            mb: 2,
+                            '& .MuiToggleButton-root': {
+                              borderRadius: '8px',
+                              border: '1px solid #e5e7eb',
+                              mb: 1,
+                              '&.Mui-selected': {
+                                bgcolor: 'rgba(226, 225, 225, 0.2)',
+                                color: '#222',
+                                fontWeight: 'bold',
+                              },
+                              '&:hover': {
+                                bgcolor: 'rgba(226, 225, 225, 0.4)',
+                              },
+                            },
+                            '& .MuiToggleButtonGroup-grouped': {
+                              borderRadius: '8px !important',
+                              mx: 0.5,
+                            },
+                          }}
+                        >
+                          <ToggleButton value="전체" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
+                            {t('community.categories.all')}
+                          </ToggleButton>
+                          <ToggleButton value="travel" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
+                            {t('community.categories.travel')}
+                          </ToggleButton>
+                          <ToggleButton value="living" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
+                            {t('community.categories.living')}
+                          </ToggleButton>
+                          <ToggleButton value="study" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
+                            {t('community.categories.study')}
+                          </ToggleButton>
+                          <ToggleButton value="job" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
+                            {t('community.categories.job')}
+                          </ToggleButton>
+                        </ToggleButtonGroup>
+
+                        {/* 카테고리에 따른 태그 선택 */}
+                        {selectedCategory && selectedCategory !== '전체' && (
+                          <>
+                            <Typography
+                              variant="subtitle2"
+                              gutterBottom
+                              sx={{ fontWeight: 600, color: '#222', mt: 2 }}
+                            >
+                              {t('community.filters.tags')}
+                            </Typography>
+                            <Box
+                              key={`proBoardTags-${selectedCategory}-${selectedTags.length}-${Date.now() % 1000}`}
+                              sx={{
+                                display: 'flex',
+                                flexWrap: 'wrap',
+                                gap: 1,
+                                mt: 1,
+                              }}
+                            >
+                              {availableTags.map(tag => (
+                                <Chip
+                                  key={`proBoardTag-${tag}-${selectedTags.includes(tag) ? 'selected' : 'unselected'}`}
+                                  label={tag}
+                                  onClick={() => handleTagSelect(tag)}
+                                  color={selectedTags.includes(tag) ? 'primary' : 'default'}
+                                  variant={selectedTags.includes(tag) ? 'filled' : 'outlined'}
+                                  sx={{
+                                    borderRadius: '16px',
+                                    borderColor: selectedTags.includes(tag) ? '#222' : '#e5e7eb',
+                                    backgroundColor: selectedTags.includes(tag)
+                                      ? 'rgba(226, 225, 225, 0.2)'
+                                      : 'transparent',
+                                    color: selectedTags.includes(tag) ? '#222' : '#222',
+                                    '&:hover': {
+                                      backgroundColor: selectedTags.includes(tag)
+                                        ? 'rgba(226, 225, 225, 0.3)'
+                                        : 'rgba(226, 225, 225, 0.2)',
+                                    },
+                                  }}
+                                />
+                              ))}
+                            </Box>
+                          </>
+                        )}
+                      </Box>
+                    </Box>
+                  </Paper>
+                </div>
+              )}
+              {/* 글쓰기/정렬: PC는 오른쪽, 모바일은 아래 */}
+              {isMobile ? (
+                <div style={{ display: 'flex', gap: 8, width: '100%', marginTop: 8 }}>
+                  {/* 기존 글쓰기 버튼/셀렉터 코드 복사해서 이곳에 */}
+                  <button
+                    onClick={handleCreatePost}
+                    style={{
+                      ...proButton,
+                      padding: '6px 16px',
+                      fontSize: 14,
+                      background: selectedCategory === 'all' ? '#222' : '#f3f4f6',
+                      color: selectedCategory === 'all' ? '#fff' : '#222',
+                      border:
+                        selectedCategory === 'all' ? '1.5px solid #222' : '1.5px solid #e5e7eb',
+                      borderRadius: 6,
+                      margin: 0,
+                      flex: 1,
+                      minWidth: 0,
+                    }}
+                  >
+                    {t('community.posts.writePost')}
+                  </button>
+                  <select
+                    value={filter.sortBy}
+                    onChange={e => handleSortChange(e.target.value as 'latest' | 'popular')}
+                    style={{
+                      padding: '6px 16px',
+                      fontSize: 14,
+                      border: '1.5px solid #222',
+                      borderRadius: 6,
+                      background: '#fff',
+                      color: '#222',
+                      fontWeight: 600,
+                      fontFamily: proCard.fontFamily,
+                      outline: 'none',
+                      cursor: 'pointer',
+                      minWidth: 100,
+                      marginRight: 0,
+                      flex: 1,
+                    }}
+                  >
+                    <option value="latest">{t('community.filters.latest')}</option>
+                    <option value="popular">{t('community.filters.popular')}</option>
+                  </select>
+                </div>
+              ) : (
+                <div
                   style={{
-                    ...proButton,
-                    padding: '6px 16px',
-                    fontSize: 14,
-                    background: selectedCategory === 'all' ? '#222' : '#f3f4f6',
-                    color: selectedCategory === 'all' ? '#fff' : '#222',
-                    border: selectedCategory === 'all' ? '1.5px solid #222' : '1.5px solid #e5e7eb',
-                    borderRadius: 6,
-                    margin: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    flex: 1,
+                    justifyContent: 'flex-end',
                   }}
                 >
-                  {t('community.posts.writePost')}
-                </button>
-                <select
-                  value={filter.sortBy}
-                  onChange={e => handleSortChange(e.target.value as 'latest' | 'popular')}
-                  style={{
-                    padding: '6px 16px',
-                    fontSize: 14,
-                    border: '1.5px solid #222',
-                    borderRadius: 6,
-                    background: '#fff',
-                    color: '#222',
-                    fontWeight: 600,
-                    fontFamily: proCard.fontFamily,
-                    outline: 'none',
-                    cursor: 'pointer',
-                    minWidth: 100,
-                    marginRight: 0,
-                  }}
-                >
-                  <option value="latest">{t('community.filters.latest')}</option>
-                  <option value="popular">{t('community.filters.popular')}</option>
-                </select>
-              </div>
+                  {/* 기존 글쓰기 버튼/셀렉터 코드 그대로 */}
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ color: '#222', fontWeight: 700, fontSize: 15, mr: 1 }}
+                  >
+                    {t('community.messages.totalPosts', {
+                      count: postPageInfo.totalElements.toString(),
+                    })}
+                  </Typography>
+                  <button
+                    onClick={handleCreatePost}
+                    style={{
+                      ...proButton,
+                      padding: '6px 16px',
+                      fontSize: 14,
+                      background: selectedCategory === 'all' ? '#222' : '#f3f4f6',
+                      color: selectedCategory === 'all' ? '#fff' : '#222',
+                      border:
+                        selectedCategory === 'all' ? '1.5px solid #222' : '1.5px solid #e5e7eb',
+                      borderRadius: 6,
+                      margin: 0,
+                    }}
+                  >
+                    {t('community.posts.writePost')}
+                  </button>
+                  <select
+                    value={filter.sortBy}
+                    onChange={e => handleSortChange(e.target.value as 'latest' | 'popular')}
+                    style={{
+                      padding: '6px 16px',
+                      fontSize: 14,
+                      border: '1.5px solid #222',
+                      borderRadius: 6,
+                      background: '#fff',
+                      color: '#222',
+                      fontWeight: 600,
+                      fontFamily: proCard.fontFamily,
+                      outline: 'none',
+                      cursor: 'pointer',
+                      minWidth: 100,
+                      marginRight: 0,
+                    }}
+                  >
+                    <option value="latest">{t('community.filters.latest')}</option>
+                    <option value="popular">{t('community.filters.popular')}</option>
+                  </select>
+                </div>
+              )}
             </div>
             {/* 게시글 목록/로딩/에러/검색결과 없음 등 */}
             {postLoading ? (
@@ -1119,169 +1462,188 @@ const ProBoardListPage: React.FC = () => {
             )}
           </div>
 
-          {/* 그라데이션 border line */}
-          <div
-            style={{
-              width: 2,
-              minHeight: '100%',
-              background: 'linear-gradient(to bottom, #fff 0%, #e5e7eb 100%)',
-              borderRadius: 1,
-              marginLeft: 0,
-              marginRight: 0,
-            }}
-          />
+          {/* 그라데이션 border line (PC에서만) */}
+          {!isMobile && (
+            <div
+              style={{
+                width: 2,
+                minHeight: '100%',
+                background: 'linear-gradient(to bottom, #fff 0%, #e5e7eb 100%)',
+                borderRadius: 1,
+                marginLeft: 0,
+                marginRight: 0,
+              }}
+            />
+          )}
 
-          {/* 오른쪽 사이드바 (필요시 위젯/광고/인기글 등) */}
-          <aside
-            style={{
-              width: 320,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 12,
-              position: 'sticky',
-              top: 200,
-              alignSelf: 'flex-start',
-              height: 'fit-content',
-              paddingLeft: 16,
-            }}
-          >
-            {/* 소그룹 모임으로 가는 버튼을 기존 총 게시글 개수 박스 자리에 추가 (작고 자연스럽게) */}
-            <Paper
-              elevation={0}
-              sx={{
-                mb: 1,
-                p: 1.5,
-                bgcolor: 'rgba(255,255,255,0.95)',
-                borderRadius: '12px',
-                border: '1.5px solid #e5e7eb',
-                boxShadow: '0 2px 8px rgba(226, 225, 225, 0.08)',
-                textAlign: 'center',
-                fontFamily: proCard.fontFamily,
-                marginBottom: 0,
+          {/* 사이드바 */}
+          {!isMobile && (
+            <aside
+              style={{
+                width: isMobile ? '100%' : '28vw',
+                minWidth: isMobile ? 0 : 220,
+                maxWidth: isMobile ? '100%' : 340,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 12,
+                position: isMobile ? 'static' : 'sticky',
+                top: isMobile ? undefined : 200,
+                alignSelf: isMobile ? 'auto' : 'flex-start',
+                height: 'fit-content',
+                paddingLeft: isMobile ? 0 : 16,
+                boxSizing: 'border-box',
               }}
             >
-              <button
-                onClick={handleNavigateToGroups}
-                style={{
-                  ...proButton,
-                  padding: '7px 0',
-                  fontSize: 15,
-                  width: '100%',
-                  borderRadius: 8,
-                  border: 'none',
-                  backgroundColor: '#f7f7f7',
-                  color: '#333',
-                  fontWeight: 600,
-                  margin: 0,
-                  boxShadow: 'none',
-                  transition: 'background 0.2s, color 0.2s',
-                  outline: 'none',
-                  cursor: 'pointer',
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.backgroundColor = 'rgba(34, 34, 34, 0.07)';
-                  e.currentTarget.style.color = '#111';
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.backgroundColor = '#f7f7f7';
-                  e.currentTarget.style.color = '#333';
-                }}
-              >
-                {t('common.smallGroups')}
-              </button>
-            </Paper>
-
-            {/* 필터/검색 영역 */}
-            <Paper
-              elevation={0}
-              sx={{
-                mb: 3,
-                p: 2,
-                bgcolor: 'rgba(255, 255, 255, 0.85)',
-                borderRadius: '16px',
-                border: '1.5px solid #e5e7eb',
-                boxShadow: '0 8px 20px rgba(226, 225, 225, 0.15)',
-                backdropFilter: 'blur(8px)',
-                marginBottom: 0,
-              }}
-            >
-              {/* 검색 필드 */}
-              <Box
+              {/* 소그룹 모임으로 가는 버튼을 기존 총 게시글 개수 박스 자리에 추가 (작고 자연스럽게) */}
+              <Paper
+                elevation={0}
                 sx={{
-                  mb: 2,
-                  display: 'flex',
-                  gap: 1,
-                  flexWrap: 'wrap',
+                  mb: 1,
+                  p: 1.5,
+                  bgcolor: 'rgba(255,255,255,0.95)',
+                  borderRadius: '12px',
+                  border: '1.5px solid #e5e7eb',
+                  boxShadow: '0 2px 8px rgba(226, 225, 225, 0.08)',
+                  textAlign: 'center',
+                  fontFamily: proCard.fontFamily,
                   marginBottom: 0,
                 }}
               >
-                {/* 검색 타입 선택 */}
-                <FormControl variant="outlined" size="small" sx={{ minWidth: 120 }}>
-                  <InputLabel id="search-type-label">
-                    {t('community.searchType.titleContent')}
-                  </InputLabel>
-                  <Select
-                    labelId="search-type-label"
-                    id="search-type"
-                    value={searchType}
-                    onChange={handleSearchTypeChange}
-                    label={t('community.searchType.titleContent')}
+                <button
+                  onClick={handleNavigateToGroups}
+                  style={{
+                    ...proButton,
+                    padding: '7px 0',
+                    fontSize: 15,
+                    width: '100%',
+                    borderRadius: 8,
+                    border: 'none',
+                    backgroundColor: '#f7f7f7',
+                    color: '#333',
+                    fontWeight: 600,
+                    margin: 0,
+                    boxShadow: 'none',
+                    transition: 'background 0.2s, color 0.2s',
+                    outline: 'none',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.backgroundColor = 'rgba(34, 34, 34, 0.07)';
+                    e.currentTarget.style.color = '#111';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.backgroundColor = '#f7f7f7';
+                    e.currentTarget.style.color = '#333';
+                  }}
+                >
+                  {t('common.smallGroups')}
+                </button>
+              </Paper>
+
+              {/* 필터/검색 영역 */}
+              <Paper
+                elevation={0}
+                sx={{
+                  mb: 3,
+                  p: 2,
+                  bgcolor: 'rgba(255, 255, 255, 0.85)',
+                  borderRadius: '16px',
+                  border: '1.5px solid #e5e7eb',
+                  boxShadow: '0 8px 20px rgba(226, 225, 225, 0.15)',
+                  backdropFilter: 'blur(8px)',
+                  marginBottom: 0,
+                }}
+              >
+                {/* 검색 필드 */}
+                <Box
+                  sx={{
+                    mb: 2,
+                    display: 'flex',
+                    gap: 1,
+                    flexWrap: 'wrap',
+                    marginBottom: 0,
+                  }}
+                >
+                  {/* 검색 타입 선택 */}
+                  <Box
                     sx={{
-                      bgcolor: 'rgba(255, 255, 255, 0.5)',
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: '#e5e7eb',
-                      },
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: '#222',
-                      },
-                      borderRadius: '8px',
+                      display: 'flex',
+                      flexDirection: 'row',
+                      gap: 1,
+                      alignItems: 'center',
+                      width: '100%',
                     }}
                   >
-                    <MenuItem value={t('community.searchType.titleContent')}>
-                      {t('community.searchType.titleContent')}
-                    </MenuItem>
-                    <MenuItem value={t('community.searchType.author')}>
-                      {t('community.searchType.author')}
-                    </MenuItem>
-                  </Select>
-                </FormControl>
+                    <FormControl variant="outlined" size="small" sx={{ minWidth: 120, flex: 1 }}>
+                      <InputLabel id="search-type-label">
+                        {t('community.searchType.titleContent')}
+                      </InputLabel>
+                      <Select
+                        labelId="search-type-label"
+                        id="search-type"
+                        value={searchType}
+                        onChange={handleSearchTypeChange}
+                        label={t('community.searchType.titleContent')}
+                        sx={{
+                          bgcolor: 'rgba(255, 255, 255, 0.5)',
+                          '& .MuiOutlinedInput-notchedOutline': {
+                            borderColor: '#e5e7eb',
+                          },
+                          '&:hover .MuiOutlinedInput-notchedOutline': {
+                            borderColor: '#222',
+                          },
+                          borderRadius: '8px',
+                        }}
+                      >
+                        <MenuItem value={t('community.searchType.titleContent')}>
+                          {t('community.searchType.titleContent')}
+                        </MenuItem>
+                        <MenuItem value={t('community.searchType.author')}>
+                          {t('community.searchType.author')}
+                        </MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Box>
 
-                {/* 검색창 */}
-                <TextField
-                  placeholder={t('community.searchPlaceholder')}
-                  variant="outlined"
-                  size="small"
-                  value={searchTerm}
-                  onChange={e => setSearchTerm(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  sx={{
-                    flexGrow: 1,
-                    '& .MuiOutlinedInput-root': {
-                      bgcolor: 'rgba(255, 255, 255, 0.5)',
-                      borderRadius: '8px',
-                      '& fieldset': {
-                        borderColor: '#e5e7eb',
+                  {/* 검색창 */}
+                  <TextField
+                    placeholder={t('community.searchPlaceholder')}
+                    variant="outlined"
+                    size="small"
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    sx={{
+                      flexGrow: 1,
+                      '& .MuiOutlinedInput-root': {
+                        bgcolor: 'rgba(255, 255, 255, 0.5)',
+                        borderRadius: '8px',
+                        '& fieldset': {
+                          borderColor: '#e5e7eb',
+                        },
+                        '&:hover fieldset': {
+                          borderColor: '#222',
+                        },
+                        '&.Mui-focused fieldset': {
+                          borderColor: '#222',
+                        },
                       },
-                      '&:hover fieldset': {
-                        borderColor: '#222',
-                      },
-                      '&.Mui-focused fieldset': {
-                        borderColor: '#222',
-                      },
-                    },
-                  }}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton size="small" onClick={handleSearch} title={t('common.search')}>
-                          <SearchIcon fontSize="small" sx={{ color: '#222' }} />
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
+                    }}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            size="small"
+                            onClick={handleSearch}
+                            title={t('common.search')}
+                          >
+                            <SearchIcon fontSize="small" sx={{ color: '#222' }} />
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
 
-                {/* 작성자 검색 버튼 
+                  {/* 작성자 검색 버튼 
                 <Button
                   variant="outlined"
                   onClick={handleAuthorSearch}
@@ -1302,138 +1664,139 @@ const ProBoardListPage: React.FC = () => {
                 >
                   {t('community.actions.authorSearch')}
                 </Button>*/}
-              </Box>
-            </Paper>
+                </Box>
+              </Paper>
 
-            {/* 분리된 필터 영역 */}
+              {/* 분리된 필터 영역 */}
 
-            <Paper
-              elevation={0}
-              sx={{
-                mb: 3,
-                p: 2,
-                bgcolor: 'rgba(255, 255, 255, 0.85)',
-                borderRadius: '16px',
-                border: '1.5px solid #e5e7eb',
-                boxShadow: '0 8px 20px rgba(226, 225, 225, 0.15)',
-                backdropFilter: 'blur(8px)',
-              }}
-            >
-              <Box
+              <Paper
+                elevation={0}
                 sx={{
-                  display: 'grid',
-                  gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(200px, 1fr))',
-                  gap: 2,
+                  mb: 3,
+                  p: 2,
+                  bgcolor: 'rgba(255, 255, 255, 0.85)',
+                  borderRadius: '16px',
+                  border: '1.5px solid #e5e7eb',
+                  boxShadow: '0 8px 20px rgba(226, 225, 225, 0.15)',
+                  backdropFilter: 'blur(8px)',
                 }}
               >
-                {/* 카테고리와 태그 영역(통합) */}
-                <Box sx={{ gridColumn: isMobile ? 'auto' : '1 / -1' }}>
-                  <Typography
-                    variant="subtitle2"
-                    gutterBottom
-                    sx={{ fontWeight: 600, color: '#222' }}
-                  >
-                    {t('community.filters.category')}
-                  </Typography>
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(200px, 1fr))',
+                    gap: 2,
+                  }}
+                >
+                  {/* 카테고리와 태그 영역(통합) */}
+                  <Box sx={{ gridColumn: isMobile ? 'auto' : '1 / -1' }}>
+                    <Typography
+                      variant="subtitle2"
+                      gutterBottom
+                      sx={{ fontWeight: 600, color: '#222' }}
+                    >
+                      {t('community.filters.category')}
+                    </Typography>
 
-                  {/* 카테고리 선택 버튼 */}
-                  <ToggleButtonGroup
-                    color="primary"
-                    value={selectedCategory}
-                    exclusive
-                    onChange={(e, newValue) => newValue && handleCategoryChange(newValue)}
-                    size="small"
-                    sx={{
-                      width: '100%',
-                      flexWrap: 'wrap',
-                      mb: 2,
-                      '& .MuiToggleButton-root': {
-                        borderRadius: '8px',
-                        border: '1px solid #e5e7eb',
-                        mb: 1,
-                        '&.Mui-selected': {
-                          bgcolor: 'rgba(226, 225, 225, 0.2)',
-                          color: '#222',
-                          fontWeight: 'bold',
+                    {/* 카테고리 선택 버튼 */}
+                    <ToggleButtonGroup
+                      color="primary"
+                      value={selectedCategory}
+                      exclusive
+                      onChange={(e, newValue) => newValue && handleCategoryChange(newValue)}
+                      size="small"
+                      sx={{
+                        width: '100%',
+                        flexWrap: 'wrap',
+                        mb: 2,
+                        '& .MuiToggleButton-root': {
+                          borderRadius: '8px',
+                          border: '1px solid #e5e7eb',
+                          mb: 1,
+                          '&.Mui-selected': {
+                            bgcolor: 'rgba(226, 225, 225, 0.2)',
+                            color: '#222',
+                            fontWeight: 'bold',
+                          },
+                          '&:hover': {
+                            bgcolor: 'rgba(226, 225, 225, 0.4)',
+                          },
                         },
-                        '&:hover': {
-                          bgcolor: 'rgba(226, 225, 225, 0.4)',
+                        '& .MuiToggleButtonGroup-grouped': {
+                          borderRadius: '8px !important',
+                          mx: 0.5,
                         },
-                      },
-                      '& .MuiToggleButtonGroup-grouped': {
-                        borderRadius: '8px !important',
-                        mx: 0.5,
-                      },
-                    }}
-                  >
-                    <ToggleButton value="전체" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
-                      {t('community.categories.all')}
-                    </ToggleButton>
-                    <ToggleButton value="travel" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
-                      {t('community.categories.travel')}
-                    </ToggleButton>
-                    <ToggleButton value="living" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
-                      {t('community.categories.living')}
-                    </ToggleButton>
-                    <ToggleButton value="study" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
-                      {t('community.categories.study')}
-                    </ToggleButton>
-                    <ToggleButton value="job" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
-                      {t('community.categories.job')}
-                    </ToggleButton>
-                  </ToggleButtonGroup>
+                      }}
+                    >
+                      <ToggleButton value="전체" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
+                        {t('community.categories.all')}
+                      </ToggleButton>
+                      <ToggleButton value="travel" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
+                        {t('community.categories.travel')}
+                      </ToggleButton>
+                      <ToggleButton value="living" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
+                        {t('community.categories.living')}
+                      </ToggleButton>
+                      <ToggleButton value="study" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
+                        {t('community.categories.study')}
+                      </ToggleButton>
+                      <ToggleButton value="job" sx={{ minWidth: isMobile ? '30%' : '20%' }}>
+                        {t('community.categories.job')}
+                      </ToggleButton>
+                    </ToggleButtonGroup>
 
-                  {/* 카테고리에 따른 태그 선택 */}
-                  {selectedCategory && selectedCategory !== '전체' && (
-                    <>
-                      <Typography
-                        variant="subtitle2"
-                        gutterBottom
-                        sx={{ fontWeight: 600, color: '#222', mt: 2 }}
-                      >
-                        {t('community.filters.tags')}
-                      </Typography>
-                      <Box
-                        key={`proBoardTags-${selectedCategory}-${selectedTags.length}-${Date.now() % 1000}`}
-                        sx={{
-                          display: 'flex',
-                          flexWrap: 'wrap',
-                          gap: 1,
-                          mt: 1,
-                        }}
-                      >
-                        {availableTags.map(tag => (
-                          <Chip
-                            key={`proBoardTag-${tag}-${selectedTags.includes(tag) ? 'selected' : 'unselected'}`}
-                            label={tag}
-                            onClick={() => handleTagSelect(tag)}
-                            color={selectedTags.includes(tag) ? 'primary' : 'default'}
-                            variant={selectedTags.includes(tag) ? 'filled' : 'outlined'}
-                            sx={{
-                              borderRadius: '16px',
-                              borderColor: selectedTags.includes(tag) ? '#222' : '#e5e7eb',
-                              backgroundColor: selectedTags.includes(tag)
-                                ? 'rgba(226, 225, 225, 0.2)'
-                                : 'transparent',
-                              color: selectedTags.includes(tag) ? '#222' : '#222',
-                              '&:hover': {
+                    {/* 카테고리에 따른 태그 선택 */}
+                    {selectedCategory && selectedCategory !== '전체' && (
+                      <>
+                        <Typography
+                          variant="subtitle2"
+                          gutterBottom
+                          sx={{ fontWeight: 600, color: '#222', mt: 2 }}
+                        >
+                          {t('community.filters.tags')}
+                        </Typography>
+                        <Box
+                          key={`proBoardTags-${selectedCategory}-${selectedTags.length}-${Date.now() % 1000}`}
+                          sx={{
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            gap: 1,
+                            mt: 1,
+                          }}
+                        >
+                          {availableTags.map(tag => (
+                            <Chip
+                              key={`proBoardTag-${tag}-${selectedTags.includes(tag) ? 'selected' : 'unselected'}`}
+                              label={tag}
+                              onClick={() => handleTagSelect(tag)}
+                              color={selectedTags.includes(tag) ? 'primary' : 'default'}
+                              variant={selectedTags.includes(tag) ? 'filled' : 'outlined'}
+                              sx={{
+                                borderRadius: '16px',
+                                borderColor: selectedTags.includes(tag) ? '#222' : '#e5e7eb',
                                 backgroundColor: selectedTags.includes(tag)
-                                  ? 'rgba(226, 225, 225, 0.3)'
-                                  : 'rgba(226, 225, 225, 0.2)',
-                              },
-                            }}
-                          />
-                        ))}
-                      </Box>
-                    </>
-                  )}
+                                  ? 'rgba(226, 225, 225, 0.2)'
+                                  : 'transparent',
+                                color: selectedTags.includes(tag) ? '#222' : '#222',
+                                '&:hover': {
+                                  backgroundColor: selectedTags.includes(tag)
+                                    ? 'rgba(226, 225, 225, 0.3)'
+                                    : 'rgba(226, 225, 225, 0.2)',
+                                },
+                              }}
+                            />
+                          ))}
+                        </Box>
+                      </>
+                    )}
+                  </Box>
                 </Box>
-              </Box>
-            </Paper>
+              </Paper>
 
-            {/* 검색 상태 표시기 */}
-            <SearchStatusIndicator />
-          </aside>
+              {/* 검색 상태 표시기 */}
+              <SearchStatusIndicator />
+            </aside>
+          )}
         </div>
       </div>
     </div>

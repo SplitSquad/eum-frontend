@@ -22,6 +22,7 @@ import {
 import FlagIcon from '@mui/icons-material/Flag';
 import { styled } from '@mui/material/styles';
 import { PieChart } from 'react-minimal-pie-chart';
+import VoteProgress from '../components/shared/VoteProgress';
 
 import DebateLayout from '../components/common/DebateLayout';
 import { formatDate } from '../utils/dateUtils';
@@ -257,7 +258,7 @@ const SpecialIssueSidebar: React.FC<{
         variant="subtitle1"
         fontWeight={selectedSpecialLabel === 'special' ? 700 : 500}
         color={selectedSpecialLabel === 'special' ? 'primary' : 'inherit'}
-        sx={{ userSelect: 'none', cursor: 'pointer' }}
+        sx={{ userSelect: 'none', cursor: 'pointer', fontSize: { xs: '1rem', md: '1.15rem' } }}
         onClick={() => setSelectedSpecialLabel('special')}
       >
         {t('debate.specialIssues')}
@@ -268,7 +269,12 @@ const SpecialIssueSidebar: React.FC<{
         variant={selectedSpecialLabel === 'today' ? 'contained' : 'outlined'}
         color="warning"
         size="small"
-        sx={{ fontWeight: 600, borderRadius: 2, textAlign: 'left' }}
+        sx={{
+          fontWeight: 600,
+          borderRadius: 2,
+          textAlign: 'left',
+          fontSize: { xs: '0.92rem', md: '1rem' },
+        }}
         onClick={() => setSelectedSpecialLabel('today')}
         fullWidth
       >
@@ -278,7 +284,12 @@ const SpecialIssueSidebar: React.FC<{
         variant={selectedSpecialLabel === 'hot' ? 'contained' : 'outlined'}
         color="error"
         size="small"
-        sx={{ fontWeight: 600, borderRadius: 2, textAlign: 'left' }}
+        sx={{
+          fontWeight: 600,
+          borderRadius: 2,
+          textAlign: 'left',
+          fontSize: { xs: '0.92rem', md: '1rem' },
+        }}
         onClick={() => setSelectedSpecialLabel('hot')}
         fullWidth
       >
@@ -288,7 +299,12 @@ const SpecialIssueSidebar: React.FC<{
         variant={selectedSpecialLabel === 'balanced' ? 'contained' : 'outlined'}
         color="secondary"
         size="small"
-        sx={{ fontWeight: 600, borderRadius: 2, textAlign: 'left' }}
+        sx={{
+          fontWeight: 600,
+          borderRadius: 2,
+          textAlign: 'left',
+          fontSize: { xs: '0.92rem', md: '1rem' },
+        }}
         onClick={() => setSelectedSpecialLabel('balanced')}
         fullWidth
       >
@@ -306,6 +322,7 @@ const SpecialIssueSidebar: React.FC<{
           borderColor: '#e0e0e0',
           background: '#fff',
           mt: 1,
+          fontSize: { xs: '0.92rem', md: '1rem' },
           '&:hover': {
             background: '#f0f0f0',
             borderColor: '#bdbdbd',
@@ -353,7 +370,11 @@ const CategorySidebar: React.FC<{
   return (
     <Box sx={{ p: 2, borderRadius: 2, background: '#fff', boxShadow: 'none' }}>
       <Box sx={{ mb: 1 }}>
-        <Typography variant="subtitle1" fontWeight={600}>
+        <Typography
+          variant="subtitle1"
+          fontWeight={600}
+          sx={{ fontSize: { xs: '1rem', md: '1.15rem' } }}
+        >
           {t('debate.categories.title')}
         </Typography>
       </Box>
@@ -378,6 +399,7 @@ const CategorySidebar: React.FC<{
                 });
               }
             }}
+            sx={{ fontSize: { xs: '0.92rem', md: '1rem' } }}
           >
             {display}
           </CategoryBadgeButton>
@@ -675,6 +697,7 @@ const MainIssuesPage: React.FC = () => {
                 display: 'flex',
                 alignItems: 'flex-start',
                 justifyContent: 'space-between',
+                flexDirection: isMobile ? 'column' : 'row',
               }}
             >
               <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -702,49 +725,100 @@ const MainIssuesPage: React.FC = () => {
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                   {description.length > 100 ? `${description.substring(0, 100)}...` : description}
                 </Typography>
+                {isMobile && (
+                  <Box
+                    sx={{
+                      width: '100%',
+                      mt: 1,
+                      mb: 1,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <VoteProgress
+                      proCount={debate.proCount}
+                      conCount={debate.conCount}
+                      size="md"
+                      showPercentage={true}
+                    />
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 1.5,
+                        mt: 1,
+                      }}
+                    >
+                      <Typography
+                        sx={{
+                          color: '#81C784',
+                          fontWeight: 700,
+                          fontSize: '0.75rem',
+                          lineHeight: 1,
+                        }}
+                      >
+                        {t('debate.yes')} {voteRatio.agree}%
+                      </Typography>
+                      <Typography
+                        sx={{
+                          color: '#E57373',
+                          fontWeight: 700,
+                          fontSize: '0.75rem',
+                          lineHeight: 1,
+                        }}
+                      >
+                        {t('debate.no')} {voteRatio.disagree}%
+                      </Typography>
+                    </Box>
+                  </Box>
+                )}
               </Box>
-              <Box
-                sx={{
-                  minWidth: 120,
-                  ml: 2,
-                  pr: 2,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  position: 'relative',
-                }}
-              >
-                <PieChart
-                  data={pieData}
-                  lineWidth={pieLineWidth}
-                  paddingAngle={pieGap}
-                  rounded
-                  style={{ height: 120, width: 120 }}
-                  label={() => ''}
-                  startAngle={-90}
-                />
+              {!isMobile && (
                 <Box
                   sx={{
+                    minWidth: 120,
+                    ml: 2,
+                    pr: 2,
                     display: 'flex',
-                    flexDirection: 'row',
+                    flexDirection: 'column',
                     alignItems: 'center',
-                    gap: 1.5,
-                    mt: 1,
+                    justifyContent: 'center',
+                    position: 'relative',
                   }}
                 >
-                  <Typography
-                    sx={{ color: '#81C784', fontWeight: 700, fontSize: '0.75rem', lineHeight: 1 }}
+                  <PieChart
+                    data={pieData}
+                    lineWidth={pieLineWidth}
+                    paddingAngle={pieGap}
+                    rounded
+                    style={{ height: 120, width: 120 }}
+                    label={() => ''}
+                    startAngle={-90}
+                  />
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 1.5,
+                      mt: 1,
+                    }}
                   >
-                    {t('debate.yes')} {voteRatio.agree}%
-                  </Typography>
-                  <Typography
-                    sx={{ color: '#E57373', fontWeight: 700, fontSize: '0.75rem', lineHeight: 1 }}
-                  >
-                    {t('debate.no')} {voteRatio.disagree}%
-                  </Typography>
+                    <Typography
+                      sx={{ color: '#81C784', fontWeight: 700, fontSize: '0.75rem', lineHeight: 1 }}
+                    >
+                      {t('debate.yes')} {voteRatio.agree}%
+                    </Typography>
+                    <Typography
+                      sx={{ color: '#E57373', fontWeight: 700, fontSize: '0.75rem', lineHeight: 1 }}
+                    >
+                      {t('debate.no')} {voteRatio.disagree}%
+                    </Typography>
+                  </Box>
                 </Box>
-              </Box>
+              )}
             </DebateCardContent>
           </DebateItemWrapper>
         </CardActionArea>

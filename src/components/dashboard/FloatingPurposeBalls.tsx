@@ -26,23 +26,26 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { useMypageStore } from '../../features/mypage/store/mypageStore';
 import { useLanguageStore } from '../../features/theme/store/languageStore';
-import { 
+import {
   getContentByLanguageAndPurpose,
   SupportedLanguage,
   FloatingBallContent,
-  detailLabels
+  detailLabels,
 } from './data/floatingBallsData';
 
 // 사용자 목적 타입
 type UserPurpose = 'travel' | 'work' | 'residence' | 'study';
 
 // 목적별 정보
-const PURPOSE_INFO: Record<UserPurpose, {
-  label: string;
-  icon: React.ReactElement;
-  color: string;
-  gradient: string;
-}> = {
+const PURPOSE_INFO: Record<
+  UserPurpose,
+  {
+    label: string;
+    icon: React.ReactElement;
+    color: string;
+    gradient: string;
+  }
+> = {
   travel: {
     label: '여행',
     icon: <TravelExploreIcon />,
@@ -87,25 +90,29 @@ interface FloatingBall {
 // 목적 매핑 함수 (KakaoMapWidget에서 가져옴)
 const mapVisitPurposeToUserPurpose = (visitPurpose?: string): UserPurpose => {
   if (!visitPurpose) return 'travel';
-  
+
   const purposeMap: Record<string, UserPurpose> = {
-    'Travel': 'travel',
-    'Study': 'study', 
-    'Work': 'work',
-    'Living': 'residence',
-    'travel': 'travel',
-    'study': 'study',
-    'work': 'work',
-    'living': 'residence',
-    'residence': 'residence',
-    'job': 'work'
+    Travel: 'travel',
+    Study: 'study',
+    Work: 'work',
+    Living: 'residence',
+    travel: 'travel',
+    study: 'study',
+    work: 'work',
+    living: 'residence',
+    residence: 'residence',
+    job: 'work',
   };
 
   return purposeMap[visitPurpose] || 'travel';
 };
 
 // 랜덤 위치 생성
-const generateRandomPosition = (containerWidth: number, containerHeight: number, itemSize: number) => {
+const generateRandomPosition = (
+  containerWidth: number,
+  containerHeight: number,
+  itemSize: number
+) => {
   const margin = itemSize / 2 + 20;
   return {
     x: Math.random() * (containerWidth - margin * 2) + margin,
@@ -122,9 +129,11 @@ const generateRandomVelocity = () => ({
 const FloatingPurposeBalls: React.FC = () => {
   const { profile, fetchProfile } = useMypageStore();
   const { language } = useLanguageStore();
-  
+
   // Internal state management
-  const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>(language as SupportedLanguage || 'ko');
+  const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>(
+    (language as SupportedLanguage) || 'ko'
+  );
   const [purpose, setPurpose] = useState<'travel' | 'work' | 'residence' | 'study'>('travel');
   const [userPurpose, setUserPurpose] = useState<UserPurpose>('travel');
   const [selectedBall, setSelectedBall] = useState<FloatingBall | null>(null);
@@ -167,9 +176,9 @@ const FloatingPurposeBalls: React.FC = () => {
 
   // 화면 크기 측정
   const updateContainerDimensions = useCallback(() => {
-    setContainerDimensions({ 
-      width: window.innerWidth, 
-      height: window.innerHeight 
+    setContainerDimensions({
+      width: window.innerWidth,
+      height: window.innerHeight,
     });
   }, []);
 
@@ -177,11 +186,11 @@ const FloatingPurposeBalls: React.FC = () => {
   const initializeBalls = useCallback(() => {
     const currentLanguage = language as SupportedLanguage;
     const contentArray = getContentByLanguageAndPurpose(currentLanguage, userPurpose);
-    
+
     // 랜덤으로 3개 선택
     const shuffled = [...contentArray].sort(() => 0.5 - Math.random());
     const selectedContent = shuffled.slice(0, 3);
-    
+
     const newBalls: FloatingBall[] = selectedContent.map((content, index) => ({
       id: content.id,
       purpose: userPurpose,
@@ -189,13 +198,17 @@ const FloatingPurposeBalls: React.FC = () => {
       description: content.description,
       icon: PURPOSE_INFO[userPurpose].icon,
       category: content.category,
-      position: generateRandomPosition(containerDimensions.width, containerDimensions.height, 60 + index * 10),
+      position: generateRandomPosition(
+        containerDimensions.width,
+        containerDimensions.height,
+        60 + index * 10
+      ),
       velocity: generateRandomVelocity(),
       size: 60 + index * 10, // 크기 다양화
       zIndex: Math.floor(Math.random() * 100),
-      data: content.details
+      data: content.details,
     }));
-    
+
     setBalls(newBalls);
   }, [userPurpose, containerDimensions, language]);
 
@@ -203,7 +216,7 @@ const FloatingPurposeBalls: React.FC = () => {
   const updateAnimation = useCallback(() => {
     if (!isAnimating) return;
 
-    setBalls(prevBalls => 
+    setBalls(prevBalls =>
       prevBalls.map(ball => {
         let newPosition = {
           x: ball.position.x + ball.velocity.x,
@@ -215,11 +228,17 @@ const FloatingPurposeBalls: React.FC = () => {
         const margin = ball.size / 2;
         if (newPosition.x <= margin || newPosition.x >= containerDimensions.width - margin) {
           newVelocity.x = -newVelocity.x;
-          newPosition.x = Math.max(margin, Math.min(containerDimensions.width - margin, newPosition.x));
+          newPosition.x = Math.max(
+            margin,
+            Math.min(containerDimensions.width - margin, newPosition.x)
+          );
         }
         if (newPosition.y <= margin || newPosition.y >= containerDimensions.height - margin) {
           newVelocity.y = -newVelocity.y;
-          newPosition.y = Math.max(margin, Math.min(containerDimensions.height - margin, newPosition.y));
+          newPosition.y = Math.max(
+            margin,
+            Math.min(containerDimensions.height - margin, newPosition.y)
+          );
         }
 
         return {
@@ -238,23 +257,19 @@ const FloatingPurposeBalls: React.FC = () => {
     setSelectedBall(ball);
     setModalOpen(true);
     setIsAnimating(false); // 애니메이션 일시 정지
-    
+
     // 클릭 효과: 일시적으로 크기 확대
-    setBalls(prevBalls => 
-      prevBalls.map(prevBall => 
-        prevBall.id === ball.id 
-          ? { ...prevBall, size: prevBall.size * 1.5 }
-          : prevBall
+    setBalls(prevBalls =>
+      prevBalls.map(prevBall =>
+        prevBall.id === ball.id ? { ...prevBall, size: prevBall.size * 1.5 } : prevBall
       )
     );
-    
+
     // 0.3초 후 원래 크기로 복원
     setTimeout(() => {
-      setBalls(prevBalls => 
-        prevBalls.map(prevBall => 
-          prevBall.id === ball.id 
-            ? { ...prevBall, size: prevBall.size / 1.5 }
-            : prevBall
+      setBalls(prevBalls =>
+        prevBalls.map(prevBall =>
+          prevBall.id === ball.id ? { ...prevBall, size: prevBall.size / 1.5 } : prevBall
         )
       );
     }, 300);
@@ -313,11 +328,11 @@ const FloatingPurposeBalls: React.FC = () => {
           overflow: 'hidden',
         }}
       >
-        {balls.map((ball) => (
+        {balls.map(ball => (
           <Box
             key={ball.id}
             onClick={() => handleBallClick(ball)}
-            sx={{ 
+            sx={{
               position: 'absolute',
               left: ball.position.x - ball.size / 2,
               top: ball.position.y - ball.size / 2,
@@ -344,9 +359,7 @@ const FloatingPurposeBalls: React.FC = () => {
               },
             }}
           >
-            <Box sx={{ color: 'white', fontSize: ball.size * 0.3 }}>
-              {ball.icon}
-            </Box>
+            <Box sx={{ color: 'white', fontSize: ball.size * 0.3 }}>{ball.icon}</Box>
           </Box>
         ))}
       </Box>
@@ -359,48 +372,66 @@ const FloatingPurposeBalls: React.FC = () => {
         BackdropComponent={Backdrop}
         BackdropProps={{
           timeout: 500,
-          sx: { backdropFilter: 'blur(4px)' }
+          sx: { backdropFilter: 'blur(4px)' },
         }}
       >
         <Fade in={modalOpen}>
-          <Box sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: { xs: '95%', sm: '90%', md: 600 },
-            maxHeight: '80vh',
-            bgcolor: 'background.paper',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
-            borderRadius: 3,
-            overflow: 'hidden',
-          }}>
+          <Box
+            sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: { xs: '95%', sm: '90%', md: 600 },
+              maxHeight: '80vh',
+              bgcolor: 'background.paper',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+              borderRadius: 3,
+              overflow: 'hidden',
+            }}
+          >
             {selectedBall && (
               <Box>
                 {/* 헤더 */}
-                <Box sx={{ 
-                  background: PURPOSE_INFO[selectedBall.purpose].gradient,
-                  color: 'white',
-                  p: 3,
-                  position: 'relative'
-                }}>
-                  <IconButton 
-                    onClick={handleCloseModal} 
+                <Box
+                  sx={{
+                    background: {
+                      xs:
+                        selectedBall.purpose === 'study'
+                          ? 'linear-gradient(135deg, rgba(156,39,176,0.7) 0%, rgba(186,104,200,0.5) 100%)'
+                          : PURPOSE_INFO[selectedBall.purpose].gradient,
+                      sm: PURPOSE_INFO[selectedBall.purpose].gradient,
+                    },
+                    color: 'white',
+                    p: 3,
+                    position: 'relative',
+                  }}
+                >
+                  <IconButton
+                    onClick={handleCloseModal}
                     size="small"
-                    sx={{ 
+                    sx={{
                       position: 'absolute',
                       top: 16,
                       right: 16,
                       color: 'white',
                       bgcolor: 'rgba(255,255,255,0.1)',
-                      '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' }
+                      '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' },
                     }}
                   >
                     <CloseIcon />
                   </IconButton>
-                  
+
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white', mr: 2, width: 48, height: 48 }}>
+                    <Avatar
+                      sx={{
+                        bgcolor: 'rgba(255,255,255,0.2)',
+                        color: 'white',
+                        mr: 2,
+                        width: 48,
+                        height: 48,
+                      }}
+                    >
                       {selectedBall.icon}
                     </Avatar>
                     <Box>
@@ -412,7 +443,7 @@ const FloatingPurposeBalls: React.FC = () => {
                       </Typography>
                     </Box>
                   </Box>
-                  <Chip 
+                  <Chip
                     label={selectedBall.category}
                     size="small"
                     sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white' }}
@@ -456,42 +487,53 @@ const FloatingPurposeBalls: React.FC = () => {
                                   {getLocalizedLabel(key)}
                                 </Typography>
                               </Box>
-                              {Object.entries(value as Record<string, any>).map(([subKey, subValue]) => (
-                                <Box key={subKey} sx={{ mb: 1 }}>
-                                  <Typography variant="body2" fontWeight={500} sx={{ mb: 0.5 }}>
-                                    📌 {subKey}
-                                  </Typography>
-                                  <Typography variant="body2" sx={{ ml: 2, mb: 0.5 }}>
-                                    {typeof subValue === 'string' ? subValue : 
-                                     Array.isArray(subValue) ? subValue.join(', ') : 
-                                     JSON.stringify(subValue)}
-                                  </Typography>
-                                </Box>
-                              ))}
+                              {Object.entries(value as Record<string, any>).map(
+                                ([subKey, subValue]) => (
+                                  <Box key={subKey} sx={{ mb: 1 }}>
+                                    <Typography variant="body2" fontWeight={500} sx={{ mb: 0.5 }}>
+                                      📌 {subKey}
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ ml: 2, mb: 0.5 }}>
+                                      {typeof subValue === 'string'
+                                        ? subValue
+                                        : Array.isArray(subValue)
+                                          ? subValue.join(', ')
+                                          : JSON.stringify(subValue)}
+                                    </Typography>
+                                  </Box>
+                                )
+                              )}
                             </Card>
                           );
                         }
 
-                        // 문자열 형태의 데이터 처리 
+                        // 문자열 형태의 데이터 처리
                         if (typeof value === 'string') {
                           return (
                             <Card key={key} sx={{ p: 2, bgcolor: 'action.hover' }}>
                               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                                {key === 'location' ? <LocationOnIcon sx={{ mr: 1, color: 'primary.main' }} /> :
-                                 key === 'transport' ? <DirectionsTransitIcon sx={{ mr: 1, color: 'primary.main' }} /> :
-                                 key === 'hours' ? <AccessTimeIcon sx={{ mr: 1, color: 'primary.main' }} /> :
-                                 key === 'price' ? <InfoIcon sx={{ mr: 1, color: 'primary.main' }} /> :
-                                 key === 'program' ? <SchoolIcon sx={{ mr: 1, color: 'primary.main' }} /> :
-                                 key === 'website' ? <InfoIcon sx={{ mr: 1, color: 'primary.main' }} /> :
-                                 key === 'basic' ? <InfoIcon sx={{ mr: 1, color: 'primary.main' }} /> :
-                                 <InfoIcon sx={{ mr: 1, color: 'primary.main' }} />}
+                                {key === 'location' ? (
+                                  <LocationOnIcon sx={{ mr: 1, color: 'primary.main' }} />
+                                ) : key === 'transport' ? (
+                                  <DirectionsTransitIcon sx={{ mr: 1, color: 'primary.main' }} />
+                                ) : key === 'hours' ? (
+                                  <AccessTimeIcon sx={{ mr: 1, color: 'primary.main' }} />
+                                ) : key === 'price' ? (
+                                  <InfoIcon sx={{ mr: 1, color: 'primary.main' }} />
+                                ) : key === 'program' ? (
+                                  <SchoolIcon sx={{ mr: 1, color: 'primary.main' }} />
+                                ) : key === 'website' ? (
+                                  <InfoIcon sx={{ mr: 1, color: 'primary.main' }} />
+                                ) : key === 'basic' ? (
+                                  <InfoIcon sx={{ mr: 1, color: 'primary.main' }} />
+                                ) : (
+                                  <InfoIcon sx={{ mr: 1, color: 'primary.main' }} />
+                                )}
                                 <Typography variant="subtitle2" fontWeight={600}>
                                   {getLocalizedLabel(key)}
                                 </Typography>
                               </Box>
-                              <Typography variant="body2">
-                                {value}
-                              </Typography>
+                              <Typography variant="body2">{value}</Typography>
                             </Card>
                           );
                         }
@@ -510,4 +552,4 @@ const FloatingPurposeBalls: React.FC = () => {
   );
 };
 
-export default FloatingPurposeBalls; 
+export default FloatingPurposeBalls;

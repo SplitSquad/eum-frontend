@@ -241,7 +241,7 @@ const de = {
     delete: 'Löschen',
     confirm: 'Bestätigen',
     close: 'Schließen',
-    loading: 'Lädt...',
+    loading: 'Wird geladen...',
     error: 'Fehler',
     success: 'Erfolg',
     warning: 'Warnung',
@@ -1034,14 +1034,16 @@ Vorhandene Anhänge: {{existingFileCount}}
 
 Möchten Sie wirklich speichern?`,
       newFileWarning: '⚠️ Das Hinzufügen neuer Dateien löscht alle vorhandenen Dateien',
-      editModeWarning: '⚠️ Warnung: Das Hinzufügen neuer Dateien löscht alle {{count}} vorhandenen Anhänge.\n\nMöchten Sie wirklich fortfahren?\n\nWählen Sie "Abbrechen", um vorhandene Dateien zu behalten.',
+      editModeWarning:
+        '⚠️ Warnung: Das Hinzufügen neuer Dateien löscht alle {{count}} vorhandenen Anhänge.\n\nMöchten Sie wirklich fortfahren?\n\nWählen Sie "Abbrechen", um vorhandene Dateien zu behalten.',
       deleteConfirm: 'Sind Sie sicher, dass Sie diese Datei löschen möchten?',
       deleteWarning: '⚠️ Warnung: Diese Datei wird beim Speichern des Beitrags dauerhaft gelöscht.',
       imageHint: 'Bilder werden als Vorschau angezeigt',
       editModeDragOrClick: 'Dateien ziehen oder klicken, um durch neue Dateien zu ersetzen',
       dragOrClick: 'Dateien ziehen oder klicken zum Hochladen',
       editModeHint: 'Neue Dateien werden anstelle der vorhandenen Dateien hochgeladen',
-      imageHint2: 'Bilder werden als Vorschau angezeigt ✨\nMax 10MB, alle Dateiformate unterstützt',
+      imageHint2:
+        'Bilder werden als Vorschau angezeigt ✨\nMax 10MB, alle Dateiformate unterstützt',
       newImage: 'Neue Bilder ({{count}})',
       newFile: 'Neue Dateien ({{count}})',
       existingImage: 'Vorhandene Bilder ({{count}})',

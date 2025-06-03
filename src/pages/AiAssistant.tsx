@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Container from '@mui/material/Container';
 import CategorySidebar from '@/features/assistant/components/ChatCategory';
 import { Category } from '@/features/assistant/types';
 import ChatContent from '@/features/assistant/components/ChatContent';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useTranslation } from '@/shared/i18n';
 import { useLanguageStore } from '@/features/theme/store/languageStore';
 import { useAiAssistantStore } from '@/features/assistant/store/aiAssistantStore';
@@ -32,14 +32,13 @@ function formatDateTime(date: Date) {
 
 /**
  * AiAssistant 컴포넌트
- * - 조선시대 벽보/필사본 느낌의 한지 질감과 현대적 스타일을 조화시킨 AI 전문가 페이지
  */
-
 export default function AiAssistant() {
   const { t } = useTranslation();
   const { language } = useLanguageStore();
-  const { selectedCategory, setSelectedCategory, forceRefresh, messages, loading } =
-    useAiAssistantStore();
+  const { selectedCategory, setSelectedCategory, messages, loading } = useAiAssistantStore();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // 번역된 카테고리 목록 생성
   const categories = getCategoriesWithTranslation(t);
@@ -53,121 +52,173 @@ export default function AiAssistant() {
 
   return (
     <Box sx={{ minHeight: '80vh', background: 'transparent', backdropFilter: 'blur(8px)' }}>
-      <Container maxWidth="lg" sx={{ pt: 6, pb: 8 }}>
+      <Container
+        maxWidth="lg"
+        sx={{
+          pt: isMobile ? 2 : 6,
+          pb: isMobile ? 3 : 8,
+        }}
+      >
         {/* 상단 헤더 */}
-        <Box sx={{ mb: 6 }}>
+        <Box sx={{ mb: isMobile ? 3 : 6 }}>
           <Typography
-            variant="h4"
+            variant={isMobile ? 'h6' : 'h4'}
             fontWeight={700}
-            sx={{ color: '#222', fontFamily: 'Inter, Pretendard, Arial, sans-serif', mb: 1 }}
+            sx={{
+              color: '#222',
+              fontFamily: 'Inter, Pretendard, Arial, sans-serif',
+              mb: isMobile ? 0.5 : 1,
+              fontSize: isMobile ? '1.25rem' : undefined,
+            }}
           >
             {t('aiAssistant.title')}
           </Typography>
           <Typography
-            variant="subtitle1"
-            sx={{ color: '#666', fontFamily: 'Inter, Pretendard, Arial, sans-serif' }}
+            variant={isMobile ? 'body2' : 'subtitle1'}
+            sx={{
+              color: '#666',
+              fontFamily: 'Inter, Pretendard, Arial, sans-serif',
+              fontSize: isMobile ? '0.875rem' : undefined,
+            }}
           >
             {t('aiAssistant.subtitle')}
           </Typography>
         </Box>
-        {/* 분야별 안내 - 가로 정렬, 채팅창 위 */}
-        <Box sx={{ mb: 4, display: 'flex', flexDirection: 'row', gap: 2, pb: 1 }}>
-          <CategorySidebar categories={categories} selectedKey={selectedCategory} horizontal />
-        </Box>
+
+        {/* 분야별 안내 - 모바일일 땐 세로 스크롤, PC일 땐 가로 정렬 */}
+        {!isMobile && (
+          <Box
+            sx={{
+              mb: 4,
+              display: 'flex',
+              flexDirection: 'row',
+              gap: 2,
+              pb: 1,
+            }}
+          >
+            <CategorySidebar categories={categories} selectedKey={selectedCategory} horizontal />
+          </Box>
+        )}
+
         {/* 날짜, 인사, 자동선택 안내 - 카테고리와 채팅방 사이 */}
-        <Box
-          sx={{
-            mb: 4,
-            display: 'flex',
-            flexDirection: { xs: 'column', sm: 'row' },
-            alignItems: { xs: 'stretch', sm: 'center' },
-            justifyContent: 'space-between',
-            background: 'linear-gradient(135deg, #f7f7fa 0%, #e9e9ee 100%)',
-            borderRadius: 4,
-            boxShadow: '0 2px 12px 0 rgba(80,80,90,0.07)',
-            px: { xs: 2, sm: 4 },
-            py: { xs: 1.5, sm: 2.5 },
-            gap: { xs: 1.5, sm: 3 },
-            border: '1.5px solid #e0e0e7',
-          }}
-        >
-          {/* 왼쪽: 날짜 + 인사 (반응형, flex-wrap) */}
+        {!isMobile && (
+          <Box
+            sx={{
+              mb: isMobile ? 3 : 4,
+              display: 'flex',
+              flexDirection: { xs: 'column', sm: 'row' },
+              alignItems: { xs: 'flex-start', sm: 'center' },
+              justifyContent: 'space-between',
+              background: 'linear-gradient(135deg, #f7f7fa 0%, #e9e9ee 100%)',
+              borderRadius: 4,
+              boxShadow: '0 2px 12px 0 rgba(80,80,90,0.07)',
+              px: { xs: 2, sm: 4 },
+              py: { xs: 1, sm: 2 },
+              gap: { xs: 1, sm: 3 },
+              border: '1.5px solid #e0e0e7',
+            }}
+          >
+            {/* 왼쪽: 날짜 + 인사 (반응형, flex-wrap) */}
+            <Box
+              sx={{
+                display: 'flex',
+                flex: 1,
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                gap: { xs: 1, sm: 2 },
+              }}
+            >
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  background: '#ededf3',
+                  px: 2,
+                  py: 0.5,
+                  borderRadius: 2,
+                  fontWeight: 600,
+                  fontSize: isMobile ? '0.75rem' : 15,
+                  color: '#666',
+                  letterSpacing: '0.01em',
+                  boxShadow: '0 1px 2px 0 rgba(120,120,130,0.04)',
+                  flexShrink: 0,
+                  fontFamily: 'Inter, Pretendard, Arial, sans-serif',
+                }}
+              >
+                {formatDateTime(new Date())}
+              </Box>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  background: isMatching ? '#e0e0e7' : '#f3f3f7',
+                  px: 2,
+                  py: 0.5,
+                  borderRadius: 2,
+                  fontWeight: 700,
+                  fontSize: isMobile ? '0.85rem' : 17,
+                  color: isMatching ? '#888' : '#333',
+                  letterSpacing: '0.01em',
+                  boxShadow: '0 1px 2px 0 rgba(120,120,130,0.04)',
+                  flexShrink: 1,
+                  minWidth: 0,
+                  transition: 'background 0.2s',
+                  fontFamily: 'Inter, Pretendard, Arial, sans-serif',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: { xs: 'normal', sm: 'nowrap' },
+                }}
+              >
+                {isMatching ? (
+                  <span
+                    style={{ color: '#888', fontWeight: 600, fontSize: isMobile ? '0.75rem' : 16 }}
+                  >
+                    {t('aiAssistant.matchingMessage')}
+                  </span>
+                ) : (
+                  <>
+                    <span
+                      style={{
+                        color: '#6c63ff',
+                        fontWeight: 700,
+                        fontSize: isMobile ? '0.9rem' : 17,
+                        marginRight: 6,
+                      }}
+                    >
+                      {selected.label}
+                    </span>
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {t('aiAssistant.greeting', { category: selected.label })}
+                    </span>
+                  </>
+                )}
+              </Box>
+            </Box>
+          </Box>
+        )}
+
+        {/* 메인 콘텐츠 영역 - 채팅창만 (모바일 시 패딩 축소) */}
+        {!isMobile ? (
           <Box
             sx={{
               display: 'flex',
-              flex: 1,
-              flexWrap: 'wrap',
-              alignItems: 'center',
-              gap: { xs: 1, sm: 2 },
+              flexDirection: 'column',
+              gap: 0,
+              px: isMobile ? 1 : 0,
             }}
           >
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                background: '#ededf3',
-                px: 2,
-                py: 0.5,
-                borderRadius: 2,
-                fontWeight: 600,
-                fontSize: 15,
-                color: '#666',
-                letterSpacing: '0.01em',
-                boxShadow: '0 1px 2px 0 rgba(120,120,130,0.04)',
-                flexShrink: 0,
-                fontFamily: 'Inter, Pretendard, Arial, sans-serif',
-              }}
-            >
-              {formatDateTime(new Date())}
-            </Box>
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                background: isMatching ? '#e0e0e7' : '#f3f3f7',
-                px: 2.5,
-                py: 0.5,
-                borderRadius: 2,
-                fontWeight: 700,
-                fontSize: 17,
-                color: isMatching ? '#888' : '#333',
-                letterSpacing: '0.01em',
-                boxShadow: '0 1px 2px 0 rgba(120,120,130,0.04)',
-                flexShrink: 1,
-                minWidth: 0,
-                transition: 'background 0.2s',
-                fontFamily: 'Inter, Pretendard, Arial, sans-serif',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: { xs: 'normal', sm: 'nowrap' },
-              }}
-            >
-              {isMatching ? (
-                <span style={{ color: '#888', fontWeight: 600, fontSize: 16 }}>
-                  {t('aiAssistant.matchingMessage')}
-                </span>
-              ) : (
-                <>
-                  <span style={{ color: '#6c63ff', fontWeight: 700, fontSize: 17, marginRight: 6 }}>
-                    {selected.label}
-                  </span>
-                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {t('aiAssistant.greeting', { category: selected.label })}
-                  </span>
-                </>
-              )}
+            {' '}
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <ChatContent categoryLabel={selected.label} onCategoryChange={setSelectedCategory} />
             </Box>
           </Box>
-          {/* 오른쪽: 자동선택 안내 */}
-        </Box>
-        {/* 메인 콘텐츠 영역 - 채팅창만 */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-          <Box sx={{ flex: 1, minWidth: 0 }}>
+        ) : (
+          <Box sx={{ flex: 1, minWidth: 0, p: 0 }}>
             <ChatContent categoryLabel={selected.label} onCategoryChange={setSelectedCategory} />
           </Box>
-        </Box>
+        )}
       </Container>
     </Box>
   );
