@@ -1164,14 +1164,17 @@ Archivos adjuntos existentes: {{existingFileCount}}
 
 ¿Realmente quieres guardar?`,
       newFileWarning: '⚠️ Agregar nuevos archivos eliminará todos los archivos existentes',
-      editModeWarning: '⚠️ Advertencia: Agregar nuevos archivos eliminará todos los {{count}} archivos adjuntos existentes.\n\n¿Realmente quieres continuar?\n\nSelecciona "Cancelar" para mantener los archivos existentes.',
+      editModeWarning:
+        '⚠️ Advertencia: Agregar nuevos archivos eliminará todos los {{count}} archivos adjuntos existentes.\n\n¿Realmente quieres continuar?\n\nSelecciona "Cancelar" para mantener los archivos existentes.',
       deleteConfirm: '¿Estás seguro de que quieres eliminar este archivo?',
-      deleteWarning: '⚠️ Advertencia: Este archivo será eliminado permanentemente al guardar la publicación.',
+      deleteWarning:
+        '⚠️ Advertencia: Este archivo será eliminado permanentemente al guardar la publicación.',
       imageHint: 'Las imágenes se mostrarán como vista previa',
       editModeDragOrClick: 'Arrastra archivos o haz clic para reemplazar con nuevos archivos',
       dragOrClick: 'Arrastra archivos o haz clic para subir',
       editModeHint: 'Se subirán nuevos archivos en lugar de los archivos existentes',
-      imageHint2: 'Las imágenes se mostrarán como vista previa ✨\nMáx 10MB, soporta todos los formatos de archivo',
+      imageHint2:
+        'Las imágenes se mostrarán como vista previa ✨\nMáx 10MB, soporta todos los formatos de archivo',
       newImage: 'Nuevas imágenes ({{count}})',
       newFile: 'Nuevos archivos ({{count}})',
       existingImage: 'Imágenes existentes ({{count}})',

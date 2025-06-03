@@ -64,7 +64,7 @@ const ko = {
     badge5desc: '10개 이상의 활동을 완료했습니다!',
     visitPurpose: {
       travel: '여행',
-      study: '유학', 
+      study: '유학',
       work: '취업',
       living: '거주',
       business: '사업',
@@ -198,7 +198,8 @@ const ko = {
     description: 'EUM은 다른 나라의 사람들이 소통하고 협력하는 플랫폼입니다.',
   },
   chatbot: {
-    askHelp: '안녕하세요! 무엇을 도와드릴까요? 일정 작성, 게시글 작성, 맛집 추천 등 다양한 기능이 있습니다!',
+    askHelp:
+      '안녕하세요! 무엇을 도와드릴까요? 일정 작성, 게시글 작성, 맛집 추천 등 다양한 기능이 있습니다!',
     downloadImg: '이미지 다운로드',
     errorMessage: '응답 중 오류가 발생했습니다.',
     errorCalender: '캘린더 파싱 중 오류가 발생했습니다.',
@@ -1048,14 +1049,14 @@ const ko = {
     networkError: '네트워크 오류가 발생했습니다',
     serverError: '서버 오류가 발생했습니다',
     unknownError: '알 수 없는 오류가 발생했습니다',
-    
+
     // 인증/권한 관련 메시지
     loginRequired: '로그인이 필요합니다',
     loginRequiredAction: '좋아요/싫어요를 남기려면 로그인이 필요합니다',
     adminOnlyAccess: '관리자만 접근할 수 있습니다',
     permissionCheckFailed: '권한 확인에 실패했습니다',
     signupComplete: '회원가입이 완료되었습니다! 로그인 페이지로 이동합니다',
-    
+
     // 댓글/게시글 관련 메시지
     onlyAuthorCanDelete: '자신이 작성한 댓글만 삭제할 수 있습니다',
     commentEditFailed: '댓글 수정에 실패했습니다',
@@ -1064,13 +1065,14 @@ const ko = {
     replyEditError: '대댓글 수정 중 오류가 발생했습니다',
     replyDeleteError: '답글 삭제 중 오류가 발생했습니다',
     replyCreateError: '답글 작성 중 오류가 발생했습니다',
-    
+
     // 투표 관련 메시지
-    alreadyVotedCancel: '이미 다른 옵션에 투표하셨습니다. 먼저 기존 투표를 취소한 후 다시 시도해주세요',
-    
+    alreadyVotedCancel:
+      '이미 다른 옵션에 투표하셨습니다. 먼저 기존 투표를 취소한 후 다시 시도해주세요',
+
     // 복사 관련 메시지
     linkCopied: '링크가 클립보드에 복사되었습니다',
-    
+
     // 온보딩 관련 메시지
     confirmNation: '국적 정보를 입력해주세요',
     confirmGender: '성별 정보를 입력해주세요',
@@ -1400,7 +1402,7 @@ const ko = {
     backToList: '목록으로 돌아가기',
     createPost: '게시글 작성',
     editPost: '게시글 수정',
-    content: '내용',  
+    content: '내용',
     postType: '게시글 유형',
     category: '카테고리',
     region: '지역',
@@ -1422,7 +1424,8 @@ const ko = {
 
 정말로 저장하시겠습니까?`,
       newFileWarning: '⚠️ 새 파일 추가하면 기존 파일 모두 삭제됨',
-      editModeWarning: '⚠️ 경고: 새 파일을 추가하면 기존 첨부파일이 모두 삭제됩니다.\n\n정말로 계속하시겠습니까?\n\n기존 파일을 유지하려면 \'취소\'를 선택하세요.',
+      editModeWarning:
+        "⚠️ 경고: 새 파일을 추가하면 기존 첨부파일이 모두 삭제됩니다.\n\n정말로 계속하시겠습니까?\n\n기존 파일을 유지하려면 '취소'를 선택하세요.",
       deleteConfirm: '정말로 이 파일을 삭제하시겠습니까?',
       deleteWarning: '⚠️ 주의: 게시글 저장 시 이 파일이 영구적으로 삭제됩니다.',
       imageHint: '이미지는 미리보기로 표시됩니다',
@@ -2335,8 +2338,8 @@ const ko = {
         '🍽️ 음식 문화 및 맛집 추천',
         '📚 한국어 학습 및 교육',
         '💰 세금 및 금융 서비스',
-        '👥 문화 적응 및 인간관계'
-      ]
+        '👥 문화 적응 및 인간관계',
+      ],
     },
     errors: {
       responseError: '응답 중 오류가 발생했습니다.',

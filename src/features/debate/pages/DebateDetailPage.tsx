@@ -16,6 +16,8 @@ import {
   ListItemAvatar,
   ListItemText,
   Grid,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import FlagIcon from '@mui/icons-material/Flag';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
@@ -403,47 +405,50 @@ const DebateDetailPage: React.FC = memo(() => {
   const [countryStats, setCountryStats] = useState<any[]>([]);
   const hasInitialLoadedRef = useRef(false);
   const isDataLoadingRef = useRef(false);
-  
+
   // 언어 변경 추적을 위한 ref
   const previousLanguageRef = useRef(language);
   const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
   // 통합 데이터 로딩 함수
-  const loadAllData = useCallback(async (debateId: number, skipIfLoading = false) => {
-    // 이미 로딩 중이면 중복 실행 방지
-    if (skipIfLoading && isDataLoadingRef.current) {
-      console.log('[INFO] 데이터 로딩 중이므로 중복 실행 방지');
-      return;
-    }
-    
-    isDataLoadingRef.current = true;
-    console.log('[INFO] 통합 데이터 로딩 시작 - ID:', debateId);
-    
-    try {
-      // 토론 상세 정보 로드
-      await fetchDebateById(debateId);
-      
-      // 댓글과 국가별 통계는 병렬로 로드
-      await Promise.allSettled([
-        fetchComments(debateId),
-        loadCountryStats(debateId)
-      ]);
-      
-      console.log('[INFO] 통합 데이터 로딩 완료');
-    } catch (error) {
-      console.error('[ERROR] 데이터 로딩 실패:', error);
-    } finally {
-      isDataLoadingRef.current = false;
-    }
-  }, [fetchDebateById, fetchComments]);
+  const loadAllData = useCallback(
+    async (debateId: number, skipIfLoading = false) => {
+      // 이미 로딩 중이면 중복 실행 방지
+      if (skipIfLoading && isDataLoadingRef.current) {
+        console.log('[INFO] 데이터 로딩 중이므로 중복 실행 방지');
+        return;
+      }
+
+      isDataLoadingRef.current = true;
+      console.log('[INFO] 통합 데이터 로딩 시작 - ID:', debateId);
+
+      try {
+        // 토론 상세 정보 로드
+        await fetchDebateById(debateId);
+
+        // 댓글과 국가별 통계는 병렬로 로드
+        await Promise.allSettled([fetchComments(debateId), loadCountryStats(debateId)]);
+
+        console.log('[INFO] 통합 데이터 로딩 완료');
+      } catch (error) {
+        console.error('[ERROR] 데이터 로딩 실패:', error);
+      } finally {
+        isDataLoadingRef.current = false;
+      }
+    },
+    [fetchDebateById, fetchComments]
+  );
 
   // 데이터 새로고침 함수들을 useCallback으로 메모화
   const refreshDebateData = useCallback(async () => {
     if (!id) return;
-    
+
     console.log('[INFO] 토론 상세 페이지 - 데이터 새로고침 시작');
     setLanguageChanging(true);
-    
+
     try {
       await loadAllData(parseInt(id), true);
     } finally {
@@ -487,21 +492,21 @@ const DebateDetailPage: React.FC = memo(() => {
     // 초기 로드가 완료된 후에만 언어 변경에 반응
     if (hasInitialLoadedRef.current && previousLanguageRef.current !== language && id && debate) {
       console.log(`[INFO] 언어 변경 감지: ${previousLanguageRef.current} → ${language}`);
-      
+
       // 기존 타이머 취소
       if (refreshTimeoutRef.current) {
         clearTimeout(refreshTimeoutRef.current);
       }
-      
+
       // 디바운스된 새로고침 (200ms로 단축)
       refreshTimeoutRef.current = setTimeout(() => {
         loadAllData(parseInt(id), true);
       }, 200);
     }
-    
+
     // 현재 언어를 이전 언어로 업데이트
     previousLanguageRef.current = language;
-    
+
     // 컴포넌트 언마운트 시 타이머 정리
     return () => {
       if (refreshTimeoutRef.current) {
@@ -514,16 +519,16 @@ const DebateDetailPage: React.FC = memo(() => {
   useEffect(() => {
     if (debate) {
       // 상태 초기화를 배치로 처리
-      const newUserVote = debate?.isVotedState === '찬성' ? 'pro' : 
-                          debate?.isVotedState === '반대' ? 'con' : null;
+      const newUserVote =
+        debate?.isVotedState === '찬성' ? 'pro' : debate?.isVotedState === '반대' ? 'con' : null;
       const newStance = newUserVote;
       const mappedEmotionType = debate.isState ? mapIsStateToEmotionType(debate.isState) : null;
-      
+
       // 상태를 한 번에 업데이트
       setUserVote(newUserVote);
       setStance(newStance);
       setUserEmotion(mappedEmotionType);
-      
+
       // 웹로그 전송 - 최초 1회만
       if (!hasInitialLoadedRef.current) {
         const userId = getUserId() ?? 0;
@@ -549,23 +554,21 @@ const DebateDetailPage: React.FC = memo(() => {
         console.log('국가별 참여 정보 로드됨:', voteData.nationPercent);
 
         // nationPercent를 countryStats로 변환
-        const stats = Object.entries(voteData.nationPercent).map(
-          ([countryCode, percentage]) => {
-            // 국가 코드에서 국가명 추출
-            let countryName = countryCode;
-            if (countryCode === 'KR') countryName = t('debate.korea');
-            else if (countryCode === 'US') countryName = '미국';
-            else if (countryCode === 'JP') countryName = '일본';
-            else if (countryCode === 'CN') countryName = '중국';
+        const stats = Object.entries(voteData.nationPercent).map(([countryCode, percentage]) => {
+          // 국가 코드에서 국가명 추출
+          let countryName = countryCode;
+          if (countryCode === 'KR') countryName = t('debate.korea');
+          else if (countryCode === 'US') countryName = '미국';
+          else if (countryCode === 'JP') countryName = '일본';
+          else if (countryCode === 'CN') countryName = '중국';
 
-            return {
-              countryCode,
-              countryName,
-              count: Math.round(((percentage as number) / 100) * (voteData.voteCnt || 0)),
-              percentage: percentage as number,
-            };
-          }
-        );
+          return {
+            countryCode,
+            countryName,
+            count: Math.round(((percentage as number) / 100) * (voteData.voteCnt || 0)),
+            percentage: percentage as number,
+          };
+        });
 
         setCountryStats(stats);
         return stats;
@@ -667,7 +670,9 @@ const DebateDetailPage: React.FC = memo(() => {
       });
     } else if (userVote && userVote !== voteType) {
       // 이미 다른 옵션에 투표한 경우, 안내 메시지 표시
-      alert('You have already voted for another option. Please cancel your existing vote first and try again.');
+      alert(
+        'You have already voted for another option. Please cancel your existing vote first and try again.'
+      );
     } else {
       // 토글 전 현재 값 저장
       const originalProCount = debate.proCount;
@@ -982,21 +987,22 @@ const DebateDetailPage: React.FC = memo(() => {
 
   // 계산된 값들을 useMemo로 메모화
   const enhancedDebate = useMemo(() => debate as EnhancedDebate, [debate]);
-  
-  const voteRatio = useMemo(() => 
-    calculateVoteRatio(enhancedDebate?.proCount || 0, enhancedDebate?.conCount || 0), 
+
+  const voteRatio = useMemo(
+    () => calculateVoteRatio(enhancedDebate?.proCount || 0, enhancedDebate?.conCount || 0),
     [enhancedDebate?.proCount, enhancedDebate?.conCount]
   );
-  
-  const chartData = useMemo(() => 
-    prepareChartData(enhancedDebate?.proCount || 0, enhancedDebate?.conCount || 0), 
+
+  const chartData = useMemo(
+    () => prepareChartData(enhancedDebate?.proCount || 0, enhancedDebate?.conCount || 0),
     [enhancedDebate?.proCount, enhancedDebate?.conCount]
   );
-  
-  const categoryColor = useMemo(() => 
-    (enhancedDebate?.category &&
-      categoryColors[enhancedDebate.category as keyof typeof categoryColors]) ||
-    '#757575',
+
+  const categoryColor = useMemo(
+    () =>
+      (enhancedDebate?.category &&
+        categoryColors[enhancedDebate.category as keyof typeof categoryColors]) ||
+      '#757575',
     [enhancedDebate?.category]
   );
 
@@ -1005,12 +1011,12 @@ const DebateDetailPage: React.FC = memo(() => {
     return (
       <DebateLayout showSidebar={false}>
         <Box
-          sx={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
             height: '60vh',
-            minHeight: '400px' // 최소 높이 설정으로 레이아웃 변화 방지
+            minHeight: '400px', // 최소 높이 설정으로 레이아웃 변화 방지
           }}
         >
           <Box sx={{ textAlign: 'center' }}>
@@ -1386,106 +1392,123 @@ const DebateDetailPage: React.FC = memo(() => {
   const CountryStatsSection: React.FC<{
     enhancedDebate: any;
     t: any;
-  }> = ({ enhancedDebate, t }) => (
-    <Box>
-      <ProgressSection sx={{ mb: 0 }}>
-        <Typography variant="h6" fontWeight={600} gutterBottom sx={{ color: '#222' }}>
-          {t('debate.countryParticipation')}
-        </Typography>
-        {countryStats && countryStats.length > 0 ? (
-          countryStats.map((stat: any, index: number) => {
-            const countryColors = {
-              KR: '#4caf50',
-              US: '#2196f3',
-              JP: '#f44336',
-              CN: '#ff9800',
-              default: '#9c27b0',
-            };
-            const color =
-              countryColors[stat.countryCode as keyof typeof countryColors] ||
-              countryColors.default;
-            return (
-              <CountryStatItem
-                key={index}
-                sx={{
-                  flexWrap: 'wrap',
-                  alignItems: 'center',
-                  gap: 1,
-                  padding: theme => theme.spacing(1, 1.5),
-                  minWidth: 0,
-                  width: '100%',
-                  boxSizing: 'border-box',
-                }}
-              >
-                <CountryFlag
-                  sx={{ minWidth: 0, flexShrink: 0, flexWrap: 'wrap', wordBreak: 'break-all' }}
+  }> = ({ enhancedDebate, t }) => {
+    // 모바일에서는 상위 3개만 보여줌
+    const displayStats = isMobile ? countryStats.slice(0, 3) : countryStats;
+    return (
+      <Box>
+        <ProgressSection sx={{ mb: 0, p: { xs: 1.2, md: 2 } }}>
+          <Typography
+            variant="h6"
+            fontWeight={600}
+            gutterBottom
+            sx={{ color: '#222', fontSize: { xs: '1.05rem', md: '1.25rem' } }}
+          >
+            {t('debate.countryParticipation')}
+          </Typography>
+          {displayStats && displayStats.length > 0 ? (
+            displayStats.map((stat: any, index: number) => {
+              const countryColors = {
+                KR: '#4caf50',
+                US: '#2196f3',
+                JP: '#f44336',
+                CN: '#ff9800',
+                default: '#9c27b0',
+              };
+              const color =
+                countryColors[stat.countryCode as keyof typeof countryColors] ||
+                countryColors.default;
+              return (
+                <CountryStatItem
+                  key={index}
+                  sx={{
+                    flexWrap: 'wrap',
+                    alignItems: 'center',
+                    gap: 1,
+                    padding: theme => theme.spacing(isMobile ? 0.7 : 1, isMobile ? 1 : 1.5),
+                    minWidth: 0,
+                    width: '100%',
+                    boxSizing: 'border-box',
+                  }}
                 >
-                  <FlagDisplay nation={stat.countryCode} size="small" showName={true} />
-                </CountryFlag>
-                <Box sx={{ flex: 1, ml: 1, mr: 1, minWidth: 0 }}>
-                  <Box
+                  <CountryFlag
                     sx={{
-                      width: '100%',
-                      height: '24px',
-                      borderRadius: '12px',
-                      overflow: 'hidden',
-                      background: '#f0f0f0',
                       minWidth: 0,
+                      flexShrink: 0,
+                      flexWrap: 'wrap',
+                      wordBreak: 'break-all',
+                      fontSize: { xs: '0.92rem', md: '1rem' },
                     }}
                   >
+                    <FlagDisplay nation={stat.countryCode} size="small" showName={true} />
+                  </CountryFlag>
+                  <Box sx={{ flex: 1, ml: 1, mr: 1, minWidth: 0 }}>
                     <Box
                       sx={{
-                        width: `${Math.round(stat.percentage)}%`,
-                        height: '100%',
-                        backgroundColor: color,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
+                        width: '100%',
+                        height: isMobile ? '18px' : '24px',
+                        borderRadius: '12px',
+                        overflow: 'hidden',
+                        background: '#f0f0f0',
                         minWidth: 0,
                       }}
                     >
-                      {stat.percentage > 15 && (
-                        <Typography
-                          variant="caption"
-                          color="white"
-                          fontWeight="bold"
-                          sx={{
-                            whiteSpace: 'normal',
-                            wordBreak: 'break-all',
-                            textAlign: 'center',
-                            width: '100%',
-                          }}
-                        >
-                          {Math.round(stat.percentage)}%
-                        </Typography>
-                      )}
+                      <Box
+                        sx={{
+                          width: `${Math.round(stat.percentage)}%`,
+                          height: '100%',
+                          backgroundColor: color,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          minWidth: 0,
+                        }}
+                      >
+                        {stat.percentage > 15 && (
+                          <Typography
+                            variant="caption"
+                            color="white"
+                            fontWeight="bold"
+                            sx={{
+                              whiteSpace: 'normal',
+                              wordBreak: 'break-all',
+                              textAlign: 'center',
+                              width: '100%',
+                              fontSize: { xs: '0.8rem', md: '0.92rem' },
+                            }}
+                          >
+                            {Math.round(stat.percentage)}%
+                          </Typography>
+                        )}
+                      </Box>
                     </Box>
                   </Box>
-                </Box>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    minWidth: 0,
-                    textAlign: 'right',
-                    wordBreak: 'break-all',
-                    whiteSpace: 'normal',
-                    flexShrink: 0,
-                  }}
-                >
-                  {stat.count}
-                  {t('debate.ppl')} ({Math.round(stat.percentage)}%)
-                </Typography>
-              </CountryStatItem>
-            );
-          })
-        ) : (
-          <Typography variant="body2" align="center" color="text.secondary" sx={{ py: 2 }}>
-            {t('debate.noParticipationData')}
-          </Typography>
-        )}
-      </ProgressSection>
-    </Box>
-  );
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      minWidth: 0,
+                      textAlign: 'right',
+                      wordBreak: 'break-all',
+                      whiteSpace: 'normal',
+                      flexShrink: 0,
+                      fontSize: { xs: '0.92rem', md: '1rem' },
+                    }}
+                  >
+                    {stat.count}
+                    {t('debate.ppl')} ({Math.round(stat.percentage)}%)
+                  </Typography>
+                </CountryStatItem>
+              );
+            })
+          ) : (
+            <Typography variant="body2" align="center" color="text.secondary" sx={{ py: 2 }}>
+              {t('debate.noParticipationData')}
+            </Typography>
+          )}
+        </ProgressSection>
+      </Box>
+    );
+  };
 
   // 메모화된 렌더 함수들
   const MemoizedVoteChartSection = memo(VoteChartSection);
@@ -1542,9 +1565,32 @@ const DebateDetailPage: React.FC = memo(() => {
         </Box>
       }
     >
-      <Container maxWidth="md" sx={{ py: 2 }}>
+      <Container
+        maxWidth={isMobile ? false : 'md'}
+        disableGutters={isMobile}
+        sx={{
+          py: { xs: 1, md: 2 },
+          px: { xs: 0, md: 2 },
+          width: '100vw',
+          maxWidth: isMobile ? '100vw' : undefined,
+          minWidth: 0,
+          overflowX: 'hidden',
+        }}
+      >
         {/* 토론 메인 카드 + 감정표현 버튼 + 뒤로가기 버튼 */}
-        <DebateCard sx={{ position: 'relative' }}>
+        <DebateCard
+          sx={{
+            position: 'relative',
+            p: { xs: 1.2, md: 3 },
+            pl: { xs: 1.5, md: 4 },
+            pb: { xs: 2, md: 8 },
+            width: '100%',
+            minWidth: 0,
+            boxSizing: 'border-box',
+            maxWidth: { xs: '100vw', md: 900 },
+            overflowX: 'auto',
+          }}
+        >
           <CategoryIndicator color={categoryColor} />
           {/* 상단 바: 뒤로가기 + 이모션 버튼 그룹 */}
           <Box
@@ -1553,9 +1599,12 @@ const DebateDetailPage: React.FC = memo(() => {
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'space-between',
-              px: 2,
-              pt: 2,
+              px: { xs: 1, md: 2 },
+              pt: { xs: 1, md: 2 },
               pb: 0,
+              width: '100%',
+              minWidth: 0,
+              boxSizing: 'border-box',
             }}
           >
             <Button
@@ -1650,9 +1699,27 @@ const DebateDetailPage: React.FC = memo(() => {
               </EmotionButton>
             </EmotionButtonGroup>
           </Box>
-          <Box sx={{ p: 3, pl: 4, pb: 8 }}>
+          <Box
+            sx={{
+              p: { xs: 1.2, md: 3 },
+              pl: { xs: 1.5, md: 4 },
+              pb: { xs: 2, md: 8 },
+              width: '100%',
+              minWidth: 0,
+              boxSizing: 'border-box',
+              overflowX: 'auto',
+            }}
+          >
             <Box
-              sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                gap: { xs: 1, md: 2 },
+                width: '100%',
+                minWidth: 0,
+                boxSizing: 'border-box',
+              }}
             >
               <Box>
                 {enhancedDebate.isHot && (
@@ -1663,7 +1730,13 @@ const DebateDetailPage: React.FC = memo(() => {
                 <Typography
                   variant="body2"
                   color="text.secondary"
-                  sx={{ mb: 0.5, display: 'flex', alignItems: 'center', gap: 0.5 }}
+                  sx={{
+                    mb: 0.5,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 0.5,
+                    fontSize: { xs: '0.92rem', md: '1rem' },
+                  }}
                   component="div"
                 >
                   {enhancedDebate.category && (
@@ -1678,7 +1751,13 @@ const DebateDetailPage: React.FC = memo(() => {
                   <span style={{ margin: '0 4px' }}>•</span>
                   {formatDate(enhancedDebate.createdAt)}
                 </Typography>
-                <Typography variant="h5" component="h1" fontWeight={700} gutterBottom>
+                <Typography
+                  variant="h5"
+                  component="h1"
+                  fontWeight={700}
+                  gutterBottom
+                  sx={{ fontSize: { xs: '1.25rem', md: '2rem' } }}
+                >
                   {enhancedDebate.title}
                 </Typography>
               </Box>

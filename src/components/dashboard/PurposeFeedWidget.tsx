@@ -13,6 +13,8 @@ import {
   Card,
   CardContent,
   Divider,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import TravelExploreIcon from '@mui/icons-material/TravelExplore';
@@ -30,8 +32,10 @@ import InfoIcon from '@mui/icons-material/Info';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import PhoneIcon from '@mui/icons-material/Phone';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { widgetPaperBase, widgetGradients } from './theme/dashboardWidgetTheme';
 import { useMypageStore } from '../../features/mypage/store/mypageStore';
+import { useTranslation } from 'react-i18next';
 
 // 사용자 목적 타입
 type UserPurpose = 'travel' | 'work' | 'residence' | 'study';
@@ -311,6 +315,10 @@ const PurposeFeedWidget: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number>();
   const [isAnimating, setIsAnimating] = useState(true);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const { t } = useTranslation();
 
   // 마이페이지에서 사용자 목적 가져오기
   useEffect(() => {
@@ -500,6 +508,7 @@ const PurposeFeedWidget: React.FC = () => {
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <InfoIcon sx={{ mr: 1, color: PURPOSE_INFO[userPurpose].color }} />
             <Avatar
               sx={{
                 bgcolor: PURPOSE_INFO[userPurpose].color + '40',
@@ -512,8 +521,15 @@ const PurposeFeedWidget: React.FC = () => {
               {PURPOSE_INFO[userPurpose].icon}
             </Avatar>
             <Typography variant="subtitle1" fontWeight={600} fontSize="0.95rem">
-              {PURPOSE_INFO[userPurpose].label} 정보
+              {t('home.purposeFeed.title', { purpose: PURPOSE_INFO[userPurpose].label })}
             </Typography>
+            <IconButton
+              sx={{ display: { xs: 'inline-flex', md: 'none' }, ml: 1 }}
+              size="small"
+              onClick={() => setIsCollapsed(v => !v)}
+            >
+              <ExpandMoreIcon />
+            </IconButton>
           </Box>
           <IconButton
             size="small"
@@ -541,39 +557,40 @@ const PurposeFeedWidget: React.FC = () => {
             backdropFilter: 'blur(10px)',
           }}
         >
-          {items.map(item => (
-            <Box
-              key={item.id}
-              onClick={() => handleItemClick(item)}
-              sx={{
-                position: 'absolute',
-                left: item.position.x - item.size / 2,
-                top: item.position.y - item.size / 2,
-                width: item.size,
-                height: item.size,
-                borderRadius: '50%',
-                background: PURPOSE_INFO[item.purpose].gradient,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
-                zIndex: item.zIndex,
-                '&:hover': {
-                  transform: 'scale(1.2)',
-                  boxShadow: '0 8px 30px rgba(0,0,0,0.3)',
-                  zIndex: 1000,
-                },
-                '&:active': {
-                  transform: 'scale(1.5)',
-                  transition: 'transform 0.1s ease',
-                },
-              }}
-            >
-              <Box sx={{ color: 'white', fontSize: item.size * 0.35 }}>{item.icon}</Box>
-            </Box>
-          ))}
+          {(isMobile ? !isCollapsed : true) &&
+            items.map(item => (
+              <Box
+                key={item.id}
+                onClick={() => handleItemClick(item)}
+                sx={{
+                  position: 'absolute',
+                  left: item.position.x - item.size / 2,
+                  top: item.position.y - item.size / 2,
+                  width: item.size,
+                  height: item.size,
+                  borderRadius: '50%',
+                  background: PURPOSE_INFO[item.purpose].gradient,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                  boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+                  zIndex: item.zIndex,
+                  '&:hover': {
+                    transform: 'scale(1.2)',
+                    boxShadow: '0 8px 30px rgba(0,0,0,0.3)',
+                    zIndex: 1000,
+                  },
+                  '&:active': {
+                    transform: 'scale(1.5)',
+                    transition: 'transform 0.1s ease',
+                  },
+                }}
+              >
+                <Box sx={{ color: 'white', fontSize: item.size * 0.35 }}>{item.icon}</Box>
+              </Box>
+            ))}
         </Box>
       </Paper>
 

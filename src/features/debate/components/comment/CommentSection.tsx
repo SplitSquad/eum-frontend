@@ -3,7 +3,17 @@ import { useDebateStore } from '../../store';
 import CommentItem from './CommentItem';
 import CommentForm from './CommentForm';
 import Pagination from '../shared/Pagination';
-import { Box, Typography, Button, CircularProgress, Divider, Paper, Stack } from '@mui/material';
+import {
+  Box,
+  Typography,
+  Button,
+  CircularProgress,
+  Divider,
+  Paper,
+  Stack,
+  useTheme,
+  useMediaQuery,
+} from '@mui/material';
 import { styled } from '@mui/material/styles';
 import AddCommentIcon from '@mui/icons-material/AddComment';
 import { DebateComment } from '../../types';
@@ -20,6 +30,17 @@ const CommentContainer = styled(Paper)(({ theme }) => ({
   backgroundColor: 'rgba(255, 255, 255, 0.9)',
   backdropFilter: 'blur(10px)',
   boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+  width: '100%',
+  minWidth: 0,
+  boxSizing: 'border-box',
+  [theme.breakpoints.down('md')]: {
+    padding: theme.spacing(1.2),
+    borderRadius: 0,
+    width: '100vw',
+    maxWidth: '100vw',
+    marginLeft: 0,
+    marginRight: 0,
+  },
 }));
 
 const HeaderBox = styled(Box)(({ theme }) => ({
@@ -27,6 +48,14 @@ const HeaderBox = styled(Box)(({ theme }) => ({
   justifyContent: 'space-between',
   alignItems: 'center',
   marginBottom: theme.spacing(3),
+  width: '100%',
+  minWidth: 0,
+  boxSizing: 'border-box',
+  [theme.breakpoints.down('md')]: {
+    marginBottom: theme.spacing(1.5),
+    gap: theme.spacing(1),
+    px: 0,
+  },
 }));
 
 const ActionButton = styled(Button)(({ theme }) => ({
@@ -48,12 +77,33 @@ const EmptyCommentsBox = styled(Box)(({ theme }) => ({
   padding: theme.spacing(6),
   borderRadius: 8,
   backgroundColor: 'rgba(245, 245, 245, 0.7)',
+  width: '100%',
+  minWidth: 0,
+  boxSizing: 'border-box',
+  [theme.breakpoints.down('md')]: {
+    padding: theme.spacing(2),
+    borderRadius: 0,
+    width: '100vw',
+    maxWidth: '100vw',
+    marginLeft: 0,
+    marginRight: 0,
+  },
 }));
 
 const CommentListContainer = styled(Stack)(({ theme }) => ({
   marginTop: theme.spacing(4),
+  width: '100%',
+  minWidth: 0,
+  boxSizing: 'border-box',
+  [theme.breakpoints.down('md')]: {
+    marginTop: theme.spacing(2),
+    px: 0,
+  },
   '& > div + div': {
     marginTop: theme.spacing(2),
+    [theme.breakpoints.down('md')]: {
+      marginTop: theme.spacing(1),
+    },
   },
 }));
 
@@ -71,6 +121,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({ debateId }) => {
   const { t } = useTranslation();
   const [showCommentForm, setShowCommentForm] = useState(false);
   const [localComments, setLocalComments] = useState<DebateComment[]>([]);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   // 새 댓글 추가 성공 핸들러
   const handleCommentSuccess = (newComment: any) => {
@@ -130,7 +182,10 @@ const CommentSection: React.FC<CommentSectionProps> = ({ debateId }) => {
   const allComments = [...localComments, ...comments];
 
   return (
-    <CommentContainer elevation={0}>
+    <CommentContainer
+      elevation={0}
+      sx={{ width: { xs: '100vw', md: '100%' }, minWidth: 0, px: { xs: 0, md: 0 } }}
+    >
       <HeaderBox>
         <Typography variant="h6" fontWeight="bold" color="text.primary">
           {totalComments + localComments.length} {t('debate.comment.reply')}
@@ -183,7 +238,33 @@ const CommentSection: React.FC<CommentSectionProps> = ({ debateId }) => {
             </Button>
           </Box>
 
-          {/* 댓글 작성 버튼 */}
+          {/* 댓글 작성 버튼: 데스크탑에서만 헤더에 표시 */}
+          {!isMobile && (
+            <ActionButton
+              onClick={() => setShowCommentForm(!showCommentForm)}
+              variant="contained"
+              color={showCommentForm ? 'inherit' : 'primary'}
+              startIcon={<AddCommentIcon />}
+              sx={{
+                fontWeight: 'medium',
+                boxShadow: showCommentForm ? 'none' : 2,
+                '&:hover': {
+                  boxShadow: showCommentForm ? 'none' : 3,
+                },
+              }}
+            >
+              {showCommentForm ? t('debate.comment.cancel') : t('debate.comment.add')}
+            </ActionButton>
+          )}
+        </Box>
+      </HeaderBox>
+
+      {/* 구분선 */}
+      <Divider sx={{ mb: 3 }} />
+
+      {/* 댓글 작성 버튼: 모바일에서만 Divider 아래, 댓글 목록 위에 표시 */}
+      {isMobile && (
+        <Box sx={{ mb: 2, width: '100%' }}>
           <ActionButton
             onClick={() => setShowCommentForm(!showCommentForm)}
             variant="contained"
@@ -191,6 +272,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ debateId }) => {
             startIcon={<AddCommentIcon />}
             sx={{
               fontWeight: 'medium',
+              width: '100%',
               boxShadow: showCommentForm ? 'none' : 2,
               '&:hover': {
                 boxShadow: showCommentForm ? 'none' : 3,
@@ -200,10 +282,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ debateId }) => {
             {showCommentForm ? t('debate.comment.cancel') : t('debate.comment.add')}
           </ActionButton>
         </Box>
-      </HeaderBox>
-
-      {/* 구분선 */}
-      <Divider sx={{ mb: 3 }} />
+      )}
 
       {/* 댓글 작성 폼 */}
       {showCommentForm && (

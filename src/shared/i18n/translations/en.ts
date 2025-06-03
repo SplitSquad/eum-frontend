@@ -997,14 +997,14 @@ const en = {
     networkError: 'Network error occurred',
     serverError: 'Server error occurred',
     unknownError: 'Unknown error occurred',
-    
+
     // Authentication/permission related messages
     loginRequired: 'Login is required',
     loginRequiredAction: 'Login is required to leave likes/dislikes',
     adminOnlyAccess: 'Only administrators can access',
     permissionCheckFailed: 'Permission check failed',
     signupComplete: 'Registration complete! Redirecting to login page',
-    
+
     // Comment/post related messages
     onlyAuthorCanDelete: 'Only the author can delete their own comments',
     commentEditFailed: 'Comment edit failed',
@@ -1013,13 +1013,14 @@ const en = {
     replyEditError: 'An error occurred while editing reply',
     replyDeleteError: 'An error occurred while deleting reply',
     replyCreateError: 'An error occurred while creating reply',
-    
+
     // Voting related messages
-    alreadyVotedCancel: 'You have already voted for another option. Please cancel your existing vote first and try again',
-    
+    alreadyVotedCancel:
+      'You have already voted for another option. Please cancel your existing vote first and try again',
+
     // Copy related messages
     linkCopied: 'Link copied to clipboard',
-    
+
     // Onboarding related messages
     confirmNation: 'Please enter your nationality',
     confirmGender: 'Please select your gender',
@@ -1391,7 +1392,8 @@ Existing attachments: {{existingFileCount}}
 
 Do you really want to save?`,
       newFileWarning: '⚠️ Adding new files will delete all existing files',
-      editModeWarning: '⚠️ Warning: Adding new files will delete all {{count}} existing attachments.\n\nDo you really want to continue?\n\nSelect \'Cancel\' to keep existing files.',
+      editModeWarning:
+        "⚠️ Warning: Adding new files will delete all {{count}} existing attachments.\n\nDo you really want to continue?\n\nSelect 'Cancel' to keep existing files.",
       deleteConfirm: 'Are you sure you want to delete this file?',
       deleteWarning: '⚠️ Warning: This file will be permanently deleted when the post is saved.',
       imageHint: 'Images will be displayed as previews',

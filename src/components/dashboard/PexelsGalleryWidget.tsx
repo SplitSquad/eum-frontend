@@ -10,11 +10,14 @@ import {
   IconButton,
   CircularProgress,
   Alert,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ImageIcon from '@mui/icons-material/Image';
 import DownloadIcon from '@mui/icons-material/Download';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useTranslation } from '@/shared/i18n';
 import { useLanguageStore } from '../../features/theme/store/languageStore';
 import { env } from '../../config/env';
@@ -34,7 +37,7 @@ interface ImageItem {
 const koreanLandmarkSearchTerms = [
   'Seoul Tower Korea',
   'Gyeongbokgung Palace Seoul',
-  'Bukchon Hanok Village Seoul', 
+  'Bukchon Hanok Village Seoul',
   'Jeju Island Seongsan Peak',
   'Busan Haeundae Beach',
   'Changdeokgung Palace Seoul',
@@ -51,7 +54,7 @@ const koreanLandmarkSearchTerms = [
   'Korean traditional market',
   'Lotte World Tower Seoul',
   'Banpo Rainbow Bridge Seoul',
-  'Korean palace architecture'
+  'Korean palace architecture',
 ];
 
 // 검색어에 해당하는 태그 매핑
@@ -75,7 +78,7 @@ const searchTermTagMapping: { [key: string]: string } = {
   'Korean traditional market': 'market',
   'Lotte World Tower Seoul': 'landmark',
   'Banpo Rainbow Bridge Seoul': 'night',
-  'Korean palace architecture': 'palace'
+  'Korean palace architecture': 'palace',
 };
 
 // 검색어에 해당하는 alt 키 매핑
@@ -99,7 +102,7 @@ const searchTermAltMapping: { [key: string]: string } = {
   'Korean traditional market': 'korean_market',
   'Lotte World Tower Seoul': 'seoul_tower',
   'Banpo Rainbow Bridge Seoul': 'hangang_night',
-  'Korean palace architecture': 'gyeongbokgung'
+  'Korean palace architecture': 'gyeongbokgung',
 };
 
 const PexelsGalleryWidget: React.FC = () => {
@@ -108,6 +111,9 @@ const PexelsGalleryWidget: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const { t } = useTranslation();
   const { language } = useLanguageStore();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   // 랜덤 한국 명소 이미지 가져오기
   const fetchRandomKoreanLandmarkImages = async () => {
@@ -156,7 +162,7 @@ const PexelsGalleryWidget: React.FC = () => {
 
       const results = await Promise.all(imagePromises);
       const validImages = results.filter(img => img !== null) as ImageItem[];
-      
+
       setImages(validImages);
     } catch (err) {
       console.error('Pexels API 오류:', err);
@@ -217,6 +223,13 @@ const PexelsGalleryWidget: React.FC = () => {
         <Typography variant="subtitle1" fontWeight={600}>
           {t('widgets.imageGallery.title')}
         </Typography>
+        <IconButton
+          sx={{ display: { xs: 'inline-flex', md: 'none' }, ml: 1 }}
+          size="small"
+          onClick={() => setIsCollapsed(v => !v)}
+        >
+          <ExpandMoreIcon />
+        </IconButton>
       </Box>
 
       {/* 오류 메시지 */}
@@ -228,119 +241,125 @@ const PexelsGalleryWidget: React.FC = () => {
 
       {/* 이미지 그리드 */}
       <Box sx={{ flex: 1, overflow: 'auto' }}>
-        {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-            <CircularProgress size={40} />
-          </Box>
-        ) : (
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
-            {images.map(image => (
-              <Box
-                key={image.id}
-                sx={{
-                  width: { xs: 'calc(50% - 12px)', sm: 'calc(33.333% - 12px)' },
-                  position: 'relative',
-                }}
-              >
-                <Card
-                  sx={{
-                    borderRadius: 1.5,
-                    boxShadow: 'none',
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    height: '100%',
-                    transition: 'transform 0.2s',
-                    '&:hover': {
-                      transform: 'translateY(-4px)',
-                      boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
-                      '& .overlay': {
-                        opacity: 1,
-                      },
-                    },
-                  }}
-                >
-                  <Box sx={{ position: 'relative' }}>
-                    <CardMedia component="img" height="120" image={image.src} alt={image.alt} />
-
-                    {/* 오버레이 */}
-                    <Box
-                      className="overlay"
+        {(isMobile ? !isCollapsed : true) && (
+          <>
+            {loading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                <CircularProgress size={40} />
+              </Box>
+            ) : (
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
+                {images.map(image => (
+                  <Box
+                    key={image.id}
+                    sx={{
+                      width: { xs: 'calc(50% - 12px)', sm: 'calc(33.333% - 12px)' },
+                      position: 'relative',
+                    }}
+                  >
+                    <Card
                       sx={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
+                        borderRadius: 1.5,
+                        boxShadow: 'none',
+                        border: '1px solid',
+                        borderColor: 'divider',
                         height: '100%',
-                        bgcolor: 'rgba(0,0,0,0.5)',
-                        opacity: 0,
-                        transition: 'opacity 0.2s',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: 1,
+                        transition: 'transform 0.2s',
+                        '&:hover': {
+                          transform: 'translateY(-4px)',
+                          boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
+                          '& .overlay': {
+                            opacity: 1,
+                          },
+                        },
                       }}
                     >
-                      <IconButton
-                        size="small"
-                        sx={{ color: 'white', bgcolor: 'rgba(0,0,0,0.3)' }}
-                        onClick={() => handleLikeToggle(image.id)}
-                      >
-                        {image.liked ? <FavoriteIcon color="error" /> : <FavoriteBorderIcon />}
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        sx={{ color: 'white', bgcolor: 'rgba(0,0,0,0.3)' }}
-                        onClick={() => handleDownload(image.src, image.alt)}
-                      >
-                        <DownloadIcon />
-                      </IconButton>
-                    </Box>
-                  </Box>
+                      <Box sx={{ position: 'relative' }}>
+                        <CardMedia component="img" height="120" image={image.src} alt={image.alt} />
 
-                  <CardContent sx={{ p: 1 }}>
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{ display: 'block', fontSize: '0.7rem' }}
-                    >
-                      By {image.photographer}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{ fontWeight: 500, mb: 0.5, fontSize: '0.8rem' }}
-                    >
-                      {getTranslatedAlt(image.alt)}
-                    </Typography>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                      {image.tags.slice(0, 1).map((tag, idx) => (
-                        <Chip
-                          key={idx}
-                          label={getTranslatedTag(tag)}
-                          size="small"
+                        {/* 오버레이 */}
+                        <Box
+                          className="overlay"
                           sx={{
-                            height: 18,
-                            fontSize: '0.65rem',
-                            bgcolor: 'rgba(25, 118, 210, 0.1)',
-                            color: 'primary.main',
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%',
+                            bgcolor: 'rgba(0,0,0,0.5)',
+                            opacity: 0,
+                            transition: 'opacity 0.2s',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 1,
                           }}
-                        />
-                      ))}
-                    </Box>
-                  </CardContent>
-                </Card>
+                        >
+                          <IconButton
+                            size="small"
+                            sx={{ color: 'white', bgcolor: 'rgba(0,0,0,0.3)' }}
+                            onClick={() => handleLikeToggle(image.id)}
+                          >
+                            {image.liked ? <FavoriteIcon color="error" /> : <FavoriteBorderIcon />}
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            sx={{ color: 'white', bgcolor: 'rgba(0,0,0,0.3)' }}
+                            onClick={() => handleDownload(image.src, image.alt)}
+                          >
+                            <DownloadIcon />
+                          </IconButton>
+                        </Box>
+                      </Box>
+
+                      <CardContent sx={{ p: 1 }}>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ display: 'block', fontSize: '0.7rem' }}
+                        >
+                          By {image.photographer}
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          sx={{ fontWeight: 500, mb: 0.5, fontSize: '0.8rem' }}
+                        >
+                          {getTranslatedAlt(image.alt)}
+                        </Typography>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                          {image.tags.slice(0, 1).map((tag, idx) => (
+                            <Chip
+                              key={idx}
+                              label={getTranslatedTag(tag)}
+                              size="small"
+                              sx={{
+                                height: 18,
+                                fontSize: '0.65rem',
+                                bgcolor: 'rgba(25, 118, 210, 0.1)',
+                                color: 'primary.main',
+                              }}
+                            />
+                          ))}
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  </Box>
+                ))}
               </Box>
-            ))}
-          </Box>
+            )}
+          </>
         )}
       </Box>
 
-      <Box
-        sx={{ textAlign: 'center', mt: 2, pt: 1, borderTop: '1px solid', borderColor: 'divider' }}
-      >
-        <Typography variant="caption" color="text.secondary">
-          {t('widgets.imageGallery.info.poweredBy')}
-        </Typography>
-      </Box>
+      {(isMobile ? !isCollapsed : true) && (
+        <Box
+          sx={{ textAlign: 'center', mt: 2, pt: 1, borderTop: '1px solid', borderColor: 'divider' }}
+        >
+          <Typography variant="caption" color="text.secondary">
+            {t('widgets.imageGallery.info.poweredBy')}
+          </Typography>
+        </Box>
+      )}
     </Paper>
   );
 };

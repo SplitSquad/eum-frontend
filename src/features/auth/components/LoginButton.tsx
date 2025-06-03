@@ -40,6 +40,8 @@ const ThemedButton = styled(Button)<{ colors: any }>(({ colors }) => ({
   position: 'relative',
   overflow: 'hidden',
   border: `1px solid ${colors.buttonBorder}`,
+  // 기본 폰트 크기
+  fontSize: '1rem',
   '&:hover': {
     backgroundColor: colors.buttonHoverBg,
     boxShadow: `0 5px 15px ${colors.buttonShadowHover}`,
@@ -60,6 +62,11 @@ const ThemedButton = styled(Button)<{ colors: any }>(({ colors }) => ({
   },
   '&:hover:before': {
     opacity: 1,
+  },
+
+  // 모바일(≤600px)일 때 텍스트 폰트 크기 축소
+  '@media (max-width: 600px)': {
+    fontSize: '0.875rem',
   },
 }));
 

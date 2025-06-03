@@ -17,7 +17,7 @@ import {
   alpha,
   InputAdornment,
 } from '@mui/material';
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 import useUserStore from '../store/userStore';
@@ -26,36 +26,71 @@ import { seasonalColors } from '@/components/layout/springTheme';
 import { useThemeStore } from '@/features/theme/store/themeStore';
 import { useTranslation } from '@/shared/i18n';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-// 스타일 컴포넌트 생략 (질문에 주신 코드 그대로 유지)
 
+// ------------------------------------------------------
+// 로그인 카드 스타일 (크기 축소 + 반응형)
+// ------------------------------------------------------
 const LoginCard = styled(Paper)<{ colors: typeof seasonalColors.spring }>`
-  padding: 2rem;
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+  padding: 1.5rem; /* 기존 2rem → 1.5rem */
+  border-radius: 14px; /* 기존 16px → 14px */
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10px);
-  border: 1.5px solid ${({ colors }) => colors.primary};
-  max-width: 450px;
+  border: 1px solid ${({ colors }) => colors.primary};
+  max-width: 400px; /* 기존 450px → 400px */
   width: 100%;
   margin: 0 auto;
   text-align: center;
+
+  /* 모바일(≤600px)일 때 */
+  @media (max-width: 600px) {
+    padding: 1rem; /* 1.5rem → 1rem */
+    max-width: 90%;
+    border-radius: 12px;
+  }
 `;
 
+// ------------------------------------------------------
+// 로고 영역 (크기 축소 + 반응형)
+// ------------------------------------------------------
 const LogoContainer = styled(Box)`
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem; /* 기존 2rem → 1.5rem */
+
+  /* 모바일(≤600px)일 때 */
+  @media (max-width: 600px) {
+    margin-bottom: 1rem; /* 1.5rem → 1rem */
+  }
 `;
 
+// ------------------------------------------------------
+// 페이지 제목 스타일 (크기 축소 + 반응형)
+// ------------------------------------------------------
 const PageTitle = styled(Typography)<{ color: string }>`
   color: ${({ color }) => color};
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.4rem; /* 기존 0.5rem → 0.4rem */
   font-weight: 700;
+
+  /* 모바일(≤600px)일 때 */
+  @media (max-width: 600px) {
+    font-size: 1.3rem; /* 기존 1.5rem → 1.3rem */
+    margin-bottom: 0.3rem; /* 0.4rem → 0.3rem */
+  }
 `;
 
+// ------------------------------------------------------
+// 아이디/비밀번호 입력 영역 스타일 (크기 축소 + 반응형)
+// ------------------------------------------------------
 const InputBox = styled('div')`
   display: flex;
   flex-direction: column;
-  gap: 1.2rem;
-  margin-bottom: 2rem;
+  gap: 1rem; /* 기존 1.2rem → 1rem */
+  margin-bottom: 1.5rem; /* 2rem → 1.5rem */
+
+  /* 모바일(≤600px)일 때 */
+  @media (max-width: 600px) {
+    gap: 0.8rem; /* 1rem → 0.8rem */
+    margin-bottom: 1rem; /* 1.5rem → 1rem */
+  }
 `;
 
 type InputErrors = {
@@ -68,7 +103,9 @@ type InputErrors = {
   address?: string;
 };
 
-// 이 페이지 전용: hover 시 배경색 변화 없는 TextField
+// ------------------------------------------------------
+// hover 시 배경색 변화 없는 TextField (추가된 반응형 폰트)
+// ------------------------------------------------------
 const StyledTextField = (props: TextFieldProps) => (
   <MuiTextField
     {...props}
@@ -78,6 +115,12 @@ const StyledTextField = (props: TextFieldProps) => (
         '&:hover': {
           background: 'rgba(255,255,255,0.7)',
         },
+      },
+      '& .MuiInputBase-input': {
+        fontSize: { xs: '0.85rem', sm: '0. Ninerem' },
+      },
+      '& .MuiFormLabel-root': {
+        fontSize: { xs: '0. Eightrem', sm: '0.95rem' },
       },
       ...props.sx,
     }}
@@ -176,6 +219,7 @@ const SignUpInputs = ({
                 confirmColor === 'success' ? 'green' : confirmColor === 'error' ? 'red' : undefined,
               ml: 1,
               fontWeight: 500,
+              fontSize: { xs: '0. Eightrem', sm: '0.9rem' },
             }}
           >
             {confirmMsg}
@@ -183,7 +227,15 @@ const SignUpInputs = ({
         )}
         {/* 유효성 검사 에러도 함께 표시 */}
         {!!errors.confirmPassword && (
-          <FormHelperText sx={{ color: 'red', ml: 1 }}>{errors.confirmPassword}</FormHelperText>
+          <FormHelperText
+            sx={{
+              color: 'red',
+              ml: 1,
+              fontSize: { xs: '0. Eightrem', sm: '0.9rem' },
+            }}
+          >
+            {errors.confirmPassword}
+          </FormHelperText>
         )}
       </div>
       <StyledTextField
@@ -213,16 +265,18 @@ const SignUpInputs = ({
   );
 };
 
-const SignupButton = ({ onClick, colors, t }) => (
+const SignupButton = ({ onClick, colors, t }: any) => (
   <Button
     variant="outlined"
     color="secondary"
     sx={{
-      mt: 2,
+      mt: 1.5 /* 기존 2 → 1.5 */,
       borderRadius: 2,
       fontWeight: 700,
       borderColor: colors.primary,
       color: colors.primary,
+      fontSize: { xs: '0. Eightrem', sm: '0. Ninerem' } /* 축소된 폰트 */,
+      py: { xs: '0.6rem', sm: '0. Eightrem' } /* 축소된 패딩 */,
       '&:hover': {
         borderColor: colors.primary,
         background: colors.hover,
@@ -234,16 +288,18 @@ const SignupButton = ({ onClick, colors, t }) => (
   </Button>
 );
 
-const CancelButton = ({ onClick, colors, t }) => (
+const CancelButton = ({ onClick, colors, t }: any) => (
   <Button
     variant="outlined"
     color="error"
     sx={{
-      mt: 2,
+      mt: 1.5 /* 기존 2 → 1.5 */,
       borderRadius: 2,
       fontWeight: 700,
       borderColor: colors.primary,
       color: colors.primary,
+      fontSize: { xs: '0. Eightrem', sm: '0. Ninerem' } /* 축소된 폰트 */,
+      py: { xs: '0.6rem', sm: '0. Eightrem' } /* 축소된 패딩 */,
       '&:hover': {
         borderColor: colors.primary,
         background: colors.hover,
@@ -274,7 +330,7 @@ const SignUpPage: React.FC = () => {
   const season = useThemeStore(state => state.season);
   const colors = seasonalColors[season] || seasonalColors.spring;
 
-  // 실시간 유효성 검사: 입력값이 변경되면 errors 해당 필드 제거
+  // 실시간 유효성 검사: 입력값 변경 시 errors 해제
   const handleInputChange = (field: keyof InputErrors, value: string) => {
     switch (field) {
       case 'id':
@@ -313,7 +369,6 @@ const SignUpPage: React.FC = () => {
     if (!name) errors.name = t('signup.nameRequired');
     if (!birthday) errors.birthday = t('signup.birthdayRequired');
     if (!phone) errors.phone = t('signup.phoneRequired');
-    // 주소는 선택사항으로 변경
     setInputErrors(errors);
     if (Object.keys(errors).length > 0) return;
 
@@ -366,6 +421,13 @@ const SignUpPage: React.FC = () => {
     }
   };
 
+  // 이미 인증된 상태라면 대시보드로 리디렉트
+  useEffect(() => {
+    if (useAuthStore.getState().isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [navigate]);
+
   return (
     <Container maxWidth="md">
       <Box
@@ -377,29 +439,36 @@ const SignUpPage: React.FC = () => {
           minHeight: 'calc(100vh - 4rem)',
           position: 'relative',
           zIndex: 10,
+          // 모바일(≤600px)일 때 좌우 여백 추가
+          px: { xs: 2, sm: 0 },
         }}
       >
-        <Fade in={true} timeout={1000}>
+        <Fade in timeout={1000}>
           <LoginCard elevation={3} colors={colors}>
-            <LogoContainer>
-              <Typography
-                variant="h4"
-                sx={{
-                  fontWeight: 700,
-                  color: '#c0c0c0',
-                  fontFamily: '"Roboto", "Noto Sans KR", sans-serif',
-                }}
-              >
-                EUM
-              </Typography>
-            </LogoContainer>
+            {!isMobile && (
+              <LogoContainer>
+                <Typography
+                  variant={isMobile ? 'h5' : 'h4'}
+                  sx={{
+                    fontWeight: 700,
+                    color: '#c0c0c0',
+                    fontFamily: '"Roboto", "Noto Sans KR", sans-serif',
+                    // 모바일에서 폰트 크기 좀 더 작게
+                    fontSize: { xs: '1.8rem', sm: '2.2rem' },
+                  }}
+                >
+                  {/* 텍스트 그대로 유지 */}
+                  EUM
+                </Typography>
+              </LogoContainer>
+            )}
 
             <PageTitle variant={isMobile ? 'h5' : 'h4'} color={colors.primary}>
               {t('signup.welcome')}
             </PageTitle>
 
             {error && (
-              <Box mb={3}>
+              <Box mb={1.5}>
                 <Alert severity="error" onClose={() => setError(null)}>
                   {error}
                 </Alert>
@@ -409,7 +478,7 @@ const SignUpPage: React.FC = () => {
             <Box
               sx={{
                 width: '100%',
-                mt: 2,
+                mt: 1.5 /* 기존 2 → 1.5 */,
                 transition: 'all 0.3s ease',
               }}
             >
@@ -427,6 +496,7 @@ const SignUpPage: React.FC = () => {
                 errors={inputErrors}
                 t={t}
               />
+
               <StyledTextField
                 label={t('signup.birthday')}
                 name="birthday"
@@ -439,26 +509,36 @@ const SignUpPage: React.FC = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <CalendarTodayIcon />
+                      <CalendarTodayIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />
                     </InputAdornment>
                   ),
+                  sx: {
+                    fontSize: { xs: '0. Eightrem', sm: '0. Ninerem' } /* 축소된 입력 텍스트 */,
+                    py: { xs: '0.6rem', sm: '0.8rem' } /* 축소된 높이 */,
+                  },
                 }}
                 required
                 error={!!inputErrors.birthday}
                 helperText={inputErrors.birthday || ''}
               />
-              <Box sx={{ display: 'flex', gap: 2, mt: 2, justifyContent: 'flex-end' }}>
+
+              <Box sx={{ display: 'flex', gap: 1.5, mt: 1.5, justifyContent: 'flex-end' }}>
                 <CancelButton onClick={() => navigate('/google-login')} colors={colors} t={t} />
                 <SignupButton onClick={handleSignup} colors={colors} t={t} />
               </Box>
             </Box>
 
-            <Box mt={4}>
-              <Typography variant="caption" color="textSecondary">
+            <Box mt={2.5}>
+              <Typography
+                variant="caption"
+                color="textSecondary"
+                sx={{
+                  fontSize: { xs: '0. Sevenrem', sm: '0. Eightrem' } /* 더욱 작게 */,
+                }}
+              >
                 {t('signup.termsAgreement')}
               </Typography>
             </Box>
-            
           </LoginCard>
         </Fade>
       </Box>

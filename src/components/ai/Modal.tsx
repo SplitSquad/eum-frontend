@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CSSProperties } from 'react';
@@ -20,15 +20,24 @@ interface ModalProps {
  * - Framer Motion으로 애니메이션 처리
  */
 export default function Modal({ isOpen, onClose, children, position }: ModalProps) {
+  // 모바일 감지
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   // Escape 키 누르면 모달 닫기 핸들링
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
     document.addEventListener('keydown', onKey);
-    console.log(position);
-    console.log(window.scrollY);
-
     return () => document.removeEventListener('keydown', onKey);
   }, [onClose]);
+
+  console.log(position);
+  console.log(window.scrollY);
 
   // 모달 포탈 root 엘리먼트 준비
   const portalRoot =
@@ -47,23 +56,38 @@ export default function Modal({ isOpen, onClose, children, position }: ModalProp
           {/* 모달 래퍼 */}
           <motion.div className="z-[1050] pointer-events-none">
             <div
-              className="
-                pointer-events-auto
-                bg-white rounded-2xl shadow-2xl 
-                w-[400px] min-h-[450px] max-h-[550px] overflow-hidden
-                z-[1051]
-                border border-gray-100
-                backdrop-blur-sm
-              "
+              className={
+                `pointer-events-auto bg-white shadow-2xl z-[1051] border border-gray-100 backdrop-blur-sm ` +
+                (isMobile
+                  ? 'rounded-2xl'
+                  : 'rounded-2xl w-[400px] min-h-[450px] max-h-[550px] overflow-hidden')
+              }
               style={
-                position
-                  ? ({
-                      position: 'fixed',
-                      top: position.y,
-                      left: position.x,
-                      transform: 'translate(0, 0)',
-                    } as CSSProperties)
-                  : undefined
+                {
+                  ...(isMobile
+                    ? {
+                        width: '90vw',
+                        maxWidth: 400,
+                        maxHeight: '80vh',
+                        borderRadius: 16,
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        margin: 'auto',
+                        overflow: 'auto',
+                      }
+                    : {}),
+                  ...(position && !isMobile
+                    ? {
+                        position: 'fixed',
+                        top: position.y,
+                        left: position.x,
+                        transform: 'translate(0, 0)',
+                      }
+                    : {}),
+                } as CSSProperties
               }
             >
               <div className="relative">

@@ -1,8 +1,10 @@
 import React from 'react';
-import { Box, Container, Typography, Paper } from '@mui/material';
+import { Box, Container, Typography, Paper, Button, useMediaQuery } from '@mui/material';
 import styled from '@emotion/styled';
 import eum2Image from '@/assets/images/characters/이음이.png';
 import { useTranslation } from '@/shared/i18n';
+import { useNavigate } from 'react-router-dom';
+import { styled as muiStyled } from '@mui/material/styles';
 
 const WelcomeCard = styled(Paper)`
   padding: 4rem 2rem;
@@ -18,6 +20,11 @@ const WelcomeCard = styled(Paper)`
   border-radius: 18px;
   border: 1px solid #e0e0e0;
   backdrop-filter: blur(10px);
+  @media (max-width: 600px) {
+    padding: 1.5rem 0.5rem;
+    max-width: 98vw;
+    border-radius: 10px;
+  }
 `;
 
 const EumiImg = styled('img')`
@@ -30,6 +37,11 @@ const EumiImg = styled('img')`
   display: block;
   background: #fff;
   border: 1.5px solid #ededed;
+  @media (max-width: 600px) {
+    width: 90px;
+    height: 90px;
+    margin-bottom: 1.2rem;
+  }
 `;
 
 const Title = styled(Typography)`
@@ -39,8 +51,9 @@ const Title = styled(Typography)`
   margin-bottom: 2rem;
   line-height: 1.2;
   @media (max-width: 600px) {
-    font-size: 2rem;
-    margin-bottom: 1.2rem;
+    font-size: 1.1rem;
+    margin-bottom: 0.7rem;
+    line-height: 1.1;
   }
 `;
 
@@ -53,13 +66,34 @@ const Description = styled(Typography)`
   letter-spacing: 0.01em;
   text-align: center;
   @media (max-width: 600px) {
-    font-size: 1rem;
-    line-height: 1.7;
+    font-size: 0.52rem;
+    line-height: 1.4;
+    margin-bottom: 0.3rem;
   }
 `;
 
+const WelcomeLoginButton = muiStyled(Button)({
+  marginTop: 16,
+  width: '100%',
+  fontWeight: 700,
+  fontSize: '0.95rem',
+  borderRadius: 8,
+  backgroundColor: '#1976d2 !important',
+  color: '#fff !important',
+  boxShadow: '0 2px 8px rgba(25, 118, 210, 0.08) !important',
+  '&:hover': {
+    backgroundColor: '#115293 !important',
+  },
+});
+
 const Welcome: React.FC = () => {
   const { t } = useTranslation();
+  const isMobile = useMediaQuery('(max-width:600px)');
+  const navigate = useNavigate();
+  console.log('isMobile:', isMobile);
+  const handleLogin = () => {
+    navigate('/google-login');
+  };
   return (
     <Container
       maxWidth="sm"
@@ -80,6 +114,21 @@ const Welcome: React.FC = () => {
               </React.Fragment>
             ))}
         </Typography>
+        {isMobile && (
+          <WelcomeLoginButton
+            variant="contained"
+            onClick={handleLogin}
+            sx={{
+              backgroundColor: '#1976d2 !important',
+              color: '#fff !important',
+              '&:hover': {
+                backgroundColor: '#115293 !important',
+              },
+            }}
+          >
+            {t('login.login')}
+          </WelcomeLoginButton>
+        )}
       </WelcomeCard>
     </Container>
   );

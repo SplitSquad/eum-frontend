@@ -18,6 +18,7 @@ import {
   ListItemIcon,
   ListItemText,
   Divider,
+  Collapse,
 } from '@mui/material';
 import styled from '@emotion/styled';
 import { useLanguageStore } from '@/features/theme/store/languageStore';
@@ -39,6 +40,14 @@ import { AlarmCenter } from '@/components/notification/AlarmCenter';
 import { InfoIcon } from 'lucide-react';
 import { shouldForwardProp } from '@mui/system';
 import { seasonalColors, SeasonColors } from '@/components/layout/springTheme';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import homeIcon from '@/assets/icons/navigation/home.svg';
+import forumIcon from '@/assets/icons/navigation/forum.svg';
+import debateIcon from '@/assets/icons/navigation/debate.svg';
+import chatIcon from '@/assets/icons/navigation/chat.svg';
+import infoIcon from '@/assets/icons/navigation/info.svg';
+import accountIcon from '@/assets/icons/navigation/account.svg';
 
 /**-----------------------------------웹로그 관련------------------------------------ **/
 // userId 꺼내오는 헬퍼
@@ -275,6 +284,9 @@ const DrawerHeader = styled(Box)<{ season: string }>`
     props.season === 'spring' || props.season === 'hanji' || props.season === 'professional'
       ? seasonalColors[props.season]?.primary
       : undefined};
+  @media (max-width: 600px) {
+    padding: 12px 10px;
+  }
 `;
 
 const DrawerItem = styled(ListItem, {
@@ -287,14 +299,17 @@ const DrawerItem = styled(ListItem, {
     props.isactive
       ? seasonalColors[props.season]?.hover
       : 'transparent'};
-
+  @media (max-width: 600px) {
+    margin: 2px 0;
+    padding: 10px 16px;
+    font-size: 1.05rem;
+  }
   &:hover {
     background-color: ${props =>
       props.season === 'spring' || props.season === 'hanji' || props.season === 'professional'
         ? seasonalColors[props.season]?.hover
         : undefined};
   }
-
   .MuiListItemIcon-root {
     color: ${props =>
       (props.season === 'spring' || props.season === 'hanji' || props.season === 'professional') &&
@@ -303,8 +318,10 @@ const DrawerItem = styled(ListItem, {
         : props.season === 'spring' || props.season === 'hanji' || props.season === 'professional'
           ? seasonalColors[props.season]?.text
           : undefined};
+    @media (max-width: 600px) {
+      min-width: 36px;
+    }
   }
-
   .MuiListItemText-primary {
     color: ${props =>
       (props.season === 'spring' || props.season === 'hanji' || props.season === 'professional') &&
@@ -314,6 +331,9 @@ const DrawerItem = styled(ListItem, {
           ? seasonalColors[props.season]?.text
           : undefined};
     font-weight: ${props => (props.isactive ? '600' : '400')};
+    @media (max-width: 600px) {
+      font-size: 1.05rem;
+    }
   }
 `;
 
@@ -511,6 +531,20 @@ const ProfileDropdownItem = styled(Box)<{ season: string }>`
   }
 `;
 
+// Add a mobile-friendly language selector styled component
+const MobileLanguageSelector = styled('div')`
+  width: 100%;
+  padding: 12px 16px 16px 16px;
+  border-top: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #fafafa;
+  @media (min-width: 600px) {
+    display: none;
+  }
+`;
+
 function Header({ isVisible = true, notifications }: HeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -519,8 +553,7 @@ function Header({ isVisible = true, notifications }: HeaderProps) {
   const { t } = useTranslation();
   const { isAuthenticated, user, handleLogout, loadUser } = useAuthStore();
   const theme = useTheme();
-  //const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const isMobile = false;
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const token = localStorage.getItem('auth_token');
   console.log('headcheck user:', user);
   // user 정보에서 가져오기 (없으면 기본값)
@@ -650,19 +683,47 @@ function Header({ isVisible = true, notifications }: HeaderProps) {
     navigate(path);
   };
 
+  const [mobileLangOpen, setMobileLangOpen] = useState(false);
+
   return (
     <header>
-      <StyledAppBar season={season} position="sticky">
-        <Toolbar sx={{ minHeight: '72px', position: 'sticky' }}>
+      <StyledAppBar
+        season={season}
+        position="sticky"
+        sx={{
+          ...(isMobile && {
+            minHeight: 56,
+            boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+          }),
+        }}
+      >
+        <Toolbar
+          sx={{
+            minHeight: isMobile ? 56 : '72px',
+            px: isMobile ? 1 : 3,
+            position: 'sticky',
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
           {/* 로고 - Always visible */}
           <Box
-            sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              cursor: 'pointer',
+              ...(isMobile && { flex: 1 }),
+            }}
             onClick={() => handleMenuClick('/home', '로고')}
           >
-            <LogoText season={season}>EUM</LogoText>
+            <LogoText season={season} sx={{ fontSize: isMobile ? '1.2rem' : '1.5rem' }}>
+              EUM
+            </LogoText>
           </Box>
 
-          <Box sx={{ flexGrow: 1 }} />
+          {!isMobile && <Box sx={{ flexGrow: 1 }} />}
 
           {/* 헤더 우측 영역: 온보딩/일반 분기 */}
           {location.pathname.startsWith('/onboarding') ? (
@@ -768,111 +829,130 @@ function Header({ isVisible = true, notifications }: HeaderProps) {
                   </MenuContainer>
                 )}
 
-                {/* 유저 정보 + 알림 */}
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, ml: 4, height: 48 }}>
-                  {/* 프로필 */}
-                  {isAuthenticated ? (
-                    <Box sx={{ position: 'relative' }} ref={profileMenuRef}>
-                      <ProfileSection season={season} onClick={handleProfileClick}>
-                        <Avatar
-                          src={user?.profileImagePath || user?.picture}
-                          alt={user?.name || 'User'}
-                          sx={{
-                            width: 40,
-                            height: 40,
-                            border: `2px solid ${seasonalColors[season]?.primary}`,
-                            cursor: 'pointer',
-                          }}
-                        />
-                        <ProfileInfo>
-                          <ProfileRow>
-                            <ProfileName>{userName}</ProfileName>
-                          </ProfileRow>
-                          <DetailRow>
-                            <ProfileDetail>{userType}</ProfileDetail>
-                            <ProfileDetail>{userCountry}</ProfileDetail>
-                          </DetailRow>
-                        </ProfileInfo>
-                      </ProfileSection>
+                {/* 유저 정보 + 알림 (PC) */}
+                {!isMobile && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, ml: 4, height: 48 }}>
+                    {/* 프로필 */}
+                    {isAuthenticated ? (
+                      <Box sx={{ position: 'relative' }} ref={profileMenuRef}>
+                        <ProfileSection season={season} onClick={handleProfileClick}>
+                          <Avatar
+                            src={user?.profileImagePath || user?.picture}
+                            alt={user?.name || 'User'}
+                            sx={{
+                              width: 40,
+                              height: 40,
+                              border: `2px solid ${seasonalColors[season]?.primary}`,
+                              cursor: 'pointer',
+                            }}
+                          />
+                          <ProfileInfo>
+                            <ProfileRow>
+                              <ProfileName>{userName}</ProfileName>
+                            </ProfileRow>
+                            <DetailRow>
+                              <ProfileDetail>{userType}</ProfileDetail>
+                              <ProfileDetail>{userCountry}</ProfileDetail>
+                            </DetailRow>
+                          </ProfileInfo>
+                        </ProfileSection>
 
-                      {isProfileMenuOpen && (
-                        <ProfileDropdown season={season}>
-                          {/* 관리자일 때만 보이는 관리자 페이지 버튼 */}
-                          {user?.role === 'ROLE_ADMIN' && (
+                        {isProfileMenuOpen && (
+                          <ProfileDropdown season={season}>
+                            {/* 관리자일 때만 보이는 관리자 페이지 버튼 */}
+                            {user?.role === 'ROLE_ADMIN' && (
+                              <ProfileDropdownItem
+                                season={season}
+                                onClick={() => handleMenuItemClick('/adminpage')}
+                              >
+                                <AccountCircleIcon />
+                                {t('header.adminpage')}
+                              </ProfileDropdownItem>
+                            )}
                             <ProfileDropdownItem
                               season={season}
-                              onClick={() => handleMenuItemClick('/adminpage')}
+                              onClick={() => handleMenuItemClick('/mypage')}
                             >
                               <AccountCircleIcon />
-                              {t('header.adminpage')}
+                              {t('header.mypage')}
                             </ProfileDropdownItem>
-                          )}
-                          <ProfileDropdownItem
-                            season={season}
-                            onClick={() => handleMenuItemClick('/mypage')}
-                          >
-                            <AccountCircleIcon />
-                            {t('header.mypage')}
-                          </ProfileDropdownItem>
-                          <ProfileDropdownItem season={season} onClick={handleLogoutClick}>
-                            <LogoutIcon />
-                            {t('header.logout')}
-                          </ProfileDropdownItem>
-                        </ProfileDropdown>
-                      )}
-                    </Box>
-                  ) : (
-                    <LoginNavButton
-                      variant="contained"
-                      onClick={handleGoogleLogin}
-                      startIcon={<LoginIcon />}
-                      season={season}
-                      isactive={false}
-                    >
-                      {t('common.login')}
-                    </LoginNavButton>
-                  )}
+                            <ProfileDropdownItem season={season} onClick={handleLogoutClick}>
+                              <LogoutIcon />
+                              {t('header.logout')}
+                            </ProfileDropdownItem>
+                          </ProfileDropdown>
+                        )}
+                      </Box>
+                    ) : (
+                      <LoginNavButton
+                        variant="contained"
+                        onClick={handleGoogleLogin}
+                        startIcon={<LoginIcon />}
+                        season={season}
+                        isactive={false}
+                      >
+                        {t('common.login')}
+                      </LoginNavButton>
+                    )}
 
-                  {/* 알림 */}
-                  <Box
-                    sx={{
-                      ml: 2,
-                      mr: 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      height: 48,
-                      width: 40,
-                      justifyContent: 'center',
-                    }}
-                  >
+                    {/* 알림 */}
                     <Box
                       sx={{
-                        width: 40,
-                        height: 40,
+                        ml: 2,
+                        mr: 1,
                         display: 'flex',
                         alignItems: 'center',
+                        height: 48,
+                        width: 40,
                         justifyContent: 'center',
                       }}
                     >
-                      <AlarmCenter />
+                      <Box
+                        sx={{
+                          width: 40,
+                          height: 40,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <AlarmCenter />
+                      </Box>
                     </Box>
-                  </Box>
 
-                  {/* 언어 선택 */}
-                  <IconButton
-                    onClick={handleLanguageMenuOpen}
-                    sx={{ ml: 0.5, width: 40, height: 40 }}
-                  >
-                    <LanguageIcon sx={{ fontSize: 28 }} />
-                  </IconButton>
-
-                  {/* 모바일 메뉴 버튼 */}
-                  {isMobile && (
-                    <IconButton onClick={toggleDrawer}>
-                      <MenuIcon />
+                    {/* 언어 선택 */}
+                    <IconButton
+                      onClick={handleLanguageMenuOpen}
+                      sx={{ ml: 0.5, width: 40, height: 40 }}
+                    >
+                      <LanguageIcon sx={{ fontSize: 28 }} />
                     </IconButton>
-                  )}
-                </Box>
+                  </Box>
+                )}
+
+                {/* 모바일: 햄버거 메뉴 버튼만 우측에 노출 */}
+                {isMobile && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', ml: 'auto' }}>
+                    {/* 알림 버튼: 알림이 있을 때만 노출 */}
+                    {notifications && notifications.length > 0 && (
+                      <Box
+                        sx={{
+                          mr: 0.5,
+                          display: 'flex',
+                          alignItems: 'center',
+                          height: 48,
+                          width: 40,
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <AlarmCenter />
+                      </Box>
+                    )}
+                    <IconButton onClick={toggleDrawer}>
+                      <MenuIcon fontSize="large" />
+                    </IconButton>
+                  </Box>
+                )}
               </>
             )
           )}
@@ -908,17 +988,32 @@ function Header({ isVisible = true, notifications }: HeaderProps) {
                 </IconButton>
               </DrawerHeader>
               <List>
-                {navItems.map(item => (
-                  <DrawerItem
-                    key={item.path}
-                    season={season}
-                    isactive={isactive(item.path)}
-                    onClick={() => handleNavigation(item.path)}
-                  >
-                    <ListItemIcon>{item.icon}</ListItemIcon>
-                    <ListItemText primary={item.name} />
-                  </DrawerItem>
-                ))}
+                {navItems.map(item => {
+                  let iconImg: string | null = null;
+                  if (item.path === '/dashboard') iconImg = homeIcon;
+                  else if (item.path === '/info') iconImg = infoIcon;
+                  else if (item.path === '/community') iconImg = forumIcon;
+                  else if (item.path === '/debate') iconImg = debateIcon;
+                  else if (item.path === '/assistant') iconImg = chatIcon;
+                  else if (item.path === '/mypage') iconImg = accountIcon;
+                  return (
+                    <DrawerItem
+                      key={item.path}
+                      season={season}
+                      isactive={isactive(item.path)}
+                      onClick={() => handleNavigation(item.path)}
+                    >
+                      <ListItemIcon sx={{ minWidth: 40 }}>
+                        {iconImg ? (
+                          <img src={iconImg} alt={item.name} style={{ width: 28, height: 28 }} />
+                        ) : (
+                          item.icon
+                        )}
+                      </ListItemIcon>
+                      <ListItemText primary={item.name} />
+                    </DrawerItem>
+                  );
+                })}
                 <Divider />
                 {isAuthenticated ? (
                   <DrawerItem season={season} isactive={false} onClick={handleLogoutClick}>
@@ -936,6 +1031,72 @@ function Header({ isVisible = true, notifications }: HeaderProps) {
                   </DrawerItem>
                 )}
               </List>
+              {/* 모바일 언어 선택 드롭다운 */}
+              <MobileLanguageSelector>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: '#333' }}>
+                  {t('common.language')}
+                </Typography>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  endIcon={mobileLangOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                  sx={{
+                    borderRadius: 2,
+                    fontWeight: 600,
+                    fontSize: '0.95rem',
+                    color: '#333',
+                    background: '#fff',
+                    borderColor: '#eee',
+                    width: '100%',
+                    textTransform: 'none',
+                    justifyContent: 'space-between',
+                  }}
+                  onClick={() => setMobileLangOpen(open => !open)}
+                >
+                  {SUPPORTED_LANGUAGES.find(l => l.code === currentLanguage)?.name ||
+                    currentLanguage}
+                </Button>
+                <Collapse in={mobileLangOpen} timeout={200} unmountOnExit>
+                  <Box
+                    sx={{
+                      mt: 1,
+                      border: '1px solid #eee',
+                      borderRadius: 2,
+                      background: '#fff',
+                      boxShadow: 1,
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {SUPPORTED_LANGUAGES.map(lang => (
+                      <Button
+                        key={lang.code}
+                        variant="text"
+                        size="small"
+                        sx={{
+                          display: 'block',
+                          width: '100%',
+                          textAlign: 'left',
+                          px: 2,
+                          py: 1,
+                          color:
+                            currentLanguage === lang.code ? theme.palette.primary.main : '#333',
+                          fontWeight: currentLanguage === lang.code ? 700 : 500,
+                          background: 'none',
+                          borderRadius: 0,
+                          fontSize: '0.95rem',
+                        }}
+                        onClick={() => {
+                          handleLanguageChange(lang.code);
+                          setMobileLangOpen(false);
+                        }}
+                        disabled={currentLanguage === lang.code}
+                      >
+                        {lang.name}
+                      </Button>
+                    ))}
+                  </Box>
+                </Collapse>
+              </MobileLanguageSelector>
             </Drawer>
           )}
         </Toolbar>

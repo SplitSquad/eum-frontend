@@ -8,6 +8,7 @@ import { useTranslation } from '../../../shared/i18n';
 import { useLanguageStore } from '@/features/theme/store/languageStore';
 import { useAiAssistantStore } from '@/features/assistant/store/aiAssistantStore';
 import EeumProfile from '@/assets/images/characters/이음이.png';
+import { useTheme, useMediaQuery } from '@mui/material';
 
 // 스크롤바 스타일 CSS
 const scrollbarStyles = `
@@ -95,14 +96,14 @@ export default function ChatContent({
   const [showScrollButton, setShowScrollButton] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
 
-  // 1. 전체 채팅 컨테이너의 높이 고정 (아래 style 참조)
-  // 2. 내부 채팅 영역은 flex로 column 분리, 메시지리스트에만 overflow-auto
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
     if (messages.length === 0) {
-      const initialMessage = {
+      const initialMessage: Message = {
         id: Date.now(),
-        sender: 'bot' as const,
+        sender: 'bot',
         text: t('aiAssistant.chat.initialMessage'),
         displayText: t('aiAssistant.chat.initialMessage'),
         isTyping: false,
@@ -114,9 +115,9 @@ export default function ChatContent({
   const prevLanguageRef = useRef(language);
   useEffect(() => {
     if (prevLanguageRef.current !== language) {
-      const initialMessage = {
+      const initialMessage: Message = {
         id: Date.now(),
-        sender: 'bot' as const,
+        sender: 'bot',
         text: t('aiAssistant.chat.initialMessage'),
         displayText: t('aiAssistant.chat.initialMessage'),
         isTyping: false,
@@ -156,7 +157,6 @@ export default function ChatContent({
           isTyping: true,
         },
       ]);
-      // (생략) 카테고리 등 기타 기능
       const rag = data.metadata?.rag_type;
       const map: Record<string, string> = {
         visa_law: 'visa',
@@ -204,11 +204,9 @@ export default function ChatContent({
           }
           return copy;
         });
-        
-        // 타이핑 중에도 스크롤을 자동으로 아래로 이동
         if (listRef.current) {
           const { scrollTop, scrollHeight, clientHeight } = listRef.current;
-          const isNearBottom = scrollTop + clientHeight >= scrollHeight - 50;
+          const isNearBottom = scrollTop + clientHeight >= scrollHeight - 20;
           if (isNearBottom) {
             listRef.current.scrollTo({
               top: listRef.current.scrollHeight,
@@ -216,17 +214,15 @@ export default function ChatContent({
             });
           }
         }
-        
         if (idx >= text.length) clearInterval(interval);
       }, 30);
       return () => clearInterval(interval);
     }
   }, [messages[messages.length - 1]?.id]);
 
-  // 메시지 추가 시 스크롤 하단으로 부드럽게 이동 - 개선된 버전
+  // 메시지 추가 시 스크롤 하단으로 부드럽게 이동
   useEffect(() => {
     if (listRef.current) {
-      // 즉시 스크롤과 약간의 지연 후 다시 한번 스크롤
       const scrollToEnd = () => {
         if (listRef.current) {
           listRef.current.scrollTo({
@@ -235,20 +231,18 @@ export default function ChatContent({
           });
         }
       };
-      
       scrollToEnd();
       setTimeout(scrollToEnd, 100);
       setTimeout(scrollToEnd, 300);
     }
   }, [messages.length, loading]);
 
-  // 타이핑 효과로 메시지 내용이 변경될 때도 스크롤 따라가기
+  // 타이핑 중에도 스크롤 따라가기
   useEffect(() => {
     const last = messages[messages.length - 1];
     if (last?.sender === 'bot' && last.isTyping && listRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = listRef.current;
       const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100;
-      
       if (isNearBottom) {
         requestAnimationFrame(() => {
           if (listRef.current) {
@@ -264,11 +258,10 @@ export default function ChatContent({
     const handleScroll = () => {
       if (listRef.current) {
         const { scrollTop, scrollHeight, clientHeight } = listRef.current;
-        const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100;
+        const isNearBottom = scrollTop + clientHeight >= scrollHeight - 20;
         setShowScrollButton(!isNearBottom && messages.length > 3);
       }
     };
-
     const listElement = listRef.current;
     if (listElement) {
       listElement.addEventListener('scroll', handleScroll);
@@ -287,21 +280,18 @@ export default function ChatContent({
     }
   };
 
-  // -------------- 여기부터 실제 레이아웃 ---------------
-
   return (
     <>
-      {/* 스크롤바 스타일 추가 */}
       <style>{scrollbarStyles}</style>
 
-      {/* 최상단 div: 완전 고정 높이 채팅 레이아웃 - UX 개선 */}
+      {/* 최상단 div: 고정 높이 채팅 레이아웃 */}
       <div
         className="chat-area"
         style={{
           background: '#f7f8fa',
           borderRadius: 16,
-          padding: 24,
-          height: '70vh', // minHeight 대신 고정 height 사용
+          padding: isMobile ? 12 : 24,
+          height: isMobile ? '60vh' : '70vh',
           boxShadow: '0 2px 8px rgba(80,80,90,0.06)',
           display: 'flex',
           flexDirection: 'column',
@@ -314,11 +304,11 @@ export default function ChatContent({
             border: '2px solid #e0e0e7',
             display: 'flex',
             flexDirection: 'column',
-            minHeight: 0, // flexbox 스크롤 안정화
+            minHeight: 0,
             height: '100%',
           }}
         >
-          {/* 채팅 헤더 - 고정 */}
+          {/* 채팅 헤더 */}
           <div
             className="px-6 py-4 border-b flex-shrink-0"
             style={{
@@ -328,11 +318,12 @@ export default function ChatContent({
           >
             <div className="flex items-center justify-between">
               <h3
-                className="text-lg font-bold"
+                className="font-bold"
                 style={{
                   color: '#444',
                   fontFamily: '"Noto Serif KR", serif',
                   letterSpacing: '0.05em',
+                  fontSize: isMobile ? '1rem' : '1.125rem',
                 }}
               >
                 {t('aiAssistant.chat.title')}
@@ -343,7 +334,8 @@ export default function ChatContent({
                   background: '#f0f0f3',
                   color: '#555',
                   fontFamily: '"Noto Sans KR", sans-serif',
-                  fontWeight: '500',
+                  fontWeight: 500,
+                  fontSize: isMobile ? '0.75rem' : '0.875rem',
                 }}
               >
                 {t('aiAssistant.chat.currentField', { category: categoryLabel })}
@@ -351,7 +343,7 @@ export default function ChatContent({
             </div>
           </div>
 
-          {/* 메시지 리스트: 스크롤 영역 - flex-1로 남은 공간 모두 사용 */}
+          {/* 메시지 리스트 */}
           <div
             ref={listRef}
             className="flex-1 overflow-auto p-6 space-y-4 chat-scrollbar relative"
@@ -362,13 +354,16 @@ export default function ChatContent({
                 radial-gradient(circle at 80% 70%, rgba(210, 210, 220, 0.13) 0%, transparent 50%),
                 linear-gradient(180deg, #f7f8fa 0%, #ececf0 100%)
               `,
-              scrollBehavior: 'smooth', // 부드러운 스크롤
+              scrollBehavior: 'smooth',
+              padding: isMobile ? 8 : 24,
             }}
           >
-            {messages.map((m, index) => (
+            {messages.map(m => (
               <div
                 key={m.id}
-                className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'} mb-4 items-end`}
+                className={`flex ${
+                  m.sender === 'user' ? 'justify-end' : 'justify-start'
+                } mb-4 items-end`}
               >
                 {m.sender === 'user' ? (
                   <div className="max-w-[70%] group">
@@ -386,8 +381,8 @@ export default function ChatContent({
                         `,
                         color: '#444',
                         fontFamily: '"Noto Sans KR", sans-serif',
-                        fontSize: '15px',
-                        lineHeight: '1.6',
+                        fontSize: isMobile ? '0.875rem' : '15px',
+                        lineHeight: isMobile ? 1.4 : 1.6,
                         letterSpacing: '0.02em',
                       }}
                     >
@@ -402,7 +397,13 @@ export default function ChatContent({
                       />
                       <div className="relative z-10">{m.text}</div>
                     </div>
-                    <div className="text-xs mt-1 text-right opacity-60" style={{ color: '#888' }}>
+                    <div
+                      className="mt-1 text-right opacity-60"
+                      style={{
+                        color: '#888',
+                        fontSize: isMobile ? '0.75rem' : '0.875rem',
+                      }}
+                    >
                       {t('aiAssistant.chat.justNow')}
                     </div>
                   </div>
@@ -414,9 +415,9 @@ export default function ChatContent({
                       alt="이음이 프로필"
                       className="rounded-full object-cover flex-shrink-0"
                       style={{
-                        width: 32,
-                        height: 32,
-                        marginRight: 12,
+                        width: isMobile ? 28 : 32,
+                        height: isMobile ? 28 : 32,
+                        marginRight: isMobile ? 8 : 12,
                         border: '2px solid #e0e0e7',
                         background: '#f7f8fa',
                       }}
@@ -435,8 +436,8 @@ export default function ChatContent({
                         `,
                           color: '#444',
                           fontFamily: '"Noto Sans KR", sans-serif',
-                          fontSize: '15px',
-                          lineHeight: '1.7',
+                          fontSize: isMobile ? '0.875rem' : '15px',
+                          lineHeight: isMobile ? 1.5 : 1.7,
                           letterSpacing: '0.02em',
                         }}
                       >
@@ -462,19 +463,39 @@ export default function ChatContent({
                           <ReactMarkdown
                             remarkPlugins={[remarkGfm]}
                             components={{
-                              p: ({ children }) => <div className="mb-2 last:mb-0">{children}</div>,
+                              p: ({ children }) => <div className="mb-1 last:mb-0">{children}</div>,
                               strong: ({ children }) => (
-                                <span className="font-semibold text-gray-700">{children}</span>
+                                <span
+                                  className="font-semibold text-gray-700"
+                                  style={{
+                                    fontSize: isMobile ? '0.875rem' : undefined,
+                                  }}
+                                >
+                                  {children}
+                                </span>
                               ),
                               em: ({ children }) => (
-                                <span className="italic text-gray-500">{children}</span>
+                                <span
+                                  className="italic text-gray-500"
+                                  style={{
+                                    fontSize: isMobile ? '0.875rem' : undefined,
+                                  }}
+                                >
+                                  {children}
+                                </span>
                               ),
                             }}
                             children={m.displayText ?? m.text}
                           />
                         </div>
                       </div>
-                      <div className="text-xs mt-1 opacity-60" style={{ color: '#888' }}>
+                      <div
+                        className="mt-1 opacity-60"
+                        style={{
+                          color: '#888',
+                          fontSize: isMobile ? '0.75rem' : '0.875rem',
+                        }}
+                      >
                         {t('aiAssistant.chat.aiExpert')}
                       </div>
                     </div>
@@ -486,14 +507,15 @@ export default function ChatContent({
             {loading && (
               <div className="flex justify-start mb-4">
                 <div
-                  className="px-4 py-3 rounded-2xl"
+                  className="px-3 py-2 rounded-2xl"
                   style={{
                     background: 'linear-gradient(145deg, #fff 0%, #ececf0 100%)',
                     border: '2px solid #e0e0e7',
                     color: '#888',
+                    fontSize: isMobile ? '0.875rem' : '0.875rem',
                   }}
                 >
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-1">
                     <div className="flex space-x-1">
                       <div
                         className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
@@ -508,30 +530,47 @@ export default function ChatContent({
                         style={{ animationDelay: '300ms' }}
                       ></div>
                     </div>
-                    <span className="text-sm font-medium">{t('aiAssistant.chat.loading')}</span>
+                    <span
+                      className="font-medium"
+                      style={{
+                        fontSize: isMobile ? '0.875rem' : '0.875rem',
+                        fontFamily: '"Noto Sans KR", sans-serif',
+                      }}
+                    >
+                      {t('aiAssistant.chat.loading')}
+                    </span>
                   </div>
                 </div>
               </div>
             )}
           </div>
 
-          {/* 🔥 스크롤 맨 아래로 이동 버튼 - 위치 조정 */}
+          {/* 스크롤 맨 아래로 이동 버튼 */}
           {showScrollButton && (
             <button
               onClick={scrollToBottom}
-              className="absolute bottom-20 right-4 w-12 h-12 rounded-full shadow-lg transition-all duration-300 hover:scale-110 active:scale-95 z-10"
+              className="absolute"
               style={{
-                background: 'linear-gradient(145deg, #e0e0e7 0%, #cfd0d7 100%)',
-                border: '1.5px solid #bfc0c7',
-                color: '#555',
+                bottom: isMobile ? 16 : 24,
+                right: isMobile ? 16 : 32,
+                width: isMobile ? 40 : 48,
+                height: isMobile ? 40 : 48,
+                borderRadius: '50%',
                 boxShadow:
                   '0 4px 16px rgba(120,120,130,0.13), inset 0 1px 0 rgba(255,255,255,0.08)',
+                background: 'linear-gradient(145deg, #e0e0e7 0%, #cfd0d7 100%)',
+                border: '1.5px solid #bfc0c7',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'transform 0.2s',
+                zIndex: 10,
               }}
               title="최신 메시지로 이동"
             >
               <svg
-                width="24"
-                height="24"
+                width={isMobile ? 20 : 24}
+                height={isMobile ? 20 : 24}
                 viewBox="0 0 24 24"
                 fill="none"
                 style={{ margin: 'auto' }}
@@ -539,7 +578,7 @@ export default function ChatContent({
                 <path
                   d="M7 14L12 19L17 14M12 19V5"
                   stroke="currentColor"
-                  strokeWidth="2"
+                  strokeWidth={2}
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
@@ -547,7 +586,7 @@ export default function ChatContent({
             </button>
           )}
 
-          {/* 입력창 - 완전 고정 */}
+          {/* 입력창 */}
           <div
             className="px-6 py-4 border-t flex-shrink-0"
             style={{
@@ -556,9 +595,10 @@ export default function ChatContent({
               position: 'sticky',
               bottom: 0,
               zIndex: 10,
+              padding: isMobile ? '8px 12px' : '24px',
             }}
           >
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
               <div className="flex-1 relative">
                 <input
                   type="text"
@@ -566,13 +606,14 @@ export default function ChatContent({
                   onChange={e => setInput(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && !loading && sendMessage()}
                   disabled={loading}
-                  className="w-full px-4 py-3 rounded-full border-2 focus:outline-none transition-all duration-300"
+                  className="w-full rounded-full border-2 focus:outline-none transition-all duration-300"
                   style={{
                     background: 'rgba(255, 255, 255, 0.97)',
                     borderColor: '#e0e0e7',
                     color: '#444',
                     fontFamily: '"Noto Sans KR", sans-serif',
-                    fontSize: '15px',
+                    fontSize: isMobile ? '0.875rem' : '15px',
+                    padding: isMobile ? '8px 12px' : '12px 16px',
                     boxShadow: 'inset 0 2px 4px rgba(180,180,200,0.07)',
                     backdropFilter: 'blur(10px)',
                   }}
@@ -591,7 +632,7 @@ export default function ChatContent({
               <button
                 onClick={() => sendMessage()}
                 disabled={loading || !input.trim()}
-                className="px-6 py-3 rounded-full font-medium transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95"
+                className="rounded-full font-medium transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{
                   background:
                     loading || !input.trim()
@@ -605,6 +646,8 @@ export default function ChatContent({
                       : '0 4px 16px rgba(120,120,130,0.13), inset 0 1px 0 rgba(255,255,255,0.08)',
                   fontFamily: '"Noto Sans KR", sans-serif',
                   letterSpacing: '0.02em',
+                  padding: isMobile ? '8px 12px' : '12px 16px',
+                  fontSize: isMobile ? '0.875rem' : '15px',
                 }}
               >
                 {loading ? t('aiAssistant.chat.sending') : t('aiAssistant.chat.send')}

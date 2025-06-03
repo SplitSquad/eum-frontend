@@ -334,7 +334,12 @@ const PostList: React.FC<PostListProps> = ({
           }}
         >
           {displayPosts.map(post => (
-            <PostCard key={post.postId} post={post as PostSummary} isGroup={isGroup} />
+            <PostCard
+              key={post.postId}
+              post={post as PostSummary}
+              isGroup={isGroup}
+              isMobile={isMobile}
+            />
           ))}
         </Box>
       </Fade>
@@ -389,6 +394,8 @@ const PostList: React.FC<PostListProps> = ({
             color="standard"
             showFirstButton
             showLastButton
+            siblingCount={isMobile ? 1 : 1}
+            boundaryCount={isMobile ? 0 : 1}
           />
 
           {/* 작은 로딩 인디케이터 - 페이지 전환 중에만 표시 */}
