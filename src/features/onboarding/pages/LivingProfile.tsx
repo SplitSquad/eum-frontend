@@ -231,9 +231,6 @@ const visaTypeOptions = [
   { code: 'd8_4', name: t('onboarding.living.visaTypeOptions.d8_4') },
   { code: 'd9_1', name: t('onboarding.living.visaTypeOptions.d9_1') },
   { code: 'd9_2', name: t('onboarding.living.visaTypeOptions.d9_2') },
-  { code: 'd9_3', name: t('onboarding.living.visaTypeOptions.d9_3') },
-  { code: 'd9_4', name: t('onboarding.living.visaTypeOptions.d9_4') },
-  { code: 'g1_10', name: t('onboarding.living.visaTypeOptions.g1_10') },
   { code: 'unknown', name: t('onboarding.living.visaTypeOptions.unknown') },
   { code: 'other', name: t('onboarding.living.visaTypeOptions.other') },
 ];
