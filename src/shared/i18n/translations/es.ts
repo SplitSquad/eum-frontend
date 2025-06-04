@@ -2060,7 +2060,7 @@ Archivos adjuntos existentes: {{existingFileCount}}
       sending: 'Enviando...',
       loading: 'Preparando respuesta...',
       initialMessage: '¿Cómo puedo ayudarte?',
-      aiExpert: 'Experto IA',
+      aiExpert: 'Experto {{category}} IA',
       justNow: 'Ahora mismo',
     },
     suggestions: [

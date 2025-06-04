@@ -1874,7 +1874,7 @@ const ru = {
       sending: 'Отправка...',
       loading: 'Подготовка ответа...',
       initialMessage: 'Как я могу вам помочь?',
-      aiExpert: 'ИИ Эксперт',
+      aiExpert: 'ИИ {{category}} Эксперт',
       justNow: 'Только что',
     },
     suggestions: [

@@ -1814,7 +1814,7 @@ const ja = {
       sending: '送信中...',
       loading: '回答を準備しています...',
       initialMessage: '何をお手伝いしましょうか？',
-      aiExpert: 'AI専門家',
+      aiExpert: 'AI {{category}}専門家',
       justNow: 'たった今',
     },
     suggestions: [

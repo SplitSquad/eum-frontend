@@ -1881,7 +1881,7 @@ Möchten Sie wirklich speichern?`,
       sending: 'Wird gesendet...',
       loading: 'Warte auf die Antwort des Experten...',
       initialMessage: 'Wie kann ich Ihnen helfen?',
-      aiExpert: 'KI-Experte',
+      aiExpert: 'KI-{{category}} Experte',
       justNow: 'Gerade eben',
     },
     suggestions: [

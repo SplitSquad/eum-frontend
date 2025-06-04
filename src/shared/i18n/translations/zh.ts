@@ -1873,7 +1873,7 @@ const zh = {
       sending: '发送中...',
       loading: '正在准备回答...',
       initialMessage: '我能为您做些什么？',
-      aiExpert: 'AI专家',
+      aiExpert: 'AI {{category}} 专家',
       justNow: '刚刚',
     },
     suggestions: ['在韩国需要哪些基本文件？', '如何在韩国工作？', '学习韩语的好方法有哪些？'],

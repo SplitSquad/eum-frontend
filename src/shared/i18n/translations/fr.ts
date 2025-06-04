@@ -1949,7 +1949,7 @@ Voulez-vous vraiment sauvegarder?`,
       sending: 'Envoi en cours...',
       loading: 'Préparation de la réponse...',
       initialMessage: 'Comment puis-je vous aider ?',
-      aiExpert: 'Expert IA',
+      aiExpert: 'Expert {{category}} IA',
       justNow: "À l'instant",
     },
     suggestions: [

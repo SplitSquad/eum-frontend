@@ -2305,7 +2305,7 @@ Do you really want to save?`,
       sending: 'Sending...',
       loading: 'Preparing response...',
       initialMessage: 'How can I help you?',
-      aiExpert: 'AI Expert',
+      aiExpert: 'AI {{category}} Expert',
       justNow: 'Just now',
     },
     suggestions: [
