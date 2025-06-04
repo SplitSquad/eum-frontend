@@ -2189,6 +2189,7 @@ const ko = {
     specialIssue: '특별 이슈',
     specialIssues: '이슈 모아보기',
     noVotesYet: '아직 투표가 없습니다. 첫 투표를 해보세요!',
+    noIssues: '등록된 토론이 없습니다.',
   },
   infoPage: {
     title: '한국생활 가이드',
@@ -2302,6 +2303,7 @@ const ko = {
     title: '한국생활 도우미',
     subtitle: 'AI 전문가와 함께하는 한국생활 길잡이',
     greeting: '안녕하세요! {{category}} 분야의 AI 전문가입니다.',
+    matchingMessage: 'AI 전문가를 찾고 있습니다. 잠시만 기다려주세요.',
     categories: {
       all: '🌏 전체',
       visa: '📑 체류자격/비자',
@@ -2312,7 +2314,7 @@ const ko = {
       life: '👨‍👩‍👧 일상생활',
     },
     sidebar: {
-      title: '📚 분야별 안내',
+      title: '분야별 안내',
       autoSelectInfo: '질문하시면 자동으로 분야가 선택됩니다',
     },
     chat: {
@@ -2323,7 +2325,7 @@ const ko = {
       sending: '전송 중...',
       loading: '답변을 준비하고 있습니다...',
       initialMessage: '무엇을 도와드릴까요?',
-      aiExpert: 'AI 전문가',
+      aiExpert: 'AI {{category}} 전문가',
       justNow: '방금 전',
     },
     features: {

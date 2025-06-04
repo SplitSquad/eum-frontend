@@ -84,6 +84,16 @@ interface ChatContentProps {
   onCategoryChange?: (newKey: string) => void;
 }
 
+// Add formatDateTime utility from AiAssistant.tsx
+function formatDateTime(date: Date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  const h = String(date.getHours()).padStart(2, '0');
+  const min = String(date.getMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${h}:${min}`;
+}
+
 export default function ChatContent({
   categoryLabel = '전체',
   onCategoryChange,
@@ -280,15 +290,20 @@ export default function ChatContent({
     }
   };
 
+  const lastMsg = messages[messages.length - 1];
+  const isMatching = loading && lastMsg?.sender === 'user';
+
   return (
     <>
       <style>{scrollbarStyles}</style>
+
+      {/* HEADER: 날짜, 인사, 자동선택 안내 (PC에서만 표시) */}
 
       {/* 최상단 div: 고정 높이 채팅 레이아웃 */}
       <div
         className="chat-area"
         style={{
-          background: '#f7f8fa',
+          background: 'rgba(255,255,255,0.92)',
           borderRadius: 16,
           padding: isMobile ? 12 : 24,
           height: isMobile ? '60vh' : '70vh',
@@ -308,6 +323,85 @@ export default function ChatContent({
             height: '100%',
           }}
         >
+          {!isMobile && (
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                background: 'linear-gradient(135deg, #f7f7fa 0%, #e9e9ee 100%)',
+                padding: '16px 32px',
+                gap: 24,
+                borderBottom: '1px solid #e0e0e7',
+                margin: 0,
+              }}
+            >
+              {/* 왼쪽: 인사 */}
+              <div
+                style={{
+                  display: 'flex',
+                  flex: 1,
+                  alignItems: 'center',
+                  minWidth: 0,
+                  gap: 0,
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    background: isMatching ? '#e0e0e7' : '#f3f3f7',
+                    padding: '4px 16px',
+                    borderRadius: 8,
+                    fontWeight: 700,
+                    fontSize: 17,
+                    color: isMatching ? '#888' : '#333',
+                    letterSpacing: '0.01em',
+                    boxShadow: '0 1px 2px 0 rgba(120,120,130,0.04)',
+                    flexShrink: 1,
+                    minWidth: 0,
+                    transition: 'background 0.2s',
+                    fontFamily: 'Inter, Pretendard, Arial, sans-serif',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {isMatching ? (
+                    <span style={{ color: '#888', fontWeight: 600, fontSize: 16 }}>
+                      {t('aiAssistant.matchingMessage')}
+                    </span>
+                  ) : (
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {t('aiAssistant.greeting', { category: categoryLabel })}
+                    </span>
+                  )}
+                </div>
+              </div>
+              {/* 오른쪽: 날짜 */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  background: '#ededf3',
+                  padding: '2px 10px',
+                  borderRadius: 8,
+                  fontWeight: 500,
+                  fontSize: 13,
+                  color: '#666',
+                  letterSpacing: '0.01em',
+                  boxShadow: '0 1px 2px 0 rgba(120,120,130,0.04)',
+                  flexShrink: 0,
+                  fontFamily: 'Inter, Pretendard, Arial, sans-serif',
+                  marginLeft: 16,
+                  minWidth: 0,
+                }}
+              >
+                {formatDateTime(new Date())}
+              </div>
+            </div>
+          )}
           {/* 채팅 헤더 */}
           <div
             className="px-6 py-4 border-b flex-shrink-0"
@@ -350,9 +444,9 @@ export default function ChatContent({
             style={{
               minHeight: 0,
               background: `
-                radial-gradient(circle at 20% 30%, rgba(220, 220, 230, 0.18) 0%, transparent 50%),
-                radial-gradient(circle at 80% 70%, rgba(210, 210, 220, 0.13) 0%, transparent 50%),
-                linear-gradient(180deg, #f7f8fa 0%, #ececf0 100%)
+                radial-gradient(circle at 20% 30%, rgba(240, 240, 255, 0.10) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(230, 230, 240, 0.08) 0%, transparent 50%),
+                linear-gradient(180deg, #fff 0%, #f7f8fa 100%)
               `,
               scrollBehavior: 'smooth',
               padding: isMobile ? 8 : 24,
@@ -415,11 +509,13 @@ export default function ChatContent({
                       alt="이음이 프로필"
                       className="rounded-full object-cover flex-shrink-0"
                       style={{
-                        width: isMobile ? 28 : 32,
-                        height: isMobile ? 28 : 32,
-                        marginRight: isMobile ? 8 : 12,
-                        border: '2px solid #e0e0e7',
+                        width: isMobile ? 44 : 52,
+                        height: isMobile ? 44 : 52,
+                        marginRight: isMobile ? 6 : 8,
+                        border: '2.5px solid #e0e0e7',
                         background: '#f7f8fa',
+                        objectFit: 'cover',
+                        verticalAlign: 'middle',
                       }}
                     />
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -492,11 +588,12 @@ export default function ChatContent({
                       <div
                         className="mt-1 opacity-60"
                         style={{
-                          color: '#888',
-                          fontSize: isMobile ? '0.75rem' : '0.875rem',
+                          color: '#444',
+                          fontWeight: 700,
+                          fontSize: isMobile ? '0.85rem' : '0.95rem',
                         }}
                       >
-                        {t('aiAssistant.chat.aiExpert')}
+                        {t('aiAssistant.chat.aiExpert', { category: categoryLabel })}
                       </div>
                     </div>
                   </div>

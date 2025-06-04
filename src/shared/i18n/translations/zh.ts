@@ -1003,7 +1003,8 @@ const zh = {
 
 您确定要保存吗？`,
       newFileWarning: '⚠️ 添加新文件将删除所有现有文件',
-      editModeWarning: '⚠️ 警告：添加新文件将删除所有{{count}}个现有附件。\n\n您确定要继续吗？\n\n要保持现有文件，请选择"取消"。',
+      editModeWarning:
+        '⚠️ 警告：添加新文件将删除所有{{count}}个现有附件。\n\n您确定要继续吗？\n\n要保持现有文件，请选择"取消"。',
       deleteConfirm: '确定要删除此文件吗？',
       deleteWarning: '⚠️ 警告：保存帖子时此文件将被永久删除。',
       imageHint: '图像将以预览形式显示',
@@ -1732,6 +1733,7 @@ const zh = {
     },
     specialIssues: '查看所有议题',
     noVotesYet: '暂无投票。成为第一个投票的人！',
+    noIssues: '暂无议题。',
   },
   infoPage: {
     title: '韩国生活指南',
@@ -1845,6 +1847,7 @@ const zh = {
     title: '韩国生活助手',
     subtitle: '与AI专家一起的韩国生活指南',
     greeting: '您好！我是{{category}}领域的AI专家。',
+    matchingMessage: 'AI专家正在为您寻找。请稍等。',
     categories: {
       all: '🌏 全部',
       visa: '📑 居留资格/签证',
@@ -1855,7 +1858,7 @@ const zh = {
       life: '👨‍👩‍👧 日常生活',
     },
     sidebar: {
-      title: '📚 分类指南',
+      title: '分类指南',
       autoSelectInfo: '提问时会自动选择相应分类',
     },
     chat: {

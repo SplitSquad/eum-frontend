@@ -1920,6 +1920,7 @@ Archivos adjuntos existentes: {{existingFileCount}}
     },
     specialIssues: 'Ver Todos los Temas',
     noVotesYet: 'Aún no hay votos. ¡Sé el primero en votar!',
+    noIssues: 'No se encontraron debates.',
   },
   infoPage: {
     title: 'Guía de vida en Corea',
@@ -2033,6 +2034,7 @@ Archivos adjuntos existentes: {{existingFileCount}}
     title: 'Asistente de Vida en Corea',
     subtitle: 'Guía de Vida en Corea con Experto IA',
     greeting: '¡Hola! Soy un experto en IA en el campo de {{category}}.',
+    matchingMessage: 'Se está buscando un experto en IA para usted. Por favor, espere un momento.',
     categories: {
       all: '🌏 Todo',
       visa: '📑 Visa/Legal',
@@ -2043,7 +2045,7 @@ Archivos adjuntos existentes: {{existingFileCount}}
       life: '👨‍👩‍👧 Vida Diaria',
     },
     sidebar: {
-      title: '📚 Guía por Categorías',
+      title: 'Guía por Categorías',
       autoSelectInfo: 'Las categorías se seleccionan automáticamente según sus preguntas',
     },
     chat: {
