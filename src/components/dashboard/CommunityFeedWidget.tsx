@@ -949,7 +949,19 @@ const CommunityFeedWidget: React.FC = () => {
       >
         {/* 헤더 영역 */}
         <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-          <PeopleIcon sx={{ mr: 1, color: 'primary.main', flexShrink: 0 }} />
+          <Avatar
+            sx={{
+              bgcolor: 'rgba(97, 0, 149, 0.2)',
+              color: 'rgb(121, 2, 185)',
+              width: 32,
+              height: 32,
+              mr: 1,
+              flexShrink: 0,
+            }}
+          >
+            <PeopleIcon />
+          </Avatar>
+
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography
               variant="h6"
@@ -964,6 +976,35 @@ const CommunityFeedWidget: React.FC = () => {
             >
               {t('home.communityFeed.title')}
             </Typography>
+          </Box>
+          <Box>
+            <IconButton
+              size="small"
+              onClick={e => {
+                e.stopPropagation();
+                loadData();
+              }}
+              sx={{
+                bgcolor: 'action.hover',
+                mr: 1,
+                '&:hover': { bgcolor: 'action.selected' },
+              }}
+            >
+              <RefreshIcon fontSize="small" />
+            </IconButton>
+            <IconButton
+              size="small"
+              onClick={e => {
+                e.stopPropagation();
+                handleOpenModal();
+              }}
+              sx={{
+                bgcolor: 'action.hover',
+                '&:hover': { bgcolor: 'action.selected' },
+              }}
+            >
+              <TrendingUpIcon fontSize="small" />
+            </IconButton>
           </Box>
           <IconButton
             sx={{ display: { xs: 'inline-flex', md: 'none' }, ml: 1, flexShrink: 0 }}

@@ -738,21 +738,50 @@ const InfoFeedWidget: React.FC = () => {
       >
         {/* 헤더 */}
         <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Avatar
-              sx={{
-                bgcolor: 'rgba(0, 150, 136, 0.2)',
-                color: '#009688',
-                width: 32,
-                height: 32,
-                mr: 1,
-              }}
-            >
-              <InfoIcon />
-            </Avatar>
+          <Avatar
+            sx={{
+              bgcolor: 'rgba(0, 150, 136, 0.2)',
+              color: '#009688',
+              width: 32,
+              height: 32,
+              mr: 1,
+            }}
+          >
+            <InfoIcon />
+          </Avatar>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography variant="h6" fontWeight={600}>
               {t('home.infoFeed.title')}
             </Typography>
+          </Box>
+          <Box>
+            <IconButton
+              size="small"
+              onClick={e => {
+                e.stopPropagation();
+                handleRefresh();
+              }}
+              sx={{
+                bgcolor: 'action.hover',
+                mr: 1,
+                '&:hover': { bgcolor: 'action.selected' },
+              }}
+            >
+              <RefreshIcon fontSize="small" />
+            </IconButton>
+            <IconButton
+              size="small"
+              onClick={e => {
+                e.stopPropagation();
+                handleOpenModal();
+              }}
+              sx={{
+                bgcolor: 'action.hover',
+                '&:hover': { bgcolor: 'action.selected' },
+              }}
+            >
+              <TrendingUpIcon fontSize="small" />
+            </IconButton>
           </Box>
           <IconButton
             sx={{ display: { xs: 'inline-flex', md: 'none' }, ml: 1, flexShrink: 0 }}
@@ -760,35 +789,6 @@ const InfoFeedWidget: React.FC = () => {
             onClick={() => setIsCollapsed(v => !v)}
           >
             <ExpandMoreIcon />
-          </IconButton>
-        </Box>
-        <Box>
-          <IconButton
-            size="small"
-            onClick={e => {
-              e.stopPropagation();
-              handleRefresh();
-            }}
-            sx={{
-              bgcolor: 'action.hover',
-              mr: 1,
-              '&:hover': { bgcolor: 'action.selected' },
-            }}
-          >
-            <RefreshIcon fontSize="small" />
-          </IconButton>
-          <IconButton
-            size="small"
-            onClick={e => {
-              e.stopPropagation();
-              handleOpenModal();
-            }}
-            sx={{
-              bgcolor: 'action.hover',
-              '&:hover': { bgcolor: 'action.selected' },
-            }}
-          >
-            <TrendingUpIcon fontSize="small" />
           </IconButton>
         </Box>
 
