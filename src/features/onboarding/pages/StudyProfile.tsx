@@ -718,7 +718,7 @@ const StudyProfile: React.FC = () => {
               >
                 {visaTypeOptions.map(option => (
                   <MenuItem key={option.code} value={option.code}>
-                    {t(`onboarding.living.visaTypeOptions.${option.code}`)}
+                    {t(`onboarding.study.visaTypeOptions.${option.code}`)}
                   </MenuItem>
                 ))}
               </StyledTextField>
