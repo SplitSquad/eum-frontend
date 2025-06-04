@@ -208,6 +208,8 @@ const ja = {
     openPdf: 'PDFを開く',
     placeHolder: '質問やリクエストを入力してください...',
     send: '送信',
+    modalHeader: 'EUMアシスタント',
+    modalDescription: '韓国生活の信頼できる友達',
   },
   common: {
     home: 'ホーム',
@@ -1873,11 +1875,11 @@ const ja = {
     adminpage: '管理者ページ',
   },
   accessDenied: {
-    title: 'アクセス権限がありません',
+    title: 'アクセスが拒否されました',
     description:
-      'このページにアクセスする権限がありません。ホームに戻るか、サポートにお問い合わせください。',
-    goHome: 'ホームに戻る',
-    contact: 'サポート',
+      'このページにアクセスする権限がありません。正しいアカウントでログインするか、管理者にお問い合わせください。',
+    goHome: 'ホームへ',
+    contact: 'お問い合わせ',
   },
   intro: {
     slide1: {

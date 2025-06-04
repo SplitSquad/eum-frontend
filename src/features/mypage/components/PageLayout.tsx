@@ -3,6 +3,7 @@ import styled from '@emotion/styled';
 import { keyframes } from '@emotion/react';
 import { SidebarMenu, SpringBackground } from '.';
 import { useLocation } from 'react-router-dom';
+import { useMediaQuery } from '@mui/material';
 
 // Animations
 const fadeIn = keyframes`
@@ -359,7 +360,8 @@ interface PageLayoutProps {
  */
 const PageLayout: React.FC<PageLayoutProps> = ({ children, title }) => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  
+  const isMobile = useMediaQuery('(max-width: 768px)');
+
   // 페이지 전환 애니메이션 제거 - 이중 깜빡임 방지
   // const [contentVisible, setContentVisible] = useState(true);
   // const [isLeaving, setIsLeaving] = useState(false);
@@ -416,21 +418,23 @@ const PageLayout: React.FC<PageLayoutProps> = ({ children, title }) => {
             </MobileSidebar>
             <Overlay isOpen={isMobileSidebarOpen} onClick={closeMobileSidebar} />
 
-            <MobileMenuButton onClick={toggleMobileSidebar} aria-label="메뉴 열기/닫기">
-              {isMobileSidebarOpen ? (
-                <CloseIcon>
-                  <span></span>
-                  <span></span>
-                </CloseIcon>
-              ) : (
-                <MenuIcon>
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </MenuIcon>
-              )}
-            </MobileMenuButton>
+            {isMobile && (
+              <MobileMenuButton onClick={toggleMobileSidebar} aria-label="메뉴 열기/닫기">
+                {isMobileSidebarOpen ? (
+                  <CloseIcon>
+                    <span></span>
+                    <span></span>
+                  </CloseIcon>
+                ) : (
+                  <MenuIcon>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </MenuIcon>
+                )}
+              </MobileMenuButton>
+            )}
 
             {/* 내용 영역 - 이중 애니메이션 제거로 즉시 표시 */}
             <ContentArea isVisible={true} isLeaving={false}>

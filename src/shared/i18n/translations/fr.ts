@@ -213,6 +213,8 @@ const fr = {
     openPdf: 'Ouvrir PDF',
     placeHolder: 'Entrez votre question ou demande...',
     send: 'Envoyer',
+    modalHeader: 'Assistant EUM',
+    modalDescription: 'Un ami fiable pour la vie en Corée',
   },
   common: {
     home: 'Accueil',
@@ -1850,7 +1852,7 @@ Voulez-vous vraiment sauvegarder?`,
       createdAt: 'Créé',
     },
     sidebar: {
-      popularInfo: '🔥 Informations populaires',
+      popularInfo: 'Informations populaires',
       emergencyContacts: "🆘 Contacts d'urgence",
       emergency: {
         title: 'Urgence',
@@ -1922,6 +1924,8 @@ Voulez-vous vraiment sauvegarder?`,
     title: 'Assistant de Vie en Corée',
     subtitle: 'Guide de Vie en Corée avec Expert IA',
     greeting: 'Bonjour ! Je suis un expert IA dans le domaine {{category}}.',
+    matchingMessage:
+      'Un expert IA est en cours de recherche pour vous. Veuillez patienter un moment.',
     categories: {
       all: '🌏 Tout',
       visa: '📑 Visa/Légal',
@@ -1932,7 +1936,7 @@ Voulez-vous vraiment sauvegarder?`,
       life: '👨‍👩‍👧 Vie Quotidienne',
     },
     sidebar: {
-      title: '📚 Guide par Catégories',
+      title: 'Guide par Catégories',
       autoSelectInfo: 'Les catégories sont automatiquement sélectionnées selon vos questions',
     },
     chat: {
@@ -2144,6 +2148,13 @@ Voulez-vous vraiment sauvegarder?`,
         },
       },
     },
+  },
+  accessDenied: {
+    title: 'Accès refusé',
+    description:
+      "Vous n'avez pas la permission d'accéder à cette page. Veuillez vous connecter avec le bon compte ou contacter l'administrateur.",
+    goHome: "Aller à l'accueil",
+    contact: 'Contacter le support',
   },
 };
 

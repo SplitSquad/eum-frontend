@@ -41,6 +41,7 @@ export default function ModalContent({ adjustKey, btnRect }: ModalContentProps) 
   const listRef = useRef<HTMLDivElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
   const [input, setInput] = useState('');
+  const [waveKey, setWaveKey] = useState(0);
   const { openModal, content } = useModalStore();
 
   // 스크롤 자동 내리기 함수
@@ -81,12 +82,12 @@ export default function ModalContent({ adjustKey, btnRect }: ModalContentProps) 
   useEffect(() => {
     // 메시지나 로딩 상태가 변경될 때마다 부드럽게 스크롤 내리기
     setTimeout(() => {
-    if (listRef.current) {
+      if (listRef.current) {
         listRef.current.scrollTo({
           top: listRef.current.scrollHeight,
-          behavior: 'smooth'
+          behavior: 'smooth',
         });
-    }
+      }
     }, 100);
   }, [messages, loading]);
 
@@ -100,14 +101,10 @@ export default function ModalContent({ adjustKey, btnRect }: ModalContentProps) 
     try {
       // 👉 API 한 번만 호출
       const result = await callAgentic(text, 'user_id');
-      console.log('[Agentic 응답 전체]', result);
 
       const { response, metadata, state, url } = result;
 
       // 👉 state나 metadata 활용하고 싶으면 여기서 처리
-      console.log('State:', state);
-      console.log('Metadata:', metadata);
-      console.log('url:', url);
 
       // const targetStates = ['cover_letter_state', 'event_state', 'find_food', 'job_search', 'weather'];
       if (state == 'cover_letter_state' || state === 'resume_service_state') {
@@ -173,20 +170,21 @@ export default function ModalContent({ adjustKey, btnRect }: ModalContentProps) 
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
             <span className="text-white text-sm font-bold">이</span>
-        </div>
+          </div>
           <div>
-            <h2 className="text-lg font-bold text-gray-800 mb-0">
-              이음이 도우미
-            </h2>
-            <p className="text-xs text-gray-500">한국생활의 든든한 친구</p>
-        </div>
+            <h2 className="text-lg font-bold text-gray-800 mb-0">{t('chatbot.modalHeader')}</h2>
+            <p className="text-xs text-gray-500">{t('chatbot.modalDescription')}</p>
+          </div>
         </div>
       </div>
 
       {/* 메시지 영역 */}
       <div ref={listRef} className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0 modal-chat-scroll">
         {messages.map(m => (
-          <div key={m.id} className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+          <div
+            key={m.id}
+            className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+          >
             {m.sender === 'bot' && (
               <div className="w-7 h-7 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mr-3 mt-1 flex-shrink-0">
                 <span className="text-white text-xs font-bold">이</span>
@@ -199,30 +197,30 @@ export default function ModalContent({ adjustKey, btnRect }: ModalContentProps) 
                   : 'bg-white text-gray-800 rounded-bl-md border border-blue-100'
               }`}
             >
-                      {m.imageUrl ? (
-                        m.imageUrl.includes('amazonaws') ? (
-                          <>
+              {m.imageUrl ? (
+                m.imageUrl.includes('amazonaws') ? (
+                  <>
                     <img src={m.imageUrl} alt="AI 응답 이미지" className="max-w-full rounded-md" />
-                            <a
-                              href={m.imageUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
+                    <a
+                      href={m.imageUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="text-sm text-blue-600 underline"
-                            >
+                    >
                       {t('chatbot.downloadImg')}
-                            </a>
-                          </>
-                        ) : (
-                          <>
+                    </a>
+                  </>
+                ) : (
+                  <>
                     <img src={m.imageUrl} alt="AI 응답 이미지" className="max-w-full rounded-md" />
-                            <button
-                              onClick={() => downloadImage(m.imageUrl!)}
+                    <button
+                      onClick={() => downloadImage(m.imageUrl!)}
                       className="text-sm text-blue-600 underline"
-                            >
+                    >
                       {t('chatbot.downloadImg')}
-                            </button>
-                          </>
-                        )
+                    </button>
+                  </>
+                )
               ) : m.post ? (
                 <div className="space-y-2 text-sm text-gray-800">
                   {m.post.split('\n').map((line, idx) => {
@@ -381,12 +379,12 @@ export default function ModalContent({ adjustKey, btnRect }: ModalContentProps) 
                       <div className="text-sm">
                         🕒 <span className="font-medium">{t('chatbot.startDate')}</span>{' '}
                         {new Date(event.startDateTime).toLocaleString('ko-KR')}
-                  </div>
+                      </div>
                       <div className="text-sm">
                         🕓 <span className="font-medium">{t('chatbot.endDate')}</span>{' '}
                         {new Date(event.endDateTime).toLocaleString('ko-KR')}
-                  </div>
-                </div>
+                      </div>
+                    </div>
                   );
                 })()
               ) : m.location ? (
@@ -403,7 +401,7 @@ export default function ModalContent({ adjustKey, btnRect }: ModalContentProps) 
                         </div>
                         <div>
                           {t('chatbot.distance')}: {item.distance}m
-              </div>
+                        </div>
                       </li>
                     ))}
                 </ul>
@@ -463,13 +461,19 @@ export default function ModalContent({ adjustKey, btnRect }: ModalContentProps) 
           <div className="flex justify-start">
             <div className="w-7 h-7 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mr-3 mt-1 flex-shrink-0">
               <span className="text-white text-xs font-bold">이</span>
-              </div>
+            </div>
             <div className="bg-white text-gray-600 px-4 py-3 rounded-2xl rounded-bl-md text-sm border border-blue-100 shadow-sm">
-                <div className="flex items-center space-x-2">
-                  <div className="flex space-x-1">
+              <div className="flex items-center space-x-2">
+                <div className="flex space-x-1">
                   <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{animationDelay: '0.15s'}}></div>
-                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.3s'}}></div>
+                  <div
+                    className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce"
+                    style={{ animationDelay: '0.15s' }}
+                  ></div>
+                  <div
+                    className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"
+                    style={{ animationDelay: '0.3s' }}
+                  ></div>
                 </div>
                 <span className="ml-1 text-gray-600">답변 중...</span>
               </div>
@@ -480,25 +484,90 @@ export default function ModalContent({ adjustKey, btnRect }: ModalContentProps) 
 
       {/* 입력창 */}
       <div className="flex-shrink-0 flex items-center gap-3 border-t border-blue-100 p-4 bg-white/90 backdrop-blur-sm">
-          <input
-            type="text"
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && !loading && sendMessage()}
-            disabled={loading}
+        <input
+          type="text"
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && !loading && sendMessage()}
+          disabled={loading}
           className="flex-1 min-w-0 px-4 py-3 bg-blue-50/50 border border-blue-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent focus:bg-white disabled:opacity-50 text-sm transition-all duration-200 placeholder-gray-400"
           placeholder={t('chatbot.placeHolder')}
-          />
+        />
         <button
           onClick={() => sendMessage()}
           disabled={loading || !input.trim()}
+          onMouseEnter={() => setWaveKey(k => k + 1)}
+          onMouseLeave={() => setWaveKey(k => k + 1)}
           className="flex-shrink-0 w-11 h-11 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full disabled:opacity-40 disabled:cursor-not-allowed hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 flex items-center justify-center group shadow-lg hover:shadow-xl"
           title={t('chatbot.send')}
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="transform group-hover:translate-x-0.5 transition-transform">
-            <path d="M22 2L11 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
+          {input.trim() ? (
+            <>
+              <style>{`
+                .wave-dot {
+                  animation: wave-bounce 0.8s infinite;
+                  display: inline-block;
+                  opacity: 1;
+                  transition: opacity 0.2s;
+                }
+                .wave-dot-1 { animation-delay: 0s; }
+                .wave-dot-2 { animation-delay: 0.08s; }
+                .wave-dot-3 { animation-delay: 0.16s; }
+                .wave-dot-4 { animation-delay: 0.24s; }
+                .wave-dot-5 { animation-delay: 0.32s; }
+                @keyframes wave-bounce {
+                  0%,100% { transform: translateY(0); }
+                  50% { transform: translateY(-14px); }
+                }
+                .group:hover .wave-dot:not(.wave-dot-3) {
+                  opacity: 0 !important;
+                }
+                .group:hover .wave-dot-3 {
+                  opacity: 1 !important;
+                  animation: none !important;
+                  position: absolute !important;
+                  left: 50%;
+                  top: 50%;
+                  transform: translate(-50%, -50%) !important;
+                }
+              `}</style>
+              <span
+                key={waveKey}
+                className="relative flex items-end gap-[3px] h-7 w-10 justify-center"
+              >
+                <span className="wave-dot wave-dot-1 w-1 h-1 bg-white rounded-full" />
+                <span className="wave-dot wave-dot-2 w-1 h-1 bg-white rounded-full" />
+                <span className="wave-dot wave-dot-3 w-1 h-1 bg-white rounded-full" />
+                <span className="wave-dot wave-dot-4 w-1 h-1 bg-white rounded-full" />
+                <span className="wave-dot wave-dot-5 w-1 h-1 bg-white rounded-full" />
+              </span>
+            </>
+          ) : (
+            // 기존 화살표 아이콘
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="transform group-hover:translate-x-0.5 transition-transform"
+            >
+              <path
+                d="M22 2L11 13"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M22 2L15 22L11 13L2 9L22 2Z"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          )}
         </button>
       </div>
     </div>

@@ -86,7 +86,6 @@ export function sendWebLog(log: WebLog) {
     console.error('WebLog 전송 실패:', err);
   });
   // 전송 완료
-  console.log('WebLog 전송 성공:', log);
 }
 
 // useTrackedNavigation 훅
@@ -360,7 +359,6 @@ function logMenuClick(menuName: string, currentPath: string, clickPath: string) 
     clickPath,
     timestamp: new Date().toISOString(),
   };
-  console.log('Web Log:', rawData);
 }
 
 // 네비게이션 항목 정의
@@ -555,7 +553,7 @@ function Header({ isVisible = true, notifications }: HeaderProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const token = localStorage.getItem('auth_token');
-  console.log('headcheck user:', user);
+
   // user 정보에서 가져오기 (없으면 기본값)
   const userName = user?.name || 'user';
   const userCountry = user?.nation || t('header.country');
@@ -564,7 +562,7 @@ function Header({ isVisible = true, notifications }: HeaderProps) {
   // 인증 상태가 변경될 때마다 사용자 정보 로드
   useEffect(() => {
     // 토큰이 있는지 확인
-    console.log('token:', token);
+
     if (token && isAuthenticated) {
       loadUser();
     }

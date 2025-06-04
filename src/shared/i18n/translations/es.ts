@@ -209,6 +209,8 @@ const es = {
     openPdf: 'Abrir PDF',
     placeHolder: 'Ingresa tu pregunta o solicitud...',
     send: 'Enviar',
+    modalHeader: 'Asistente EUM',
+    modalDescription: 'Un amigo confiable para la vida en Corea',
   },
   common: {
     home: 'Inicio',
@@ -2034,6 +2036,7 @@ Archivos adjuntos existentes: {{existingFileCount}}
     title: 'Asistente de Vida en Corea',
     subtitle: 'Guía de Vida en Corea con Experto IA',
     greeting: '¡Hola! Soy un experto en IA en el campo de {{category}}.',
+    matchingMessage: 'Se está buscando un experto en IA para usted. Por favor, espere un momento.',
     categories: {
       all: '🌏 Todo',
       visa: '📑 Visa/Legal',
@@ -2044,7 +2047,7 @@ Archivos adjuntos existentes: {{existingFileCount}}
       life: '👨‍👩‍👧 Vida Diaria',
     },
     sidebar: {
-      title: '📚 Guía por Categorías',
+      title: 'Guía por Categorías',
       autoSelectInfo: 'Las categorías se seleccionan automáticamente según sus preguntas',
     },
     chat: {
@@ -2117,6 +2120,13 @@ Archivos adjuntos existentes: {{existingFileCount}}
     mypage: 'Mi página',
     logout: 'Cerrar sesión',
     adminpage: 'Página de administrador',
+  },
+  accessDenied: {
+    title: 'Acceso denegado',
+    description:
+      'No tienes permiso para acceder a esta página. Por favor, inicia sesión con la cuenta adecuada o contacta al administrador.',
+    goHome: 'Ir a inicio',
+    contact: 'Contactar soporte',
   },
 };
 

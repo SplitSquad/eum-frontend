@@ -218,6 +218,8 @@ const en = {
     openPdf: 'Open PDF',
     placeHolder: 'Enter your question or request...',
     send: 'Send',
+    modalHeader: 'EUM Assistant',
+    modalDescription: 'A reliable friend for Korean life',
   },
   common: {
     authenticatedError: 'After logging in, you can access the service.',
@@ -2208,7 +2210,7 @@ Do you really want to save?`,
       createdAt: 'Created',
     },
     sidebar: {
-      popularInfo: '🔥 Popular Information',
+      popularInfo: 'Popular Information',
       emergencyContacts: '🆘 Emergency Contacts',
       emergency: {
         title: 'Emergency',
@@ -2279,17 +2281,18 @@ Do you really want to save?`,
     title: 'Korea Life Assistant',
     subtitle: 'Korea Life Guide with AI Expert',
     greeting: 'Hello! I am an AI expert in {{category}} field.',
+    matchingMessage: 'An AI expert is being found for you. Please wait a moment.',
     categories: {
       all: '🌏 All',
       visa: '📑 Visa/Legal',
       social: '🏛 Social Security',
       tax: '💰 Tax/Finance',
       health: '🚑 Medical/Health',
-      employment: '�� Employment/Jobs',
+      employment: '💼 Employment/Jobs',
       life: '👨‍👩‍👧 Daily Life',
     },
     sidebar: {
-      title: '📚 Category Guide',
+      title: 'Category Guide',
       autoSelectInfo: 'Categories are automatically selected based on your questions',
     },
     chat: {
@@ -2499,6 +2502,13 @@ Do you really want to save?`,
         },
       },
     },
+  },
+  accessDenied: {
+    title: 'Access Denied',
+    description:
+      'You do not have permission to access this page. Please log in with the appropriate account or contact the administrator.',
+    goHome: 'Go to Home',
+    contact: 'Contact Support',
   },
 };
 

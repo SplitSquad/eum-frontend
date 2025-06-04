@@ -16,6 +16,10 @@ interface CategorySidebarProps {
   categories: Category[];
   selectedKey: string; // 현재 선택된 카테고리의 key
   horizontal?: boolean;
+  /**
+   * rouletteKey: 룰렛 효과로 강조되는 카테고리 key (loading 중에만 사용)
+   */
+  rouletteKey?: string;
 }
 
 /**
@@ -27,6 +31,7 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({
   categories,
   selectedKey,
   horizontal,
+  rouletteKey,
 }) => {
   const { t } = useTranslation();
 
@@ -140,25 +145,35 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({
         >
           {categories.map((cat, index) => {
             const isSelected = cat.key === selectedKey;
+            const isRoulette = !!rouletteKey && cat.key === rouletteKey;
+            // 룰렛 중이면 rouletteKey 강조, 아니면 selectedKey 강조
+            const highlight = isRoulette || isSelected;
             return (
               <div
                 key={cat.key}
                 className={`
                   relative group transition-all duration-300
-                  ${isSelected ? 'transform scale-105' : 'hover:scale-102'}
+                  ${highlight ? 'transform scale-110' : 'hover:scale-102'}
                 `}
                 style={{
                   cursor: 'default',
+                  zIndex: highlight ? 2 : 1,
                 }}
               >
-                {/* 선택된 항목 배경 */}
-                {isSelected && (
+                {/* 강조 배경 */}
+                {highlight && (
                   <div
                     className="absolute inset-0 rounded-lg"
                     style={{
                       background:
-                        'linear-gradient(135deg, rgba(180, 180, 180, 0.13) 0%, rgba(120, 120, 120, 0.07) 100%)',
-                      boxShadow: 'inset 0 1px 3px rgba(180, 180, 180, 0.18)',
+                        isRoulette && !isSelected
+                          ? 'linear-gradient(135deg, rgba(255, 220, 120, 0.18) 0%, rgba(255, 240, 180, 0.13) 100%)'
+                          : 'linear-gradient(135deg, rgba(180, 180, 180, 0.13) 0%, rgba(120, 120, 120, 0.07) 100%)',
+                      boxShadow:
+                        isRoulette && !isSelected
+                          ? '0 0 0 3px #ffe082, 0 2px 12px rgba(255, 220, 120, 0.13)'
+                          : 'inset 0 1px 3px rgba(180, 180, 180, 0.18)',
+                      transition: 'all 0.2s',
                     }}
                   />
                 )}
@@ -166,27 +181,28 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({
                 <div
                   className={`
                     relative flex items-center px-4 py-3 rounded-lg transition-all duration-300
-                    ${isSelected ? 'text-amber-800 font-semibold' : 'text-gray-700 font-medium'}
+                    ${highlight ? 'text-amber-800 font-bold' : 'text-gray-700 font-medium'}
                   `}
                   style={{
                     fontFamily: '"Noto Sans KR", sans-serif',
                     letterSpacing: '0.02em',
+                    filter: isRoulette && !isSelected ? 'brightness(1.15)' : undefined,
                   }}
                 >
                   {/* 선택 표시 점 */}
                   <div
                     className={`
                       w-2 h-2 rounded-full mr-3 transition-all duration-300
-                      ${isSelected ? 'bg-gray-500 shadow-lg' : 'bg-gray-300'}
+                      ${highlight ? 'bg-amber-400 shadow-lg' : 'bg-gray-300'}
                     `}
                     style={{
-                      boxShadow: isSelected ? '0 0 8px rgba(180, 180, 180, 0.4)' : 'none',
+                      boxShadow: highlight ? '0 0 8px #ffe082' : 'none',
                     }}
                   />
                   {/* 카테고리 라벨 */}
                   <span className="flex-1 select-none">{cat.label}</span>
-                  {/* 선택된 항목 화살표 */}
-                  {isSelected && (
+                  {/* 강조된 항목 화살표 */}
+                  {highlight && (
                     <div
                       className="ml-2 text-amber-600 transition-transform duration-300"
                       style={{ fontSize: '12px' }}

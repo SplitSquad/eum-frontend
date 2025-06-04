@@ -221,6 +221,8 @@ const ko = {
     openPdf: 'PDF 열기',
     placeHolder: '질문이나 요청을 입력하세요...',
     send: '전송',
+    modalHeader: '이음이 도우미',
+    modalDescription: '한국생활의 든든한 친구',
   },
   login: {
     welcome: '환영합니다',
@@ -2328,6 +2330,7 @@ const ko = {
     title: '한국생활 도우미',
     subtitle: 'AI 전문가와 함께하는 한국생활 길잡이',
     greeting: '안녕하세요! {{category}} 분야의 AI 전문가입니다.',
+    matchingMessage: 'AI 전문가를 찾고 있습니다. 잠시만 기다려주세요.',
     categories: {
       all: '🌏 전체',
       visa: '📑 체류자격/비자',
@@ -2338,7 +2341,7 @@ const ko = {
       life: '👨‍👩‍👧 일상생활',
     },
     sidebar: {
-      title: '📚 분야별 안내',
+      title: '분야별 안내',
       autoSelectInfo: '질문하시면 자동으로 분야가 선택됩니다',
     },
     chat: {
@@ -2349,7 +2352,7 @@ const ko = {
       sending: '전송 중...',
       loading: '답변을 준비하고 있습니다...',
       initialMessage: '무엇을 도와드릴까요?',
-      aiExpert: 'AI 전문가',
+      aiExpert: 'AI {{category}} 전문가',
       justNow: '방금 전',
     },
     features: {
@@ -2534,6 +2537,13 @@ const ko = {
       noPostTitle: '[게시글 제목 없음]',
       noVoteInfo: '투표 정보 없음',
     },
+  },
+  accessDenied: {
+    title: '접근이 거부되었습니다',
+    description:
+      '이 페이지에 접근할 권한이 없습니다. 올바른 계정으로 로그인하거나 관리자에게 문의하세요.',
+    goHome: '홈으로 가기',
+    contact: '문의하기',
   },
 };
 
