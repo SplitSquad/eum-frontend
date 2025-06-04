@@ -812,41 +812,41 @@ const DebateFeedWidget: React.FC = () => {
               {t('home.debateFeed.title')}
             </Typography>
           </Box>
+          <Box>
+            <IconButton
+              size="small"
+              onClick={e => {
+                e.stopPropagation();
+                handleRefresh();
+              }}
+              sx={{
+                bgcolor: 'action.hover',
+                mr: 1,
+                '&:hover': { bgcolor: 'action.selected' },
+              }}
+            >
+              <RefreshIcon fontSize="small" />
+            </IconButton>
+            <IconButton
+              size="small"
+              onClick={e => {
+                e.stopPropagation();
+                handleOpenModal();
+              }}
+              sx={{
+                bgcolor: 'action.hover',
+                '&:hover': { bgcolor: 'action.selected' },
+              }}
+            >
+              <TrendingUpIcon fontSize="small" />
+            </IconButton>
+          </Box>
           <IconButton
             sx={{ display: { xs: 'inline-flex', md: 'none' }, ml: 1, flexShrink: 0 }}
             size="small"
             onClick={() => setIsCollapsed(v => !v)}
           >
             <ExpandMoreIcon />
-          </IconButton>
-        </Box>
-        <Box>
-          <IconButton
-            size="small"
-            onClick={e => {
-              e.stopPropagation();
-              handleRefresh();
-            }}
-            sx={{
-              bgcolor: 'action.hover',
-              mr: 1,
-              '&:hover': { bgcolor: 'action.selected' },
-            }}
-          >
-            <RefreshIcon fontSize="small" />
-          </IconButton>
-          <IconButton
-            size="small"
-            onClick={e => {
-              e.stopPropagation();
-              handleOpenModal();
-            }}
-            sx={{
-              bgcolor: 'action.hover',
-              '&:hover': { bgcolor: 'action.selected' },
-            }}
-          >
-            <TrendingUpIcon fontSize="small" />
           </IconButton>
         </Box>
 
