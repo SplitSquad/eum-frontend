@@ -2187,7 +2187,6 @@ const ko = {
     specialIssue: '특별 이슈',
     specialIssues: '이슈 모아보기',
     noVotesYet: '아직 투표가 없습니다. 첫 투표를 해보세요!',
-    noIssues: '등록된 토론이 없습니다.',
   },
   infoPage: {
     title: '한국생활 가이드',

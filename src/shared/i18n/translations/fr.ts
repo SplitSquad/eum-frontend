@@ -1808,7 +1808,6 @@ Voulez-vous vraiment sauvegarder?`,
     },
     specialIssues: 'Voir Tous les Sujets',
     noVotesYet: 'Pas encore de votes. Soyez le premier à voter !',
-    noIssues: 'Aucun débat trouvé.',
   },
   infoPage: {
     title: 'Guide de vie en Corée',

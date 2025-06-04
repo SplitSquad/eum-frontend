@@ -1921,7 +1921,6 @@ Archivos adjuntos existentes: {{existingFileCount}}
     },
     specialIssues: 'Ver Todos los Temas',
     noVotesYet: 'Aún no hay votos. ¡Sé el primero en votar!',
-    noIssues: 'No se encontraron debates.',
   },
   infoPage: {
     title: 'Guía de vida en Corea',

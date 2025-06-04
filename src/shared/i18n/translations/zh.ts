@@ -1734,7 +1734,6 @@ const zh = {
     },
     specialIssues: '查看所有议题',
     noVotesYet: '暂无投票。成为第一个投票的人！',
-    noIssues: '暂无议题。',
   },
   infoPage: {
     title: '韩国生活指南',

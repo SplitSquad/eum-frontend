@@ -2138,7 +2138,6 @@ Do you really want to save?`,
     },
     specialIssues: 'View All Issues',
     noVotesYet: 'No votes yet. Be the first to vote!',
-    noIssues: 'No debates found.',
   },
   infoPage: {
     title: 'Korea Life Guide',
