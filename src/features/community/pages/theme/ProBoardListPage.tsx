@@ -1165,12 +1165,14 @@ const ProBoardListPage: React.FC = () => {
                               border: '1px solid #e5e7eb',
                               mb: 1,
                               '&.Mui-selected': {
-                                bgcolor: 'rgba(226, 225, 225, 0.2)',
-                                color: '#222',
+                                bgcolor: '#111',
+                                color: '#fff',
                                 fontWeight: 'bold',
+                                borderColor: '#111',
                               },
                               '&:hover': {
-                                bgcolor: 'rgba(226, 225, 225, 0.4)',
+                                bgcolor: '#111',
+                                color: '#fff',
                               },
                             },
                             '& .MuiToggleButtonGroup-grouped': {
@@ -1224,15 +1226,17 @@ const ProBoardListPage: React.FC = () => {
                                   variant={selectedTags.includes(tag) ? 'filled' : 'outlined'}
                                   sx={{
                                     borderRadius: '16px',
-                                    borderColor: selectedTags.includes(tag) ? '#222' : '#e5e7eb',
+                                    borderColor: selectedTags.includes(tag) ? '#111' : '#e5e7eb',
                                     backgroundColor: selectedTags.includes(tag)
-                                      ? 'rgba(226, 225, 225, 0.2)'
+                                      ? '#111'
                                       : 'transparent',
-                                    color: selectedTags.includes(tag) ? '#222' : '#222',
+                                    color: selectedTags.includes(tag) ? '#fff' : '#222',
+                                    fontWeight: selectedTags.includes(tag) ? 700 : 400,
                                     '&:hover': {
                                       backgroundColor: selectedTags.includes(tag)
-                                        ? 'rgba(226, 225, 225, 0.3)'
-                                        : 'rgba(226, 225, 225, 0.2)',
+                                        ? '#111'
+                                        : 'rgba(255, 235, 235, 0.2)',
+                                      color: selectedTags.includes(tag) ? '#fff' : '#222',
                                     },
                                   }}
                                 />
@@ -1714,12 +1718,14 @@ const ProBoardListPage: React.FC = () => {
                           border: '1px solid #e5e7eb',
                           mb: 1,
                           '&.Mui-selected': {
-                            bgcolor: 'rgba(226, 225, 225, 0.2)',
-                            color: '#222',
+                            bgcolor: '#111',
+                            color: '#fff',
                             fontWeight: 'bold',
+                            borderColor: '#111',
                           },
                           '&:hover': {
-                            bgcolor: 'rgba(226, 225, 225, 0.4)',
+                            bgcolor: '#111',
+                            color: '#fff',
                           },
                         },
                         '& .MuiToggleButtonGroup-grouped': {
@@ -1773,15 +1779,17 @@ const ProBoardListPage: React.FC = () => {
                               variant={selectedTags.includes(tag) ? 'filled' : 'outlined'}
                               sx={{
                                 borderRadius: '16px',
-                                borderColor: selectedTags.includes(tag) ? '#222' : '#e5e7eb',
+                                borderColor: selectedTags.includes(tag) ? '#111' : '#e5e7eb',
                                 backgroundColor: selectedTags.includes(tag)
-                                  ? 'rgba(226, 225, 225, 0.2)'
+                                  ? '#111'
                                   : 'transparent',
-                                color: selectedTags.includes(tag) ? '#222' : '#222',
+                                color: selectedTags.includes(tag) ? '#fff' : '#222',
+                                fontWeight: selectedTags.includes(tag) ? 700 : 400,
                                 '&:hover': {
                                   backgroundColor: selectedTags.includes(tag)
-                                    ? 'rgba(226, 225, 225, 0.3)'
-                                    : 'rgba(226, 225, 225, 0.2)',
+                                    ? '#111'
+                                    : 'rgba(255, 235, 235, 0.2)',
+                                  color: selectedTags.includes(tag) ? '#fff' : '#222',
                                 },
                               }}
                             />

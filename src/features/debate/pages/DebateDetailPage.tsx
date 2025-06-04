@@ -82,14 +82,15 @@ export function sendWebLog(log: WebLog) {
 }
 /**------------------------------------------------------------------------------------ **/
 
+// 파싱 결과 타입
 interface ParsedDebate {
-  beforeContent: string;
-  topic: string;
-  proOpinion: string;
-  conOpinion: string;
-  afterContent: string;
-  rawContent: string;
-  isParsed: boolean;
+  beforeContent: string; // “토론 주제” 앞부분에 들어간 순수 본문
+  topic: string; // 파싱된 “토론 주제”
+  proOpinion: string; // 파싱된 “찬성 의견”
+  conOpinion: string; // 파싱된 “반대 의견”
+  afterContent: string; // (필요 시) “반대 의견” 이후 본문
+  rawContent: string; // 원본 그대로 돌려줄 때 사용
+  isParsed: boolean; // 파싱 성공 여부
 }
 // Styled components
 const DebateCard = styled(Paper)(({ theme }) => ({
@@ -1062,9 +1063,15 @@ const DebateDetailPage: React.FC = memo(() => {
     );
   }
 
-  // 토론 콘텐츠 파싱 함수
   /**
-   * 토론 콘텐츠 파싱 함수 (다국어 지원)
+   * parseDebateContent(content)
+   *
+   * 입력된 content(문자열)에서
+   * 1) 언어별 “토론 주제” 레이블(“Debate:”, “討論テーマ:”, “争论:”, “Debatte:”, “Débat :”, “Debate:”, “Дискуссия:”, “Tranh luận:”, 등)을 찾고,
+   * 2) 그 뒤에 “찬성 의견” 레이블(“Pro:”, “賛成側意見:”, “赞成:”, “Pro:”, “Pour :”, “A favor:”, “За:”, “Ủng hộ:”, 등)을 찾아 파싱한 뒤,
+   * 3) 그 뒤에 “반대 의견” 레이블(“Cons:”, “反対側の意見:”, “弊:”, “Contra:”, “Inconvénients :”, “Contras:”, “Против:”, “Phản đối:”, 등)을 찾아내는 함수입니다.
+   *
+   * 파싱에 실패하면 isParsed=false 상태로 원본(content)만 돌려줍니다.
    */
   const parseDebateContent = (content: string): ParsedDebate => {
     if (!content) {
@@ -1079,127 +1086,170 @@ const DebateDetailPage: React.FC = memo(() => {
       };
     }
 
-    // 다국어 지원을 위한 키워드 맵
+    //––– 1. 다국어 지원을 위한 키워드 맵 정의 –––
+    // 키워드는 “콜론 앞까지의 순수 레이블 단어”만 넣습니다.
+    // 실제 파싱 시에는 "\\s*[:：]\\s*" 부분에서 콜론(: 또는 ：) 뒤로 공백을 허용합니다.
     const keywords: Record<
       string,
       {
-        topic: string[];
-        pro: string[];
-        con: string[];
+        topic: string[]; // “토론 주제” 계열 레이블
+        pro: string[]; // “찬성 의견” 계열 레이블
+        con: string[]; // “반대 의견” 계열 레이블
       }
     > = {
-      // 한국어
+      //=============== 한국어 ===============
       ko: {
-        topic: ['토론주제', '토론 주제', '주제'],
-        pro: ['찬성측의견', '찬성측 의견', '찬성', '찬성 의견'],
-        con: ['반대측의견', '반대측 의견', '반대', '반대 의견'],
+        topic: ['토론주제', '토론 주제', '주제', '논제', '토론:', '토론:', '토론'],
+        pro: ['찬성측의견', '찬성측 의견', '찬성', '찬성 의견', '찬성측', '찬성:', '찬성:', '찬성'],
+        con: ['반대측의견', '반대측 의견', '반대', '반대 의견', '반대측', '반대:', '반대:', '반대'],
       },
-      // 영어
+
+      //=============== 영어 ===============
       en: {
-        topic: [
-          'debate topic',
-          'topic',
-          'debate subject',
-          'subject',
-          'topic of debate', // 변형된 문구
-        ],
+        topic: ['debate topic', 'debate', 'topic', 'debate subject', 'subject', 'discussion'],
         pro: [
           'pro opinion',
+          'pro',
           'supporting opinion',
           'agree',
           'for',
           'support',
-          'pro', // “Pro:” 만 있어도 잡도록
-          'pros', // “Pros:” 처럼 복수형
+          'in favor',
+          'favor',
+          'pros',
         ],
         con: [
           'con opinion',
+          'con',
           'opposing opinion',
           'disagree',
           'against',
           'oppose',
-          'con', // “Con:” 만 있어도 잡기
-          'cons', // “Cons:” 처럼 복수형
+          'counter',
+          'opposition',
+          'oppenent',
+          'cons',
+          'opponents',
         ],
       },
-      // 중국어(간체)
-      zh: {
-        topic: ['讨论主题', '主题', '辩论主题', '辩论 主题', '辩题'],
-        pro: ['赞成意见', '支持意见', '赞成', '支持', '优点', '优势'],
-        con: ['反对意见', '反对', '缺点', '劣势'],
-      },
-      // 일본어
+
+      //=============== 일본어 ===============
       ja: {
-        topic: ['討論テーマ', '討論 トピック', 'トピック', '議題'],
-        pro: ['賛成側の意見', '賛成意見', '賛成', '支持'],
-        con: ['反対側の意見', '反対意見', '反対'],
+        topic: ['討論トピック', '討論テーマ', 'トピック', '議題', '論題', '討論'],
+        pro: ['賛成意見', '賛成側意見', '賛成', '支持', '賛成の意見', '賛成の側'],
+        con: ['反対意見', '反対側の意見', '反対', '反論', '反対の意見', '反対の側'],
       },
-      // 스페인어
-      es: {
-        topic: ['tema de debate', 'tema', 'asunto', 'tema del debate'],
-        pro: ['opinión a favor', 'a favor', 'apoyo', 'pro'],
-        con: ['opinión en contra', 'en contra', 'oposición', 'contra'],
+
+      //=============== 중국어(간체) ===============
+      zh: {
+        topic: ['讨论主题', '讨论', '辩论主题', '辩论', '争论', '论题', '辩论主题'],
+        pro: ['赞成意见', '支持意见', '赞成', '支持', '赞成方', '支持方', ' 正方', '正方'],
+        con: ['反对意见', '反对', '反方', '反驳', '反面意见', '反方'],
       },
-      // 프랑스어
-      fr: {
-        topic: ['sujet de débat', 'sujet', 'thème', 'thème du débat'],
-        pro: ['opinion pour', 'pour', 'soutien', 'pro'],
-        con: ['opinion contre', 'contre', 'opposition', 'contre'],
-      },
-      // 독일어
+
+      //=============== 독일어 ===============
       de: {
-        topic: [
-          'debattenthema',
-          'thema der debatte',
-          'thema',
-          'diskussionsthema',
-          'thema des debates',
+        topic: ['debattenthema', 'debatte', 'thema', 'diskussionsthema', 'diskussion'],
+        pro: ['befürwortende meinung', 'befürwortung', 'dafür', 'pro', 'zustimmung', 'zustimmen'],
+        con: ['ablehnende meinung', 'ablehnung', 'dagegen', 'contra', 'widerstand', 'gegner'],
+      },
+
+      //=============== 프랑스어 ===============
+      fr: {
+        topic: ['sujet de débat', 'débat', 'sujet', 'thème', 'discussion'],
+        pro: ['opinion pour', 'pour', 'soutien', 'accord', 'favor', 'en faveur'],
+        con: [
+          'opinion contre',
+          'contre',
+          'opposition',
+          'désaccord',
+          'inconvénients',
+          'défense',
+          'opposants',
         ],
-        pro: ['befürwortende meinung', 'befürwortung', 'dafür', 'pro'],
-        con: ['ablehnende meinung', 'ablehnung', 'dagegen', 'nachteile', 'contra'],
       },
-      // 러시아어
+
+      //=============== 스페인어 ===============
+      es: {
+        topic: ['tema de debate', 'debate', 'tema', 'asunto', 'discusión'],
+        pro: ['opinión a favor', 'a favor', 'apoyo', 'apoyar', 'estoy a favor'],
+        con: [
+          'opinión en contra',
+          'en contra',
+          'contras',
+          'oposición',
+          'discrepancia',
+          'en contra',
+          'contra',
+        ],
+      },
+
+      //=============== 러시아어 ===============
       ru: {
-        topic: ['тема дебатов', 'тема', 'предмет обсуждения', 'тема обсуждения'],
-        pro: ['мнение за', 'за', 'поддержка', 'плюсы'],
-        con: ['мнение против', 'против', 'минусы', 'оппозиция'],
+        topic: [
+          'тема дебатов',
+          'дискуссия',
+          'тема',
+          'предмет обсуждения',
+          'обсуждение',
+          'Тема дебатов',
+          'Тема дебатов',
+        ],
+        pro: ['мнение за', 'за', 'поддержка', 'согласие', 'поддерживаю', 'Сторонники'],
+        con: ['мнение против', 'против', 'оппозиция', 'несогласие', 'возражение'],
       },
-      // 베트남어
+
+      //=============== 베트남어 ===============
       vi: {
-        topic: ['chủ đề tranh luận', 'chủ đề', 'vấn đề tranh luận'],
-        pro: ['ý kiến ủng hộ', 'ủng hộ', 'đồng ý', 'lợi ích'],
-        con: ['ý kiến phản đối', 'phản đối', 'không đồng ý', 'nhược điểm'],
+        topic: ['chủ đề tranh luận', 'tranh luận', 'chủ đề', 'vấn đề thảo luận'],
+        pro: ['ý kiến ủng hộ', 'ủng hộ', 'đồng ý', 'bên ủng hộ', 'đồng tình'],
+        con: ['ý kiến phản đối', 'phản đối', 'không đồng ý', 'bên phản đối', 'phản bác'],
       },
     };
 
+    //––– 2. 파싱 로직 –––
     let beforeContent = '';
     let topic = '';
     let proOpinion = '';
     let conOpinion = '';
     let afterContent = '';
 
-    // 모든 언어와 키워드에 대해 순회하며 정규식 매칭 시도
-    for (const [lang, keywordSet] of Object.entries(keywords)) {
-      // “토론 주제” 키워드 배열을 하나씩 시도
+    // 모든 언어(lang)와 그 언어의 키워드 집합(keywordSet)을 순회
+    for (const [_, keywordSet] of Object.entries(keywords)) {
+      // 각 언어의 “토론 주제(topic)” 키워드 배열을 하나씩 검사
       for (const topicKeyword of keywordSet.topic) {
-        // “토론 주제” 부분을 먼저 찾는 정규식
+        // “토론 주제” 레이블을 찾아내는 정규식
+        //   (.*?)                            → 키워드 앞부분(도입부) 비탐욕 캡처
+        //   ${topicKeyword}\s*[:：]\s*      → “topicKeyword” + 콜론(: 또는 ：) + 공백
+        //   (.*?)(?=\s*(?:pro키워드들)|\s*(?:con키워드들)|$)
+        //                                   → “토론 주제” 본문을 잡되, 뒤에 pro 레이블이나 con 레이블 또는 끝까지
         const topicPattern = new RegExp(
-          `(.*?)${topicKeyword}\\s*[:：]\\s*(.*?)(?=\\s*(?:${keywordSet.pro.join(
-            '|'
-          )})|\\s*(?:${keywordSet.con.join('|')})|$)`,
+          `(.*?)${topicKeyword}\\s*[:：]\\s*(.*?)(?=\\s*(?:${keywordSet.pro
+            .map(w => w.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&'))
+            .join('|')})|\\s*(?:${keywordSet.con
+            .map(w => w.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&'))
+            .join('|')})|$)`,
           'is'
         );
-        const topicMatch = content.match(topicPattern);
-        if (!topicMatch) continue;
 
-        // 매칭 성공 시
+        const topicMatch = content.match(topicPattern);
+        if (!topicMatch) {
+          continue; // 이 topicKeyword로는 매칭 실패 → 다음 topicKeyword 또는 다음 언어로 이동
+        }
+
+        // topicMatch[1] → 콜론 이전 도입부 (beforeContent)
+        // topicMatch[2] → “토론 주제” 부분
         beforeContent = topicMatch[1].trim();
         topic = topicMatch[2].trim();
 
-        // 찬성 의견(pro) 찾기
+        //––– 2-1. 찬성 의견(pro) 찾기 –––
         for (const proKeyword of keywordSet.pro) {
+          // “proKeyword\s*[:：]\s*(.*?)” 형태로 “찬성 레이블” 뒤 내용을 잡는다.
+          // 그 뒤에 “(?:${con키워드들}|$)” 전까지 캡처
           const proPattern = new RegExp(
-            `${proKeyword}\\s*[:：]\\s*(.*?)(?=\\s*(?:${keywordSet.con.join('|')})|$)`,
+            `${proKeyword}\\s*[:：]\\s*(.*?)(?=\\s*(?:${keywordSet.con
+              .map(w => w.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&'))
+              .join('|')})|$)`,
             'is'
           );
           const proMatch = content.match(proPattern);
@@ -1209,8 +1259,9 @@ const DebateDetailPage: React.FC = memo(() => {
           }
         }
 
-        // 반대 의견(con) 찾기
+        //––– 2-2. 반대 의견(con) 찾기 –––
         for (const conKeyword of keywordSet.con) {
+          // “conKeyword\s*[:：]\s*(.*?)$” 형태로 “반대 레이블” 뒤 모든 텍스트를 캡처
           const conPattern = new RegExp(`${conKeyword}\\s*[:：]\\s*(.*?)$`, 'is');
           const conMatch = content.match(conPattern);
           if (conMatch) {
@@ -1219,22 +1270,22 @@ const DebateDetailPage: React.FC = memo(() => {
           }
         }
 
-        // 최소한 토론 주제 + (찬성 또는 반대) 중 하나라도 잡혔으면 파싱 성공으로 간주
+        //––– 2-3. 토론 주제 + (찬성 또는 반대 중 하나)라도 잡혔으면 파싱 성공 –––
         if (topic && (proOpinion || conOpinion)) {
           return {
             beforeContent,
             topic,
             proOpinion,
             conOpinion,
-            afterContent: '', // 필요하다면 “반대 이후 콘텐츠”를 넣을 수 있음
-            rawContent: content,
+            afterContent: '', // 필요 시, “반대 의견 이후 추가 본문”을 넣을 수 있음
+            rawContent: content, // 파싱 실패 시 원본을 보여줄 때도 쓰임
             isParsed: true,
           };
         }
       }
     }
 
-    // 어떤 언어에서도 매칭되지 않았으면 원본 그대로 반환
+    //––– 3. 어떤 언어에서도 매칭되지 않으면 파싱 실패 → 원본(content)만 보여줌 –––
     return {
       beforeContent: '',
       topic: '',
@@ -1248,24 +1299,28 @@ const DebateDetailPage: React.FC = memo(() => {
 
   /**
    * DebateContentRenderer 컴포넌트
-   * @param props.content: 원본 토론 콘텐츠 문자열
+   * - props.content : “토론형 콘텐츠” 전체 문자열
+   *
+   * 내부에서 parseDebateContent를 호출해,
+   * 파싱 성공(isParsed===true) 시 ⇒ 구조화된 UI 렌더링
+   * 파싱 실패(isParsed===false) 시 ⇒ 원문 그대로 출력
    */
   const DebateContentRenderer: React.FC<{ content: string }> = ({ content }) => {
     const { t } = useTranslation();
     const parsed = parseDebateContent(content);
 
-    // 파싱에 성공했을 때 (isParsed === true)
+    //––– 파싱 성공: isParsed === true ⇒ 구조화된 UI 렌더링 –––
     if (parsed.isParsed) {
       return (
         <Box sx={{ my: 3 }}>
-          {/* 1) beforeContent (토론 주제 이전 텍스트) */}
+          {/* 1) beforeContent (토론 주제 이전 도입부) */}
           {parsed.beforeContent && (
             <Typography variant="body1" sx={{ mb: 3, lineHeight: 1.7 }}>
               {parsed.beforeContent}
             </Typography>
           )}
 
-          {/* 2) 토론 주제 */}
+          {/* 2) 토론 주제 (파란색 강조 박스) */}
           {parsed.topic && (
             <Paper
               sx={{
@@ -1292,7 +1347,7 @@ const DebateDetailPage: React.FC = memo(() => {
             </Paper>
           )}
 
-          {/* 3) 찬성 / 반대 의견을 나란히 (모바일 컬럼, 데스크톱 로우) */}
+          {/* 3) 찬성 / 반대 의견 (모바일: 세로, 데스크톱: 가로) */}
           <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', md: 'row' } }}>
             {/* 찬성측 의견 */}
             {parsed.proOpinion && (
@@ -1353,14 +1408,13 @@ const DebateDetailPage: React.FC = memo(() => {
       );
     }
 
-    // 파싱 실패했을 때: 원본 콘텐츠를 그대로 보여 줌
+    //––– 파싱 실패: isParsed === false ⇒ 원본 콘텐츠(rawContent) 출력 –––
     return (
       <Typography variant="body1" sx={{ my: 3, lineHeight: 1.7 }}>
         {content}
       </Typography>
     );
   };
-
   // 투표 차트 영역 컴포넌트
   const VoteChartSection: React.FC<{
     voteRatio: { agree: number; disagree: number };

@@ -1215,6 +1215,8 @@ const ja = {
           contentTooLong: '内容は10,000文字以内で入力してください',
           postTypeRequired: '投稿タイプを選択してください',
           categoryRequired: 'カテゴリを選択してください',
+          subTagsRequired: '少なくとも1つのサブタグを選択してください',
+          addressRequired: '住所を入力してください',
           regionRequired: '地域を選択してください',
           maxTagsExceeded: 'タグは3個まで選択できます',
         },

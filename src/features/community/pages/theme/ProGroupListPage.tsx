@@ -1357,12 +1357,14 @@ const ProGroupListPage: React.FC = () => {
                         minWidth: isMobile ? 70 : 80,
                         whiteSpace: 'nowrap',
                         '&.Mui-selected': {
-                          bgcolor: '#fafafa',
-                          color: '#222',
+                          bgcolor: '#111',
+                          color: '#fff',
                           fontWeight: 'bold',
+                          borderColor: '#111',
                         },
                         '&:hover': {
-                          bgcolor: '#fafafa',
+                          bgcolor: '#111',
+                          color: '#fff',
                         },
                       },
                       '& .MuiToggleButtonGroup-grouped': {
@@ -1405,17 +1407,17 @@ const ProGroupListPage: React.FC = () => {
                             disabled={!isTagActive}
                             sx={{
                               borderRadius: '16px',
-                              borderColor: selectedTags.includes(tag) ? '#222' : '#e5e7eb',
-                              backgroundColor: selectedTags.includes(tag)
-                                ? '#fafafa'
-                                : 'transparent',
-                              color: selectedTags.includes(tag) ? '#222' : '#666',
+                              borderColor: selectedTags.includes(tag) ? '#111' : '#e5e7eb',
+                              backgroundColor: selectedTags.includes(tag) ? '#111' : 'transparent',
+                              color: selectedTags.includes(tag) ? '#fff' : '#666',
                               opacity: isTagActive ? 1 : 0.5,
                               cursor: isTagActive ? 'pointer' : 'not-allowed',
+                              fontWeight: selectedTags.includes(tag) ? 700 : 400,
                               '&:hover': {
                                 backgroundColor: selectedTags.includes(tag)
-                                  ? '#fafafa'
+                                  ? '#111'
                                   : 'rgba(255, 235, 235, 0.2)',
+                                color: selectedTags.includes(tag) ? '#fff' : '#222',
                               },
                             }}
                           />
