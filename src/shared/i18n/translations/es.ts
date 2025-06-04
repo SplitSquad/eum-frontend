@@ -1847,6 +1847,7 @@ Archivos adjuntos existentes: {{existingFileCount}}
     next: 'Siguiente',
   },
   debate: {
+    noIssues: 'No hay temas de debate activos en este momento.',
     showOriginal: 'prospecto',
     returnOriginal: 'vuelta',
     noDebates: 'No hay debates activos en este momento.',

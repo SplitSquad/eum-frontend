@@ -219,6 +219,24 @@ const de = {
     },
   },
   onboarding: {
+    job: {
+      profileSetting: '취업자 프로필 설정',
+      profileDescription: '한국 취업에 필요한 정보를 알려주세요.',
+      steps: {
+        profile: '프로필',
+        career: '경력',
+        schedule: '일정',
+        location: '지역',
+        conditions: '조건',
+        language: '언어',
+        interests: '관심사',
+        emergency: '응급정보',
+        details: '직업상세정보',
+        field: '직종',
+        experience: '경력',
+        salary: '희망 연봉',
+      },
+    },
     living: {
       purposeTitle: 'Zweck des Aufenthalts',
       visaTypeOptions: {

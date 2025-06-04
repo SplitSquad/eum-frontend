@@ -1665,6 +1665,7 @@ const zh = {
     showOriginal: '查看原文',
     returnOriginal: '返回',
     noDebates: '暂无辩论议题',
+    noIssues: '暂无议题',
     title: '热点议题辩论',
     description: '就当前最热门的社会议题自由讨论，分享你的多元观点。',
     categories: {

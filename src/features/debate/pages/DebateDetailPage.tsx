@@ -346,7 +346,7 @@ const CommentItem = styled(ListItem)(({ theme }) => ({
 }));
 
 const ChartContainer = styled(Box)(({ theme }) => ({
-  height: 160,
+  height: 250,
   marginTop: theme.spacing(2),
   marginBottom: theme.spacing(2),
 }));

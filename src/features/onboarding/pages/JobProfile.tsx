@@ -1305,9 +1305,9 @@ const JobProfile: React.FC = () => {
           >
             {currentStep === totalSteps
               ? isSubmitting
-                ? t('onboarding.travel.saving')
-                : t('onboarding.travel.finish')
-              : t('onboarding.travel.next')}
+                ? t('onboarding.saving')
+                : t('onboarding.finish')
+              : t('onboarding.next')}
           </Button>
         </Box>
       </Container>

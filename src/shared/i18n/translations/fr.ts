@@ -1734,6 +1734,7 @@ Voulez-vous vraiment sauvegarder?`,
     next: 'Suivant',
   },
   debate: {
+    noIssues: 'Aucun sujet de débat en cours',
     showOriginal: "Voir l'original",
     returnOriginal: "Retour à l'original",
     noDebates: 'Aucun débat en cours pour le moment. Soyez le premier à lancer un sujet !',

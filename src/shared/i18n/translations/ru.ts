@@ -1668,6 +1668,7 @@ const ru = {
     next: 'Далее',
   },
   debate: {
+    noIssues: 'Нет активных тем для обсуждения',
     noDebates: 'Нет активных дебатов',
     title: 'Горячие дебаты',
     description:
