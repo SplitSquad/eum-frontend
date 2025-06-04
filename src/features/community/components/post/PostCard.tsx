@@ -740,7 +740,20 @@ const PostCard: React.FC<PostCardProps> = ({
           <TicketInfoBox>
             <PostTitleDynamic
               variant="h6"
-              sx={{ mb: 0, flexShrink: 0 }}
+              sx={{
+                mb: 0,
+                flexShrink: 0,
+                ...(isGroup
+                  ? {
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      maxWidth: { xs: '100%', md: '350px', lg: '400px' },
+                    }
+                  : {}),
+              }}
               isGroup={isGroup}
               season={'professional'}
             >
@@ -754,11 +767,21 @@ const PostCard: React.FC<PostCardProps> = ({
                 })}
               </TagsContainer>
             )}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <StyledAvatar>{post.writer?.nickname?.charAt(0) || '?'}</StyledAvatar>
-              <AuthorName variant="body2">
-                {post.writer?.nickname || t('community.posts.anonymous')}
-              </AuthorName>
+            <Box
+              sx={{
+                display: 'flex',
+                gap: 1,
+                mb: 1,
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+              }}
+            >
+              <AuthorContainer sx={{ ml: 0, mt: 0.5 }}>
+                <StyledAvatar>{post.writer?.nickname?.charAt(0) || '?'}</StyledAvatar>
+                <AuthorName variant="body2">
+                  {post.writer?.nickname || t('community.posts.anonymous')}
+                </AuthorName>
+              </AuthorContainer>
               <Typography
                 variant="caption"
                 color="text.secondary"
@@ -832,17 +855,30 @@ const PostCard: React.FC<PostCardProps> = ({
             </Typography>
           </AddressInfo>
         )}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+        <Box
+          sx={{ display: 'flex', gap: 1, mb: 1, flexDirection: 'column', alignItems: 'flex-start' }}
+        >
           <PostTitleDynamic
             variant="h6"
-            sx={{ mb: 0, flexShrink: 0 }}
+            sx={{
+              mb: 0,
+              flexShrink: 0,
+              ...(isGroup
+                ? {
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    maxWidth: { xs: '100%', md: '350px', lg: '400px' },
+                  }
+                : {}),
+            }}
             isGroup={isGroup}
             season={'professional'}
           >
             {post.title}
           </PostTitleDynamic>
           {/* 작성자 정보 */}
-          <AuthorContainer sx={{ ml: 1 }}>
+          <AuthorContainer sx={{ ml: 0, mt: 0.5 }}>
             <StyledAvatar>{post.writer?.nickname?.charAt(0) || '?'}</StyledAvatar>
             <AuthorName variant="body2">
               {post.writer?.nickname || t('community.posts.anonymous')}

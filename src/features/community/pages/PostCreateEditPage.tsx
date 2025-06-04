@@ -432,7 +432,7 @@ const PostCreateEditPage: React.FC = () => {
       ...prev,
       subTags: typeof value === 'string' ? value.split(',') : value,
     }));
-    
+
     // 세부태그 에러 초기화
     if (errors.subTags) {
       setErrors(prev => ({
@@ -501,6 +501,7 @@ const PostCreateEditPage: React.FC = () => {
   // 폼 제출 핸들러
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('formData', formData);
 
     // 폼 유효성 검사
     const newErrors: Record<string, string> = {};
@@ -515,7 +516,10 @@ const PostCreateEditPage: React.FC = () => {
     }
     // 세부태그 필수 검증 개선: 배열이 존재하지 않거나 비어있는 경우 오류 처리
     if (!formData.subTags || formData.subTags.length === 0) {
-      newErrors.subTags = 'Please select at least one subtag';
+      newErrors.subTags = t('community.posts.form.validation.subTagsRequired');
+    }
+    if (formData.postType === '모임' && formData.address === '자유') {
+      newErrors.address = t('community.posts.form.validation.addressRequired');
     }
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -580,7 +584,7 @@ const PostCreateEditPage: React.FC = () => {
         if (selectedFiles.length > 0) {
           const confirmMessage = t('community.fileUpload.finalConfirmMessage', {
             newFileCount: selectedFiles.length.toString(),
-            existingFileCount: postFiles.length.toString()
+            existingFileCount: postFiles.length.toString(),
           });
 
           if (!window.confirm(confirmMessage)) {
@@ -862,20 +866,23 @@ const PostCreateEditPage: React.FC = () => {
 
             {/* 게시글 타입이 '모임'일 때만 지역 선택 표시 - 태그 선택 뒤에 배치 */}
             {formData.postType === '모임' && (
-              <FormControl 
-                fullWidth 
-                sx={{ 
-                  mt: 3, 
+              <FormControl
+                fullWidth
+                sx={{
+                  mt: 3,
                   mb: 2,
-                  backgroundColor: '#fff', 
-                  borderRadius: '12px' 
+                  backgroundColor: '#fff',
+                  borderRadius: '12px',
                 }}
+                error={!!errors.address}
               >
                 <InputLabel shrink>{t('community.region')}</InputLabel>
                 <Box sx={{ mt: 2 }}>
                   <RegionSelector onChange={handleRegionChange} />
                 </Box>
-                <FormHelperText sx={{ mt: 1 }}>{t('community.selectMeetingRegion')}</FormHelperText>
+                <FormHelperText sx={{ mt: 1, color: errors.address ? '#d32f2f' : undefined }}>
+                  {errors.address ? errors.address : t('community.selectMeetingRegion')}
+                </FormHelperText>
               </FormControl>
             )}
 

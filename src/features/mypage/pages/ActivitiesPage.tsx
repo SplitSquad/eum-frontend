@@ -8,8 +8,8 @@ import { CircularProgress, Pagination } from '@mui/material';
 import DebateApi from '../../debate/api/debateApi';
 import { useTranslation } from '@/shared/i18n';
 
-//리스폰스 타입 정의
-interface Activity {
+// 리스폰스 타입 정의
+interface ActivityItem {
   id: number;
   type: string;
   title: string;
@@ -17,6 +17,7 @@ interface Activity {
   date: string;
   onClick: () => void;
 }
+
 // 스타일 컴포넌트
 const PageContainer = styled.div`
   padding: 20px 0;
@@ -60,13 +61,11 @@ const Tab = styled.button<{ active: boolean }>`
     transform-origin: center;
   }
 
-  /* 호버 시 밑줄 미리보기 */
   &:hover::after {
     transform: scaleX(${props => (props.active ? 1 : 0.3)});
     opacity: ${props => (props.active ? 1 : 0.5)};
   }
 
-  /* 클릭 시 리플 효과 */
   &:active {
     transform: translateY(0) scale(0.98);
   }
@@ -92,7 +91,6 @@ const EmptyState = styled.div`
   }
 `;
 
-// 콘텐츠 전환을 위한 애니메이션 래퍼
 const ContentWrapper = styled.div<{ isVisible: boolean; delay?: number }>`
   opacity: ${props => (props.isVisible ? 1 : 0)};
   transform: ${props => (props.isVisible ? 'translateY(0)' : 'translateY(10px)')};
@@ -100,7 +98,6 @@ const ContentWrapper = styled.div<{ isVisible: boolean; delay?: number }>`
   transition-delay: ${props => props.delay || 0}ms;
   will-change: opacity, transform;
 
-  /* 콘텐츠가 사라질 때는 더 빠르게 */
   ${props =>
     !props.isVisible &&
     `
@@ -114,7 +111,7 @@ const ActivityList = styled.div`
   gap: 16px;
 `;
 
-const ActivityItem = styled.div<{ animationDelay?: number }>`
+const ActivityItemContainer = styled.div<{ animationDelay?: number }>`
   display: flex;
   align-items: flex-start;
   padding: 16px;
@@ -138,7 +135,6 @@ const ActivityItem = styled.div<{ animationDelay?: number }>`
     }
   }
 
-  /* 탭 전환 시 부드러운 재시작을 위한 애니메이션 */
   &.tab-enter {
     animation: tabEnter 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
     animation-delay: ${props => props.animationDelay || 0}ms;
@@ -160,16 +156,13 @@ const ActivityItem = styled.div<{ animationDelay?: number }>`
     transform: translateY(-1px);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 
-    /* 호버 시 아이콘 배경색 변경 */
     .activity-icon {
       background-color: #ffe6e6;
-
       svg {
         transform: scale(1.05);
       }
     }
 
-    /* 호버 시 제목 색상 변경 */
     .activity-title {
       color: #ff9999;
     }
@@ -251,7 +244,6 @@ const LoadingContainer = styled.div`
   }
 `;
 
-// 페이지네이션 컨테이너
 const PaginationContainer = styled.div`
   display: flex;
   justify-content: center;
@@ -260,7 +252,6 @@ const PaginationContainer = styled.div`
   border-top: 1px solid #f0f0f0;
 `;
 
-// 활동 개수 정보 표시
 const ActivityCountInfo = styled.div`
   text-align: center;
   margin-top: 12px;
@@ -282,30 +273,16 @@ const ActivityCountInfo = styled.div`
   }
 `;
 
-// ActivityItem 타입 선언 (실제 사용하는 속성만 포함)
-type ActivityItem = {
-  id: number;
-  type: string;
-  title: string;
-  description: string;
-  date: string;
-  onClick: () => void;
-};
-
-/**
- * 마이페이지 - 활동 내역 페이지
- * 사용자의 게시물, 댓글, 좋아요, 북마크 등의 활동을 표시합니다.
- */
 const ActivitiesPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuthStore();
   const userId = user?.userId ? Number(user.userId) : 0;
 
-  // 탭 상태 관리
-  const [activeTab, setActiveTab] = useState<
-    'all' | 'posts' | 'comments' | 'debates' | 'bookmarks'
-  >('all');
+  // 탭 상태 관리 (all 탭 제거)
+  const [activeTab, setActiveTab] = useState<'posts' | 'comments' | 'debates' | 'bookmarks'>(
+    'posts'
+  );
 
   // 통합 로딩 상태 관리 (깜빡임 방지)
   const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -317,7 +294,6 @@ const ActivitiesPage: React.FC = () => {
 
   // 페이지네이션 상태 (각 탭별로 독립적인 페이지)
   const [currentPages, setCurrentPages] = useState({
-    all: 1,
     posts: 1,
     comments: 1,
     debates: 1,
@@ -344,46 +320,32 @@ const ActivitiesPage: React.FC = () => {
 
   // 로그인 상태 확인
   useEffect(() => {
-    console.log('[AUTH] 인증 상태:', isAuthenticated);
-    console.log('[AUTH] 사용자 정보:', user);
-    console.log('[AUTH] 사용자 ID:', userId);
-
-    // 로컬 스토리지에서 토큰 확인 (디버깅용)
-    const token = localStorage.getItem('auth_token');
-    console.log('[AUTH] 토큰 존재 여부:', token ? '있음' : '없음');
-    if (token) {
-      console.log('[AUTH] 토큰 일부:', token.substring(0, 15) + '...');
+    if (!isAuthenticated || !user?.userId || userId <= 0) {
+      setIsInitialLoading(false);
+      return;
     }
   }, [isAuthenticated, user, userId]);
 
-  // 데이터 불러오기 - 최적화된 단일 useEffect
+  // 데이터 불러오기 - 초기에는 모든 탭 데이터를 미리 로드
   useEffect(() => {
     const initializeData = async () => {
       if (!isAuthenticated || !user?.userId || userId <= 0) {
-        console.log('[AUTH] 인증 정보 없음 - 로딩 종료');
         setIsInitialLoading(false);
         return;
       }
 
       try {
-        console.log('[DEBUG] 활동 내역 데이터 로딩 시작, 사용자 ID:', userId);
-
         // 모든 활동 데이터를 동시에 로드
-        const dataPromises = [
-          fetchMyPosts(0, 5),
-          fetchMyComments(0, 5),
-          fetchMyDebates(0, 5),
-          fetchMyBookmarks(0, 5),
-        ];
-
-        await Promise.allSettled(dataPromises);
-
-        console.log('[DEBUG] 모든 활동 데이터 로딩 완료');
+        await Promise.allSettled([
+          fetchMyPosts(0, itemsPerPage),
+          fetchMyComments(0, itemsPerPage),
+          fetchMyDebates(0, itemsPerPage),
+          fetchMyBookmarks(0, itemsPerPage),
+        ]);
       } catch (error) {
         console.error('[ERROR] 활동 데이터 로딩 실패:', error);
       } finally {
         setIsInitialLoading(false);
-        // 부드러운 등장을 위한 지연
         setTimeout(() => {
           setContentReady(true);
           setIsContentVisible(true);
@@ -409,35 +371,29 @@ const ActivitiesPage: React.FC = () => {
     setIsTransitioning(true);
     setIsContentVisible(false);
 
-    // 콘텐츠가 사라진 후 탭 변경
     setTimeout(() => {
       setActiveTab(tab);
-      // 탭 변경 시 해당 탭의 페이지를 1페이지로 리셋
       setCurrentPages(prev => ({
         ...prev,
         [tab]: 1,
       }));
-      // 새 콘텐츠 표시
       setTimeout(() => {
         setIsContentVisible(true);
         setIsTransitioning(false);
-      }, 30); // 더 빠른 전환
-    }, 150); // 사라지는 시간 단축
+      }, 30);
+    }, 150);
   };
 
-  // 페이지 변경 핸들러 - 서버 측 페이지네이션으로 변경
+  // 페이지 변경 핸들러 - 서버 측 페이지네이션
   const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
     setCurrentPages(prev => ({
       ...prev,
       [activeTab]: value,
     }));
 
-    // 페이지 변경 시 부드러운 전환
     setIsContentVisible(false);
-    
-    // 해당 탭의 데이터를 서버에서 새로 가져오기 (페이지는 0-based)
     const pageToFetch = value - 1;
-    
+
     setTimeout(async () => {
       try {
         if (activeTab === 'posts') {
@@ -448,19 +404,11 @@ const ActivitiesPage: React.FC = () => {
           await fetchMyDebates(pageToFetch, itemsPerPage);
         } else if (activeTab === 'bookmarks') {
           await fetchMyBookmarks(pageToFetch, itemsPerPage);
-        } else if (activeTab === 'all') {
-          // 전체 탭인 경우 모든 데이터의 해당 페이지를 가져오기
-          await Promise.all([
-            fetchMyPosts(pageToFetch, itemsPerPage),
-            fetchMyComments(pageToFetch, itemsPerPage),
-            fetchMyDebates(pageToFetch, itemsPerPage),
-            fetchMyBookmarks(pageToFetch, itemsPerPage),
-          ]);
         }
       } catch (error) {
         console.error('페이지 데이터 로딩 실패:', error);
       } finally {
-      setIsContentVisible(true);
+        setIsContentVisible(true);
       }
     }, 100);
   };
@@ -506,18 +454,11 @@ const ActivitiesPage: React.FC = () => {
     }
   };
 
-  // 로딩 상태 확인
+  // 로딩 상태 확인 (all 탭 로직 제거)
   const isLoading = () => {
-    if (isTransitioning) return true; // 전환 중일 때도 로딩으로 처리
+    if (isTransitioning) return true;
 
-    if (activeTab === 'all') {
-      return (
-        postsLoading === 'loading' ||
-        commentsLoading === 'loading' ||
-        debatesLoading === 'loading' ||
-        bookmarksLoading === 'loading'
-      );
-    } else if (activeTab === 'posts') {
+    if (activeTab === 'posts') {
       return postsLoading === 'loading';
     } else if (activeTab === 'comments') {
       return commentsLoading === 'loading';
@@ -534,11 +475,11 @@ const ActivitiesPage: React.FC = () => {
     if (type === 'post') {
       navigate(`/community/${id}`);
     } else if (type === 'comment') {
-      navigate(`/community/${id}`); // 실제로는 해당 댓글이 있는 게시글로 이동
+      navigate(`/community/${id}`);
     } else if (type === 'debate') {
       navigate(`/debate/${id}`);
     } else if (type === 'bookmark') {
-      navigate(`/info/${id}`); // 북마크된 정보글로 이동
+      navigate(`/info/${id}`);
     }
   };
 
@@ -548,22 +489,18 @@ const ActivitiesPage: React.FC = () => {
 
     try {
       const date = new Date(dateString);
-
-      // YYYY.MM.DD HH:mm 형식으로 표시
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const day = String(date.getDate()).padStart(2, '0');
       const hours = String(date.getHours()).padStart(2, '0');
       const minutes = String(date.getMinutes()).padStart(2, '0');
-
       return `${year}.${month}.${day} ${hours}:${minutes}`;
-    } catch (error) {
-      // 날짜 파싱 실패 시 원본 문자열의 앞부분만 표시
+    } catch {
       return dateString.split('T')[0] || dateString.substring(0, 10);
     }
   };
 
-  // 활동 목록 생성 - 서버 페이지네이션 데이터 직접 사용
+  // 활동 목록 생성
   const getActivities = () => {
     let activities: ActivityItem[] = [];
     let totalPages = 1;
@@ -613,91 +550,6 @@ const ActivitiesPage: React.FC = () => {
       }));
       totalPages = bookmarks.totalPages || 1;
       totalElements = bookmarks.totalElements || 0;
-    } else if (activeTab === 'all') {
-      // 전체 탭의 경우 모든 활동을 합쳐서 표시
-      const allActivities: ActivityItem[] = [];
-
-      if (posts?.content) {
-        const postActivities = posts.content.map(post => ({
-          id: post.id || 0,
-          type: 'post',
-          title: t('ActivitiesPage.post'),
-          description: post.title || '',
-          date: post.createdAt || '',
-          onClick: () => handleActivityClick('post', post.id || 0),
-        }));
-        allActivities.push(...postActivities);
-      }
-
-      if (comments?.content) {
-        const commentActivities = comments.content.map(comment => ({
-          id: comment.postId || 0,
-          type: 'comment',
-          title: t('ActivitiesPage.comment'),
-          description: `${comment.postTitle || ''}: ${comment.content || ''}`,
-          date: comment.createdAt || '',
-          onClick: () => handleActivityClick('comment', comment.postId || 0),
-        }));
-        allActivities.push(...commentActivities);
-      }
-
-      if (debates?.content) {
-      const debateActivities = debates.content.map(debate => ({
-        id: debate.id || 0,
-        type: 'debate',
-        title: t('ActivitiesPage.debate'),
-        description: debate.title || '',
-        date: debate.createdAt || '',
-        onClick: () => handleActivityClick('debate', debate.id || 0),
-      }));
-      allActivities.push(...debateActivities);
-    }
-
-      if (bookmarks?.content) {
-      const bookmarkActivities = bookmarks.content.map(bookmark => ({
-        id: bookmark.id || 0,
-        type: 'bookmark',
-        title: t('ActivitiesPage.bookmark'),
-        description: bookmark.title || '',
-        date: bookmark.createdAt || '',
-        onClick: () => handleActivityClick('bookmark', bookmark.id || 0),
-      }));
-      allActivities.push(...bookmarkActivities);
-    }
-
-      // 전체 탭에서는 날짜순 정렬 후 현재 페이지만큼 잘라서 표시
-    const sortedActivities = allActivities.sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-    );
-
-    const currentPage = currentPages[activeTab];
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-
-      activities = sortedActivities.slice(startIndex, endIndex);
-      totalPages = Math.ceil(sortedActivities.length / itemsPerPage);
-      
-      // 실제 totalElements의 합계 사용 (클라이언트 데이터 개수가 아닌)
-      const actualTotalElements = 
-        (posts?.totalElements || 0) + 
-        (comments?.totalElements || 0) + 
-        (debates?.totalElements || 0) + 
-        (bookmarks?.totalElements || 0);
-      
-      // 디버깅을 위한 로그 추가
-      console.log('📊 활동 페이지 전체 탭 통계:', {
-        postsTotal: posts?.totalElements || 0,
-        commentsTotal: comments?.totalElements || 0,
-        debatesTotal: debates?.totalElements || 0,
-        bookmarksTotal: bookmarks?.totalElements || 0,
-        actualTotalElements,
-        currentDisplayedItems: sortedActivities.length
-      });
-      
-      totalElements = actualTotalElements;
-      
-      // 페이지 계산도 실제 전체 개수 기준으로 수정
-      totalPages = Math.ceil(actualTotalElements / itemsPerPage);
     }
 
     return {
@@ -709,7 +561,7 @@ const ActivitiesPage: React.FC = () => {
 
   const { activities, totalPages, totalItems } = getActivities();
 
-  // 통합 로딩 상태 처리 (깜빡임 방지)
+  // 초기 로딩 스피너
   if (isInitialLoading) {
     return (
       <PageLayout title={t('ActivitiesPage.activitylist')}>
@@ -720,9 +572,18 @@ const ActivitiesPage: React.FC = () => {
     );
   }
 
+  // InfoCard 타이틀 생성
+  const tabInfoLabel =
+    activeTab === 'posts'
+      ? t('ActivitiesPage.infopost')
+      : activeTab === 'comments'
+        ? t('ActivitiesPage.infocomment')
+        : activeTab === 'debates'
+          ? t('ActivitiesPage.infodebate')
+          : t('ActivitiesPage.infobookmark'); // bookmarks
+
   return (
     <PageLayout title={t('ActivitiesPage.activitylist')}>
-      {/* 부드러운 등장 효과를 위한 컨테이너 */}
       <PageContainer
         style={{
           opacity: contentReady ? 1 : 0,
@@ -731,28 +592,22 @@ const ActivitiesPage: React.FC = () => {
         }}
       >
         <TabContainer>
-          <Tab active={activeTab === 'all'} onClick={() => handleTabChange('all')}>
-          {t('ActivitiesPage.listall')}
-          </Tab>
           <Tab active={activeTab === 'posts'} onClick={() => handleTabChange('posts')}>
-          {t('ActivitiesPage.listpost')}
+            {t('ActivitiesPage.listpost')}
           </Tab>
           <Tab active={activeTab === 'comments'} onClick={() => handleTabChange('comments')}>
-          {t('ActivitiesPage.listcomment')}
+            {t('ActivitiesPage.listcomment')}
           </Tab>
           <Tab active={activeTab === 'debates'} onClick={() => handleTabChange('debates')}>
-          {t('ActivitiesPage.listdebate')}
+            {t('ActivitiesPage.listdebate')}
           </Tab>
           <Tab active={activeTab === 'bookmarks'} onClick={() => handleTabChange('bookmarks')}>
-          {t('ActivitiesPage.listbookmark')}
+            {t('ActivitiesPage.listbookmark')}
           </Tab>
         </TabContainer>
 
-        <InfoCard
-          title={`${activeTab === 'all' ? t('ActivitiesPage.infoall') : activeTab === 'posts' ? t('ActivitiesPage.infopost') : activeTab === 'comments' ? t('ActivitiesPage.infocomment') : activeTab === t('ActivitiesPage.infodebate') ? '토론' : t('ActivitiesPage.infobookmark')} ${t('ActivitiesPage.infoactivity')}`}
-        >
+        <InfoCard title={`${tabInfoLabel} ${t('ActivitiesPage.infoactivity')}`}>
           <ContentWrapper isVisible={isContentVisible}>
-            {/* 탭 변경 시에는 개별 로딩, 초기 로딩은 통합 처리됨 */}
             {!contentReady || isLoading() ? (
               <LoadingContainer>
                 <CircularProgress size={30} />
@@ -761,16 +616,14 @@ const ActivitiesPage: React.FC = () => {
               <EmptyState>{t('ActivitiesPage.noactivity')}</EmptyState>
             ) : (
               <>
-                {/* 활동 목록 */}
                 <ActivityList>
                   {activities.map((activity, index) => (
-                    <ActivityItem
-                      key={`${activity.type}-${activity.id}-${index}-${activeTab}`} // 탭별로 고유 키 생성
+                    <ActivityItemContainer
+                      key={`${activity.type}-${activity.id}-${index}-${activeTab}`}
                       onClick={activity.onClick}
-                      animationDelay={index * 30} // 순차적 등장 효과 간격 대폭 단축
+                      animationDelay={index * 30}
                       className={isContentVisible ? 'tab-enter' : ''}
                       style={{
-                        // 탭 전환 시 리셋을 위한 애니메이션
                         animationName: isContentVisible ? 'tabEnter' : 'none',
                       }}
                     >
@@ -784,11 +637,10 @@ const ActivitiesPage: React.FC = () => {
                           <ActivityDate>{formatDate(activity.date)}</ActivityDate>
                         </ActivityMeta>
                       </ActivityContent>
-                    </ActivityItem>
+                    </ActivityItemContainer>
                   ))}
                 </ActivityList>
 
-                {/* 페이지네이션 */}
                 {totalPages > 1 && (
                   <PaginationContainer>
                     <Pagination
@@ -820,11 +672,12 @@ const ActivitiesPage: React.FC = () => {
                   </PaginationContainer>
                 )}
 
-                {/* 활동 개수 정보 */}
                 {totalItems > 0 && (
                   <ActivityCountInfo>
-                    {t('ActivitiesPage.count1')} {totalItems}{t('ActivitiesPage.count2')} {(currentPages[activeTab] - 1) * itemsPerPage + 1}~
-                    {Math.min(currentPages[activeTab] * itemsPerPage, totalItems)}{t('ActivitiesPage.count3')}
+                    {t('ActivitiesPage.count1')} {totalItems}
+                    {t('ActivitiesPage.count2')} {(currentPages[activeTab] - 1) * itemsPerPage + 1}~
+                    {Math.min(currentPages[activeTab] * itemsPerPage, totalItems)}
+                    {t('ActivitiesPage.count3')}
                   </ActivityCountInfo>
                 )}
               </>

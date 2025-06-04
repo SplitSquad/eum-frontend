@@ -1407,6 +1407,8 @@ Archivos adjuntos existentes: {{existingFileCount}}
           contentTooLong: 'El contenido no puede exceder 10,000 caracteres',
           postTypeRequired: 'Por favor seleccione un tipo de publicación',
           categoryRequired: 'Por favor seleccione una categoría',
+          subTagsRequired: 'Por favor seleccione al menos un sub-tag',
+          addressRequired: 'Por favor ingrese una dirección',
           regionRequired: 'Por favor seleccione una región',
           maxTagsExceeded: 'Puede seleccionar hasta 3 etiquetas',
         },

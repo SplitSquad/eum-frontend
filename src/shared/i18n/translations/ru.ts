@@ -1228,6 +1228,8 @@ const ru = {
           contentTooLong: 'Содержание не может превышать 10,000 символов',
           postTypeRequired: 'Пожалуйста, выберите тип поста',
           categoryRequired: 'Пожалуйста, выберите категорию',
+          subTagsRequired: 'Пожалуйста, выберите хотя бы один под-тег',
+          addressRequired: 'Пожалуйста, введите адрес',
           regionRequired: 'Пожалуйста, выберите регион',
           maxTagsExceeded: 'Вы можете выбрать до 3 тегов',
         },

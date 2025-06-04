@@ -1227,6 +1227,8 @@ const zh = {
           contentTooLong: '内容不能超过10,000个字符',
           postTypeRequired: '请选择帖子类型',
           categoryRequired: '请选择分类',
+          subTagsRequired: '请选择至少一个子标签',
+          addressRequired: '请输入地址',
           regionRequired: '请选择地区',
           maxTagsExceeded: '最多可以选择3个标签',
         },

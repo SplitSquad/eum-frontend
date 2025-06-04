@@ -2,6 +2,7 @@ import { StudyProfile } from '@/features/onboarding';
 import { duration } from '@mui/material';
 import { profile } from 'console';
 import { de, pl } from 'date-fns/locale';
+import { s } from 'node_modules/framer-motion/dist/types.d-CtuPurYT';
 import { title } from 'process';
 
 const ko = {
@@ -1697,6 +1698,8 @@ const ko = {
           contentTooLong: '내용은 최대 10,000자까지 입력 가능합니다',
           postTypeRequired: '게시글 유형을 선택해주세요',
           categoryRequired: '카테고리를 선택해주세요',
+          subTagsRequired: '최소 1개의 세부 태그를 선택해주세요',
+          addressRequired: '주소를 입력해주세요',
           regionRequired: '지역을 선택해주세요',
           maxTagsExceeded: '태그는 최대 3개까지 선택 가능합니다',
         },
