@@ -154,14 +154,13 @@ const VoteButton = styled(Button, {
   shouldForwardProp: prop => prop !== 'color' && prop !== 'selected',
 })<VoteButtonProps>(({ theme, color, selected }) => ({
   display: 'flex',
-  flexDirection: 'row',
+  flexDirection: 'row', // always horizontal
   alignItems: 'center',
   justifyContent: 'center',
   padding: theme.spacing(0.5, 1.5),
-  minHeight: 32,
-  height: 32,
+  minHeight: 40,
+  height: 'auto',
   minWidth: 0,
-  flex: 1,
   maxWidth: 160,
   borderRadius: 8,
   backgroundColor: selected ? `${color}22` : 'transparent',
@@ -169,6 +168,9 @@ const VoteButton = styled(Button, {
   color: color,
   boxSizing: 'border-box',
   overflow: 'hidden',
+  fontFamily: `'Pretendard', 'Noto Sans KR', Arial, sans-serif`,
+  textAlign: 'center',
+  whiteSpace: 'nowrap', // prevent line break
   '&:hover': {
     backgroundColor: `${color}33`,
   },
@@ -176,6 +178,7 @@ const VoteButton = styled(Button, {
     fontSize: 18,
     margin: 0,
     marginRight: theme.spacing(0.7),
+    marginBottom: 0,
     verticalAlign: 'middle',
   },
   '& .MuiTypography-root': {
@@ -185,15 +188,21 @@ const VoteButton = styled(Button, {
     lineHeight: 1.1,
     verticalAlign: 'middle',
     padding: 0,
+    wordBreak: 'keep-all', // prevent breaking in the middle of Korean/other words
+    whiteSpace: 'nowrap',
+    textAlign: 'center',
+    marginRight: theme.spacing(0.7),
   },
   '& .vote-count': {
     fontSize: 14,
     fontWeight: 500,
-    marginLeft: theme.spacing(0.7),
+    marginLeft: 0,
+    marginTop: 0,
     color: '#888',
     minWidth: 18,
-    textAlign: 'right',
+    textAlign: 'center',
     padding: 0,
+    display: 'block',
   },
 }));
 
@@ -971,14 +980,18 @@ const DebateDetailPage: React.FC = memo(() => {
 
   // Pie chart custom label with color per slice
   const renderDiagonalLabel = props => {
-    const { cx, cy, midAngle, innerRadius, outerRadius, percent, name, index } = props;
+    const { cx, cy, midAngle, innerRadius, outerRadius, percent, name, index, viewBox } = props;
     const RADIAN = Math.PI / 180;
     const angle = midAngle;
-    const radius = outerRadius + 18;
+    const radius = outerRadius + Math.max(10, outerRadius * 0.18); // padding proportional
     const x = cx + radius * Math.cos(-angle * RADIAN);
     const y = cy + radius * Math.sin(-angle * RADIAN);
-    // COLORS: ['#e91e63', '#9c27b0']
     const fill = COLORS[index % COLORS.length];
+    // Font size: proportional to outerRadius, min 9, max 16
+    const fontSize = Math.max(9, Math.min(16, Math.round(outerRadius * 0.28)));
+    // If the chart is very small, abbreviate label
+    const labelText =
+      outerRadius < 35 ? `${(percent * 100).toFixed(0)}%` : `${(percent * 100).toFixed(0)}%`;
     return (
       <text
         x={x}
@@ -986,11 +999,11 @@ const DebateDetailPage: React.FC = memo(() => {
         fill={fill}
         textAnchor={x > cx ? 'start' : 'end'}
         dominantBaseline="central"
-        fontSize={13}
+        fontSize={fontSize}
         fontWeight={600}
-        style={{ pointerEvents: 'none', userSelect: 'none' }}
+        style={{ pointerEvents: 'none', userSelect: 'none', whiteSpace: 'nowrap' }}
       >
-        {`${name} ${(percent * 100).toFixed(0)}%`}
+        {labelText}
       </text>
     );
   };
@@ -1019,7 +1032,7 @@ const DebateDetailPage: React.FC = memo(() => {
   // Render loading state
   if (loading || isDataLoadingRef.current) {
     return (
-      <DebateLayout showSidebar={false}>
+      <DebateLayout showSidebar={false} isShowBottomImg={false}>
         <Box
           sx={{
             display: 'flex',
@@ -1043,7 +1056,7 @@ const DebateDetailPage: React.FC = memo(() => {
   // Render error state
   if (error || !debate) {
     return (
-      <DebateLayout>
+      <DebateLayout isShowBottomImg={false}>
         <Container maxWidth="md" sx={{ py: 4 }}>
           <Box sx={{ textAlign: 'center', py: 4 }}>
             <Typography color="error" variant="h6">
@@ -1067,9 +1080,9 @@ const DebateDetailPage: React.FC = memo(() => {
    * parseDebateContent(content)
    *
    * 입력된 content(문자열)에서
-   * 1) 언어별 “토론 주제” 레이블(“Debate:”, “討論テーマ:”, “争论:”, “Debatte:”, “Débat :”, “Debate:”, “Дискуссия:”, “Tranh luận:”, 등)을 찾고,
-   * 2) 그 뒤에 “찬성 의견” 레이블(“Pro:”, “賛成側意見:”, “赞成:”, “Pro:”, “Pour :”, “A favor:”, “За:”, “Ủng hộ:”, 등)을 찾아 파싱한 뒤,
-   * 3) 그 뒤에 “반대 의견” 레이블(“Cons:”, “反対側の意見:”, “弊:”, “Contra:”, “Inconvénients :”, “Contras:”, “Против:”, “Phản đối:”, 등)을 찾아내는 함수입니다.
+   * 1) 언어별 "토론 주제" 레이블("Debate:", "討論テーマ:", "争论:", "Debatte:", "Débat :", "Debate:", "Дискуссия:", "Tranh luận:", 등)을 찾고,
+   * 2) 그 뒤에 "찬성 의견" 레이블("Pro:", "賛成側意見:", "赞成:", "Pro:", "Pour :", "A favor:", "За:", "Ủng hộ:", 등)을 찾아 파싱한 뒤,
+   * 3) 그 뒤에 "반대 의견" 레이블("Cons:", "反対側の意見:", "弊:", "Contra:", "Inconvénients :", "Contras:", "Против:", "Phản đối:", 등)을 찾아내는 함수입니다.
    *
    * 파싱에 실패하면 isParsed=false 상태로 원본(content)만 돌려줍니다.
    */
@@ -1087,14 +1100,14 @@ const DebateDetailPage: React.FC = memo(() => {
     }
 
     //––– 1. 다국어 지원을 위한 키워드 맵 정의 –––
-    // 키워드는 “콜론 앞까지의 순수 레이블 단어”만 넣습니다.
+    // 키워드는 "콜론 앞까지의 순수 레이블 단어"만 넣습니다.
     // 실제 파싱 시에는 "\\s*[:：]\\s*" 부분에서 콜론(: 또는 ：) 뒤로 공백을 허용합니다.
     const keywords: Record<
       string,
       {
-        topic: string[]; // “토론 주제” 계열 레이블
-        pro: string[]; // “찬성 의견” 계열 레이블
-        con: string[]; // “반대 의견” 계열 레이블
+        topic: string[]; // "토론 주제" 계열 레이블
+        pro: string[]; // "찬성 의견" 계열 레이블
+        con: string[]; // "반대 의견" 계열 레이블
       }
     > = {
       //=============== 한국어 ===============
@@ -1216,13 +1229,13 @@ const DebateDetailPage: React.FC = memo(() => {
 
     // 모든 언어(lang)와 그 언어의 키워드 집합(keywordSet)을 순회
     for (const [_, keywordSet] of Object.entries(keywords)) {
-      // 각 언어의 “토론 주제(topic)” 키워드 배열을 하나씩 검사
+      // 각 언어의 "토론 주제(topic)" 키워드 배열을 하나씩 검사
       for (const topicKeyword of keywordSet.topic) {
-        // “토론 주제” 레이블을 찾아내는 정규식
+        // "토론 주제" 레이블을 찾아내는 정규식
         //   (.*?)                            → 키워드 앞부분(도입부) 비탐욕 캡처
-        //   ${topicKeyword}\s*[:：]\s*      → “topicKeyword” + 콜론(: 또는 ：) + 공백
+        //   ${topicKeyword}\s*[:：]\\s*      → "topicKeyword" + 콜론(: 또는 ：) + 공백
         //   (.*?)(?=\s*(?:pro키워드들)|\s*(?:con키워드들)|$)
-        //                                   → “토론 주제” 본문을 잡되, 뒤에 pro 레이블이나 con 레이블 또는 끝까지
+        //                                   → "토론 주제" 본문을 잡되, 뒤에 pro 레이블이나 con 레이블 또는 끝까지
         const topicPattern = new RegExp(
           `(.*?)${topicKeyword}\\s*[:：]\\s*(.*?)(?=\\s*(?:${keywordSet.pro
             .map(w => w.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&'))
@@ -1238,14 +1251,14 @@ const DebateDetailPage: React.FC = memo(() => {
         }
 
         // topicMatch[1] → 콜론 이전 도입부 (beforeContent)
-        // topicMatch[2] → “토론 주제” 부분
+        // topicMatch[2] → "토론 주제" 부분
         beforeContent = topicMatch[1].trim();
         topic = topicMatch[2].trim();
 
         //––– 2-1. 찬성 의견(pro) 찾기 –––
         for (const proKeyword of keywordSet.pro) {
-          // “proKeyword\s*[:：]\s*(.*?)” 형태로 “찬성 레이블” 뒤 내용을 잡는다.
-          // 그 뒤에 “(?:${con키워드들}|$)” 전까지 캡처
+          // "proKeyword\s*[:：]\s*(.*?)" 형태로 "찬성 레이블" 뒤 내용을 잡는다.
+          // 그 뒤에 "(?:${con키워드들}|$)" 전까지 캡처
           const proPattern = new RegExp(
             `${proKeyword}\\s*[:：]\\s*(.*?)(?=\\s*(?:${keywordSet.con
               .map(w => w.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&'))
@@ -1261,7 +1274,7 @@ const DebateDetailPage: React.FC = memo(() => {
 
         //––– 2-2. 반대 의견(con) 찾기 –––
         for (const conKeyword of keywordSet.con) {
-          // “conKeyword\s*[:：]\s*(.*?)$” 형태로 “반대 레이블” 뒤 모든 텍스트를 캡처
+          // "conKeyword\s*[:：]\s*(.*?)$" 형태로 "반대 레이블" 뒤 모든 텍스트를 캡처
           const conPattern = new RegExp(`${conKeyword}\\s*[:：]\\s*(.*?)$`, 'is');
           const conMatch = content.match(conPattern);
           if (conMatch) {
@@ -1277,7 +1290,7 @@ const DebateDetailPage: React.FC = memo(() => {
             topic,
             proOpinion,
             conOpinion,
-            afterContent: '', // 필요 시, “반대 의견 이후 추가 본문”을 넣을 수 있음
+            afterContent: '', // 필요 시, "반대 의견 이후 추가 본문"을 넣을 수 있음
             rawContent: content, // 파싱 실패 시 원본을 보여줄 때도 쓰임
             isParsed: true,
           };
@@ -1299,7 +1312,7 @@ const DebateDetailPage: React.FC = memo(() => {
 
   /**
    * DebateContentRenderer 컴포넌트
-   * - props.content : “토론형 콘텐츠” 전체 문자열
+   * - props.content : "토론형 콘텐츠" 전체 문자열
    *
    * 내부에서 parseDebateContent를 호출해,
    * 파싱 성공(isParsed===true) 시 ⇒ 구조화된 UI 렌더링
@@ -1549,6 +1562,7 @@ const DebateDetailPage: React.FC = memo(() => {
                     minWidth: 0,
                     width: '100%',
                     boxSizing: 'border-box',
+                    flexDirection: 'row', // flag left, bar+text right
                   }}
                 >
                   <CountryFlag
@@ -1562,61 +1576,77 @@ const DebateDetailPage: React.FC = memo(() => {
                   >
                     <FlagDisplay nation={stat.countryCode} size="small" showName={true} />
                   </CountryFlag>
-                  <Box sx={{ flex: 1, ml: 1, mr: 1, minWidth: 0 }}>
-                    <Box
-                      sx={{
-                        width: '100%',
-                        height: isMobile ? '18px' : '24px',
-                        borderRadius: '12px',
-                        overflow: 'hidden',
-                        background: '#f0f0f0',
-                        minWidth: 0,
-                      }}
-                    >
+                  <Box
+                    sx={{
+                      flex: 1,
+                      ml: 1,
+                      mr: 1,
+                      minWidth: 0,
+                      width: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'stretch',
+                    }}
+                  >
+                    <Box>
                       <Box
                         sx={{
-                          width: `${Math.round(stat.percentage)}%`,
-                          height: '100%',
-                          backgroundColor: color,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
+                          width: '100%',
+                          height: isMobile ? '18px' : '24px',
+                          borderRadius: '12px',
+                          overflow: 'hidden',
+                          background: '#f0f0f0',
                           minWidth: 0,
                         }}
                       >
-                        {stat.percentage > 15 && (
-                          <Typography
-                            variant="caption"
-                            color="white"
-                            fontWeight="bold"
-                            sx={{
-                              whiteSpace: 'normal',
-                              wordBreak: 'break-all',
-                              textAlign: 'center',
-                              width: '100%',
-                              fontSize: { xs: '0.8rem', md: '0.92rem' },
-                            }}
-                          >
-                            {Math.round(stat.percentage)}%
-                          </Typography>
-                        )}
+                        <Box
+                          sx={{
+                            width: `${Math.round(stat.percentage)}%`,
+                            height: '100%',
+                            backgroundColor: color,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            minWidth: 0,
+                          }}
+                        >
+                          {stat.percentage > 15 && (
+                            <Typography
+                              variant="caption"
+                              color="white"
+                              fontWeight="bold"
+                              sx={{
+                                whiteSpace: 'normal',
+                                wordBreak: 'break-all',
+                                textAlign: 'center',
+                                width: '100%',
+                                fontSize: { xs: '0.8rem', md: '0.92rem' },
+                              }}
+                            >
+                              {Math.round(stat.percentage)}%
+                            </Typography>
+                          )}
+                        </Box>
                       </Box>
+                      {/* 참여 인원 수와 %를 바 아래에 중앙 정렬로 표시 */}
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          minWidth: 0,
+                          textAlign: 'center',
+                          wordBreak: 'break-all',
+                          whiteSpace: 'normal',
+                          flexShrink: 0,
+                          fontSize: { xs: '0.92rem', md: '0.7rem' },
+                          mt: 0.5,
+                          width: '100%',
+                        }}
+                      >
+                        {stat.count}
+                        {t('debate.ppl')} ({Math.round(stat.percentage)}%)
+                      </Typography>
                     </Box>
                   </Box>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      minWidth: 0,
-                      textAlign: 'right',
-                      wordBreak: 'break-all',
-                      whiteSpace: 'normal',
-                      flexShrink: 0,
-                      fontSize: { xs: '0.92rem', md: '1rem' },
-                    }}
-                  >
-                    {stat.count}
-                    {t('debate.ppl')} ({Math.round(stat.percentage)}%)
-                  </Typography>
                 </CountryStatItem>
               );
             })
@@ -1636,6 +1666,7 @@ const DebateDetailPage: React.FC = memo(() => {
 
   return (
     <DebateLayout
+      isShowBottomImg={false}
       sidebar={
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           <VoteButtonGroup>

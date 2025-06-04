@@ -89,6 +89,7 @@ export interface DebateLayoutProps {
   sidebar?: React.ReactNode;
   showSidebar?: boolean;
   specialLabelText?: string;
+  isShowBottomImg?: boolean;
 }
 
 /**
@@ -100,6 +101,7 @@ const DebateLayout: React.FC<DebateLayoutProps> = ({
   sidebar,
   showSidebar = true,
   specialLabelText,
+  isShowBottomImg = true,
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -176,11 +178,13 @@ const DebateLayout: React.FC<DebateLayoutProps> = ({
               margin: 0,
             }}
           >
-            <img
-              src={bottomImg}
-              alt="logo"
-              style={{ height: 22, width: 22, objectFit: 'contain', verticalAlign: 'middle' }}
-            />
+            {isShowBottomImg && (
+              <img
+                src={bottomImg}
+                alt="logo"
+                style={{ height: 22, width: 22, objectFit: 'contain', verticalAlign: 'middle' }}
+              />
+            )}
             {specialLabelText}
           </h2>
           <div style={{ flex: 1 }} />

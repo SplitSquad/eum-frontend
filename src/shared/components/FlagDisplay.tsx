@@ -25,19 +25,19 @@ const FlagDisplay: React.FC<FlagDisplayProps> = ({
   size = 'small',
   showName = true,
   inline = true,
-  sx = {}
+  sx = {},
 }) => {
   const [imageError, setImageError] = useState(false);
 
   if (!nation || nation.trim() === '') {
     return (
-      <Typography 
-        variant="caption" 
-        sx={{ 
+      <Typography
+        variant="caption"
+        sx={{
           color: 'text.secondary',
           display: inline ? 'inline-flex' : 'flex',
           alignItems: 'center',
-          ...sx 
+          ...sx,
         }}
       >
         🌍 {showName ? '' : ''}
@@ -54,7 +54,7 @@ const FlagDisplay: React.FC<FlagDisplayProps> = ({
   const sizeConfig = {
     small: { width: '20px', fontSize: '0.75rem' },
     medium: { width: '24px', fontSize: '0.875rem' },
-    large: { width: '32px', fontSize: '1rem' }
+    large: { width: '32px', fontSize: '1rem' },
   };
 
   const handleImageError = () => {
@@ -67,7 +67,7 @@ const FlagDisplay: React.FC<FlagDisplayProps> = ({
         display: inline ? 'inline-flex' : 'flex',
         alignItems: 'center',
         gap: 0.5,
-        ...sx
+        ...sx,
       }}
     >
       {!imageError ? (
@@ -79,7 +79,7 @@ const FlagDisplay: React.FC<FlagDisplayProps> = ({
             width: sizeConfig[size].width,
             height: 'auto',
             borderRadius: '2px',
-            verticalAlign: 'middle'
+            verticalAlign: 'middle',
           }}
           onError={handleImageError}
         />
@@ -89,14 +89,14 @@ const FlagDisplay: React.FC<FlagDisplayProps> = ({
           sx={{
             fontSize: sizeConfig[size].fontSize,
             lineHeight: 1,
-            verticalAlign: 'middle'
+            verticalAlign: 'middle',
           }}
         >
           {country?.flag || '🌍'}
         </Typography>
       )}
-      
-      {showName && (
+
+      {/*{showName && (
         <Typography
           component="span"
           variant="caption"
@@ -107,9 +107,9 @@ const FlagDisplay: React.FC<FlagDisplayProps> = ({
         >
           {countryName}
         </Typography>
-      )}
+      )}*/}
     </Box>
   );
 };
 
-export default FlagDisplay; 
+export default FlagDisplay;
