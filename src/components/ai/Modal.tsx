@@ -36,9 +36,6 @@ export default function Modal({ isOpen, onClose, children, position }: ModalProp
     return () => document.removeEventListener('keydown', onKey);
   }, [onClose]);
 
-  console.log(position);
-  console.log(window.scrollY);
-
   // 모달 포탈 root 엘리먼트 준비
   const portalRoot =
     document.getElementById('modal-root') ||
@@ -60,49 +57,76 @@ export default function Modal({ isOpen, onClose, children, position }: ModalProp
                 `pointer-events-auto bg-white shadow-2xl z-[1051] border border-gray-100 backdrop-blur-sm ` +
                 (isMobile
                   ? 'rounded-2xl'
-                  : 'rounded-2xl w-[400px] min-h-[450px] max-h-[550px] overflow-hidden')
+                  : 'rounded-2xl w-[400px] min-h-[300px] max-h-[550px] overflow-hidden')
               }
               style={
                 {
                   ...(isMobile
-                    ? {
-                        width: '90vw',
-                        maxWidth: 400,
-                        maxHeight: '80vh',
-                        borderRadius: 16,
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        margin: 'auto',
-                        overflow: 'auto',
-                      }
-                    : {}),
-                  ...(position && !isMobile
-                    ? {
-                        position: 'fixed',
-                        top: position.y,
-                        left: position.x,
-                        transform: 'translate(0, 0)',
-                      }
-                    : {}),
+                    ? position
+                      ? {
+                          // position props가 있으면 해당 위치에 고정 (width 고정)
+                          position: 'fixed',
+                          top: position.y,
+                          left: position.x,
+                          transform: 'translate(0, 0)',
+                          width: 350, // 고정 px
+                          maxWidth: '90vw',
+                          height: 'auto',
+                          maxHeight: '80vh',
+                          minHeight: 0,
+                          borderRadius: 16,
+                          overflowY: 'auto',
+                          display: 'block',
+                        }
+                      : {
+                          // position props가 없으면 중앙 정렬 (넓게)
+                          width: '90vw',
+                          maxWidth: 400,
+                          height: 'auto',
+                          maxHeight: '80vh',
+                          minHeight: 0,
+                          borderRadius: 16,
+                          position: 'fixed',
+                          top: '10vh',
+                          left: 0,
+                          right: 0,
+                          margin: '0 auto',
+                          overflowY: 'auto',
+                          display: 'block',
+                        }
+                    : {
+                        width: 400,
+                        minHeight: 300,
+                        maxHeight: 550,
+                        height: 'auto',
+                        ...(position
+                          ? {
+                              position: 'fixed',
+                              top: position.y,
+                              left: position.x,
+                              transform: 'translate(0, 0)',
+                            }
+                          : {}),
+                        overflowY: 'auto',
+                      }),
                 } as CSSProperties
               }
             >
               <div className="relative">
                 {/* 닫기(X) 버튼 */}
+
                 <button
                   onClick={onClose}
                   aria-label="Close modal"
-                  className="absolute top-3 right-3 w-9 h-9 bg-white hover:bg-gray-50 text-gray-400 hover:text-gray-600 rounded-full flex items-center justify-center transition-all duration-200 z-10 shadow-lg border border-gray-200 hover:border-gray-300"
+                  className="absolute top-3 right-3 w-9 h-9 bg-white hover:bg-gray-100 text-gray-700 hover:text-gray-900 rounded-full flex items-center justify-center transition-all duration-200 z-10 shadow-lg border border-gray-300 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
                   tabIndex={0}
                 >
                   <svg
-                    width="16"
-                    height="16"
+                    width="24"
+                    height="24"
                     viewBox="0 0 24 24"
                     fill="none"
+                    className="flex-shrink-0"
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path

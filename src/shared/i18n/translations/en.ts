@@ -218,6 +218,8 @@ const en = {
     openPdf: 'Open PDF',
     placeHolder: 'Enter your question or request...',
     send: 'Send',
+    modalHeader: 'EUM Assistant',
+    modalDescription: 'A reliable friend for Korean life',
   },
   common: {
     authenticatedError: 'After logging in, you can access the service.',
@@ -2473,6 +2475,13 @@ Do you really want to save?`,
         },
       },
     },
+  },
+  accessDenied: {
+    title: 'Access Denied',
+    description:
+      'You do not have permission to access this page. Please log in with the appropriate account or contact the administrator.',
+    goHome: 'Go to Home',
+    contact: 'Contact Support',
   },
 };
 

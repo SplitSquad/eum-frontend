@@ -68,7 +68,6 @@ export function sendWebLog(log: WebLog) {
   }).catch(err => {
     console.error('WebLog 전송 실패:', err);
   });
-  console.log('WebLog 전송 성공:', log);
 }
 
 interface Message {

@@ -34,47 +34,19 @@ export default function AppLayout() {
       closeModal();
     } else if (btnRef.current) {
       const rect = btnRef.current.getBoundingClientRect();
-      
-      // 모달 크기 (실제 크기와 정확히 일치)
       const MODAL_WIDTH = 350;
       const MODAL_HEIGHT = 400;
-      const PADDING = 10; // 버튼과의 간격
-      
-      console.log('=== 모달 위치 계산 (이음이 버튼 좌상단) ===');
-      console.log('버튼 위치:', { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom });
-      
-      // 기본 위치: 버튼의 좌상단에 모달의 우하단이 오도록 설정
-      let x = rect.left - MODAL_WIDTH;
-      let y = rect.top - MODAL_HEIGHT;
-      
-      // 화면 왼쪽을 벗어나면 오른쪽으로 이동
-      if (x < PADDING) {
-        x = rect.right + PADDING;
-        console.log('왼쪽 경계 벗어남, 오른쪽으로 이동:', x);
-      }
-      
-      // 화면 위쪽을 벗어나면 아래쪽으로 이동
-      if (y < PADDING) {
-        y = rect.bottom + PADDING;
-        console.log('위쪽 경계 벗어남, 아래쪽으로 이동:', y);
-      }
-      
-      // 화면 오른쪽을 벗어나면 조정
-      if (x + MODAL_WIDTH > window.innerWidth - PADDING) {
-        x = window.innerWidth - MODAL_WIDTH - PADDING;
-        console.log('오른쪽 경계 벗어남, 조정:', x);
-      }
-      
-      // 화면 아래쪽을 벗어나면 조정 (푸터 고려)
+      const PADDING = 10;
       const footerHeight = 120;
-      if (y + MODAL_HEIGHT > window.innerHeight - footerHeight - PADDING) {
+      const OFFSET = 16; // 왼쪽으로 더 이동
+      let x = rect.left - MODAL_WIDTH - OFFSET;
+      let y = rect.top - MODAL_HEIGHT;
+      if (x < PADDING) x = rect.right + PADDING;
+      if (y < PADDING) y = rect.bottom + PADDING;
+      if (x + MODAL_WIDTH > window.innerWidth - PADDING)
+        x = window.innerWidth - MODAL_WIDTH - PADDING;
+      if (y + MODAL_HEIGHT > window.innerHeight - footerHeight - PADDING)
         y = window.innerHeight - footerHeight - MODAL_HEIGHT - PADDING;
-        console.log('아래쪽 경계 벗어남, 조정:', y);
-      }
-      
-      console.log('최종 모달 위치:', { x, y });
-      console.log('=== 모달 위치 계산 완료 ===');
-      
       openModal(<ModalContent />, { x, y });
     }
   };
@@ -120,7 +92,7 @@ export default function AppLayout() {
           {isModalVisible && isAuthenticated && (
             <div
               className="fixed right-8 bottom-[30px] eumi-fade-in-up eumi-visible"
-              style={{ 
+              style={{
                 pointerEvents: 'auto',
                 zIndex: 99999, // 매우 높은 z-index로 설정
                 position: 'fixed', // position을 명시적으로 설정
@@ -137,7 +109,7 @@ export default function AppLayout() {
                   objectFit: 'contain',
                   cursor: 'pointer',
                   transition: 'transform 0.5s cubic-bezier(0.22, 1, 0.36, 1)',
-                  transform: isModalOpen ? 'rotate(90deg)' : 'scale(1.08)',
+                  transform: isModalOpen ? 'translateY(-16px)' : 'translateY(0)',
                   filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))', // 그림자 효과로 더 잘 보이게
                   zIndex: 99999, // 이미지에도 높은 z-index 적용
                   position: 'relative',

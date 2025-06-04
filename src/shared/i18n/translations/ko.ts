@@ -221,6 +221,8 @@ const ko = {
     openPdf: 'PDF 열기',
     placeHolder: '질문이나 요청을 입력하세요...',
     send: '전송',
+    modalHeader: '이음이 도우미',
+    modalDescription: '한국생활의 든든한 친구',
   },
   login: {
     welcome: '환영합니다',
@@ -2507,6 +2509,13 @@ const ko = {
       noPostTitle: '[게시글 제목 없음]',
       noVoteInfo: '투표 정보 없음',
     },
+  },
+  accessDenied: {
+    title: '접근이 거부되었습니다',
+    description:
+      '이 페이지에 접근할 권한이 없습니다. 올바른 계정으로 로그인하거나 관리자에게 문의하세요.',
+    goHome: '홈으로 가기',
+    contact: '문의하기',
   },
 };
 

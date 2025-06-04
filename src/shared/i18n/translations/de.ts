@@ -119,7 +119,7 @@ const de = {
   accessDenied: {
     title: 'Zugriff verweigert',
     description:
-      'Sie haben keine Berechtigung, auf diese Seite zuzugreifen. Bitte kehren Sie zur Startseite zurück oder kontaktieren Sie den Support.',
+      'Sie haben keine Berechtigung, auf diese Seite zuzugreifen. Bitte melden Sie sich mit dem richtigen Konto an oder kontaktieren Sie den Administrator.',
     goHome: 'Zur Startseite',
     contact: 'Support kontaktieren',
   },

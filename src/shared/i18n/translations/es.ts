@@ -209,6 +209,8 @@ const es = {
     openPdf: 'Abrir PDF',
     placeHolder: 'Ingresa tu pregunta o solicitud...',
     send: 'Enviar',
+    modalHeader: 'Asistente EUM',
+    modalDescription: 'Un amigo confiable para la vida en Corea',
   },
   common: {
     home: 'Inicio',
@@ -2118,6 +2120,13 @@ Archivos adjuntos existentes: {{existingFileCount}}
     mypage: 'Mi página',
     logout: 'Cerrar sesión',
     adminpage: 'Página de administrador',
+  },
+  accessDenied: {
+    title: 'Acceso denegado',
+    description:
+      'No tienes permiso para acceder a esta página. Por favor, inicia sesión con la cuenta adecuada o contacta al administrador.',
+    goHome: 'Ir a inicio',
+    contact: 'Contactar soporte',
   },
 };
 

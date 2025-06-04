@@ -208,6 +208,8 @@ const zh = {
     openPdf: '打开PDF',
     placeHolder: '请输入您的问题或请求...',
     send: '发送',
+    modalHeader: 'EUM助手',
+    modalDescription: '韩国生活的可靠朋友',
   },
   common: {
     home: '首页',
@@ -2065,6 +2067,12 @@ const zh = {
         },
       },
     },
+  },
+  accessDenied: {
+    title: '拒绝访问',
+    description: '您没有权限访问此页面。请使用正确的账户登录或联系管理员。',
+    goHome: '返回首页',
+    contact: '联系客服',
   },
 };
 
