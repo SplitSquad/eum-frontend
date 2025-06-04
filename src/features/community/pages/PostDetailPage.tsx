@@ -842,7 +842,9 @@ const PostDetailPage: React.FC = () => {
               size="small"
               onClick={toggleOriginalView}
             >
-              {showOriginal ? t('community.posts.hideOriginal') : t('community.posts.showOriginal')}
+              {showOriginal
+                ? t('community.posts.returnOriginal')
+                : t('community.posts.showOriginal')}
             </Button>
           </Box>
 
