@@ -1003,7 +1003,8 @@ const zh = {
 
 您确定要保存吗？`,
       newFileWarning: '⚠️ 添加新文件将删除所有现有文件',
-      editModeWarning: '⚠️ 警告：添加新文件将删除所有{{count}}个现有附件。\n\n您确定要继续吗？\n\n要保持现有文件，请选择"取消"。',
+      editModeWarning:
+        '⚠️ 警告：添加新文件将删除所有{{count}}个现有附件。\n\n您确定要继续吗？\n\n要保持现有文件，请选择"取消"。',
       deleteConfirm: '确定要删除此文件吗？',
       deleteWarning: '⚠️ 警告：保存帖子时此文件将被永久删除。',
       imageHint: '图像将以预览形式显示',
@@ -1664,6 +1665,7 @@ const zh = {
     showOriginal: '查看原文',
     returnOriginal: '返回',
     noDebates: '暂无辩论议题',
+    noIssues: '暂无议题',
     title: '热点议题辩论',
     description: '就当前最热门的社会议题自由讨论，分享你的多元观点。',
     categories: {

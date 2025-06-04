@@ -1262,9 +1262,9 @@ const StudyProfile: React.FC = () => {
           >
             {currentStep === totalSteps
               ? isSubmitting
-                ? 'onboarding.travel.saving'
-                : 'onboarding.travel.finish'
-              : t('onboarding.travel.next')}
+                ? t('onboarding.saving')
+                : t('onboarding.finish')
+              : t('onboarding.next')}
           </Button>
         </Box>
       </Container>
